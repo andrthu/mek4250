@@ -18,8 +18,6 @@ for N in N_val:
     M, _ = assemble_system(u*v*dx,Constant(0)*v*dx,bc)
     AA = matrix(A.array())
     MM= matrix(M.array())
-
-
     
     
     a = random.rand(N+1)
@@ -62,7 +60,5 @@ for N in N_val:
     print 
     print "H-1:" , Hm1_norm
     print 
-    #if N==100:
-        #plot(u)
-        #interactive()
+    
     
