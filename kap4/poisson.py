@@ -1,15 +1,18 @@
 from dolfin import *
 from numpy import zeros, sqrt, pi
 
+
+
 def Hp_sink(p,k):
-    return 0.5*(1-(k*pi)**(p+1))/(1-(k*pi))
+    return 0.5*(1-(k*pi)**(2*(p+1)))/(1-(k*pi)**2)
     
 
 def boundary(x,on_boundary): return on_boundary
-N = [100,1000,10000]
-K=[1,10,100]
-E = zeros((3,3))
-H2 = zeros((3,3))
+
+N = [100,1000,10000,100000]
+K=[1,10,100,1000]
+E = zeros((len(N),len(K)))
+H2 = zeros((len(N),len(K)))
 
 for i in range(len(N)):
 
@@ -39,18 +42,19 @@ for i in range(len(N)):
             A = assemble(e**2*dx)
             B = assemble(inner(grad(e),grad(e))*dx)
             print sqrt(A+B)
-            plot(e)
-            interactive()
+            #plot(e)
+            #interactive()
                         
         
         E[i,j] = errornorm(u,ue,'H1')
-        H2[i,j] = sqrt(Hp_sink(2,K[j]))
+        H2[i,j] = sqrt(Hp_sink(2+i,K[j]))
 
-C = zeros((3,3))
+C = zeros((len(N),len(K)))
 
 C[0,:] = 100*E[0,:]/H2[0,:]
 C[1,:] = 1000*E[1,:]/H2[0,:]
 C[2,:] = 10000*E[2,:]/H2[0,:]
+C[3,:] = 100000*E[3,:]/H2[0,:]
 
 print E
 print 

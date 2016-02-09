@@ -2,10 +2,21 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
+
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+
 \begin{document}
 \begin{center}
 
-\LARGE INF5620 - Mandatory assignment 1
+\LARGE Mat-Inf4140 - Mandatory assignment 1
 \\
 Andreas Thune
 \\
@@ -41,4 +52,53 @@ A =
   0 & 0 & 0 &\cdots & s_{n,n} 
  \end{pmatrix}
 $$ having determinant unequal to zero. This is true, since $\ s_{i,i}\neq 0$ and the determinant of a triangle matrix is the product of the diagonal, i. e. $$det(A)=\prod_{i=1}^n s_{i,i}\neq 0$$ 
+\\
+\\
+\textbf{4.1.5}
+\\
+Using overdetermination, means that we are using more interpolation points then the power of the polynomial we want to interpolate with, i.e. we want $p \in P_n$ such that $p(x_i)=f_i$ for $i=1,...,m$, where $m>n$. In general this is not possible to achieve, but we can find a polynomial $p$ such that $p(x_i)$ is as close as possible to $f_i$ in a least square sense. This is the overdetermined system. In the book it says that positive features of solutions of such systems, is that it reduces the effect of irregular function values from f, and that it gives the polynomial a smoother behavior between gridpoints.
+\\
+\\   
+\textbf{Computer exercise 1.1}
+\\
+a) All the code and images will be pasted below.
+
+
+
+\lstset{language=Matlab,%
+    %basicstyle=\color{red},
+    breaklines=true,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style},    
+}
+
+
+\section*{Code for uniform points}
+
+\lstinputlisting{o1.m}
+\section*{Code for Chebychev points}
+\lstinputlisting{o2.m}
+\section*{Small pertubation test}
+\lstinputlisting{per.m}
+\section*{Exercise b}
+\lstinputlisting{ob.m}
+
+
+
+
+
+
+
+
+
 \end{document}
