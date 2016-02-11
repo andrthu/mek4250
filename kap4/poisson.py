@@ -9,10 +9,16 @@ def Hp_sink(p,k):
 
 def boundary(x,on_boundary): return on_boundary
 
-N = [100,1000,10000,100000]
-K=[1,10,100,1000]
+N = [100,1000,10000]
+K=[1,10,100]
+
+
 E = zeros((len(N),len(K)))
 H2 = zeros((len(N),len(K)))
+E_L2 = zeros((len(N),len(K)))
+E_LInf = zeros((len(N),len(K)))
+E_L1 = zeros((len(N),len(K)))
+
 
 for i in range(len(N)):
 
@@ -35,30 +41,42 @@ for i in range(len(N)):
         L = f*v*dx
     
         u=Function(V)
+        
         solve(a==L,u,bc)
+        u2 = interpolate(u,V2)
+        e = u2-ue
+
         
         if i==2:
-            e=u-ue
-            A = assemble(e**2*dx)
-            B = assemble(inner(grad(e),grad(e))*dx)
-            print sqrt(A+B)
+            z=1
             #plot(e)
             #interactive()
-                        
         
+            
+        E_LInf[i,j] = max(abs(u2.vector().array()-ue.vector().array()))
+        E_L1[i,j] = assemble(abs(u-ue)*dx)                  
+        E_L2[i,j] = errornorm(u,ue,'L2')
         E[i,j] = errornorm(u,ue,'H1')
         H2[i,j] = sqrt(Hp_sink(2+i,K[j]))
 
-C = zeros((len(N),len(K)))
+CH = zeros((len(N),len(K)))
+CL2 = zeros((len(N),len(K)))
+CL1 = zeros((len(N),len(K)))
+CLinf = zeros((len(N),len(K)))
+for r in range(len(N)):
+    CH[r,:] = 10**(r)*100*E[r,:]/H2[0,:]
 
-C[0,:] = 100*E[0,:]/H2[0,:]
-C[1,:] = 1000*E[1,:]/H2[0,:]
-C[2,:] = 10000*E[2,:]/H2[0,:]
-C[3,:] = 100000*E[3,:]/H2[0,:]
+
+    CL2[r,:] = (10**(r)*100)**2*E_L2[r,:]/H2[0,:]
+    CL1[r,:] = (10**(r)*100)**2*E_L1[r,:]/H2[0,:]
+    CLinf[r,:] = (10**(r)*100)**2*E_LInf[r,:]/H2[0,:]
 
 print E
-print 
-print H2
 print
-print C
-        
+print CH
+print
+print CL2
+print
+print CL1        
+print 
+print CLinf
