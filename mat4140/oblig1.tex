@@ -2,7 +2,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
-
+\usepackage{graphicx}
 
 \usepackage{listings}
 \usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
@@ -61,7 +61,10 @@ Using overdetermination, means that we are using more interpolation points then 
 \\   
 \textbf{Computer exercise 1.1}
 \\
-a) All the code and images will be pasted below.
+a) All the code and images will be pasted below. For the the absolute error in the first part of a), you see that the error is almost the same for the two types of points. For the second part I choose to add a random number between 0 and $0.01$ to the function value. I then see that when I use a large amount of points to interpolate (I used 20 in the code), the error between the polynomial I get with perturbations and the polynomial I get without perturbations, is in the same magnitude as $0.01$ for chebychev points, but for equidistant points, the error blows up close to the boundary. This you can see in the image below. This can mean that we have stability in sup norm for chebychev points, but not for equidistant points.
+\\   
+\\
+b) Let f take random values between 0 and 1. For chebychev points the polynomial lies approximatly between 0 and 1 between the grid points. However for equidistant points, the polynomial gets much bigger than this between the points especially if we use many points. 
 
 
 
@@ -83,11 +86,8 @@ a) All the code and images will be pasted below.
 }
 
 
-\section*{Code for uniform points}
-
+\section*{Code for finding error in 4.1.1 a)}
 \lstinputlisting{o1.m}
-\section*{Code for Chebychev points}
-\lstinputlisting{o2.m}
 \section*{Small pertubation test}
 \lstinputlisting{per.m}
 \section*{Exercise b}
@@ -95,10 +95,22 @@ a) All the code and images will be pasted below.
 
 
 
+\begin{figure}
+  \includegraphics[width=\linewidth]{opp1.png}
+  \caption{Error between function and interpolating polynomial}
+  \label{Fig 1}
+\end{figure}
 
+\begin{figure}
+  \includegraphics[width=\linewidth]{per.png}
+  \caption{Error between polynomial with and without perturbations}
+  \label{Fig 2}
+\end{figure}
 
-
-
-
+\begin{figure}
+  \includegraphics[width=\linewidth]{opp2.png}
+  \caption{Plot of interpolation polynomial of random function in $[0,1]$ }
+  \label{Fig 3}
+\end{figure}
 
 \end{document}
