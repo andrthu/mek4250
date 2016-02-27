@@ -1,0 +1,45 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+
+\begin{document}
+\begin{center}
+
+\LARGE Mat-Inf4140 - Mandatory assignment 2
+\\
+Andreas Thune
+\\
+\LARGE
+16.02.2016
+
+\end{center}
+\textbf{4.2.5}
+\\
+Assume that we want to interpolate a function using the points $\{ x_i\}_{i=1}^n$. The Lagrange basis is the defined by $$q_i(x) = \prod_{j\neq i} \frac{x-x_j}{x_i-x_j} $$ This means that $q_i(x_j) = \delta_{ij}$, which again means that interpolation polynomial of samplevalues $\{ f_i\}_{i=1}^n$ at points $x_i$ is $$p(x) = \sum_{i=1}^n f_iq_i(x)= \sum_{i=1}^n f_i\prod_{j\neq i} \frac{x-x_j}{x_i-x_j}$$ Now for the barycentric form we define $$\phi(x) = \prod_{i=1}^n x-x_i $$ this gives the form $$p(x) = \phi(x)\sum_{i=1}^n f_i\frac{w_i}{x-x_i}$$ where $$w_i = \prod_{j\neq i} \frac{1}{x_i-x_j}$$
+\\
+\textbf{4.3.2}
+\\
+Assume that we have a function $f$ and its derivative $f'$. Use Hermation interpolation to approximate f in the the two points $\{x_1,x_2\}$ by cubic polynomial $p$ such that the derivative of $p$ is equal to the derivative of $f$ in the points. If we choose the power basis, we want $$p(x)=c_0 + c_1x + c_2x^2 + c_3x^3$$ If we differentiate $p$ we get $$p'(x)=c_1 + 2c_2x + 3c_3x^2$$ We then get a system of eqation from the conditions $p(x_1)=f(x_1)=f_1$, $p'(x_1)=f'_1$, $p(x_2)=f_2$ and $p'(x_2)=f'_2$, were the $c_i$ coefficients are the unknowns. This gives us the system $Ac=b$, were c is: $$c=(c_0,c_1,c_2,c_3)^T$$ b is: $$b=(f_1,f'_1,f_2,f'_2)^T$$ and A is:  
+
+$$ 
+A = 
+ \begin{pmatrix}
+  1 & x_1 & x_1^2 &  x_1^3 \\
+  0 & 1 & 2x_1 & 3x_1^2 \\
+  1 & x_2 & x_2^2  & x_2^3  \\
+  0 & 1 & 2x_2  & 3x_2^2 
+ \end{pmatrix}
+$$
+
+\end{document}
