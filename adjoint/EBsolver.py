@@ -51,7 +51,7 @@ def grad_J():
     return l
 
 def finite_diff(u,d,a,y0,T,J):
-    eps = float(T)/(len(u)-1)
+    eps = 1./100000
 
     grad_J = zeros(len(u))
 
@@ -75,13 +75,13 @@ if __name__ == '__main__':
     
     y = solver(y0,a,n,u,T)
     
-    plot(t,y)
+    #plot(t,y)
 
     l = adjoint_solver(y0,a,n,u,T,d,dJy)
     l2 = finite_diff(u,d,a,y0,T,J_red)
     print l2
-    plot(t,l)
-    #plot(t,l2)
+    #plot(t,l)
+    plot(t,l2)
     
     show()
 
