@@ -14,22 +14,68 @@ def solver(y0,a,n,u,T):
     
     return y
 
-def adjoint_solver(y0,a,n,u,T,d,dJ):
+def adjoint_solver(y0,a,n,u,T,d):
     dt = float(T)/n
     
     y=solver(y0,a,n,u,T)
     l=zeros(n+1)
     l[-1]=y[-1]
 
-    J = dJ(y,d,u,T)
+    
     
     for i in range(n):
-        l[-(i+2)]=(1-dt*a)*l[-(i+1)] - dt*J
+        l[-(i+2)]=(1-dt*a)*l[-(i+1)] 
     return l
 
     
+def Functional2(y,u,yT,T):
+    t = linspace(0,T,len(u))
 
+    return 0.5*(simps(u**2,t) + (y[-1]-yT)**2) 
+
+def J_red(u,a,y0,yT,T):
+    return Functional2(solver(y0,a,len(u)-1,u,T),u,yT,T)
     
+def finite_diff(u,a,y0,yT,T,J):
+    eps = 1./1000000
+
+    grad_J = zeros(len(u))
+
+    for i in range(len(u)):
+        e = zeros(len(u))
+        e[i]=eps
+        J1 = J(u,a,y0,yT,T)
+        J2 = J(u+e,a,y0,yT,T)        
+        grad_J[i] = (J2-J1)/eps
+
+    return grad_J
+
+if __name__ == '__main__':
+    n=100
+    t = linspace(0,1,n+1)
+    T=1
+    y0=1
+    a=1
+    u=zeros(n+1)
+    yT=2
+    
+    y = solver(y0,a,n,u,T)
+    print y[-1]-yT
+    plot(t,y)
+
+    #l = adjoint_solver(y0,a,n,u,T,d,dJy)
+    l2 = finite_diff(u,a,y0,yT,T,J_red)
+    #print l2
+    #plot(t,l)
+    plot(t,l2)
+    
+    show()
+
+
+
+
+
+"""
 def J_Functional(y,d,u,T):
     n = len(y)
     t = linspace(0,T,n)
@@ -63,25 +109,4 @@ def finite_diff(u,d,a,y0,T,J):
         grad_J[i] = (J1-J2)/eps
 
     return grad_J
-
-if __name__ == '__main__':
-    n=100
-    t = linspace(0,1,n+1)
-    T=1
-    y0=1
-    a=1
-    u=zeros(n+1)
-    d=zeros(n+1)
-    
-    y = solver(y0,a,n,u,T)
-    
-    #plot(t,y)
-
-    l = adjoint_solver(y0,a,n,u,T,d,dJy)
-    l2 = finite_diff(u,d,a,y0,T,J_red)
-    print l2
-    #plot(t,l)
-    plot(t,l2)
-    
-    show()
-
+"""

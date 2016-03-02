@@ -1,6 +1,7 @@
 from dolfin import *
 from numpy import pi,matrix, sqrt, diagflat,zeros,vstack,ones,log,array
-from scipy.special import factorial as fac
+#from scipy.special import factorial as fac
+from math import factorial as fac
 from scipy import linalg
 
 
