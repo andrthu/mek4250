@@ -2,6 +2,8 @@ from numpy import *
 from matplotlib.pyplot import *
 from scipy.integrate import simps
 
+#Backward Euler solver for y'=ay +u y(0)=y0, endtime T and
+#n discretization points.
 def solver(y0,a,n,u,T):
     dt = float(T)/n
 
@@ -13,29 +15,32 @@ def solver(y0,a,n,u,T):
 
     
     return y
-
-def adjoint_solver(y0,a,n,u,T,d):
+#solving the adjoint equation -p=ap, p(T)=y(T)-yT
+def adjoint_solver(y0,a,n,u,T,yT):
     dt = float(T)/n
     
     y=solver(y0,a,n,u,T)
     l=zeros(n+1)
-    l[-1]=y[-1]
+    l[-1]=y[-1] -yT
 
     
     
     for i in range(n):
-        l[-(i+2)]=(1-dt*a)*l[-(i+1)] 
+        l[-(i+2)]=(1+dt*a)*l[-(i+1)] 
     return l
 
-    
+#Functional 0.5*(integral(u**2) +(y(T)-yT)**2)    
 def Functional2(y,u,yT,T):
     t = linspace(0,T,len(u))
 
     return 0.5*(simps(u**2,t) + (y[-1]-yT)**2) 
 
+#Reduced Functinal dependent on u.
 def J_red(u,a,y0,yT,T):
     return Functional2(solver(y0,a,len(u)-1,u,T),u,yT,T)
-    
+
+  
+#finite fiffrence thing.    
 def finite_diff(u,a,y0,yT,T,J):
     eps = 1./1000000
 
@@ -63,10 +68,10 @@ if __name__ == '__main__':
     print y[-1]-yT
     plot(t,y)
 
-    #l = adjoint_solver(y0,a,n,u,T,d,dJy)
-    l2 = finite_diff(u,a,y0,yT,T,J_red)
+    l = adjoint_solver(y0,a,n,u,T,yT)
+    l2 = n*finite_diff(u,a,y0,yT,T,J_red)
     #print l2
-    #plot(t,l)
+    plot(t,l)
     plot(t,l2)
     
     show()
