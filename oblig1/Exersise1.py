@@ -1,5 +1,5 @@
 from dolfin import *
-from numpy import pi,matrix, sqrt, diagflat,zeros,vstack,ones,log,array
+from numpy import pi,matrix, sqrt, diagflat,zeros,vstack,ones,log,array,size
 #from scipy.special import factorial as fac
 from math import factorial as fac
 from scipy import linalg
@@ -57,7 +57,7 @@ for p in [1,2]:
                 
                 
                 bc = DirichletBC(V,g,Dirichlet_boundary)
-
+                
                 U = Function(V)
 
                 solve(a==L,U,bc,solver_parameters={"linear_solver": "cg"})
@@ -79,3 +79,4 @@ print linalg.lstsq(Q1, log(array(H1[0])))[0]
 Q2 = vstack([log(array(h_val[1])),ones(len(h_val[1]))]).T
 print linalg.lstsq(Q2, log(array(L2[1])))[0]
 print linalg.lstsq(Q2, log(array(H1[1])))[0]
+
