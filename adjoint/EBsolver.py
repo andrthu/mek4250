@@ -33,7 +33,7 @@ def adjoint_solver(y0,a,n,u,T,yT):
 def Functional2(y,u,yT,T):
     t = linspace(0,T,len(u))
 
-    return 0.5*(simps(u**2,t) + (y[-1]-yT)**2) 
+    return 0.5*(trapz(u**2,t) + (y[-1]-yT)**2) 
 
 #Reduced Functinal dependent on u.
 def J_red(u,a,y0,yT,T):
@@ -57,7 +57,7 @@ def finite_diff(u,a,y0,yT,T,J):
     return grad_J
 
 if __name__ == '__main__':
-    n=1000
+    n=100
     t = linspace(0,1,n+1)
     T=1
     y0=1

@@ -1,0 +1,33 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+
+\begin{document}
+\begin{center}
+
+\LARGE Adjoint Equation
+
+
+\end{center}
+Looking at an optimal control problem $$\underset{y,u}{\text{min}} \ J(y,u) \ \text{subject to} \ E(y,u)=0$$ Where 
+\begin{gather}
+J(y,u) = \frac{1}{2}\int_0^Tu^2dt + \frac{1}{2}(y(T)-y^T)^2
+\end{gather} 
+and 
+\begin{gather}
+    E(y,u) = y'-\alpha y -u \\ 
+    y(0)=y_0
+\end{gather}
+We solve this problem by reducing (1) to $\hat{J}(u) = J(y(u),u) $ and computing the gradient of $\hat{J}$, $\hat{J}'$. $$\hat{J}'(u) = \frac{\partial J(y(u),u)}{\partial u} = J_y(y(u),u)\frac{\partial y(u)}{\partial u} +J_u(y(u),u)=J_y\frac{\partial y}{\partial u} +J_u$$ The difficult term here is $\frac{\partial y}{\partial u}$,so lets first look at 
+\end{document}
