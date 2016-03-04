@@ -1,6 +1,6 @@
 from numpy import *
 from matplotlib.pyplot import *
-from scipy.integrate import simps
+from scipy.integrate import simps, trapz
 
 #Backward Euler solver for y'=ay +u y(0)=y0, endtime T and
 #n discretization points.
@@ -39,10 +39,11 @@ def Functional2(y,u,yT,T):
 def J_red(u,a,y0,yT,T):
     return Functional2(solver(y0,a,len(u)-1,u,T),u,yT,T)
 
+
   
 #finite fiffrence thing.    
 def finite_diff(u,a,y0,yT,T,J):
-    eps = 1./1000000
+    eps = 1./10000
 
     grad_J = zeros(len(u))
 
@@ -56,24 +57,33 @@ def finite_diff(u,a,y0,yT,T,J):
     return grad_J
 
 if __name__ == '__main__':
-    n=100
+    n=1000
     t = linspace(0,1,n+1)
     T=1
     y0=1
     a=1
-    u=zeros(n+1)
-    yT=2
+    u=exp(t)
+    yT=10
+
+    k=6
+    eps = zeros(n+1)
+    eps[k] = 1
+
+    
     
     y = solver(y0,a,n,u,T)
-    print y[-1]-yT
+    print Functional2(y,u,yT,T)
+    #print y[-1]-yT
     plot(t,y)
 
     l = adjoint_solver(y0,a,n,u,T,yT)
     l2 = n*finite_diff(u,a,y0,yT,T,J_red)
     #print l2
-    plot(t,l)
+    plot(t,l+u)
     plot(t,l2)
+
     
+    print n*trapz((l+u)*eps,t),(u[k]+l[k])
     show()
 
 
