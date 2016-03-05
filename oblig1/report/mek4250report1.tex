@@ -1,0 +1,97 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+
+\begin{document}
+\begin{center}
+
+\LARGE Mek4250 - Mandatory assignment 1
+\\
+Andreas Thune
+\\
+\LARGE
+16.03.2016
+
+\end{center}
+\textbf{Exercise 1}
+\\
+a) The $H^p$ norm of a function $u(x,y)$ of two variables on $\Omega=(0,1)^2$ is defined as follows: 
+\begin{gather}
+||u||_{H^p(\Omega)}^2 = \sum_{i=0}^p \sum_{j=0}^{i}\binom {i} {j} ||\frac{\partial^i u}{\partial^j x \partial^{i-j}y}||_{L^2(\Omega)}^2 
+\end{gather}
+In our case $u(x,y)=sin(k\pi x)cos(l\pi y)$. We easily see that the derivative of this function can be expressed with the following formula: 
+\begin{gather}
+\frac{\partial^i u(x,y)}{\partial^j x \partial^{i}y} = (k\pi)^j(l\pi)^if_j(k\pi x)g_j(l\pi y)
+\end{gather}
+were $f_j$ is the j-th derivative of $sin(x)$ and $g_i$ is the i-th derivative of $cos(y)$. Now lets look at the $L^2$ norm of (2).
+\begin{gather}
+||\frac{\partial^i u(x,y)}{\partial^j x \partial^{i}y}||_{L^2(\Omega)}^2 = (k\pi)^{2j}(l\pi)^{2i} \int\int_{\Omega} f_j(k\pi x)^2g_i(l\pi y)^2 dxdy \\
+= (k\pi)^{2j}(l\pi)^{2i}\int_0^1f_j(k\pi x)^2dx\int_0^1g_i(l\pi y)^2dy
+\end{gather}
+Since $f_j^2$ and $g_i^2$ are:
+\begin{displaymath}
+   f_j(x)^2 = \left\{
+     \begin{array}{lr}
+       sin^2(x) &  \text{j even} \\
+       cos^2(x) &  \text{j odd}
+     \end{array}
+   \right.
+\end{displaymath}
+and 
+\begin{displaymath}
+   g_i(y)^2 = \left\{
+     \begin{array}{lr}
+       cos^2(y) &  \text{i even} \\
+       sin^2(y) &  \text{i odd}
+     \end{array}
+   \right.
+\end{displaymath}
+and since $$\int_0^1sin^2(l\pi y)dy=\int_0^1cos^2(l\pi y)dy=\frac{1}{2} $$
+we get the following expression for the square of the $L^2$ norm of a general derivative of u:
+\begin{gather}
+||\frac{\partial^i u(x,y)}{\partial^j x \partial^{i}y}||_{L^2(\Omega)}^2 = \frac{1}{4}(k\pi)^{2j}(l\pi)^{2i} 
+\end{gather}
+If we plug this into (1), we get
+\begin{gather}
+||u||_{H^p(\Omega)}^2 = \frac{1}{4}\sum_{i=0}^p \sum_{j=0}^{i}\binom {i} {j}(k\pi)^{2j}(l\pi)^{2(i-j)}  
+\end{gather}
+\\
+\textbf{Exercise 2}
+\\
+a) Assume our solution is on the form $u(x,y)=X(x)Y(y)$. If we plug this into our equation and assume that both $X$ and $Y$ are nonzero, we get:
+\begin{gather}
+-\mu(X''Y+XY'') + X'Y = 0 \iff \frac{- \mu X''+X'}{X} - \mu\frac{Y''}{Y}=0 \\
+\iff - \mu X''+X'=\lambda X \ \text{and} \ \mu Y'' = \lambda Y
+\end{gather} 
+For some $\lambda$. Together with the Neumann boundary conditions look at the equation for $Y$: 
+\begin{displaymath}
+   \left\{
+     \begin{array}{lr}
+       \mu Y''=\lambda Y &   \\
+       Y'(0)=Y'(1)=0 &  
+     \end{array}
+   \right.
+\end{displaymath}
+There are three possibilities: $\lambda<0 $, $\lambda>0 $ and $\lambda=0$. Start with first:
+\\
+\\
+Case (i) $\lambda<0$: 
+\\
+$\lambda<0$ implies that $Y(y)=A\sin(ny)+B\cos(ny)$ where $n=\sqrt{|\frac{\lambda}{\mu}|}$, and $A$ and $B$ are constants. $Y'(y)=n(A\cos(ny)-B\sin(ny))$ and $Y'(0)=0 \ \Rightarrow A=0$. $Y'(1)=0$ means that either $B=0$, or $n=k\pi$ for an integer $k$. Since we assumed $Y\neq0$, $B=0$ is not allowed, and $Y(y) = B\cos(ny)$.
+\\
+\\
+Case (ii) $\lambda>0$:
+\\
+Now $Y(y) = Ae^{ny}+Be^{-ny}$ where $n=\sqrt{\frac{\lambda}{\mu}}$, and $A$ and $B$ are constants.
+\end{document}

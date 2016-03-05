@@ -12,7 +12,7 @@ def Hp_norm(p,k,l):
         for j in range(i+1):
             s = s + (k*pi)**(2*(i-j))*(l*pi)**(2*j)*fac(i)/(fac(j)*fac(i-j)) 
         
-    return 0.25*s
+    return sqrt(0.25*s)
 
 
 def Dirichlet_boundary(x, on_boundary):
