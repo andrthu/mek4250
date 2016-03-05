@@ -29,5 +29,27 @@ and
     E(y,u) = y'-\alpha y -u \\ 
     y(0)=y_0
 \end{gather}
-We solve this problem by reducing (1) to $\hat{J}(u) = J(y(u),u) $ and computing the gradient of $\hat{J}$, $\hat{J}'$. $$\hat{J}'(u) = \frac{\partial J(y(u),u)}{\partial u} = J_y(y(u),u)\frac{\partial y(u)}{\partial u} +J_u(y(u),u)=J_y\frac{\partial y}{\partial u} +J_u$$ The difficult term here is $\frac{\partial y}{\partial u}$,so lets first look at 
+We solve this problem by reducing (1) to $\hat{J}(u) = J(y(u),u) $ and computing the gradient of $\hat{J}$ in direction $s$ $\langle\hat{J}'(u),s\rangle$. \begin{align}    
+\langle\hat{J}'(u),s\rangle &= \langle\frac{\partial J(y(u),u)}{\partial u},s\rangle \\ &= \langle \frac{\partial y(u)}{\partial u}^*J_y(y(u),u),s\rangle + \langle J_u(y(u),u),s\rangle \\ &= \langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle
+\end{align}
+Here $\langle\cdot,\cdot\rangle$ is the $L^2$ inner product. The difficult term in (6) is $y'(u)^*$,so lets first differentiate $E(y(u),u)=0$ with respect to $u$, and try to find expression for $y'(u)^*$: 
+\begin{align}
+\frac{\partial}{\partial u}E(y(u),u)=0 &\Rightarrow E_y(y(u),u)y'(u)=-E_u(y(u),u) \\ &\Rightarrow y'(u)=-E_y(y(u),u)^{-1}E_u(y(u),u) \\ &\Rightarrow y'(u)^* = -E_u(y(u),u)^*E_y(y(u),u)^{-*}
+\end{align} 
+This means that 
+\begin{gather}
+y'(u)^*J_y(u)=-E_u(y(u),u)^*E_y(y(u),u)^{-*}J_y(u)=-E_u(y(u),u)\lambda
+\end{gather}
+were $\lambda$ is the solution of the adjoint equation 
+\begin{gather}
+E_y(y(u),u)^{*}\lambda=J_y(u)
+\end{gather}
+This again means that 
+\begin{gather}
+\langle\hat{J}'(u),s\rangle=\langle -E_u(y(u),u)\lambda,s\rangle +\langle J_u(u),s\rangle
+\end{gather} 
+Now lets try to derive the adjoint equation using (1),(2) and (3). See that 
+\begin{align}
+E_u(y(u),u)&=-1 
+\end{align}
 \end{document}
