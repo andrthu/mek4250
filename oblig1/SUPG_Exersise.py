@@ -18,7 +18,8 @@ def Dirichlet_boundary(x, on_boundary):
         return False
 
 con = []
-
+errorL2 = []
+errorH1 = []
 
 for my in [1,0.001,0.000001]:
 
@@ -61,7 +62,7 @@ for my in [1,0.001,0.000001]:
         U = Function(V)
 
         solve(a==L,U,bc)
-        Ue = interpolate(ue,V)
+        Ue = interpolate(ue,V2)
         """
         print
         print errornorm(U,Ue,'H1')
@@ -78,11 +79,19 @@ for my in [1,0.001,0.000001]:
             print errornorm(U,Ue)
             print assemble((U-Ue)**2*dx)
         """
-        plot(U)
+        plot(Ue)
         interactive()
-    
+    errorL2.append(L2)
+    errorH1.append(H1)
     Q = vstack([log(array(h_val)),ones(len(h_val))]).T
     con.append(linalg.lstsq(Q, log(array(L2)))[0])
     con.append(linalg.lstsq(Q, log(array(H1)))[0])
-
-print con
+for i in range(3):
+    print "my=%e" % (0.001**i)
+    print "L2 Error: ", errorL2[i]
+    print
+    print "H1 Error: ", errorH1[i]
+    print 
+    print "L2 convergence: ", con[2*i]
+    print
+    print "H1 convergance: ", con[2*i+1]
