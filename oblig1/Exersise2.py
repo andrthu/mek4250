@@ -36,8 +36,10 @@ for my in [1,0.001,0.000001]:
         
         
         f = Constant(0)
-        
-        ue = Expression('(1-exp(x[0]/%e))/(1-exp(1/%e))'%(my,my))
+        if my==1:
+            ue = Expression('(1-exp(x[0]/%e))/(1-exp(1/%e))'%(my,my))
+        else:
+            ue = Expression('exp((x[0]-1)/%e)'%my)
         g = Expression('x[0]')
             
         
@@ -74,9 +76,9 @@ for my in [1,0.001,0.000001]:
             print assemble((U-Ue)**2*dx)
             plot(U)
             interactive()
-    if my == 1:
-        Q = vstack([log(array(h_val)),ones(len(h_val))]).T
-        con.append(linalg.lstsq(Q, log(array(L2)))[0])
-        con.append(linalg.lstsq(Q, log(array(H1)))[0])
+    
+    Q = vstack([log(array(h_val)),ones(len(h_val))]).T
+    con.append(linalg.lstsq(Q, log(array(L2)))[0])
+    con.append(linalg.lstsq(Q, log(array(H1)))[0])
 
 print con
