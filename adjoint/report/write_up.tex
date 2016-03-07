@@ -29,10 +29,11 @@ and
     E(y,u) = y'-\alpha y -u \\ 
     y(0)=y_0
 \end{gather}
-We solve this problem by reducing (1) to $\hat{J}(u) = J(y(u),u) $ and computing the gradient of $\hat{J}$ in direction $s$ $\langle\hat{J}'(u),s\rangle$. \begin{align}    
+Differentiating $J$ is required for solving the problem. To do this we reduce (1) to $\hat{J}(u) = J(y(u),u) $ and computing its gradient in direction $s$. Will use the notation: $\langle\hat{J}'(u),s\rangle$ for the gradient.
+\begin{align}    
 \langle\hat{J}'(u),s\rangle &= \langle\frac{\partial J(y(u),u)}{\partial u},s\rangle \\ &= \langle \frac{\partial y(u)}{\partial u}^*J_y(y(u),u),s\rangle + \langle J_u(y(u),u),s\rangle \\ &= \langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle
 \end{align}
-Here $\langle\cdot,\cdot\rangle$ is the $L^2$ inner product. The difficult term in (6) is $y'(u)^*$,so lets first differentiate $E(y(u),u)=0$ with respect to $u$, and try to find expression for $y'(u)^*$: 
+Here $\langle\cdot,\cdot\rangle$ is the $L^2$ inner product. The difficult term in (6) is $y'(u)^*$,so lets first differentiate $E(y(u),u)=0$ with respect to $u$, and try to find an expression for $y'(u)^*$: 
 \begin{align}
 \frac{\partial}{\partial u}E(y(u),u)=0 &\Rightarrow E_y(y(u),u)y'(u)=-E_u(y(u),u) \\ &\Rightarrow y'(u)=-E_y(y(u),u)^{-1}E_u(y(u),u) \\ &\Rightarrow y'(u)^* = -E_u(y(u),u)^*E_y(y(u),u)^{-*}
 \end{align} 
@@ -48,8 +49,66 @@ This again means that
 \begin{gather}
 \langle\hat{J}'(u),s\rangle=\langle -E_u(y(u),u)\lambda,s\rangle +\langle J_u(u),s\rangle
 \end{gather} 
-Now lets try to derive the adjoint equation using (1),(2) and (3). See that 
+Before we derive the adjoint equation, lets find $E_u$, $E_y$ and $ \langle J_u(u),s\rangle$ with respect to (1),(2) and (3).
 \begin{align}
-E_u(y(u),u)&=-1 
+E_u(y(u),u)&=-1 \\
+E_y(y(u),u)&=\frac{\partial}{\partial t} - \alpha + \delta_0 \ \text{,where $\delta_0$ is evaluation at 0} \\
+\langle J_u(u),s\rangle &= \int_0^T u(t)s(t) dt 
+\end{align}
+The expression for $E_u$ gives us:
+\begin{align}
+\langle y'(u)^*J_y(u),s\rangle = \langle -E(y(u),u)^*\lambda,s\rangle =\int_0^T \lambda(t)s(t)dt
+\end{align}
+To derive the adjoint equation, we write the operator $E_y(y(u),u)$ applied to a function $v$ on variational form, and try to find the adjoint of $E_y$: 
+\begin{align}
+\langle E_yv,w \rangle &=  \int_0^T(v'(t)-\alpha v(t)+\delta_0v(t))w(t)dt \\ &= \int_0^Tv'(t)w(t)dt -\alpha\int_0^Tv(t)w(t) dt +v(0)w(0) \\
+& = -\int_0^Tv(t)w'(t)dt +v(t)w(t)|_0^T-\alpha\langle v,w\rangle +v(0)w(0) \\
+&=-\int_0^Tv(t)w'(t)dt -\alpha\langle v,w\rangle +v(T)w(T) \\
+&= \langle v,Pw \rangle
+\end{align} 
+Where $P=-\frac{\partial}{\partial t} -\alpha + \delta_T$. This means that $E_y^* = P$, and we now have the left hand side in the adjoint equation. The right hand side of the equation is $J_y(y(u),u)$. Lets look closer at this term:
+\begin{align}
+J_y(y(u),u) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tu^2dt + \frac{1}{2}(y(T)-y^T)^2) \\ &= \frac{\partial}{\partial y} \frac{1}{2}(y(T)-y^T)^2 \\
+&= \frac{\partial}{\partial y}\frac{1}{2}(\int_0^T \delta_T(y-y^T)dt)^2 \\
+&= \delta_T\int_0^T \delta_T(y(t)-y^T)dt \\
+&= \delta_T(y(T)-y^T)=L
+\end{align}
+Our adjoint equation on variational form then becomes $\langle P\lambda,w\rangle = \langle L,w\rangle$, which we can write: 
+\begin{align}
+\langle -p'-\alpha p +\delta_Tp,w \rangle &= \langle \delta_T(y(T)-y^T),w\rangle \\
+\langle -p'-\alpha p ,w \rangle &= \langle \delta_T(y(T)-y^T -p),w\rangle
+\end{align}
+This then gives us the ODE:
+\begin{align}
+   \left\{
+     \begin{array}{lr}
+       -\lambda'(t) -\alpha\lambda(t)=0  \\
+       \lambda(T) = y(T)-y^T
+     \end{array}
+   \right.
+\end{align}
+If we solve this equation and plug it into (12), we see that the gradient of $J$ is 
+\begin{align}
+\langle\hat{J}'(u),s\rangle = \int_0^T (\lambda(t) +u(t))s(t)dt
+\end{align}
+\\
+\textbf{Discretization}
+\\
+Let us discretize our interval $[0,T]$ using $N+1$ points where 
+\begin{align}
+x_n &= n\Delta t, \ i=0,...,N \ \text{ and} \\
+\Delta t &= \frac{T}{N}
+\end{align}
+We also let $y^n = y(x^n)$ and $u^n=u(x^n)$. The integrals in our functional and its gradient we evaluate using the trapezoidal rule, and we discretize our ODE $E(y,u)$ and the adjoint equation using the Backward Euler scheme. For $E(y,u)$ we get :
+\begin{align}
+\frac{y^n-y^{n-1}}{\Delta t} &= \alpha y^{n} + u^{n} \\
+(1-\alpha\Delta t)y^{n} &= y^{n-1} +\Delta t u^{n} \\
+y^n &=\frac{y^{n-1} +\Delta t u^{n}}{1-\alpha\Delta t}
+\end{align} 
+Here the initial condition $y^0=y_0$ is known. For the adjoint equation the initial condition is $\lambda^N = y^N-y^T $, and the Backward Euler scheme gives us:
+\begin{align}
+-\frac{\lambda^n-\lambda^{n-1}}{\Delta t} -\alpha\lambda^n &=0 \\
+\lambda^{n-1} -\lambda^n &=\Delta t\alpha \lambda^n \\
+\lambda^{n-1} &= (1+\Delta t\alpha)\lambda^n
 \end{align}
 \end{document}
