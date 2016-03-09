@@ -70,28 +70,48 @@ If we plug this into (1), we get
 \textbf{Exercise 2}
 \\
 a) Assume our solution is on the form $u(x,y)=X(x)Y(y)$. If we plug this into our equation and assume that both $X$ and $Y$ are nonzero, we get:
-\begin{gather}
--\mu(X''Y+XY'') + X'Y = 0 \iff \frac{- \mu X''+X'}{X} - \mu\frac{Y''}{Y}=0 \\
-\iff - \mu X''+X'=\lambda X \ \text{and} \ \mu Y'' = \lambda Y
-\end{gather} 
-For some $\lambda$. Together with the Neumann boundary conditions look at the equation for $Y$: 
+\begin{align*}
+&-\mu(X''Y+XY'') + X'Y = 0 \iff \frac{- \mu X''+X'}{X} - \mu\frac{Y''}{Y}=0 \\
+&\iff - \mu X''+X'=\lambda X \ \text{and} \ \mu Y'' = \lambda Y
+\end{align*} 
+Now lets look at the boundary conditions, starting withe the Dirichlet conditions:
+\begin{align*}
+u(0,y)=0 \iff X(0)Y(y)=0 \Rightarrow X(0)=0 
+\end{align*}
+Since $Y(y)=0$ would be a contradiction contradiction
+\begin{align*}
+u(1,y)=1 \iff X(1)Y(y)=1 \Rightarrow Y(y)=1/X(1)
+\end{align*} 
+This means that $Y(y)$ is a constant. This does not contradict our Neumann boundary conditions, since they say that the y-derivative is zero at $y=0$ and $y=1$. This means that our PDE is really an ODE on the form:
 \begin{displaymath}
    \left\{
      \begin{array}{lr}
-       \mu Y''=\lambda Y &   \\
-       Y'(0)=Y'(1)=0 &  
+       -\mu X''(x)+X'(x)= 0&   \\
+       X(0)= 0, \ X(1)=1 &  
      \end{array}
    \right.
 \end{displaymath}
-There are three possibilities: $\lambda<0 $, $\lambda>0 $ and $\lambda=0$. Start with first:
-\\
-\\
-Case (i) $\lambda<0$: 
-\\
-$\lambda<0$ implies that $Y(y)=A\sin(ny)+B\cos(ny)$ where $n=\sqrt{|\frac{\lambda}{\mu}|}$, and $A$ and $B$ are constants. $Y'(y)=n(A\cos(ny)-B\sin(ny))$ and $Y'(0)=0 \ \Rightarrow A=0$. $Y'(1)=0$ means that either $B=0$, or $n=k\pi$ for an integer $k$. Since we assumed $Y\neq0$, $B=0$ is not allowed, and $Y(y) = B\cos(ny)$.
-\\
-\\
-Case (ii) $\lambda>0$:
-\\
-Now $Y(y) = Ae^{ny}+Be^{-ny}$ where $n=\sqrt{\frac{\lambda}{\mu}}$, and $A$ and $B$ are constants.
+This gives us: 
+\begin{align}
+\mu X'(x) = X(x) + C &\iff (X(x)e^{\frac{-x}{\mu}})'=Ce^{\frac{-x}{\mu}} \\
+&\iff X(x) = C' + De^{\frac{x}{\mu}}
+\end{align}
+Our boundary terms yields
+\begin{align*}
+C'&=-D\\
+C'+De^{\frac{1}{\mu}}&=1
+\end{align*}
+The solution to this system is:
+\begin{align*}
+C'&=\frac{1}{1-e^{\frac{1}{\mu}}} \\
+D&=-\frac{1}{1-e^{\frac{1}{\mu}}}
+\end{align*}
+Putting this into (8) gives us:
+\begin{align*}
+X(x)=\frac{1-e^{\frac{x}{\mu}}}{1-e^{\frac{1}{\mu}}}
+\end{align*}
+and 
+\begin{align*}
+u(x,y)=\frac{1-e^{\frac{x}{\mu}}}{1-e^{\frac{1}{\mu}}}
+\end{align*}
 \end{document}
