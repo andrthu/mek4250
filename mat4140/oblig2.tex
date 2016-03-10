@@ -66,7 +66,7 @@ f(x_0+ph,y_0+qk)&= f(x_0,y_0) + phf_x(x_0,y_0)+qkf_y(x_0,y_0)\\
 \end{align*}
 We want estimate $f$ derivatives using the points $(x_0,y_0)$,$(x_0+h,y_0)$,$(x_0,y_0+k)$ and $(x_0+h,y_0+k)$. From now on evaluating at these points will be written $f_{00}$, $f_{10}$, $f_{01}$ and $f_{11}$. We now estimate the derivatives using finite difference. We also ignore the $f_{xx}$ and $f_{yy}$ terms. This gives us 
 \begin{align*}
-r(p,q)&=f_{00} +ph\frac{f_{10}-f_{00}}{h}+qk\frac{f_{00}-f_{00}}{k} +phqk(\frac{f_{10}-f_{00}}{h})_y \\
+r(p,q)&=f_{00} +ph\frac{f_{10}-f_{00}}{h}+qk\frac{f_{01}-f_{00}}{k} +phqk(\frac{f_{10}-f_{00}}{h})_y \\
 &=(1-p-q)f_{00} + pf_{10}+qf_{01} +pqk(\frac{f_{11}-f_{10}}{k}-\frac{f_{01}-f_{00}}{k}) \\
 &= (1-p-q+pq)f_{00} +(p-pq)f_{10}+(q-pq)f_{01}+ pqf_{11} \\
 &=(1-p)(1-q)f_{00}+p(1-q)f_{10}+q(1-p)f_{01}+ pqf_{11}
@@ -81,7 +81,9 @@ E(p,q) = \frac{1}{2}(ph^2f_{xx}(x_0,y_0)+qk^2f_{yy}(x_0,y_0)) +O(h^3+k^3+(hk)^2)
 \end{align*}
 Here I will just assume that the error from finite differencing a term in two directions gives the errors multiplied with each other. our expression $r$ is the expression we want to get. Now lets try to get the same error estimate as they got in the book. First define $s(p,q)$:
 \begin{align*}
-s(p,q)= f_{00} +ph\frac{f_{10}-f_{00}}{h}+qk\frac{f_{00}-f_{00}}{k} +phqk(\frac{f_{10}-f_{00}}{h})_y
+s(p,q)&= f(x_0,y_0) + phf_x(x_0,y_0)+qkf_y(x_0,y_0)
++qhphf_{xy}(x_0,y_0) \\
+&=r(p,q)-E(p,q)
 \end{align*}
 We then have that $r(p,q)-s(p,q)=E(p,q)$. This gives us:
 \begin{align*}
@@ -157,11 +159,7 @@ This system can be solved and solving this system is exactly what I have done in
 \\
 b) In this exercise we were asked to interpolate $cot(x)$ using normal polynomial interpolation. I will not describe how to find the linear system, but what I did is in the code below. We were also asked to comment an the difference between the result of the polynomial and rational interpolation. The exercise asked for the error between the exact and the two types of interpolation in $x=2.5^o$. The result of this was $error\approx2.6e-8 $ for rational and $error\approx2.7 $ for normal polynomial. The difference in the error between the two methods was in this case a factor of $10^{-8}$. This is allot, and I think that the reason the rational interpolation is so good in this case is that $½cot(x)$ blows up at $x=0$, which is a feature that can be replicated for rational functions, but not for polynomials. To underline the difference between the two methods even more I have included a plot that shows what happens when the function values are not in $[1^o,5^o]$.
 
-\begin{figure}
-  \includegraphics[width=\linewidth]{oblig2_rational.png}
-  \caption{plot of $cot(x)$,rational and polynomial interpolation}
-  \label{Fig 1}
-\end{figure}
+
 
 \lstset{language=Matlab,%
     %basicstyle=\color{red},

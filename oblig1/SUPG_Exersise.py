@@ -20,11 +20,13 @@ def Dirichlet_boundary(x, on_boundary):
 con = []
 errorL2 = []
 errorH1 = []
+errorsd =[]
 
 for my in [1,0.001,0.000001]:
 
     L2 = []
     H1 = []
+    SD = []
     h_val = []
 
     for h in [8,16,32,64]:
@@ -72,6 +74,9 @@ for my in [1,0.001,0.000001]:
         """
         L2.append(errornorm(U,Ue))
         H1.append(errornorm(U,Ue,'H1'))
+        n1=mesh.hmax()*assemble(((U-Ue).dx(0))**2*dx)
+        n2=my*sqrt(assemble(inner(grad(U-Ue),grad(U-Ue))*dx))
+        SD.append(sqrt(n1+n2))
         h_val.append( mesh.hmax())
         """
         if my == 0.001 and h==64:
@@ -79,19 +84,26 @@ for my in [1,0.001,0.000001]:
             print errornorm(U,Ue)
             print assemble((U-Ue)**2*dx)
         """
-        plot(Ue)
-        interactive()
+        #plot(Ue)
+        #interactive()
     errorL2.append(L2)
     errorH1.append(H1)
+    errorsd.append(SD)
     Q = vstack([log(array(h_val)),ones(len(h_val))]).T
     con.append(linalg.lstsq(Q, log(array(L2)))[0])
     con.append(linalg.lstsq(Q, log(array(H1)))[0])
+    con.append(linalg.lstsq(Q, log(array(SD)))[0])
+    
 for i in range(3):
     print "my=%e" % (0.001**i)
     print "L2 Error: ", errorL2[i]
     print
     print "H1 Error: ", errorH1[i]
-    print 
-    print "L2 convergence: ", con[2*i]
     print
-    print "H1 convergance: ", con[2*i+1]
+    print "SD Error: ",errorsd[i]
+    print
+    print "L2 convergence: ", con[3*i]
+    print
+    print "H1 convergance: ", con[3*i+1]
+    print
+    print "SD convergance: ", con[3*i+2]

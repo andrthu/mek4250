@@ -91,13 +91,15 @@ for i in range(len(N)):
 print "Error:"
 print E_val
 print
-Element=["Taylor-Hood","Crouz-Raviart","P2-P0"]
+Element=["Taylor-Hood","Crouzeix-Raviart","P2-P0"]
 
 for i in range(3):
     A= vstack([log(h_val),ones(len(N))]).T
     
     
     LS=linalg.lstsq(A, log(E_val[i]))[0]
+
+    
     print Element[i]
     print "con. rate: %f C=%f" %(LS[0],exp(LS[1]))
     print

@@ -1,4 +1,8 @@
 from dolfin import *
+from numpy import matrix, sqrt, diagflat,zeros,vstack,ones,log,exp
+from scipy import linalg, random
+
+
 def u_boundary(x,on_boundary):
     if on_boundary:
         if x[0]==0 or x[1]==1 or x[1]==0:
@@ -16,42 +20,70 @@ def p_boundary(x,on_boundary):
             return False
     else:
         return False
+
+
+N = [10,20,40]
+
+h_val = zeros(len(N))
+E_val = zeros(len(N))
+con =[]
+for i in range(len(N)):
+
     
-mesh = UnitSquareMesh(100,100)
-V=VectorFunctionSpace(mesh,"Lagrange",1)
-Q=FunctionSpace(mesh,"Lagrange",1)
-#Q=FunctionSpace(mesh,"DG",0)
-W=MixedFunctionSpace([V,Q])
+    mesh = UnitSquareMesh(N[i],N[i])
+    V=VectorFunctionSpace(mesh,"Lagrange",1)
+    V2=VectorFunctionSpace(mesh,"Lagrange",4)
+    Q=FunctionSpace(mesh,"Lagrange",1)
+    Q2=FunctionSpace(mesh,"Lagrange",4)
+    W=MixedFunctionSpace([V,Q])
+    
+    
 
-u,p=TrialFunctions(W)
-v,q=TestFunctions(W)
+    
+    u,p=TrialFunctions(W)
+    v,q=TestFunctions(W)
 
-f=Constant([0,0])
+    f=Constant([0,0])
 
-ue=Expression(["x[1]*(1-x[1])","0.0"])
-pe=Expression("-2+2*x[0]")
+    ue=Expression(["x[1]*(1-x[1])","0.0"])
+    pe=Expression("-2+2*x[0]")
 
-bc_u=DirichletBC(W.sub(0),ue,u_boundary)
-bc = [bc_u]
+    bc_u=DirichletBC(W.sub(0),ue,u_boundary)
+    bc = [bc_u]
 
 
-epsilon=0.01*mesh.hmax()
-eps=Constant(epsilon)
+    epsilon=0.01*mesh.hmax()
+    eps=Constant(epsilon)
 
-a = (inner(grad(u),grad(v))+div(u)*q+div(v)*p-eps*inner(grad(p),grad(q)))*dx
-L = inner(f,v)*dx
+    a = (inner(grad(u),grad(v))+div(u)*q+div(v)*p-eps*inner(grad(p),grad(q)))*dx
+    L = inner(f,v)*dx
 
-UP=Function(W)
-solve(a==L,UP,bc)
+    UP=Function(W)
+    solve(a==L,UP,bc)
 
-U,P=UP.split()
+    U,P=UP.split()
 
-plot(U)
-plot(P)
+    
 
-UE =interpolate(ue,V)
-PE = interpolate(pe,Q)
-plot(UE)
-plot(PE)
+    UE =interpolate(ue,V2)
+    PE = interpolate(pe,Q2)
+    h_val[i]=mesh.hmax()
+    E_val[i] = errornorm(U,UE,'H1')+errornorm(P,PE,'L2')
 
-interactive()
+    
+    #plot(UE)
+    #plot(PE)
+
+    #interactive()
+
+
+A= vstack([log(h_val),ones(len(N))]).T
+LS=linalg.lstsq(A, log(E_val))[0]
+print "h values:"
+print h_val
+print
+print "Error:"
+print E_val
+print
+print "con_rate=%f C=%f" % (LS[0],exp(LS[1]))
+print

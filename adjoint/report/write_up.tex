@@ -20,65 +20,81 @@
 
 
 \end{center}
-Looking at an optimal control problem $$\underset{y,u}{\text{min}} \ J(y,u) \ \text{subject to} \ E(y,u)=0$$ Where 
-\begin{gather}
-J(y,u) = \frac{1}{2}\int_0^Tu^2dt + \frac{1}{2}(y(T)-y^T)^2
-\end{gather} 
-and 
-\begin{gather}
-    E(y,u) = y'-\alpha y -u \\ 
-    y(0)=y_0
-\end{gather}
-Differentiating $J$ is required for solving the problem. To do this we reduce (1) to $\hat{J}(u) = J(y(u),u) $ and computing its gradient in direction $s$. Will use the notation: $\langle\hat{J}'(u),s\rangle$ for the gradient.
-\begin{align}    
+\textbf{General problem}
+\\
+Looking at an optimal control problem $$\underset{y,u}{\text{min}} \ J(y,u) \ \text{subject to} \ E(y,u)=0$$ Where $u \in L^2(\Omega)$ and $y \in H^1(\Omega)$, with $\Omega=(0,T)$. I have chosen these spaces because they are Hilbert spaces, however I will for the most part ignore them. $J$ is a functional on $L^2(\Omega)\times H^1(\Omega)$ and $E$ is an operator on $H^1(\Omega)$. Both $J$ and $E$ need certain properties described elsewhere.
+\\
+\\
+Differentiating $J$ is required for solving the problem. To do this we reduce $J$ to $\hat{J}(u) = J(y(u),u) $ and compute its gradient in direction $s \in L^2(\Omega)$. Will use the notation: $\langle\hat{J}'(u),s\rangle$ for the gradient.
+\begin{align*}    
 \langle\hat{J}'(u),s\rangle &= \langle\frac{\partial J(y(u),u)}{\partial u},s\rangle \\ &= \langle \frac{\partial y(u)}{\partial u}^*J_y(y(u),u),s\rangle + \langle J_u(y(u),u),s\rangle \\ &= \langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle
-\end{align}
-Here $\langle\cdot,\cdot\rangle$ is the $L^2$ inner product. The difficult term in (6) is $y'(u)^*$,so lets first differentiate $E(y(u),u)=0$ with respect to $u$, and try to find an expression for $y'(u)^*$: 
-\begin{align}
+\end{align*}
+Here $\langle\cdot,\cdot\rangle$ is the $L^2$ inner product. The difficult term in the expression above is $y'(u)^*$, so lets first differentiate $E(y(u),u)=0$ with respect to $u$, and try to find an expression for $y'(u)^*$: 
+\begin{align*}
 \frac{\partial}{\partial u}E(y(u),u)=0 &\Rightarrow E_y(y(u),u)y'(u)=-E_u(y(u),u) \\ &\Rightarrow y'(u)=-E_y(y(u),u)^{-1}E_u(y(u),u) \\ &\Rightarrow y'(u)^* = -E_u(y(u),u)^*E_y(y(u),u)^{-*}
-\end{align} 
-This means that 
-\begin{gather}
-y'(u)^*J_y(u)=-E_u(y(u),u)^*E_y(y(u),u)^{-*}J_y(u)=-E_u(y(u),u)\lambda
-\end{gather}
-were $\lambda$ is the solution of the adjoint equation 
-\begin{gather}
+\end{align*} 
+By inserting our new expression for $y'(u)^*$ into $y'(u)^*J_y(u)$, we get:
+\begin{align*}
+y'(u)^*J_y(u)&=-E_u(y(u),u)^*E_y(y(u),u)^{-*}J_y(u) \\
+&=-E_u(y(u),u)\lambda
+\end{align*}
+$\lambda$ is here the solution of the adjoint equation 
+\begin{gather*}
 E_y(y(u),u)^{*}\lambda=J_y(u)
-\end{gather}
-This again means that 
+\end{gather*}
+If we can solve this equation for $\lambda$, the gradient of $\hat{J}$ will be given by the following formula:  
 \begin{gather}
 \langle\hat{J}'(u),s\rangle=\langle -E_u(y(u),u)\lambda,s\rangle +\langle J_u(u),s\rangle
 \end{gather} 
-Before we derive the adjoint equation, lets find $E_u$, $E_y$ and $ \langle J_u(u),s\rangle$ with respect to (1),(2) and (3).
+\\
+\\
+\textbf{Specific problem and differentiation of the operators}
+\\
+We now look at an example of the above problem, and try to derive the adjoint equation and the gradient. Let $J$ be defined as:
+\begin{gather}
+J(y,u) = \frac{1}{2}\int_0^Tu^2dt + \frac{1}{2}(y(T)-y^T)^2
+\end{gather} 
+and let our ODE constraint be:
 \begin{align}
+\left\{
+     \begin{array}{lr}
+       	E(y,u) = y'-\alpha y -u\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align}
+Before we derive the adjoint equation, lets find $E_u$, $E_y$, $ \langle J_u(u),s\rangle$ and $J_y$ with respect to our $E$ and $J$.
+\begin{align*}
 E_u(y(u),u)&=-1 \\
 E_y(y(u),u)&=\frac{\partial}{\partial t} - \alpha + \delta_0 \ \text{,where $\delta_0$ is evaluation at 0} \\
 \langle J_u(u),s\rangle &= \int_0^T u(t)s(t) dt 
-\end{align}
-The expression for $E_u$ gives us:
-\begin{align}
-\langle y'(u)^*J_y(u),s\rangle = \langle -E(y(u),u)^*\lambda,s\rangle =\int_0^T \lambda(t)s(t)dt
-\end{align}
-To derive the adjoint equation, we write the operator $E_y(y(u),u)$ applied to a function $v$ on variational form, and try to find the adjoint of $E_y$: 
-\begin{align}
-\langle E_yv,w \rangle &=  \int_0^T(v'(t)-\alpha v(t)+\delta_0v(t))w(t)dt \\ &= \int_0^Tv'(t)w(t)dt -\alpha\int_0^Tv(t)w(t) dt +v(0)w(0) \\
-& = -\int_0^Tv(t)w'(t)dt +v(t)w(t)|_0^T-\alpha\langle v,w\rangle +v(0)w(0) \\
-&=-\int_0^Tv(t)w'(t)dt -\alpha\langle v,w\rangle +v(T)w(T) \\
-&= \langle v,Pw \rangle
-\end{align} 
-Where $P=-\frac{\partial}{\partial t} -\alpha + \delta_T$. This means that $E_y^* = P$, and we now have the left hand side in the adjoint equation. The right hand side of the equation is $J_y(y(u),u)$. Lets look closer at this term:
-\begin{align}
+\end{align*}
+Lets be more thorough with $J_y$, which is the right hand side in the adjoint equation.
+\begin{align*}
 J_y(y(u),u) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tu^2dt + \frac{1}{2}(y(T)-y^T)^2) \\ &= \frac{\partial}{\partial y} \frac{1}{2}(y(T)-y^T)^2 \\
 &= \frac{\partial}{\partial y}\frac{1}{2}(\int_0^T \delta_T(y-y^T)dt)^2 \\
 &= \delta_T\int_0^T \delta_T(y(t)-y^T)dt \\
 &= \delta_T(y(T)-y^T)=L
-\end{align}
-Our adjoint equation on variational form then becomes $\langle P\lambda,w\rangle = \langle L,w\rangle$, which we can write: 
-\begin{align}
-\langle -p'-\alpha p +\delta_Tp,w \rangle &= \langle \delta_T(y(T)-y^T),w\rangle \\
-\langle -p'-\alpha p ,w \rangle &= \langle \delta_T(y(T)-y^T -p),w\rangle
-\end{align}
-This then gives us the ODE:
+\end{align*}
+Here I have use some dirac-delta tricks, that may not be valid, but the result is probably correct. By $\delta_T(y(T)-y^T)$, I mean evaluation at time $T$, of the constant function $y(T)-y^T$.
+\\
+\\
+\textbf{Deriving the adjoint equation}
+\\
+We have $E_y(y(u),u)=\frac{\partial}{\partial t} - \alpha + \delta_0$, but for the adjoint equation we need to find $E_y^*$.
+To derive the adjoint of $E_y$, we will apply it to a function $v$ and then take the $L^2$ inner product with another function $w$. The next step is then to try to "move" the operator $E_y$ from $v$ to $w$. As becomes clear below, partial integration is the main trick to achieve this: 
+\begin{align*}
+\langle E_yv,w \rangle &=  \int_0^T(v'(t)-\alpha v(t)+\delta_0v(t))w(t)dt \\ &= \int_0^Tv'(t)w(t)dt -\alpha\int_0^Tv(t)w(t) dt +v(0)w(0) \\
+& = -\int_0^Tv(t)w'(t)dt +v(t)w(t)|_0^T-\alpha\langle v,w\rangle +v(0)w(0) \\
+&=-\int_0^Tv(t)w'(t)dt -\alpha\langle v,w\rangle +v(T)w(T) \\
+&= \langle v,Pw \rangle
+\end{align*} 
+Where $P=-\frac{\partial}{\partial t} -\alpha + \delta_T$. This means that $E_y^* = P$, and we now have the left hand side in the adjoint equation. The right hand side is $J_y(y(u),u)=L$, which we have already found. If we write the  adjoint equation on variational form it will look like this: $\langle P\lambda,w\rangle = \langle L,w\rangle$. To get back to standard ODE form, we can do some manipulation: 
+\begin{align*}
+\langle -\lambda'-\alpha \lambda +\delta_T\lambda,w \rangle &= \langle \delta_T(y(T)-y^T),w\rangle \\
+\langle -\lambda'-\alpha \lambda ,w \rangle &= \langle \delta_T(y(T)-y^T -\lambda),w\rangle
+\end{align*}
+The right hand side is point evaluation at $t=T$, while the left hand side is an expression for all $t$. This finally gives us our adjoint equation: 
 \begin{align}
    \left\{
      \begin{array}{lr}
@@ -87,28 +103,79 @@ This then gives us the ODE:
      \end{array}
    \right.
 \end{align}
-If we solve this equation and plug it into (12), we see that the gradient of $J$ is 
+This is a simple and easily solvable ODE.
+\\
+\\
+\textbf{Expression for the gradient}
+\\
+We now have all the ingredients for finding an expression for the gradient of $\hat{J}$. If we remember that $\langle\hat{J}'(u),s\rangle=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle$, and all the different expressions for all the terms we calculated, we find:
+\begin{align*}
+\langle\hat{J}'(u),s\rangle&=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle \\ &=\langle -E_u^*\lambda,s\rangle +\langle J_u(u),s\rangle \\
+&=\langle -(-1)^*\lambda,s\rangle +\langle u,s\rangle \\
+&=\langle \lambda+u,s\rangle \\
+&= \int_0^T(\lambda(t)+u(t))s(t)dt
+\end{align*} 
+Note that the adjoint of a constant is just the constant itself.
+\\
+\\
+\textbf{Simple example}
+\\
+Let $T=y_T=y_0=\alpha=1$ and assume that we want to find the gradient of $\hat{J}$ at $u(t)=0$. We then have:
+\begin{gather}
+J(y,u) = \frac{1}{2}\int_0^1u^2dt + \frac{1}{2}(y(T)-1)^2
+\end{gather} 
+and
 \begin{align}
-\langle\hat{J}'(u),s\rangle = \int_0^T (\lambda(t) +u(t))s(t)dt
+\left\{
+     \begin{array}{lr}
+       	E(y,u) = y'- y +u\\
+       	   y(0)=1
+     \end{array}
+   \right.
 \end{align}
+Since $u=0$, we easily find $y(t)=e^t$. This gives us the adjoint equation:
+\begin{align}
+   \left\{
+     \begin{array}{lr}
+       -\lambda'(t) -\lambda(t)=0  \\
+       \lambda(T) = e-1
+     \end{array}
+   \right.
+\end{align}
+This is again a simple equation which yields $\lambda(t)=(e-1)e^{1-t}$. The gradient of $\hat{J}$ is then:
+\begin{align*}
+\langle\hat{J}'(u),s\rangle=\int_0^1(e-1)e^{1-t}s(t)dt
+\end{align*}
+\\
 \\
 \textbf{Discretization}
 \\
 Let us discretize our interval $[0,T]$ using $N+1$ points where 
-\begin{align}
+\begin{align*}
 x_n &= n\Delta t, \ i=0,...,N \ \text{ and} \\
 \Delta t &= \frac{T}{N}
-\end{align}
-We also let $y^n = y(x^n)$ and $u^n=u(x^n)$. The integrals in our functional and its gradient we evaluate using the trapezoidal rule, and we discretize our ODE $E(y,u)$ and the adjoint equation using the Backward Euler scheme. For $E(y,u)$ we get :
-\begin{align}
+\end{align*}
+We also let $y^n = y(x^n)$ and $u^n=u(x^n)$. The integrals in our functional and its gradient we evaluate using the trapezoidal rule, and we discretize our ODE $E(y,u)=0$ and the adjoint equation using the Backward Euler scheme. For $E(y,u)=0$ we get :
+\begin{align*}
 \frac{y^n-y^{n-1}}{\Delta t} &= \alpha y^{n} + u^{n} \\
 (1-\alpha\Delta t)y^{n} &= y^{n-1} +\Delta t u^{n} \\
 y^n &=\frac{y^{n-1} +\Delta t u^{n}}{1-\alpha\Delta t}
-\end{align} 
+\end{align*} 
 Here the initial condition $y^0=y_0$ is known. For the adjoint equation the initial condition is $\lambda^N = y^N-y^T $, and the Backward Euler scheme gives us:
-\begin{align}
+\begin{align*}
 -\frac{\lambda^n-\lambda^{n-1}}{\Delta t} -\alpha\lambda^n &=0 \\
 \lambda^{n-1} -\lambda^n &=\Delta t\alpha \lambda^n \\
 \lambda^{n-1} &= (1+\Delta t\alpha)\lambda^n
-\end{align}
+\end{align*}
+\\
+\\
+\textbf{The discrete gradient}
+\\
+So we now have a way of solving our ODEs numerically. In the continuous case the gradient was $\int_0^T(\lambda(t)+u(t))s(t)dt$, however in the discrete case, $\hat{J}$ is a function dependent on the $N+1$ values of $u$. This would suggest that the gradient of $\hat{J}$ should be a vector of size $N+1$(or $N$, since $J$ is independent of $u(0)$). The thing that makes the most sense to me is insert the unit vectors of $\mathbb{R}^{N+1}$ into our continuous gradient, and then evaluate the integral using the trapezoidal rule. Our discrete gradient $\hat{J}'_{\Delta t}(u)$ would then look like:
+\begin{align*}
+\hat{J}'_{\Delta t}(u)^n&=\Delta t(u^n+\lambda^n) \ \text{when $n=1,...,N-1$} \\
+\hat{J}'_{\Delta t}(u)^0&=0 \\
+\hat{J}'_{\Delta t}(u)^N&=\frac{1}{2}\Delta t(u^N+\lambda^N)
+\end{align*} 
+This is based of the trapezoidal rule, which is different for the endpoints. This explains the $n=N$ case. For the discrete I have just plugged in the difference scheme and the numerical integration into the continuous results and hoped for the best. One could perhaps derive the discrete results by translating the functional and the ODE to discrete setting , where you exchange $L^2(\Omega)$ with $\mathbb{R}^{N+1}$, but I will not do this now. 
 \end{document}
