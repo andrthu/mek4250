@@ -16,6 +16,7 @@ def solver(y0,a,n,u,T):
 
     
     return y
+
 #solving the adjoint equation -p=ap, p(T)=y(T)-yT
 def adjoint_solver(y0,a,n,u,T,yT):
     dt = float(T)/n
@@ -57,18 +58,25 @@ def finite_diff(u,a,y0,yT,T,J):
 
     return grad_J
 
+#testing adjoint_solver for case T=a=y0=yT=1 and u=0. Returns max error
+#for diffrent dt, and computes convergence rate. Also plots for N=50.
 def test_exact():
-
+    
+    #define constants
     N=[50,100,500,1000]
     T=1
     a=1
     yT=1
     y0=1
     
+    #exact solution
     l_exact= lambda x : (exp(1)-1)*exp(1-x)
+
+    #array for storing
     error = zeros(len(N))
     h_val = zeros(len(N))
-    
+
+    #solve for diffrent dt
     for i in range(len(N)):
 
          
@@ -77,6 +85,7 @@ def test_exact():
         l = adjoint_solver(y0,a,N[i],u,T,yT)
 
         
+        #plot
         if i==0:
             plot(t,l)
             plot(t,l_exact(t),'g--')
@@ -87,16 +96,70 @@ def test_exact():
             show()
             
         h_val[i]=1./N[i]
-        error[i]=abs(max(l-l_exact(t)))
+        error[i]=max(abs(l-l_exact(t)))
         
+    #Do least square stuff.    
     Q = vstack([log(h_val),ones(len(N))]).T
     LS=linalg.lstsq(Q, log(error))[0]
     return error,LS
 
+def test_finiteDiff():
+     
+    #define constants
+    N=[50,100,500,1000]
+    T=1
+    a=1
+    yT=1
+    y0=1
+    
+    #expression for u
+    U = lambda x: exp(x) +x
+
+    #array for storing
+    error = zeros(len(N))
+    h_val = zeros(len(N))
+
+    #solve for diffrent dt
+    for i in range(len(N)):
+
+         
+        
+        t = linspace(0,T,N[i]+1)
+        u = U(t)
+        l = adjoint_solver(y0,a,N[i],u,T,yT)
+
+        rel_grad = u+l
+        rel_grad[0] = 0.5*u[0]
+        rel_grad[-1]=0.5*u[-1]+l[-1]
+
+        rel_gradFD = N[i]*finite_diff(u,a,y0,yT,T,J_red)
+        
+        #plot
+        if i==0:
+            plot(t,rel_grad)
+            plot(t,rel_gradFD,'g--')
+            legend(['adjoint approach','Finite difference approach'])
+            title('Scaled numerical gradients for ' + str(N[i]) + ' points')
+            xlabel('t')
+            ylabel('Gradient')
+            show()
+            
+        h_val[i]=1./N[i]
+        error[i]=max(abs((rel_grad-rel_gradFD)))
+
+        
+    #Do least square stuff.    
+    Q = vstack([log(h_val),ones(len(N))]).T
+    LS=linalg.lstsq(Q, log(error))[0]
+    return error,LS
+    
+
 if __name__ == '__main__':
 
-    print test_exact()
-    
+    #print test_exact()
+    print test_finiteDiff()
+
+    """
     n=100
     t = linspace(0,1,n+1)
     T=1
@@ -114,18 +177,19 @@ if __name__ == '__main__':
     y = solver(y0,a,n,u,T)
     print Functional2(y,u,yT,T)
     #print y[-1]-yT
-    #plot(t,y)
+    plot(t,y)
 
     l = adjoint_solver(y0,a,n,u,T,yT)
     l2 = n*finite_diff(u,a,y0,yT,T,J_red)
     #print l2
-    #plot(t,u+l)
-    #plot(t,l2)
+    u[-1]=0.5*u[-1]
+    plot(t,u+l)
+    plot(t,l2)
 
     
-    print 2*n*trapz((l+u)*eps,t),(u[k]+l[k])
+    print 2*n*trapz((l+u)*eps,t),(u[k]+l[k]), l2[0]
     show()
-
+    """
 
 
 

@@ -171,11 +171,63 @@ Here the initial condition $y^0=y_0$ is known. For the adjoint equation the init
 \\
 \textbf{The discrete gradient}
 \\
-So we now have a way of solving our ODEs numerically. In the continuous case the gradient was $\int_0^T(\lambda(t)+u(t))s(t)dt$, however in the discrete case, $\hat{J}$ is a function dependent on the $N+1$ values of $u$. This would suggest that the gradient of $\hat{J}$ should be a vector of size $N+1$(or $N$, since $J$ is independent of $u(0)$). The thing that makes the most sense to me is insert the unit vectors of $\mathbb{R}^{N+1}$ into our continuous gradient, and then evaluate the integral using the trapezoidal rule. Our discrete gradient $\hat{J}'_{\Delta t}(u)$ would then look like:
+So we now have a way of solving our ODEs numerically. In the continuous case the gradient was $\int_0^T(\lambda(t)+u(t))s(t)dt$, however in the discrete case, $\hat{J}$ is a function dependent on the $N+1$ values of $u$. This would suggest that the gradient of $\hat{J}$ should be a vector of size $N+1$. The thing that makes the most sense to me is insert the unit vectors of $\mathbb{R}^{N+1}$ into our continuous gradient, and then evaluate the integral using the trapezoidal rule. Based on experiments using finite difference for calculating $\hat{J}$, this approach works for $n\neq 0$ and $n\neq N$. Without more explanation I will assert that our discrete gradient $\hat{J}'_{\Delta t}(u)$ looks like this:
 \begin{align*}
 \hat{J}'_{\Delta t}(u)^n&=\Delta t(u^n+\lambda^n) \ \text{when $n=1,...,N-1$} \\
-\hat{J}'_{\Delta t}(u)^0&=0 \\
-\hat{J}'_{\Delta t}(u)^N&=\frac{1}{2}\Delta t(u^N+\lambda^N)
+\hat{J}'_{\Delta t}(u)^0&=\Delta t \frac{1}{2}u^0 \\
+\hat{J}'_{\Delta t}(u)^N&=\Delta t(\frac{1}{2}u^N+\lambda^N)
 \end{align*} 
-This is based of the trapezoidal rule, which is different for the endpoints. This explains the $n=N$ case. For the discrete I have just plugged in the difference scheme and the numerical integration into the continuous results and hoped for the best. One could perhaps derive the discrete results by translating the functional and the ODE to discrete setting , where you exchange $L^2(\Omega)$ with $\mathbb{R}^{N+1}$, but I will not do this now. 
+Lets try to understand what happens for $n=0$ and $n=N$. For $n=0$ we see that there is no $\lambda$ term. This is because $y$ does not depend on $u(0)$. The reason that this matters in the discrete case and not in the continuous case, is that the point $t=0$ has measure zero, and the continuous gradient is an integral. We also notice the $\frac{1}{2}$ term in front off $\Delta t u^0$. This comes from our numerical integration using the trapezoidal rule. To make this clear lets state the trapezoidal rule:
+\begin{align*}
+\int_0^1 f(t)dt \approx \Delta t[\frac{f^0+f^N}{2}+\sum_{n=1}^{N-1}f^n]
+\end{align*} 
+Looking at this expression we also understand the $n=N$ case. Also note that integrating over $(\lambda + \frac{1}{2}u)e^N$ using the trapezoidal rule would give us an extra factor of $\frac{1}{2}$ that is not there when we use finite difference for $\hat{J}'(u)$. This Will all be demonstrated below. One could perhaps derive the discrete results by translating the functional and the ODE to discrete setting , where you exchange $L^2(\Omega)$ with $\mathbb{R}^{N+1}$, but I will not do this now. 
+\\
+\\
+\textbf{Testing numerics with simple example}
+\\
+Want to test the numerical adjoint to the exact adjoint for the simple example I did above, i.e. $T=y_T=y_0=\alpha=1$ and $u=0$. This gave us the the following solution to our adjoint equation: $\lambda(t)=(e-1)e^{1-t}$. Using the finite difference schemes I derived above, I calculated the maximum difference between the exact and the numerical adjoint for $N=\{50,100,500,1000 \}$ points. The results of the experiment is added in the table below: 
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l |}
+    \hline
+    N & 50 & 100  & 500 & 1000 \\ \hline
+    max($|\lambda^n-\lambda(t^n)|$) & 0.0317 &0.0156&0.0031 &0.0015 	\\ \hline
+    \end{tabular}
+\end{center}
+Using least squares we can find the convergence rate of $|\lambda^n-\lambda(t^n)|$ in $\Delta t$, and as expected using simple backward Euler, we get linear convergence: 
+\begin{align*}
+|\lambda^n-\lambda(t^n)|_{\infty} \leq \Delta t C
+\end{align*}
+In this case $C\approx1.7$. I have also added a plot of the exact and numerical adjoints for $N=50$.
+\begin{figure}
+  \includegraphics[width=\linewidth]{adjoint_plot.png}
+  \caption{Adjoint for $u=0$ and $T=y_T=y_0=\alpha=1$}
+  \label{Fig 1}
+\end{figure}
+\\
+\\
+\textbf{Testing gradient using finite difference}
+\\
+Now lets try to test the claims I made earlier about the discrete gradient. I will approximate the gradient using finite difference in the following way:
+\begin{align*}
+&\hat{J}'(u)^n \approx \frac{\hat{J}(u+\epsilon^n)-\hat{J}(u)}{\epsilon} \\
+&\epsilon^n=\epsilon e^n \in \mathbb{R}^{N+1} \ \text{with $\epsilon>0$ small, and $e^n$ the unit vector}
+\end{align*} 
+As always I let $T=y_T=y_0=\alpha=1$, however this time I choose $u(t)=e^t+t$. Then I find the relative error E between the discrete adjoint gradient $\hat{J}'_{\Delta t}(u)$ and the finite difference gradient $\hat{J}'_{\epsilon}(u)$ defined as:
+\begin{align*}
+E=|\frac{\hat{J}'_{\Delta t}(u)-\hat{J}'_{\epsilon}(u)}{\Delta t}|_{\infty}
+\end{align*}
+for different $N$ values. The result is added given in a table below, and I have also added a plot. Note that I as last time calculated convergence rate using least squares, and the result was: $E\leq \Delta tC$, with $C\approx27$.
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l |}
+    \hline
+    N & 50 & 100  & 500 & 1000 \\ \hline
+    E & 0.5658 &0.2816 &0.0561 & 0.0281	\\ \hline
+    \end{tabular}
+\end{center}
+\begin{figure}
+  \includegraphics[width=\linewidth]{finite_diff_plot.png}
+  \caption{"Relative" gradients for $u=0$ and $T=y_T=y_0=\alpha=1$}
+  \label{Fig 2}
+\end{figure}
 \end{document}
