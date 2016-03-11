@@ -171,7 +171,7 @@ Here the initial condition $y^0=y_0$ is known. For the adjoint equation the init
 \\
 \textbf{The discrete gradient}
 \\
-So we now have a way of solving our ODEs numerically. In the continuous case the gradient was $\int_0^T(\lambda(t)+u(t))s(t)dt$, however in the discrete case, $\hat{J}$ is a function dependent on the $N+1$ values of $u$. This would suggest that the gradient of $\hat{J}$ should be a vector of size $N+1$. The thing that makes the most sense to me is insert the unit vectors of $\mathbb{R}^{N+1}$ into our continuous gradient, and then evaluate the integral using the trapezoidal rule. Based on experiments using finite difference for calculating $\hat{J}$, this approach works for $n\neq 0$ and $n\neq N$. Without more explanation I will assert that our discrete gradient $\hat{J}'_{\Delta t}(u)$ looks like this:
+So we now have a way of solving our ODEs numerically. In the continuous case the gradient was $\int_0^T(\lambda(t)+u(t))s(t)dt$, however in the discrete case, $\hat{J}$ is a function dependent on the $N+1$ values of $u$. This would suggest that the gradient of $\hat{J}$ should be a vector of size $N+1$. The thing that makes the most sense to me is to insert the unit vectors of $\mathbb{R}^{N+1}$ into our continuous gradient, and then evaluate the integral using the trapezoidal rule. Based on experiments using finite difference for calculating $\hat{J}$, this approach works for $n\neq 0$ and $n\neq N$. Without more explanation I will assert that our discrete gradient $\hat{J}'_{\Delta t}(u)$ looks like this:
 \begin{align*}
 \hat{J}'_{\Delta t}(u)^n&=\Delta t(u^n+\lambda^n) \ \text{when $n=1,...,N-1$} \\
 \hat{J}'_{\Delta t}(u)^0&=\Delta t \frac{1}{2}u^0 \\
@@ -213,11 +213,11 @@ Now lets try to test the claims I made earlier about the discrete gradient. I wi
 &\hat{J}'(u)^n \approx \frac{\hat{J}(u+\epsilon^n)-\hat{J}(u)}{\epsilon} \\
 &\epsilon^n=\epsilon e^n \in \mathbb{R}^{N+1} \ \text{with $\epsilon>0$ small, and $e^n$ the unit vector}
 \end{align*} 
-As always I let $T=y_T=y_0=\alpha=1$, however this time I choose $u(t)=e^t+t$. Then I find the relative error E between the discrete adjoint gradient $\hat{J}'_{\Delta t}(u)$ and the finite difference gradient $\hat{J}'_{\epsilon}(u)$ defined as:
+As always I let $T=y_T=y_0=\alpha=1$, however this time I choose $u(t)=e^t+t$. I then define the relative error E between the discrete adjoint gradient $\hat{J}'_{\Delta t}(u)$ and the finite difference gradient $\hat{J}'_{\epsilon}(u)$ defined as:
 \begin{align*}
 E=|\frac{\hat{J}'_{\Delta t}(u)-\hat{J}'_{\epsilon}(u)}{\Delta t}|_{\infty}
 \end{align*}
-for different $N$ values. The result is added given in a table below, and I have also added a plot. Note that I as last time calculated convergence rate using least squares, and the result was: $E\leq \Delta tC$, with $C\approx27$.
+I use this error to test the gradients for different $N$. The result is given in a table below, and I have also added a plot. Note that I as last time calculated convergence rate using least squares, and the result was: $E\leq \Delta tC$, with $C\approx27$.
 \begin{center}
     \begin{tabular}{| l | l | l | l | l |}
     \hline
