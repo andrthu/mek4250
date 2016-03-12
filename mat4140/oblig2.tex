@@ -44,7 +44,7 @@ The reason for using this barycentric form and not the original expression for t
 \\
 \textbf{4.3.2}
 \\
-Assume that we have a function $f$ and its derivative $f'$. Use Hermation interpolation to approximate f in the the two points $\{x_1,x_2\}$ by cubic polynomial $p$ such that the derivative of $p$ is equal to the derivative of $f$ in the points. If we choose the power basis, we want $$p(x)=c_0 + c_1x + c_2x^2 + c_3x^3$$ If we differentiate $p$ we get $$p'(x)=c_1 + 2c_2x + 3c_3x^2$$ We then get a system of eqation from the conditions $p(x_1)=f(x_1)=f_1$, $p'(x_1)=f'_1$, $p(x_2)=f_2$ and $p'(x_2)=f'_2$, were the $c_i$ coefficients are the unknowns. This gives us the system $Ac=b$, were c is: $$c=(c_0,c_1,c_2,c_3)^T$$ b is: $$b=(f_1,f'_1,f_2,f'_2)^T$$ and A is:  
+a) Assume that we have a function $f$ and its derivative $f'$. Use Hermation interpolation to approximate f in the the two points $\{x_1,x_2\}$ by cubic polynomial $p$ such that the derivative of $p$ is equal to the derivative of $f$ in the points. If we choose the power basis, we want $$p(x)=c_0 + c_1x + c_2x^2 + c_3x^3$$ If we differentiate $p$ we get $$p'(x)=c_1 + 2c_2x + 3c_3x^2$$ We then get a system of eqation from the conditions $p(x_1)=f(x_1)=f_1$, $p'(x_1)=f'_1$, $p(x_2)=f_2$ and $p'(x_2)=f'_2$, were the $c_i$ coefficients are the unknowns. This gives us the system $Ac=b$, were c is: $$c=(c_0,c_1,c_2,c_3)^T$$ b is: $$b=(f_1,f'_1,f_2,f'_2)^T$$ and A is:  
 
 $$ 
 A = 
@@ -55,6 +55,8 @@ A =
   0 & 1 & 2x_2  & 3x_2^2 
  \end{pmatrix}
 $$
+\\
+b)
 \\
 \\
 \textbf{CE: 4.3.9}
@@ -159,7 +161,11 @@ This system can be solved and solving this system is exactly what I have done in
 \\
 b) In this exercise we were asked to interpolate $cot(x)$ using normal polynomial interpolation. I will not describe how to find the linear system, but what I did is in the code below. We were also asked to comment an the difference between the result of the polynomial and rational interpolation. The exercise asked for the error between the exact and the two types of interpolation in $x=2.5^o$. The result of this was $error\approx2.6e-8 $ for rational and $error\approx2.7 $ for normal polynomial. The difference in the error between the two methods was in this case a factor of $10^{-8}$. This is allot, and I think that the reason the rational interpolation is so good in this case is that $½cot(x)$ blows up at $x=0$, which is a feature that can be replicated for rational functions, but not for polynomials. To underline the difference between the two methods even more I have included a plot that shows what happens when the function values are not in $[1^o,5^o]$.
 
-
+\begin{figure}
+  \includegraphics[width=\linewidth]{oblig2_rational.png}
+  \caption{plot of cot(x), rational and polynomial interpolation}
+  \label{Fig 1}
+\end{figure}
 
 \lstset{language=Matlab,%
     %basicstyle=\color{red},
