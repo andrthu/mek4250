@@ -26,7 +26,7 @@ Andreas Thune
 \end{center}
 \textbf{4.2.5}
 \\
-Assume that we want to interpolate a function using the points $\{ x_i\}_{i=1}^n$. The Lagrange basis is the defined by $$q_i(x) = \prod_{j\neq i} \frac{x-x_j}{x_i-x_j} $$ This means that $q_i(x_j) = \delta_{ij}$, which again means that interpolation polynomial of samplevalues $\{ f_i\}_{i=1}^n$ at points $x_i$ is $$p(x) = \sum_{i=1}^n f_iq_i(x)= \sum_{i=1}^n f_i\prod_{j\neq i} \frac{x-x_j}{x_i-x_j}$$ Now for the barycentric form we define $$\phi(x) = \prod_{i=1}^n x-x_i $$ this gives the form 
+Assume that we want to interpolate a function using the points $\{ x_i\}_{i=1}^n$. The Lagrange basis is then defined by $$q_i(x) = \prod_{j\neq i} \frac{x-x_j}{x_i-x_j} $$ This means that $q_i(x_j) = \delta_{ij}$, which again means that interpolation polynomial of samplevalues $\{ f_i\}_{i=1}^n$ at points $x_i$ is $$p(x) = \sum_{i=1}^n f_iq_i(x)= \sum_{i=1}^n f_i\prod_{j\neq i} \frac{x-x_j}{x_i-x_j}$$ Now for the barycentric form we define $$\phi(x) = \prod_{i=1}^n x-x_i $$ this gives the form 
 \begin{align}
 p(x) = \phi(x)\sum_{i=1}^n f_i\frac{w_i}{x-x_i} 
 \end{align}
@@ -56,7 +56,17 @@ A =
  \end{pmatrix}
 $$
 \\
-b)
+b) Want to find divided difference expression for $[x_0,x_0,x_1,x_1]f$. To this we have to define $[x,x]f=\frac{f(x)-f(x)}{x-x}=\frac{0}{0}$ to be $f'(x)$. Using the normal recursion formula and defining $\Delta x=x_1-x_0$ we get:
+\begin{align*}
+&[x_0,x_0,x_1,x_1]f = \frac{[x_0,x_1,x_1]f-[x_0,x_0,x_1]f}{\Delta x} \\
+&[x_0,x_1,x_1]f = \frac{[x_1,x_1]f-[x_0,x_1]f}{\Delta x} = \frac{f'_1-[x_0,x_1]f}{\Delta x} \\
+&[x_0,x_0,x_1]f = \frac{[x_0,x_1]f-[x_0,x_0]f}{\Delta x}=\frac{[x_0,x_1]f-f'_0}{\Delta x} \\
+&[x_0,x_1]=\frac{f_1-f_0}{\Delta x}
+\end{align*}  
+Putting all this together yields:
+\begin{align*}
+&[x_0,x_0,x_1,x_1]f = \frac{1}{\Delta x^2}(f'_1+f'_0 -2\frac{f_1-f_0}{\Delta x})
+\end{align*}
 \\
 \\
 \textbf{CE: 4.3.9}
@@ -66,7 +76,7 @@ a) To show bilinear interpolation formula we need Taylor's formula:
 f(x_0+ph,y_0+qk)&= f(x_0,y_0) + phf_x(x_0,y_0)+qkf_y(x_0,y_0)\\
 &+qhphf_{xy}(x_0,y_0)+\frac{(ph)^2}{2}f_{xx}(x_0,y_0)+\frac{(qk)^2}{2}f_{yy}(x_0,y_0) +O(h^3+k^3)
 \end{align*}
-We want estimate $f$ derivatives using the points $(x_0,y_0)$,$(x_0+h,y_0)$,$(x_0,y_0+k)$ and $(x_0+h,y_0+k)$. From now on evaluating at these points will be written $f_{00}$, $f_{10}$, $f_{01}$ and $f_{11}$. We now estimate the derivatives using finite difference. We also ignore the $f_{xx}$ and $f_{yy}$ terms. This gives us 
+We want estimate $f$'s derivatives using the points $(x_0,y_0)$, $(x_0+h,y_0)$, $(x_0,y_0+k)$ and $(x_0+h,y_0+k)$. From now on evaluating at these points will be written $f_{00}$, $f_{10}$, $f_{01}$ and $f_{11}$. We now estimate the derivatives using finite difference. We also ignore the $f_{xx}$ and $f_{yy}$ terms. This gives us 
 \begin{align*}
 r(p,q)&=f_{00} +ph\frac{f_{10}-f_{00}}{h}+qk\frac{f_{01}-f_{00}}{k} +phqk(\frac{f_{10}-f_{00}}{h})_y \\
 &=(1-p-q)f_{00} + pf_{10}+qf_{01} +pqk(\frac{f_{11}-f_{10}}{k}-\frac{f_{01}-f_{00}}{k}) \\
@@ -159,7 +169,7 @@ $$
 This system can be solved and solving this system is exactly what I have done in the code. The code can be found below.
 \\
 \\
-b) In this exercise we were asked to interpolate $cot(x)$ using normal polynomial interpolation. I will not describe how to find the linear system, but what I did is in the code below. We were also asked to comment an the difference between the result of the polynomial and rational interpolation. The exercise asked for the error between the exact and the two types of interpolation in $x=2.5^o$. The result of this was $error\approx2.6e-8 $ for rational and $error\approx2.7 $ for normal polynomial. The difference in the error between the two methods was in this case a factor of $10^{-8}$. This is allot, and I think that the reason the rational interpolation is so good in this case is that $½cot(x)$ blows up at $x=0$, which is a feature that can be replicated for rational functions, but not for polynomials. To underline the difference between the two methods even more I have included a plot that shows what happens when the function values are not in $[1^o,5^o]$.
+b) In this exercise we were asked to interpolate $cot(x)$ using normal polynomial interpolation. I will not describe how to find the linear system, but what I did is in the code below. We were also asked to comment on the difference between the result of the polynomial and rational interpolation. The exercise asked for the error between the exact and the two types of interpolation in $x=2.5^o$. The result of this was $error\approx2.6e-8 $ for rational and $error\approx2.7 $ for normal polynomial. The difference in the error between the two methods was in this case a factor of $10^{-8}$. This is allot, and I think that the reason the rational interpolation is so good in this case is that $½cot(x)$ blows up at $x=0$, which is a feature that can be replicated for rational functions, but not for polynomials. To underline the difference between the two methods even more I have included a plot that shows what happens when the function values are not in $[1^o,5^o]$.
 
 \begin{figure}
   \includegraphics[width=\linewidth]{oblig2_rational.png}
