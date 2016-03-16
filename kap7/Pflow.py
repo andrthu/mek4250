@@ -44,21 +44,28 @@ for i in range(len(N)):
     #P2-P0
     V3=V1
     Q3=Q2
+
+    #mini
+    #P1 = VectorFunctionSpace(mesh, "Lagrange", 1)
+    #B  = VectorFunctionSpace(mesh, "Bubble", 3)
+    #V4 = P1+B
+    #Q4=Q1
     
     #P2-P2
-    V4=V1
-    Q4=FunctionSpace(mesh,"Lagrange",2)    
+    V5=V1
+    Q5=FunctionSpace(mesh,"Lagrange",2)    
 
     #P1-P0
-    V5=VectorFunctionSpace(mesh,"Lagrange",1)
-    Q5=Q2
+    V6=VectorFunctionSpace(mesh,"Lagrange",1)
+    Q6=Q2
     
-    S=[[V1,Q1],[V2,Q2],[V3,Q3],[V4,Q4],[V5,Q5]]
+    S=[[V1,Q1],[V2,Q2],[V3,Q3],[V5,Q5],[V6,Q6]]
 
     V_E=VectorFunctionSpace(mesh,"Lagrange",5)
     Q_E=FunctionSpace(mesh,"Lagrange",5)
 
     for j in range(len(S)):
+        
         W=MixedFunctionSpace([S[j][0],S[j][1]])
 
         u,p=TrialFunctions(W)
@@ -91,7 +98,7 @@ for i in range(len(N)):
 print "Error:"
 print E_val
 print
-Element=["Taylor-Hood","Crouzeix-Raviart","P2-P0"]
+Element=["Taylor-Hood","Crouzeix-Raviart","P2-P0","mini"]
 
 for i in range(3):
     A= vstack([log(h_val),ones(len(N))]).T

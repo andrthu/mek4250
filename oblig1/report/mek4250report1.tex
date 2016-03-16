@@ -242,5 +242,22 @@ As above the code is attached below, and the error and convergence of the method
   \includegraphics[width=\linewidth]{dolfin_plot_3.png}
   \caption{Plot of numerical solution u for $\mu=0.001$ and $h=64$ using the SUPG method. Notice that the graph is smooth, even at $x=1$. }
   \label{Fig 4}
-\end{figure}  
+\end{figure}
+  
+\lstdefinelanguage{Python}{
+ keywords={typeof, null, catch, switch, in, int, str, float, self},
+ keywordstyle=\color{ForestGreen}\bfseries,
+ ndkeywords={boolean, throw, import},
+ ndkeywords={return, class, if ,elif, endif, while, do, else, True, False , catch, def},
+ ndkeywordstyle=\color{BrickRed}\bfseries,
+ identifierstyle=\color{black},
+ sensitive=false,
+ comment=[l]{\#},
+ morecomment=[s]{/*}{*/},
+ commentstyle=\color{purple}\ttfamily,
+ stringstyle=\color{red}\ttfamily,
+}
+\section*{Code for finding error in 4.1.1 a)}
+\lstinputlisting{Exersise1.py}
+
 \end{document}

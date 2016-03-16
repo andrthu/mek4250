@@ -56,6 +56,7 @@ for i in range(len(N)):
     eps=Constant(epsilon)
 
     a = (inner(grad(u),grad(v))+div(u)*q+div(v)*p-eps*inner(grad(p),grad(q)))*dx
+    #a = (inner(grad(u),grad(v))+div(u)*q+div(v)*p-eps*p*q)*dx
     L = inner(f,v)*dx
 
     UP=Function(W)
@@ -71,10 +72,10 @@ for i in range(len(N)):
     E_val[i] = errornorm(U,UE,'H1')+errornorm(P,PE,'L2')
 
     
-    #plot(UE)
-    #plot(PE)
+    plot(UE)
+    plot(PE)
 
-    #interactive()
+    interactive()
 
 
 A= vstack([log(h_val),ones(len(N))]).T
