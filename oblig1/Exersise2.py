@@ -21,7 +21,7 @@ con = []
 errorL2 = []
 errorH1 = []
 
-for my in [1,0.001,0.000001]:
+for my in [1,0.1,0.01,0.001,0.0001]:
 
     L2 = []
     H1 = []
@@ -37,7 +37,7 @@ for my in [1,0.001,0.000001]:
         
         
         f = Constant(0)
-        if my==1:
+        if my>0.001:
             ue = Expression('(1-exp(x[0]/%e))/(1-exp(1/%e))'%(my,my))
         else:
             ue = Expression('exp((x[0]-1)/%e)'%my)
@@ -70,13 +70,14 @@ for my in [1,0.001,0.000001]:
         L2.append(errornorm(U,Ue))
         H1.append(errornorm(U,Ue,'H1'))
         h_val.append( mesh.hmax())
-        
+        """
         if my == 0.001 and h==64:
             
             print errornorm(U,Ue)
             print assemble((U-Ue)**2*dx)
             plot(U)
             interactive()
+        """
 
     errorL2.append(L2)
     errorH1.append(H1)
@@ -85,8 +86,8 @@ for my in [1,0.001,0.000001]:
     con.append(linalg.lstsq(Q, log(array(H1)))[0])
 
 
-for i in range(3):
-    print "my=%e" % (0.001**i)
+for i in range(5):
+    print "my=%e" % (0.1**i)
     print "L2 Error: ", errorL2[i]
     print
     print "H1 Error: ", errorH1[i]
@@ -94,3 +95,4 @@ for i in range(3):
     print "L2 convergence: ", con[2*i]
     print
     print "H1 convergance: ", con[2*i+1]
+    print

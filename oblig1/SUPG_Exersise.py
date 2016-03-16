@@ -22,7 +22,7 @@ errorL2 = []
 errorH1 = []
 errorsd =[]
 
-for my in [1,0.001,0.000001]:
+for my in [1,0.1,0.01,0.001,0.0001]:
 
     L2 = []
     H1 = []
@@ -75,8 +75,8 @@ for my in [1,0.001,0.000001]:
         L2.append(errornorm(U,Ue))
         H1.append(errornorm(U,Ue,'H1'))
         n1=mesh.hmax()*assemble(((U-Ue).dx(0))**2*dx)
-        n2=my*sqrt(assemble(inner(grad(U-Ue),grad(U-Ue))*dx))
-        SD.append(sqrt(n1+n2))
+        n2=m(assemble(inner(grad(U-Ue),grad(U-Ue))*dx))
+        SD.append(sqrt(n1+my*n2))
         h_val.append( mesh.hmax())
         """
         if my == 0.001 and h==64:
@@ -94,8 +94,8 @@ for my in [1,0.001,0.000001]:
     con.append(linalg.lstsq(Q, log(array(H1)))[0])
     con.append(linalg.lstsq(Q, log(array(SD)))[0])
     
-for i in range(3):
-    print "my=%e" % (0.001**i)
+for i in range(5):
+    print "my=%e" % (0.1**i)
     print "L2 Error: ", errorL2[i]
     print
     print "H1 Error: ", errorH1[i]
@@ -107,3 +107,4 @@ for i in range(3):
     print "H1 convergance: ", con[3*i+1]
     print
     print "SD convergance: ", con[3*i+2]
+    print

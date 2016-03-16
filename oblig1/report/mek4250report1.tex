@@ -35,10 +35,10 @@ In our case $u(x,y)=sin(k\pi x)cos(l\pi y)$. We easily see that the derivative o
 \frac{\partial^i u(x,y)}{\partial^j x \partial^{i}y} = (k\pi)^j(l\pi)^if_j(k\pi x)g_j(l\pi y)
 \end{gather}
 were $f_j$ is the j-th derivative of $sin(x)$ and $g_i$ is the i-th derivative of $cos(y)$. Now lets look at the $L^2$ norm of (2).
-\begin{gather}
+\begin{gather*}
 ||\frac{\partial^i u(x,y)}{\partial^j x \partial^{i}y}||_{L^2(\Omega)}^2 = (k\pi)^{2j}(l\pi)^{2i} \int\int_{\Omega} f_j(k\pi x)^2g_i(l\pi y)^2 dxdy \\
 = (k\pi)^{2j}(l\pi)^{2i}\int_0^1f_j(k\pi x)^2dx\int_0^1g_i(l\pi y)^2dy
-\end{gather}
+\end{gather*}
 Since $f_j^2$ and $g_i^2$ are:
 \begin{displaymath}
    f_j(x)^2 = \left\{
@@ -59,13 +59,13 @@ and
 \end{displaymath}
 and since $$\int_0^1sin^2(l\pi y)dy=\int_0^1cos^2(l\pi y)dy=\frac{1}{2} $$
 we get the following expression for the square of the $L^2$ norm of a general derivative of u:
-\begin{gather}
+\begin{gather*}
 ||\frac{\partial^i u(x,y)}{\partial^j x \partial^{i}y}||_{L^2(\Omega)}^2 = \frac{1}{4}(k\pi)^{2j}(l\pi)^{2i} 
-\end{gather}
+\end{gather*}
 If we plug this into (1), we get
-\begin{gather}
+\begin{gather*}
 ||u||_{H^p(\Omega)}^2 = \frac{1}{4}\sum_{i=0}^p \sum_{j=0}^{i}\binom {i} {j}(k\pi)^{2j}(l\pi)^{2(i-j)}  
-\end{gather}
+\end{gather*}
 \\
 \textbf{Exercise 2}
 \\
