@@ -1,6 +1,6 @@
 from numpy import *
 from matplotlib.pyplot import *
-from scipy.integrate import simps
+from scipy.integrate import simps,trapz
 from EBsolver import *
 from scipy.optimize import minimize
 
@@ -20,12 +20,17 @@ def mini_solver(y0,a,T,yT,n):
     u=res.x
     print res.x
     print res.message
+    val = J(u)
     y = solver(y0,a,n,u,T)
     plot(t,u)
     plot(t,y)
+    legend(['control','state'])
+    title('J(u)= ' + str(val))
     print J(u)
     show()
  
    
 if __name__ == '__main__':
-    mini_solver(1,1,1,3,1000)
+    #mini_solver(y0,a,T,yT,n)
+    mini_solver(1,1,1,10,1000)
+    

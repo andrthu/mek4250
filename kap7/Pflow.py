@@ -1,3 +1,4 @@
+#from __future__ import print_function
 from dolfin import *
 from numpy import matrix, sqrt, diagflat,zeros,vstack,ones,log,exp
 from scipy import linalg, random
@@ -26,6 +27,8 @@ N = [10,20,30]
 
 h_val = zeros(len(N))
 E_val = zeros((5,len(N)))
+E2 = zeros((5,len(N)))
+E3= zeros((5,len(N)))
 con =[]
 
 for i in range(len(N)):
@@ -49,7 +52,7 @@ for i in range(len(N)):
     #P1 = VectorFunctionSpace(mesh, "Lagrange", 1)
     #B  = VectorFunctionSpace(mesh, "Bubble", 3)
     #V4 = P1+B
-    #Q4=Q1
+    #Q4 = Q1
     
     #P2-P2
     V5=V1
@@ -72,7 +75,8 @@ for i in range(len(N)):
         v,q=TestFunctions(W)
 
         f=Constant([0,0])
-
+        #f=Expression(["4*pi*pi*sin(2*pi*x[1])","0.0"])
+        #ue=Expression(["sin(2*pi*x[1])+x[1]*(1-x[1])","0.0"])
         ue=Expression(["x[1]*(1-x[1])","0.0"])
         pe=Expression("-2+2*x[0]")
 
@@ -94,10 +98,13 @@ for i in range(len(N)):
         PE = interpolate(pe,Q_E)
 
         E_val[j][i] = errornorm(U,UE,'H1')+errornorm(P,PE,'L2')
-
+        E2[j][i]= errornorm(U,UE,'H1')
+        E3[j][i]=errornorm(P,PE,'L2')
+        
 print "Error:"
 print E_val
-print
+print E2
+print E3
 Element=["Taylor-Hood","Crouzeix-Raviart","P2-P0","mini"]
 
 for i in range(3):

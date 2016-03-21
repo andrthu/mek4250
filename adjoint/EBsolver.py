@@ -156,8 +156,8 @@ def test_finiteDiff():
 
 if __name__ == '__main__':
 
-    #print test_exact()
-    print test_finiteDiff()
+    print test_exact()
+    #print test_finiteDiff()
 
     """
     n=100

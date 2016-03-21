@@ -28,6 +28,7 @@ def adjoint_solver(y0,a,n,u,T,yT,my):
     
     l2[-1]=y2[-1] -yT
     l1[n] = my*(y1[n]-u[-1])
+    print l1[n], y1[n],u[-1]
 
     
     
@@ -50,18 +51,18 @@ def J_red(u,a,y0,yT,T,my):
 def mini_solver(y0,a,T,yT,n,my0):
     t=linspace(0,T,2*n+1)
     x = zeros(2*n+2)
-    for k in range(3):
+    for k in range(5):
         def J(u):
             y1,y2=solver(y0,a,n,u,T)
-            return Functional2(y1,y2,u,yT,T,(k)*my0)
+            return Functional2(y1,y2,u,yT,T,10**(k)*my0)
         
         def grad_J(u):
-            l1,l2 = adjoint_solver(y0,a,n,u,T,yT,(k)*my0)
+            l1,l2 = adjoint_solver(y0,a,n,u,T,yT,10**(k)*my0)
             g =zeros(len(u))
             eps=zeros(len(u)-1)
             eps[len(u)/2-1] =l1[len(u)/2-1] 
             g[:-1] = (u[:-1]+l1+l2-eps)/(len(u)-2)
-            g[-1] = l1[len(u)/2-1]
+            g[-1] = l2[len(u)/2-1]-l1[len(u)/2-1]
             return g
     
         res = minimize(J,x,method='L-BFGS-B', jac=grad_J,
@@ -71,9 +72,14 @@ def mini_solver(y0,a,T,yT,n,my0):
         x=u
         print res.x
         print res.message
-        #y = solver(y0,a,n,u,T)
+
+        
+        y1,y2 = solver(y0,a,n,u,T)
+        eps=zeros(len(u)-1)
+        eps[len(u)/2-1] = y1[len(u)/2-1]
+        y=y1+y2-eps
         plot(t,u[:-1])
-        #plot(t,y)
+        plot(t,y)
         print J(u)
         show()
  
@@ -81,7 +87,7 @@ def mini_solver(y0,a,T,yT,n,my0):
 if __name__ == '__main__':
     y0 =1
     a = 1
-    n = 50    
+    n = 500   
     u = zeros(2*n+2)
     u[-1]=1
     T=1
@@ -91,9 +97,11 @@ if __name__ == '__main__':
     t=linspace(0,T,2*n+1)
     
     y1,y2=solver(y0,a,n,u,T)
-    
+    l1,l2=adjoint_solver(y0,a,n,u,T,yT,my0)
+    #plot(t,l1)
+    #plot(t,l2)
     #plot(t,y1)
     #plot(t,y2)
-    #show()
-
+    show()
+    print l1[len(u)/2-1],l2[len(u)/2]
     mini_solver(y0,a,T,yT,n,my0)
