@@ -23,6 +23,25 @@ def partition_func(n,m):
 
     return partition
 
+def partion_func2(n,m):
+    
+    N=n/m
+    rest = n%m
+    partition = []
+
+    if rest>0:
+        partition.append(zeros(N+2))
+    else:
+        partition.append(zeros(N+1))
+
+    for i in range(1,m):
+        if rest-i>0:
+            partition.append(zeros(N+3))
+        else:
+            partition.append(zeros(N+2))
+
+    return partition
+
 #solve state equation
 def solver(y0,a,n,m,u,lam,T):
     
@@ -86,6 +105,11 @@ def Functional2(y,u,lam,yT,T,my):
         
     return 0.5*(F+penalty)
 
+def local_Functional(y,u,n,lam,T,my):
+    dt=float(T)/n
+    F = sum(dt*u**2)
+    return F + my*((y[-1]-lam)**2)
+
 #reduced functional calculates t with u and then calculate the functinal
 def J_red(u,lam,a,y0,yT,T,my):
     y,Y=solver(y0,a,len(u)-1,len(lam)+1,u,lam,T)
@@ -148,6 +172,66 @@ def mini_solver(y0,a,T,yT,n,m,my0):
         title('J(u)= '+str(val)+ ", mu="+str(10**(2*k)*my0)+" iter="+str(k+1))
         print J(u)
         show()
+
+def local_mini_solver(y0,a,T,yT,n,m,my0):
+    
+    t=linspace(0,T,n+1)
+    #initial guess for control and penalty control is set to be 0
+    x = partion_func2(n,m)
+
+    #initial result when u=0
+    y,Y = solver(y0,a,n,m,x[:n+1],x[n+1:],T)
+    val = Functional2(y,zeros(n+1),zeros(m-1),yT,T,my0)     
+    plot(t,x[:n+1])
+    plot(t,Y)
+    legend(['control','state'])
+    title('J(0)='+str(val))
+    show()
+
+
+    #solve problem for increasing mu
+    for k in range(5):
+
+        for j in range(m-1):
+            #define reduced functional dependent only on u
+            def J(u):
+                y,Y=solver(y0,a,n,m,u[:n+1],u[n+1:],T)
+                return Functional2(y,u[:n+1],u[n+1:],yT,T,10**(2*k)*my0)
+        
+                #define our gradient using by solving adjoint equation
+                def grad_J(u):
+                    #adjoint_solver(y0,a,n,m,u,lam,T,yT,my)
+                    l,L = adjoint_solver(y0,a,n,m,u[:n+1],u[n+1:],T,yT,10**(2*k)*my0)
+                    g =zeros(len(u))
+            
+                    g[:n+1]=float(T)*(u[:n+1]+L)/n
+
+                    for i in range(m-1):
+                        g[n+1+i]=l[i+1][0]-l[i][-1]
+                
+            return g
+        #minimize J using initial guess x, and the gradient/functional above
+        res = minimize(J,x,method='L-BFGS-B', jac=grad_J,
+                        options={'gtol': 1e-6, 'disp': True})
+
+        #update initial guess
+        u=res.x
+        x=u
+
+        
+        #print res.x
+        print res.message
+
+        #plot our optimal sate and control, and print out optimal value       
+        y,Y = solver(y0,a,n,m,u[:n+1],u[n+1:],T)
+        val = J(u)
+        plot(t,u[:n+1])
+        plot(t,Y)
+        legend(['control','state'])
+        title('J(u)= '+str(val)+ ", mu="+str(10**(2*k)*my0)+" iter="+str(k+1))
+        print J(u)
+        show()
+
 
 
 if __name__ == '__main__':
