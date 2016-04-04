@@ -42,6 +42,13 @@ def partion_func2(n,m):
 
     return partition
 
+def gather_func(x,n,m):
+    lam = zeros(m-1)
+    u = zeros(n
+    for i in range(m)
+    
+    return u,lam
+
 #solve state equation
 def solver(y0,a,n,m,u,lam,T):
     
