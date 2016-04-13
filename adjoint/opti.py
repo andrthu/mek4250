@@ -32,5 +32,5 @@ def mini_solver(y0,a,T,yT,n):
    
 if __name__ == '__main__':
     #mini_solver(y0,a,T,yT,n)
-    mini_solver(1,1,1,10,1000)
+    mini_solver(1,2,1,1,1000)
     
