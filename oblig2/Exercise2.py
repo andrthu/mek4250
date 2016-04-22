@@ -14,6 +14,7 @@ L2_error = [[[],[],[]],[[],[],[]]]
 H1_error = [[[],[],[]],[[],[],[]]]
 
 con = [[[],[]],[[],[]]]
+
 for p in [1,2]:
     for i in range(len(Lam)):
         hv = []
@@ -28,7 +29,7 @@ for p in [1,2]:
 
             u = TrialFunction(V)
             v = TestFunction(V)
-            l=Constant(Lam[i])
+            l = Constant(Lam[i])
 
             F = -interpolate(f,V)
             
@@ -62,7 +63,7 @@ for p in [1,2]:
         plt.plot((log(array(hv))),p*(log(array(hv))),"r--")
         plt.plot((log(array(hv))),(p+1)*(log(array(hv))),"y--")
         plt.legend(["L2","H1",str(p)+"*log(h)",str(2*p)+"*log(h)" ])
-        plt.show()
+        #plt.show()
             
             
 for i in range(2):

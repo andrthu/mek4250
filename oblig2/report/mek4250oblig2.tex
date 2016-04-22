@@ -1,0 +1,83 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+
+\begin{document}
+\begin{center}
+
+\LARGE Mek4250 - Mandatory assignment 2
+\\
+Andreas Thune
+\\
+\LARGE
+8.05.2016
+
+\end{center}
+\textbf{Exercise 1}
+\\
+7.1) Given the following weak formulation of Stokes problem:
+\begin{align*}
+a(u,v)+b(p,v)&=(f,v) \ \forall \ v \in H_0^1(\Omega)\\
+b(q,u)&=0 \ \forall q \in L^2(\Omega)
+\end{align*}
+Where $a(u,v) = \int_{\Omega}\nabla u : \nabla v dx$ and $b(p,v) =\int_{\Omega} p\nabla \cdot v dx$.
+\\
+We then want to show the following conditions required for well-posedness:
+\begin{align}
+&a(u,v) \leq C_1 ||u||_{H^1(\Omega)}||v||_{H^1(\Omega)} \ \forall \ v,u \in H_0^1(\Omega)\\
+&a(u,u) \geq D||u||_{H^1(\Omega)}^2 \ \forall \ u \in H_0^1(\Omega)\\
+&b(q,u) \leq C_2||u||_{H^1(\Omega)}||q||_{L^2(\Omega)} \ \forall \ u \in H_0^1(\Omega), \ \forall q \in L^2(\Omega)
+\end{align}
+Note that $u$ and $v$ are vector functions. To show the three conditions I will use the notation $u(x)=[u^1(x),...,u^d(x)]$, for $x \in  \mathbb{R}^d$. We must also remember that the inner product $":"$ in the $a$ form is defined as 
+\begin{align*}
+\nabla u : \nabla v = \Sigma_{i=1}^d\Sigma_{j=1}^d u_{x_j}^i(x)v_{x_j}^i(x)
+\end{align*}
+\\
+\textbf{Inequality (1)}
+\\
+\begin{align*}
+a(u,v)&= \int_{\Omega}\nabla u : \nabla v dx=\int_{\Omega}\sum_{i=1}^d\sum_{j=1}^d u_{x_j}^iv_{x_j}^idx \\
+&=\sum_{i=1}^d\sum_{j=1}^d (u_{x_j}^i,v_{x_j}^i)_{L^2(\Omega)} \\
+&\leq \sum_{i=1}^d\sum_{j=1}^d ||u_{x_j}^i||_{L^2(\Omega)}||v_{x_j}^i||_{L^2(\Omega)} \ \text{  using Cauchy-Schwartz inequality}  \\
+&\leq d \sum_{i=1}^d |u^i|_{H^1(\Omega)}|v^i|_{H^1(\Omega)} \ \text{ since $||u_{x_j}^i||_{L^2} \leq |u^i|_{H^1}$} \\
+&\leq d^2 |u|_{H^1(\Omega)}|v|_{H^1(\Omega)} \ \text{        using $|u^i|_{H^1} \leq |u|_{H^1}$} \\
+&\leq d^2 ||u||_{H^1(\Omega)}||v||_{H^1(\Omega)} \ \text{    since $|u|_{H^1}\leq ||u||_{H^1}$ } 
+\end{align*}
+\\
+\textbf{Inequality (2)}
+\\
+Using the Poincares inequality for $H_0^1(\Omega)$, given by: 
+\begin{align*}
+|u|_{H^1(\Omega)}^2\geq C||u||_{L^2(\Omega)}^2
+\end{align*} 
+we get 
+\begin{align*}
+a(u,u)&= \int_{\Omega}\nabla u : \nabla u dx=\int_{\Omega}\sum_{i=1}^d\sum_{j=1}^d u_{x_j}^iu_{x_j}^idx \\
+&=\sum_{i=1}^d\sum_{j=1}^d ||u_{x_j}^i||_{L^2(\Omega)}^2=\sum_{i=1}^d |u^i|_{H^1(\Omega)}^2 = |u|_{H^1(\Omega)}^2 \\
+&= \frac{1}{2}(|u|_{H^1(\Omega)}^2+|u|_{H^1(\Omega)}^2) \\
+&\geq \frac{1}{2}(|u|_{H^1(\Omega)}^2+C||u||_{L^2(\Omega)}^2) \\
+&\geq \frac{min\{1,C\}}{2}(|u|_{H^1(\Omega)}^2+||u||_{L^2(\Omega)}^2) \\
+&= D||u||_{H^1(\Omega)}^2
+\end{align*}
+\\
+\textbf{Inequality (3)}
+\\
+\begin{align*}
+b(q,u)&=\int_{\Omega} q\nabla \cdot u dx=\int_{\Omega}\sum_{i=1}^d qu_{x_i}^i dx \\
+&\leq \sum_{i=1}^d ||q||_{L^2(\Omega)} ||u_{x_i}^i||_{L^2(\Omega)} \ \text{  using Cauchy-Schwartz inequality}  \\
+&\leq ||q||_{L^2(\Omega)}\sum_{i=1}^d |u^i|_{H^1(\Omega)} \\
+&\leq d||q||_{L^2(\Omega)}|u|_{H^1(\Omega)} \\
+&\leq d||q||_{L^2(\Omega)}||u||_{H^1(\Omega)}
+\end{align*}
+\end{document}
