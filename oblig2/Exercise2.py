@@ -82,7 +82,7 @@ for i in range(2):
         print
         print "H1 con-rate=%f C=%f" % (con[i][1][j][0] , exp(con[i][1][j][1]))
         print
-        print "-------------------------------------------"
+        print "---------------------------------------------"
     print
     print
         
