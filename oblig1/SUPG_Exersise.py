@@ -1,6 +1,6 @@
 
 
-
+import matplotlib.pyplot as plt
 from dolfin import *
 from numpy import pi,matrix, sqrt, diagflat,zeros,vstack,ones,log,array
 from scipy import linalg
@@ -20,22 +20,35 @@ def Dirichlet_boundary(x, on_boundary):
 con = []
 errorL2 = []
 errorH1 = []
-
-
+errorSD = []
+beta_vals=[00.1,00.1,00.1,00.1,0.001,0.001,0.001]
+my_list = [1,0.1,0.01,0.001,0.0001,0.00001,0.000001]
 #solve equation for diffrent mu
-for my in [1,0.1,0.01,0.001,0.0001]:
+t=0
+for my in my_list:
 
     #more lists for storing
+    SD = []
+    ASD = []
+    BSD = []
     L2 = []
     H1 = []
     h_val = []
 
     #size of mesh
-    for h in [8,16,32,64]:
+    for h in [8,16,32,64,128]:
 
         #define mesh and 
-        mesh = UnitSquareMesh(h,h)
-        beta = mesh.hmax()     
+        mesh = UnitSquareMesh(h,h/2)
+        P = 2*my/mesh.hmax()
+        """
+        if 1-P>0:
+            beta = 0.5*mesh.hmax()*(1-P)
+        else:
+            beta = 0
+        """
+        beta = beta_vals[t]*my*mesh.hmax()
+        
         V = FunctionSpace(mesh,'Lagrange',1)
         V2 = FunctionSpace(mesh,'Lagrange',1+3)
         
@@ -44,8 +57,8 @@ for my in [1,0.1,0.01,0.001,0.0001]:
         f = Constant(0)
 
         #exact solution + trick
-        if my==1:
-            ue = Expression('(1-exp(x[0]))/(1-exp(1))')
+        if my>0.001:
+            ue = Expression('(1-exp(x[0]/%e))/(1-exp(1/%e))'%(my,my))
         else:
             ue = Expression('exp((x[0]-1)/%e)'%my)
 
@@ -69,36 +82,61 @@ for my in [1,0.1,0.01,0.001,0.0001]:
         
         #solve system
         U = Function(V)
-        solve(a==L,U,bc)
+        solve(a==L,U,bc) #,solver_parameters={"linear_solver": "cg"})
         
         #calculate the error etc
         Ue = interpolate(ue,V2)
         
         
-        L2.append(errornorm(U,Ue))
-        H1.append(errornorm(U,Ue,'H1'))
+        L2.append(errornorm(Ue,U))
+        H1.append(errornorm(Ue,U,'H1'))
+        E=U-Ue
+        Hv = Constant(mesh.hmax())
+        
+        Asd = assemble(Hv*(E.dx(0))**2*dx)
+        Bsd = my**2*(assemble(inner(grad(E),grad(E))*dx))
+        
+        ASD.append(sqrt(Asd))
+        BSD.append(sqrt(Bsd))
+        SD.append(sqrt(Asd+Bsd))
         h_val.append( mesh.hmax())
-        if my==0.001 and h==64:
+        if h==64:
+            
             plot(U)
             interactive()
-
+    t=t+1
     errorL2.append(L2)
     errorH1.append(H1)
+    errorSD.append(SD)
     #find convergence rate for each mu using least square.
 
     Q = vstack([log(array(h_val)),ones(len(h_val))]).T
+    Q2 = vstack([log(array(h_val[2:])),ones(len(h_val)-2)]).T
+
     con.append(linalg.lstsq(Q, log(array(L2)))[0])
     con.append(linalg.lstsq(Q, log(array(H1)))[0])
+    con.append(linalg.lstsq(Q, log(array(SD)))[0])
+
     
-for i in range(5):
-    print "-----------------my=%f--------------------" % (0.1**i)
+    plt.plot(log(array(h_val)),log(array(SD)))
+    plt.plot(log(array(h_val)),log(array(ASD)))
+    plt.plot(log(array(h_val)),log(array(BSD)))
+    plt.legend(["SD","h*dx","mu*grad"])
+    plt.show()
+    
+for i in range(len(my_list)):
+    print "-----------------my=%f--------------------" % (my_list[i])
     print "L2 Error: ", errorL2[i]
     print
     print "H1 Error: ", errorH1[i]
     print
-    print "L2 convergence=%f, Constant=%f "% (con[2*i][0],exp(con[2*i][1]))
+    print "SD Error: ", errorSD[i]
     print
-    print "H1 convergance%f, Constant=%f "%( con[2*i+1][0], exp(con[2*i+1][1]))
+    print "L2 convergence=%f, Constant=%f "% (con[3*i][0],exp(con[3*i][1]))
+    print
+    print "H1 convergance=%f, Constant=%f "%( con[3*i+1][0], exp(con[3*i+1][1]))
+    print
+    print "SD convergance=%f, Constant=%f "%( con[3*i+2][0], exp(con[3*i+2][1]))
     print "-----------------------------------------------"
     print
 """

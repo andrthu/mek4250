@@ -183,16 +183,16 @@ if __name__ == '__main__':
     t=linspace(0,T,n+1)
     u=zeros(n+1)
     y0=1
-    a=20
-    my=0.0001
+    a=2
+    my=1000000
     lam = zeros(m-1)+1
     yT=1
 
-    y,Y= solver(y0,a,n,m,u,lam,T)
-    l,L=adjoint_solver(y0,a,n,m,u,lam,T,yT,my)
+    y,Y= solver(y0,a,n,1,u,lam,T)
+    l,L=adjoint_solver(y0,a,n,1,u,lam,T,yT,my)
     
-    #plot(t,Y)
-    #plot(t,L)
-    #legend(['state','adjoint'])
-    #show()
-    mini_solver(y0,a,T,yT,n,m,my)
+    plot(t,Y)
+    plot(t,L)
+    legend(['state','adjoint'])
+    show()
+    #mini_solver(y0,a,T,yT,n,m,my)

@@ -156,8 +156,27 @@ def test_finiteDiff():
 
 if __name__ == '__main__':
 
-    print test_exact()
+    #print test_exact()
     #print test_finiteDiff()
+    
+    n=1000
+    m=10
+    T=1
+    t=linspace(0,T,n+1)
+    u=zeros(n+1)
+    y0=1
+    a=2
+    my=1000000
+    lam = zeros(m-1)+1
+    yT=1
+    
+    y = solver(y0,a,n,u,T)
+    l = adjoint_solver(y0,a,n,u,T,yT)
+
+    plot(t,y)
+    plot(t,l)
+    legend(['state','adjoint'])
+    show()
 
     """
     n=100
