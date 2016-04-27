@@ -1,11 +1,12 @@
+import numpy as np
 
-
-def bfgs(J,x0,d_J,beta,tol,max_iter=1000):
+def bfgs(J,x0,d_J,tol,beta=1max_iter=1000):
     
     
     n=len(x0)
-    x = zeros(n)
+    x = np.zeros(n)
     
+    I = np.identity(n)
     H = beta*I
     
     df0 =d_J(x0)
@@ -13,7 +14,11 @@ def bfgs(J,x0,d_J,beta,tol,max_iter=1000):
     
     iter_k=0
     
-    while sqrt(sum(df1**2))/n>tol and iter_k<max_iter:
+    s=np.zeros((1,n))
+    y=np.zeros((1,n))
+
+
+    while np.sqrt(np.sum(df1**2))/n>tol and iter_k<max_iter:
 
         
         p  = -H*df0
@@ -23,8 +28,8 @@ def bfgs(J,x0,d_J,beta,tol,max_iter=1000):
 
         df1 = d_J(x)
         
-        s = x-x0
-        y = df1-df0
+        s[0,:] = x-x0
+        y[0,:] = df1-df0
 
         V = I-p*s*y.T
         H = V*H*V.T + p*s*s.T
