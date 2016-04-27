@@ -3,44 +3,50 @@ import time
 from scipy import linalg, random
 from numpy import zeros,sqrt,array,matrix
 import matplotlib.pyplot as plt
-def jacobi_iter(A,b,x0,xe,tol):
+
+def jacobi_iter(A,b,x0,tol):
     
     n= len(x0)
     x1= zeros(n)
     x = zeros(n)
-    x1=x0
-    x=x1
+    x1=x0.copy()
+    x=x1.copy()
     k=0
-    print len(A.array())
+    
     A=matrix(A.array())
     b=array(b.array())
-
-    while sqrt(sum((x-xe)**2))/sqrt(sum((x0-xe)**2))>tol:
-        print len(x1[1:]),len(A[0][1:])
-        x[0]=(b[0]- sum(x1[1:]*A[0,1:]))/A[0,0]
-        #for i in range(1,n-1):
-         #   x[i] =(b[i]- sum(x1[:i]*A[i,:i]) - sum(x1[i+1:]*A[i,i+1:]))/A[i,i]
-        #x[-1] =(b[-1]- sum(x1[:-1]*A[-1,:-1]))/A[-1,-1]
+    print 
+    while sqrt(((array(A.dot(x)-b))**2).sum())/sqrt(((array(A.dot(x0)-b))**2).sum())>tol:
         
-        #x1 =x
-        #k=k+1
-    print k
+        
+        for i in range(n):
+            s=0
+            for j in range(i):
+                s = s+ x1[j]*A[i,j]
+            for j in range(i+1,n):
+                s = s+ x1[j]*A[i,j]
+            x[i] =(b[i]- s)/A[i,i]
+        
+        
+        x1 =x.copy()
+        k=k+1
+        #print sqrt(((array(A.dot(x)-b))**2).sum()),k
+    print "k=%d iteretions for n=%d unknowns"%( k,n)
     return x
 
-def solving_time(A,b,ue):
+def solving_time(A,b):
     U = Function(V)
     t0=time.time()
-    xe = ue.vector().array()
-    x0=random.rand(len(xe))
+    x0=random.rand(len(b.array()))
     
-    x=jacobi_iter(A,b,x0,xe,10**(-4))
+    x=jacobi_iter(A,b,x0,10**(-4))
     t1=time.time()
     print
     #print sqrt(sum((x-xe)**2))/len(x)
     print
     return t1-t0
 T=[]
-N_val = [32,64,128,256,512,1024,2048]
+N_val = [4,8,16,32]
 for N in N_val:
 
     mesh = UnitIntervalMesh(N)
@@ -58,9 +64,12 @@ for N in N_val:
     bc = DirichletBC(V,Constant(0),"on_boundary")
     A,b = assemble_system(a,L,bc)
 
-    t2 = solving_time(A,b,ue)
+    
+    t2 = solving_time(A,b)
     T.append(t2)
     #print t2
 
 plt.plot(array(N_val),array(T))
+plt.xlabel('dofs')
+plt.ylabel('time in seconds')
 plt.show()

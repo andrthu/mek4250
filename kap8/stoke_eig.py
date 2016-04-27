@@ -22,7 +22,7 @@ def p_boundary(x,on_boundary):
 
 
 
-N = [8,16]
+N = [4,8,16]
 
 h_val = zeros(len(N))
 E_val = zeros((5,len(N)))
@@ -46,13 +46,19 @@ for i in range(len(N)):
     V2=VectorFunctionSpace(mesh,"CR",1)
     Q2=FunctionSpace(mesh,"DG",0)
 
-    #P2-P0
-    V3=V1
-    Q3=Q2
-
     #mini
-    #P1 = VectorFunctionSpace(mesh, "Lagrange", 1)
-    #B  = VectorFunctionSpace(mesh, "Bubble", 3)
+    """
+    p1 = VectorElement("Lagrange", mesh.ufl_cell(),1)
+    b  = VectorElement("Bubble",mesh.ufl_cell(), 3)
+    Q = FiniteElement("Lagrange", mesh.ufl_cell(),1)
+    W3=MixedFunctionSpace(mesh,(p1+b)*Q)
+    
+    P1 = VectorFunctionSpace(mesh, "Lagrange", 1)
+    B  = VectorFunctionSpace(mesh, "Bubble", 3)
+    Q  = FunctionSpace(mesh, "CG",  1)
+    V = P1 + B
+    W3 = V*Q
+    """
     #V4 = P1+B
     #Q4 = Q1
     
@@ -63,8 +69,10 @@ for i in range(len(N)):
 
     for j in range(len(S)):
         
-        
-        W=MixedFunctionSpace([S[j][0],S[j][1]])
+        if j==2:
+            W=S[j]
+        else:
+            W=MixedFunctionSpace([S[j][0],S[j][1]])
 
         u,p=TrialFunctions(W)
         v,q=TestFunctions(W)
@@ -107,3 +115,5 @@ for i in range(2):
     print '---------------------------'
     print 
     print
+
+print K[0]/K[1]
