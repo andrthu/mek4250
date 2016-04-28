@@ -89,9 +89,9 @@ for i in range(len(N)):
         UE =interpolate(ue,V_E)
         PE = interpolate(pe,Q_E)
 
-        E_val[j][i] = errornorm(U,UE,'H1')+errornorm(P,PE,'L2')
-        E2[j][i]= errornorm(U,UE,'H1')
-        E3[j][i]=errornorm(P,PE,'L2')
+        E_val[j][i] = errornorm(ue,U,'H1')+errornorm(pe,P,'L2')
+        E2[j][i]= errornorm(ue,U,'H1')
+        E3[j][i]=errornorm(pe,P,'L2')
         
 print "Error H1+L2:"
 print E_val
