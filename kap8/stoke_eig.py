@@ -88,18 +88,20 @@ for i in range(len(N)):
         
         A,_ = assemble_system((inner(grad(u),grad(v))+div(u)*q+div(v)*p)*dx,inner(f,v)*dx,bc)
 
-
+        
         l,v = linalg.eigh(matrix(A.array()))
 
-
+        w=Function(W)
         l1 =float(max(abs(l)))
         l2 = min(abs(l))
-        
+        L = map(abs,l)
+        L.sort()
         K[j][i] = l1/l2
-        print l1,l2,l1/l2
+        print L
+        print L[-1],L[1],L[-1]/L[1]
 
         
-Element=["Taylor-Hood","Crouzeix-Raviart","P2-P0","mini"]        
+Element=["Taylor-Hood","Crouzeix-Raviart","P2-P0","mini"]   
 for i in range(2):
     R= vstack([log(h_val),ones(len(N))]).T
     
