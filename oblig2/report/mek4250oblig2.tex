@@ -80,4 +80,33 @@ b(q,u)&=\int_{\Omega} q\nabla \cdot u dx=\int_{\Omega}\sum_{i=1}^d qu_{x_i}^i dx
 &\leq d||q||_{L^2(\Omega)}|u|_{H^1(\Omega)} \\
 &\leq d||q||_{L^2(\Omega)}||u||_{H^1(\Omega)}
 \end{align*}
+\\
+7.6) Want to solve the the stokes problem with a manufactured solution $ue(x,y)=(\sin(\pi y),\cos(\pi x))$ and $pe(x,y)=\sin2\pi x)$ on $\Omega = (0,1)^2$. This means solving the problem:
+\begin{align*}
+-\Delta u - \nabla p &= f \\
+\nabla \cdot u &= 0 \\
+u &= ue \ \text{on } \partial\Omega_D \\
+\frac{\partial u}{\partial n} + pn &= h \ \text{on } \partial\Omega_N
+\end{align*} 
+To be able to solve the equation we need to define $\partial\Omega_D$ and $\partial\Omega_N$, as well as deriving $f$ and $h$. Setting $\partial\Omega_N= \{x=1\}$ and $\partial\Omega_D=\partial\Omega - \partial\Omega_N$, gives us $h=(0,0)$, which makes life easier. We see this by noting that $n=(0,1)$ on $\partial\Omega_N$, and calculating:
+\begin{align*}
+h &= \frac{\partial u(1,y)}{\partial n} + p(1,y)n  = (\nabla u_1\cdot n,\nabla u_2\cdot n) +\sin(2\pi)n\\
+&= ( [0,\pi \cos(\pi y)] \cdot[1,0], ( [\pi \sin(\pi ),0]\cdot[1,0]) +(0,0) \\
+& = (0,0)
+\end{align*}
+Now lets find $f$:
+\begin{align*}
+f &= -\Delta u - \nabla p \\
+&= (\pi^2 \sin(\pi y),\pi^2 \cos(\pi x)) - (2\pi\cos(2\pi x),0) 
+\end{align*} 
+The last step before implementing the numerics is to derive the variational form:
+\begin{align*}
+-\int_{\Omega} \Delta u \cdot v dx - \int_{\Omega} \nabla p \cdot v dx &= \int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx -\int_{\partial\Omega_n}(\frac{\partial u}{\partial N} + pn)\cdot v dS \\
+&=\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx -\int_{\partial\Omega_N}h\cdot v dS \\
+&=\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx
+\end{align*}
+Together with the deivergence term this gives us the following variational form:
+\begin{align*}
+\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx +\int_{\Omega} q\nabla\cdot u  dx = \int_{\Omega} f\cdot v dx
+\end{align*}
 \end{document}
