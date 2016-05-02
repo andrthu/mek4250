@@ -6,7 +6,7 @@ import matplotlib.pylab as plt
 #defining the boudary
 def u_boundary(x,on_boundary):
     if on_boundary:
-        if x[0]==0 or x[1]==1 or x[1]==0:
+        if x[0]==0 or x[0]==1 or x[1]==1:
             return True
         else:
             return False
@@ -15,19 +15,37 @@ def u_boundary(x,on_boundary):
 
 def p_boundary(x,on_boundary):
     if on_boundary:
-        if x[0]==1:
+        if x[1]==0:
             return True
         else:
             return False
     else:
         return False
 
+def wall_stress_boundary(x,on_boundary):
+    if on_boundary:
+        if x[0]==0:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+class N_boundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return p_boundary(x,on_boundary)
+
+class Wall_boundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return wall_stress_boundary(x,on_boundary)
 
 
-N = [10,20,30]
+
+N = [8,16,32,64]
 
 h_val = zeros(len(N))
 E_val = zeros((4,len(N)))
+Wall_stress = zeros((4,len(N)))
 E2 = zeros((4,len(N)))
 E3= zeros((4,len(N)))
 con =[]
@@ -73,6 +91,7 @@ for i in range(len(N)):
 
         #source term 
         f=Expression(["pi*pi*sin(pi*x[1])-2*pi*cos(2*pi*x[0])","pi*pi*cos(pi*x[0])"])
+        h = Expression(["-pi","-sin(2*pi*x[0])"])
         #exact velocity solution
         ue=Expression(["sin(pi*x[1])","cos(pi*x[0])"])
         
@@ -81,11 +100,20 @@ for i in range(len(N)):
         
         #dirichlet only on part of the boundary
         bc_u=DirichletBC(W.sub(0),ue,u_boundary)
+        #bc_p=DirichletBC(W.sub(1),pe,"on_boundary")
         bc = [bc_u]
         
+        NeumannBoundary = N_boundary()
+        WallBoundary = Wall_boundary()
+        boundaries = FacetFunction("size_t",mesh)
+        boundaries.set_all(0)
+        NeumannBoundary.mark(boundaries, 1)
+        WallBoundary.mark(boundaries, 2)
+        ds = Measure("ds", domain=mesh, subdomain_data=boundaries)
+
         #the variational formula
-        a = inner(grad(u),grad(v))*dx + div(u)*q*dx + div(v)*p*dx
-        L = inner(f,v)*dx
+        a = inner(grad(u),grad(v))*dx + div(u)*q*dx + div(v)*p*dx  
+        L = inner(f,v)*dx + inner(h,v)*ds(1)
         
         #solve it
         UP=Function(W)
@@ -98,7 +126,13 @@ for i in range(len(N)):
         #interactive()
         UE =interpolate(ue,V_E)
         PE = interpolate(pe,Q_E)
-
+        
+        t = Expression(["0","1"])
+        
+        ws = (U-UE).dx(1)
+        stress = sqrt(assemble( inner(ws,ws)*ds(2)))
+        Wall_stress[j][i] = stress
+        
         E_val[j][i] = errornorm(ue,U,'H1')+errornorm(pe,P,'L2')
         E2[j][i]= errornorm(ue,U,'H1')
         E3[j][i]=errornorm(pe,P,'L2')
@@ -111,6 +145,9 @@ print E2
 print
 print "Error L2"
 print E3
+print
+print "Wall stress error"
+print Wall_stress
 Element=["P4-P3","P4-P2","P3-P2","P3-P1"]
 
 expected_convergence=[4,3,3,2]
@@ -120,9 +157,42 @@ for i in range(4):
     
     LS=linalg.lstsq(A, log(E_val[i]))[0]
 
-    plt.plot(log(h_val),log(E_val[i]))
-    plt.plot(log(h_val),expected_convergence[i]*log(h_val))
-    plt.show()
+    wall_LS=linalg.lstsq(A, log(Wall_stress[i]))[0]
+
+    #plt.plot(log(h_val),log(E_val[i]))
+    #plt.plot(log(h_val),expected_convergence[i]*log(h_val))
+    #plt.show()
+    print "-----------------------------------"
     print Element[i]
     print "con. rate: %f C=%f" %(LS[0],exp(LS[1]))
     print
+    print "Wall stress:"
+    print "con. rate: %f C=%f" %(wall_LS[0],exp(wall_LS[1]))
+    print "-----------------------------------"
+    print
+
+fig,ax = plt.subplots(2, 2)
+for i in range(4):
+    x = i/2
+    y= i%2
+
+    ax[x,y].plot(log(h_val),log(E_val[i]))
+    ax[x,y].plot(log(h_val),expected_convergence[i]*log(h_val))
+    ax[x,y].set_title("loglog plot for "+Element[i])
+    ax[x,y].legend(["error",str(expected_convergence[i])+"h"],loc=4)
+    ax[x,y].set_xlabel("h")
+    ax[x,y].set_ylabel("error")
+plt.show()
+fig,ax = plt.subplots(2, 2)
+for i in range(4):
+    x = i/2
+    y= i%2
+
+    ax[x,y].plot(log(h_val),log(Wall_stress[i]))
+    #ax[x,y].plot(log(h_val),expected_convergence[i]*log(h_val))
+    ax[x,y].set_title("loglog plot for "+Element[i])
+    ax[x,y].legend(["error",str(expected_convergence[i])+"h"],loc=4)
+    ax[x,y].set_xlabel("h")
+    ax[x,y].set_ylabel("error")
+plt.show()
+

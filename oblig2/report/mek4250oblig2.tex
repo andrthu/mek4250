@@ -86,13 +86,13 @@ b(q,u)&=\int_{\Omega} q\nabla \cdot u dx=\int_{\Omega}\sum_{i=1}^d qu_{x_i}^i dx
 -\Delta u - \nabla p &= f \\
 \nabla \cdot u &= 0 \\
 u &= ue \ \text{on } \partial\Omega_D \\
-\frac{\partial u}{\partial n} + pn &= h \ \text{on } \partial\Omega_N
+-\frac{\partial u}{\partial n} - pn &= h \ \text{on } \partial\Omega_N
 \end{align*} 
-To be able to solve the equation we need to define $\partial\Omega_D$ and $\partial\Omega_N$, as well as deriving $f$ and $h$. Setting $\partial\Omega_N= \{x=1\}$ and $\partial\Omega_D=\partial\Omega - \partial\Omega_N$, gives us $h=(0,0)$, which makes life easier. We see this by noting that $n=(0,1)$ on $\partial\Omega_N$, and calculating:
+To be able to solve the equation we need to define $\partial\Omega_D$ and $\partial\Omega_N$, as well as deriving $f$ and $h$. 7.7 use $\partial\Omega_N= \{y=0\}$ and $\partial\Omega_D=\partial\Omega - \partial\Omega_N$. This gives us $h=(-\pi,-sin(2\pi x))$. We see this by noting that $n=(0,-1)$ on $\partial\Omega_N$, and calculating:
 \begin{align*}
-h &= \frac{\partial u(1,y)}{\partial n} + p(1,y)n  = (\nabla u_1\cdot n,\nabla u_2\cdot n) +\sin(2\pi)n\\
-&= ( [0,\pi \cos(\pi y)] \cdot[1,0], ( [\pi \sin(\pi ),0]\cdot[1,0]) +(0,0) \\
-& = (0,0)
+h &= -\frac{\partial u(x,0)}{\partial n} - p(x,0)n  = -(\nabla u_1\cdot n,\nabla u_2\cdot n) -\sin(2\pi x)n\\
+&= -( [0,\pi \cos(\pi \cdot0)] \cdot[0,-1], ( [-\pi \sin(\pi x),0]\cdot[0,-1]) +(0,-\sin(2\pi x)) \\
+& = (-\pi,0)+(0,-\sin(2\pi x)) = (-\pi,-\sin(2\pi x))
 \end{align*}
 Now lets find $f$:
 \begin{align*}
@@ -102,11 +102,28 @@ f &= -\Delta u - \nabla p \\
 The last step before implementing the numerics is to derive the variational form:
 \begin{align*}
 -\int_{\Omega} \Delta u \cdot v dx - \int_{\Omega} \nabla p \cdot v dx &= \int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx -\int_{\partial\Omega_n}(\frac{\partial u}{\partial N} + pn)\cdot v dS \\
-&=\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx -\int_{\partial\Omega_N}h\cdot v dS \\
-&=\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx
+&=\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx +\int_{\partial\Omega_N}h\cdot v dS 
 \end{align*}
 Together with the deivergence term this gives us the following variational form:
 \begin{align*}
-\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx +\int_{\Omega} q\nabla\cdot u  dx = \int_{\Omega} f\cdot v dx
+\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx +\int_{\Omega} q\nabla\cdot u  dx = \int_{\Omega} f\cdot v dx +\int_{\partial\Omega_N}h\cdot v dS 
 \end{align*}
+As usual this should hold $\forall$ $v \in H_0^1(\Omega)\times H_0^1(\Omega)$ and $\forall$ $q \in L^2(\Omega)$. We also deal with the Dirichlet boundary condition in the normal way (ignoring them, and fixing the system). 
+\\
+\\
+The FEniCS implementation of this problem using the four combinations of elements asked for in the exercise is added at the end of the assignment. We were then asked to test if our approximations converged at the expected rate. The natural way of measuring the error is using $H^1$ norm for velocity and $L^2$ norm for pressure. The theoretical convergence rate is then given by the following inequality:
+\begin{align*}
+||u-u_h||_{H^1}+||p-p_h||_{L^2} \leq Ch^{q}||u||_{H^{q+1}}+Dh^{t+1}||p||_{H^{t+1}}
+\end{align*}
+Here $q$ and $t$ are the degrees of the elements used in our finite element spaces. Using $h=\{\frac{1}{8},\frac{1}{16}, \frac{1}{32},\frac{1}{64}\}$ I got the following results using least squares:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+     & Convergence rate & Constant  \\ \hline
+    $P4-P3$ & 4.045257 & 0.084663 \\ \hline
+    $P4-P2$ & 2.902867 &  0.493978	\\ \hline
+    $P3-P2$ & 2.890269 & 0.447429\\ \hline
+    $P3-P1$ & 2.024947 &  1.135217	\\ \hline
+    \end{tabular}
+\end{center}
 \end{document}
