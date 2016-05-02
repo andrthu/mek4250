@@ -101,12 +101,12 @@ f &= -\Delta u - \nabla p \\
 \end{align*} 
 The last step before implementing the numerics is to derive the variational form:
 \begin{align*}
--\int_{\Omega} \Delta u \cdot v dx - \int_{\Omega} \nabla p \cdot v dx &= \int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx -\int_{\partial\Omega_n}(\frac{\partial u}{\partial N} + pn)\cdot v dS \\
-&=\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx +\int_{\partial\Omega_N}h\cdot v dS 
+-\int_{\Omega} \Delta u \cdot v  dx - \int_{\Omega} \nabla p \cdot v  dx &= \int_{\Omega} \nabla u :\nabla v  dx + \int_{\Omega} p \nabla\cdot v  dx -\int_{\partial\Omega_n}(\frac{\partial u}{\partial N} + pn)\cdot v  dS \\
+&=\int_{\Omega} \nabla u :\nabla v  dx + \int_{\Omega} p \nabla\cdot v  dx +\int_{\partial\Omega_N}h\cdot v  dS 
 \end{align*}
 Together with the deivergence term this gives us the following variational form:
 \begin{align*}
-\int_{\Omega} \nabla u :\nabla v dx + \int_{\Omega} p \nabla\cdot v dx +\int_{\Omega} q\nabla\cdot u  dx = \int_{\Omega} f\cdot v dx +\int_{\partial\Omega_N}h\cdot v dS 
+\int_{\Omega} \nabla u :\nabla v \ dx + \int_{\Omega} p \nabla\cdot v \ dx +\int_{\Omega} q\nabla\cdot u  \ dx = \int_{\Omega} f\cdot v \ dx +\int_{\partial\Omega_N}h\cdot v \ dS 
 \end{align*}
 As usual this should hold $\forall$ $v \in H_0^1(\Omega)\times H_0^1(\Omega)$ and $\forall$ $q \in L^2(\Omega)$. We also deal with the Dirichlet boundary condition in the normal way (ignoring them, and fixing the system). 
 \\
@@ -126,4 +126,40 @@ Here $q$ and $t$ are the degrees of the elements used in our finite element spac
     $P3-P1$ & 2.024947 &  1.135217	\\ \hline
     \end{tabular}
 \end{center}
+I justify using least squares by doing a loglog plot of the error and the mesh resolution for the different element types. We see that the loglog plot is straight lines for all elements, and using least squares therefore makes sense.
+\begin{figure}
+  \includegraphics[width=\linewidth]{element_con.png}
+  \caption{loglog plot for the error plotted together with linear functions with the expected steepness. Observe that the slope of the expected line and the error plot are almost the same for all element combos}
+  \label{Fig 1}
+\end{figure}
+\\
+\\
+7.7) The wall shear stress is defined in the exercise. Defining \\$\Gamma = \{(x,y) \in \Omega | x=0 \}$, and the unit vector $t=[0,1]$ parallel to $\Gamma$, the wall shear stress is defined as: 
+\begin{align*}
+||\nabla u\cdot t||_{L^2(\Gamma)}^2 &= \int_{\Gamma} |\nabla u \cdot t|^2  \ dS \\
+&=  \int_{\Gamma} |(\nabla u_1 \cdot t,\nabla u_2 \cdot t)|^2  \ dS \\
+&=\int_{\Gamma} \frac{\partial u_1}{\partial y}^2 + \frac{\partial u_2}{\partial y}^2 \ dS
+\end{align*} 
+Using this I calculated the convergence rate for different element combos, by solving the equation for the same mesh resolutions as in 7.6. To calculate the convergence rates I used least squares, and the results were as follows:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+     & Convergence rate & Constant   \\ \hline
+    $P4-P3$ & 3.999511 & 0.011619    \\ \hline
+    $P4-P2$ & 3.999512 & 0.011619	\\ \hline
+    $P3-P2$ & 2.999236 & 0.077591    \\ \hline
+    $P3-P1$ & 2.999236 & 0.077591	\\ \hline
+    	$P4-P1$ & 3.999512 & 0.011619	\\ \hline
+    \end{tabular}
+\end{center}
+These results seems to indicate the following convergence result for wall shear stress:
+\begin{align*}
+||\nabla (u-u_h)\cdot t||_{L^2(\Gamma)} \leq Ch^q
+\end{align*} 
+Where $q$ is equal to the degree of the element used for velocity, and the both constant $C$ and $q$ is independent of the pressure element. I solved the equation using $P4-P1$ elements to show that this relation also holds for element combos where the diffrence in degree is bigger then $2$. As in exercise 7.6 I have added a loglog plot to justify use of least squares.
+\begin{figure}
+  \includegraphics[width=\linewidth]{stress_con.png}
+  \caption{loglog plot for the wall shear stress error $||\nabla (u-u_h)\cdot t||_{L^2(\Gamma)}$. Observe that lines are almost linear.}
+  \label{Fig 2}
+\end{figure}
 \end{document}

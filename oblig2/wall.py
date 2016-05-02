@@ -44,10 +44,10 @@ class Wall_boundary(SubDomain):
 N = [8,16,32,64]
 
 h_val = zeros(len(N))
-E_val = zeros((4,len(N)))
-Wall_stress = zeros((4,len(N)))
-E2 = zeros((4,len(N)))
-E3= zeros((4,len(N)))
+E_val = zeros((5,len(N)))
+Wall_stress = zeros((5,len(N)))
+E2 = zeros((5,len(N)))
+E3= zeros((5,len(N)))
 con =[]
 
 #solving for all elements using diffrent mesh resolutions
@@ -74,9 +74,11 @@ for i in range(len(N)):
     V4=V3
     Q4=FunctionSpace(mesh,"Lagrange",1)    
 
+    #P4-P1
+    V5 = V1
+    Q5 = Q4
     
-    
-    S=[[V1,Q1],[V2,Q2],[V3,Q3],[V4,Q4]]
+    S=[[V1,Q1],[V2,Q2],[V3,Q3],[V4,Q4],[V5,Q5]]
 
     V_E=VectorFunctionSpace(mesh,"Lagrange",6)
     Q_E=FunctionSpace(mesh,"Lagrange",5)
@@ -148,10 +150,10 @@ print E3
 print
 print "Wall stress error"
 print Wall_stress
-Element=["P4-P3","P4-P2","P3-P2","P3-P1"]
+Element=["P4-P3","P4-P2","P3-P2","P3-P1","P4-P1"]
 
 expected_convergence=[4,3,3,2]
-for i in range(4):
+for i in range(5):
     A= vstack([log(h_val),ones(len(N))]).T
     
     
@@ -187,11 +189,13 @@ fig,ax = plt.subplots(2, 2)
 for i in range(4):
     x = i/2
     y= i%2
-
-    ax[x,y].plot(log(h_val),log(Wall_stress[i]))
+    j=i
+    if i==3:
+        j=4
+    ax[x,y].plot(log(h_val),log(Wall_stress[j]))
     #ax[x,y].plot(log(h_val),expected_convergence[i]*log(h_val))
-    ax[x,y].set_title("loglog plot for "+Element[i])
-    ax[x,y].legend(["error",str(expected_convergence[i])+"h"],loc=4)
+    ax[x,y].set_title("loglog plot for "+Element[j])
+    ax[x,y].legend(["error"])
     ax[x,y].set_xlabel("h")
     ax[x,y].set_ylabel("error")
 plt.show()
