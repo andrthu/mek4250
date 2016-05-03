@@ -186,6 +186,7 @@ for i in range(4):
     ax[x,y].set_ylabel("error")
 plt.show()
 fig,ax = plt.subplots(2, 2)
+
 for i in range(4):
     x = i/2
     y= i%2
