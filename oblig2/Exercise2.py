@@ -125,3 +125,108 @@ for j in range(3):
     plt.show()
 
 
+"""
+terminal>> python Exercise2.py 
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+Solving linear variational problem.
+**********************************
+Polynomial order = 1
+
+-------------------lam=1-------------------
+
+L2 error:  [0.07143564353036871, 0.01858894010975571, 0.004697079781323455, 0.001177468248156252]
+
+H1 error:  [1.3517242507219713, 0.6790867417407639, 0.3398473366000941, 0.1699577953467868]
+
+L2 con-rate=1.975326 C=2.213178
+
+H1 con-rate=0.997337 C=7.621186
+
+---------------------------------------------
+-------------------lam=100-------------------
+
+L2 error:  [0.29985169058331784, 0.16406710708851321, 0.06076135418164534, 0.017653643817245494]
+
+H1 error:  [2.630391833510895, 1.423505893625182, 0.5774530212031616, 0.2179137174299302]
+
+L2 con-rate=1.369169 C=3.795261
+
+H1 con-rate=1.208202 C=23.611052
+
+---------------------------------------------
+-------------------lam=10000-------------------
+
+L2 error:  [0.444750039708708, 0.45628947339193204, 0.43298295714847634, 0.3519439457224945]
+
+H1 error:  [3.7443848306183782, 3.6589796437836535, 3.4092084266679863, 2.7338766907550016]
+
+L2 con-rate=0.108859 C=0.567093
+
+H1 con-rate=0.146335 C=5.043682
+
+---------------------------------------------
+
+
+**********************************
+Polynomial order = 2
+
+-------------------lam=1-------------------
+
+L2 error:  [0.0020804727431950787, 0.0002521449774644887, 3.124455010249258e-05, 3.896910893232253e-06]
+
+H1 error:  [0.12333779284666148, 0.031097865213979455, 0.007791325005348004, 0.0019488967225476028]
+
+L2 con-rate=3.019367 C=0.386373
+
+H1 con-rate=1.994832 C=3.920336
+
+---------------------------------------------
+-------------------lam=100-------------------
+
+L2 error:  [0.014397270633258623, 0.0014981362081414133, 0.00011945190272137094, 8.7436893209144e-06]
+
+H1 error:  [0.45195247197065147, 0.09708626269773965, 0.01665272098869556, 0.0028154805090628452]
+
+L2 con-rate=3.570446 C=7.716594
+
+H1 con-rate=2.452345 C=33.981253
+
+---------------------------------------------
+-------------------lam=10000-------------------
+
+L2 error:  [0.029893235368636906, 0.007174945881791682, 0.0015772288060908345, 0.00027219372347456357]
+
+H1 error:  [0.9452508877864363, 0.4515093401616464, 0.19729045871526465, 0.06764907638113875]
+
+L2 con-rate=2.252270 C=1.596042
+
+H1 con-rate=1.260810 C=9.058619
+
+---------------------------------------------
+
+
+"""
+
+
