@@ -149,7 +149,7 @@ for i in range(len(N)):
 
         
         #defining the wall shear stress
-        ws = (U-UE).dx(1)
+        ws =(U-UE).dx(1)
         stress = sqrt(assemble( inner(ws,ws)*ds(2)))
         Wall_stress[j][i] = stress
         
