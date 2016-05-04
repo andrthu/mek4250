@@ -1,3 +1,8 @@
+
+
+
+
+
 from dolfin import *
 from numpy import matrix, sqrt, diagflat,zeros,vstack,ones,log,exp
 from scipy import linalg, random

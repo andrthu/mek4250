@@ -28,7 +28,7 @@ Andreas Thune
 \\
 7.1) Given the following weak formulation of Stokes problem:
 \begin{align*}
-a(u,v)+b(p,v)&=(f,v) \ \forall \ v \in H_0^1(\Omega)\\
+a(u,v)+b(p,v)&=(f,v) \ \forall \ v \in H_0^1(\Omega)^d\\
 b(q,u)&=0 \ \forall q \in L^2(\Omega)
 \end{align*}
 Where $a(u,v) = \int_{\Omega}\nabla u : \nabla v dx$ and $b(p,v) =\int_{\Omega} p\nabla \cdot v dx$.
@@ -43,9 +43,15 @@ Note that $u$ and $v$ are vector functions. To show the three conditions I will 
 \begin{align*}
 \nabla u : \nabla v = \Sigma_{i=1}^d\Sigma_{j=1}^d u_{x_j}^i(x)v_{x_j}^i(x)
 \end{align*}
+It is also be helpful to define the $H^1$ norm for vector functions:
+\begin{align*}
+||u||_{H^1(\Omega)}^2 &= ||u||_{L^2(\Omega)}^2 + |u|_{H^1(\Omega)}^2 \\
+||u||_{L^2(\Omega)}^2 &= \sum_{i=1}^d ||u^i||_{L^2(\Omega)}^2 \\
+|u|_{H^1(\Omega)}^2 &= \sum_{i=1}^d |u^i|_{H^1(\Omega)}^2= \sum_{i=1}^d\sum_{j=1}^d ||u_{x_j}^i||_{L^2(\Omega)}^2
+\end{align*}
+These definitions give us the inequalities $ |u^i|_{H^1} \leq |u|_{H^1}$ and \\$||u_{x_j}^i||_{L^2}\leq |u^i|_{H^1} $.
 \\
 \textbf{Inequality (1)}
-\\
 \begin{align*}
 a(u,v)&= \int_{\Omega}\nabla u : \nabla v dx=\int_{\Omega}\sum_{i=1}^d\sum_{j=1}^d u_{x_j}^iv_{x_j}^idx \\
 &=\sum_{i=1}^d\sum_{j=1}^d (u_{x_j}^i,v_{x_j}^i)_{L^2(\Omega)} \\
@@ -64,15 +70,14 @@ Using the Poincares inequality for $H_0^1(\Omega)$, given by:
 we get 
 \begin{align*}
 a(u,u)&= \int_{\Omega}\nabla u : \nabla u dx=\int_{\Omega}\sum_{i=1}^d\sum_{j=1}^d u_{x_j}^iu_{x_j}^idx \\
-&=\sum_{i=1}^d\sum_{j=1}^d ||u_{x_j}^i||_{L^2(\Omega)}^2=\sum_{i=1}^d |u^i|_{H^1(\Omega)}^2 = |u|_{H^1(\Omega)}^2 \\
-&= \frac{1}{2}(|u|_{H^1(\Omega)}^2+|u|_{H^1(\Omega)}^2) \\
-&\geq \frac{1}{2}(|u|_{H^1(\Omega)}^2+C||u||_{L^2(\Omega)}^2) \\
-&\geq \frac{min\{1,C\}}{2}(|u|_{H^1(\Omega)}^2+||u||_{L^2(\Omega)}^2) \\
-&= D||u||_{H^1(\Omega)}^2
+&=\sum_{i=1}^d\sum_{j=1}^d ||u_{x_j}^i||_{L^2(\Omega)}^2=\sum_{i=1}^d |u^i|_{H^1(\Omega)}^2\\
+&= \sum_{i=1}^d\frac{1}{2}(|u^i|_{H^1(\Omega)}^2+|u^i|_{H^1(\Omega)}^2) \\
+&\geq \sum_{i=1}^d\frac{1}{2}(|u^i|_{H^1(\Omega)}^2+C||u^i||_{L^2(\Omega)}^2) \\
+&\geq \frac{min\{1,C\}}{2}\sum_{i=1}^d(|u^i|_{H^1(\Omega)}^2+||u^i||_{L^2(\Omega)}^2) \\
+&= \frac{min\{1,C\}}{2}||u||_{H^1(\Omega)}^2=D||u||_{H^1(\Omega)}^2
 \end{align*}
 \\
 \textbf{Inequality (3)}
-\\
 \begin{align*}
 b(q,u)&=\int_{\Omega} q\nabla \cdot u dx=\int_{\Omega}\sum_{i=1}^d qu_{x_i}^i dx \\
 &\leq \sum_{i=1}^d ||q||_{L^2(\Omega)} ||u_{x_i}^i||_{L^2(\Omega)} \ \text{  using Cauchy-Schwartz inequality}  \\
@@ -81,7 +86,7 @@ b(q,u)&=\int_{\Omega} q\nabla \cdot u dx=\int_{\Omega}\sum_{i=1}^d qu_{x_i}^i dx
 &\leq d||q||_{L^2(\Omega)}||u||_{H^1(\Omega)}
 \end{align*}
 \\
-7.6) Want to solve the the stokes problem with a manufactured solution $ue(x,y)=(\sin(\pi y),\cos(\pi x))$ and $pe(x,y)=\sin2\pi x)$ on $\Omega = (0,1)^2$. This means solving the problem:
+7.6) Want to solve the the stokes problem with a manufactured solution $ue(x,y)=(\sin(\pi y),\cos(\pi x))$ and $pe(x,y)=\sin(2\pi x)$ on $\Omega = (0,1)^2$. This means solving the problem:
 \begin{align*}
 -\Delta u - \nabla p &= f \\
 \nabla \cdot u &= 0 \\
@@ -108,7 +113,7 @@ Together with the deivergence term this gives us the following variational form:
 \begin{align*}
 \int_{\Omega} \nabla u :\nabla v \ dx + \int_{\Omega} p \nabla\cdot v \ dx +\int_{\Omega} q\nabla\cdot u  \ dx = \int_{\Omega} f\cdot v \ dx +\int_{\partial\Omega_N}h\cdot v \ dS 
 \end{align*}
-As usual this should hold $\forall$ $v \in H_0^1(\Omega)\times H_0^1(\Omega)$ and $\forall$ $q \in L^2(\Omega)$. We also deal with the Dirichlet boundary condition in the normal way (ignoring them, and fixing the system). 
+As usual this should hold $\forall$ $v \in \{ v \in H^1(\Omega)^2 : v|_{\partial\Omega_D} =0  \}$ and $\forall$ $q \in L^2(\Omega)$. We also deal with the Dirichlet boundary condition in the normal way (ignoring them, and fixing the system). 
 \\
 \\
 The FEniCS implementation of this problem using the four combinations of elements asked for in the exercise is added at the end of the assignment. We were then asked to test if our approximations converged at the expected rate. The natural way of measuring the error is using $H^1$ norm for velocity and $L^2$ norm for pressure. The theoretical convergence rate is then given by the following inequality:
@@ -180,7 +185,14 @@ Since $\nabla\cdot ue=0$, the source term $f$ is given by $f=-\mu \Delta ue$. To
 f &= -\mu\pi[\Delta x\cos(\pi xy),-\Delta y\cos(\pi xy)] \\
 &= -\mu\pi^2[-v\cdot [\pi x^3+\pi xy^2,2y],v\cdot [\pi y^3+\pi x^2y,2x]]
 \end{align*}
-b) I have computed the errors between exact and numerical solution in the code at the end. The results are given as output in the code.
+b) I have computed the errors between exact and numerical solution in the code at the end. The results are given as output in the code. For simplicity I set $\mu=1$.
+\\
+\\
+The variational form of this equation is
+\begin{align*}
+\mu\int_{\Omega} \nabla u\nabla v dx + \lambda\int_{\Omega} \nabla u\cdot\nabla\cdot v dx = \int_{\Omega} f\cdot v dx
+\end{align*}
+An alternative way of solving this equation is to set $p=\lambda\nabla\cdot u$, and then it as a mixed problem. When we do this we avoid the problems that I discuss below, however since the exercise does not explicitly ask for it, I will not implement this version.
 \\
 \\
 c) We were then asked to calculate the convergence rate of the finite element method for this equation using the mesh resolutions given in the exercise. I did this using least squares, and below follows a table of the $L^2$ and $H^1$ convergence rates I got when using $P1$ elements:
@@ -203,6 +215,10 @@ The same for $P2$ elements:
      $\lambda=10000$& 2.252270 & 1.596042 & 1.260810& 9.058619 \\ \hline
     \end{tabular}
 \end{center}
+Locking is defined as loosing converging rate when $\lambda>>\mu$. For $P1$ elements we see that the $L^2$ convergence drops by almost 1 for $\lambda=100$, and by almost 2 for  $\lambda=10000$. The $H^1$ convergence on the other hand only drops for $\lambda=10000$, while it for $\lambda=100$ actually is higher than we would expect. For $\lambda=1$, everything behaves nicely.
+\\
+\\
+For $P2$ elements we observe locking for both $L^2$ and $H^1$, i.e. a convergence drop of almost 1, but only when $\lambda=10000$. For $\lambda=100$ the convergence rate is higher than what we would expect. One could note, that where we see increased convergence we also see big constants. Again for $\lambda=1$ everything looks normal. 
 \begin{figure}
   \includegraphics[width=\linewidth]{l1.png}
   \caption{For $\lambda =1$, we see that both the $L^2$ and $H^1$ error behave as expected, i.e. the error lines are almost parallel with the lines representing theoretical convergence rate.}

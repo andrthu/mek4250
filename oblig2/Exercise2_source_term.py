@@ -1,3 +1,7 @@
+
+
+
+
 from sympy import *
 
 x,y,my=symbols("x[0] x[1] my")
