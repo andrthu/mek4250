@@ -3,7 +3,7 @@ import time
 import matplotlib.pyplot as plt
 from numpy import array
 
-N = [16,32,64,128,256,512]
+N = [16,32,64,128,256,512,1024]
 
 M=[UnitIntervalMesh,UnitSquareMesh]
 Solver=[["cg"],["cg","amg"],["cg","ilu"]]

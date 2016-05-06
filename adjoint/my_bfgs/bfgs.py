@@ -85,4 +85,4 @@ def bfgs(J,x0,d_J,tol,beta=1,max_iter=1000):
 if __name__ == "__main__":
 
     
-    
+    print 'lol'

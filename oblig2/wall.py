@@ -144,7 +144,7 @@ for i in range(len(N)):
         #plot(U)
         #plot(P)
         #interactive()
-        UE =interpolate(ue,V_E)
+        UE = interpolate(ue,V_E)
         PE = interpolate(pe,Q_E)
 
         
