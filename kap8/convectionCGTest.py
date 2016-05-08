@@ -127,9 +127,9 @@ for i in range(len(C)):
             b_amg_time[i].append(0)
 
         try:
-            #t2,U=solving_time(A,b,Solver[2+6])
-            #print "b_ilu",t2
-            b_ilu_time[i].append(0)
+            t2,U=solving_time(A,b,Solver[2+6])
+            print "b_ilu",t2
+            b_ilu_time[i].append(t2)
         except:
             b_ilu_time[i].append(0)
             
@@ -164,7 +164,7 @@ for i in range(4):
     ax[x,y].plot(array(h)**2,array(bicgstab_time[i]))
     ax[x,y].plot(array(h)**2,array(b_amg_time[i]))
     ax[x,y].plot(array(h)**2,array(b_ilu_time[i]))
-    ax[x,y].legend(['gmres','amg','ilu'],loc=2)
+    ax[x,y].legend(['bicgstab','amg','ilu'],loc=2)
     ax[x,y].set_xlabel('dofs')
     ax[x,y].set_ylabel('time in seconds')
 plt.show()
