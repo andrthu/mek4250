@@ -23,17 +23,18 @@ def do_ls(J,d_J,x,p):
 
         f = J(x_new)
         djs = np.matrix(d_J(x_new)).dot(np.matrix(p).T)
-        return f,djs
+        return f,float(djs)
     
-    phi_dphi0 = J(x), np.matrix(d_J(x)).dot(np.matrix(p).T)
-    sw =  StrongWolfeLineSearch()
+    phi_dphi0 = J(x), float(np.matrix(d_J(x)).dot(np.matrix(p).T))
+    print phi_dphi0
+    sw =  StrongWolfeLineSearch(start_stp=1.0,xtol=0.00001,ignore_warnings=True)
 
-    alpha = StrongWolfeLineSearch.search(phi, phi_dphi, phi_dphi0)
+    alpha = sw.search(phi, phi_dphi, phi_dphi0)
 
     update_x_new(alpha)
     return x_new, float(alpha)
 
-    return 
+    
     
     
 def bfgs(J,x0,d_J,tol,beta=1,max_iter=1000):
@@ -46,7 +47,7 @@ def bfgs(J,x0,d_J,tol,beta=1,max_iter=1000):
     H = beta*I
     
     df0 =d_J(x0)
-    df1 = df0.copy()
+    df1 = None
     
     iter_k=0
     
@@ -54,13 +55,14 @@ def bfgs(J,x0,d_J,tol,beta=1,max_iter=1000):
     
 
 
-    while np.sqrt(np.sum(df1**2))/n>tol and iter_k<max_iter:
+    while np.sqrt(np.sum(df0**2))/n>tol and iter_k<max_iter:
 
         
         p  = -H.dot(df0)
-        
+        print p
         x,alfa = do_ls(J,d_J,x0,p)
-
+        
+        print x, alfa
         
 
         df1 = d_J(x)
@@ -84,5 +86,20 @@ def bfgs(J,x0,d_J,tol,beta=1,max_iter=1000):
 
 if __name__ == "__main__":
 
+    def J(x):
+
+        s=0
+        for i in range(len(x)):
+            s = s + (x[i]-1)**2
+        return s
+
+
+    def d_J(x):
+
+        return 2*(x-1)
+
+    x0=np.zeros(30)
+    tol = 0.0000001
+    x=bfgs(J,x0,d_J,tol,beta=1,max_iter=1000)
     
-    print 'lol'
+    print x
