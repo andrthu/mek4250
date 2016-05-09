@@ -1,7 +1,7 @@
 from dolfin import *
 import time
 from scipy import linalg, random
-from numpy import zeros,sqrt,array,matrix
+from numpy import zeros,sqrt,array,matrix,log,vstack,ones
 import matplotlib.pyplot as plt
 
 def jacobi_iter(A,b,x0,tol):
@@ -68,8 +68,17 @@ for N in N_val:
     t2 = solving_time(A,b)
     T.append(t2)
     #print t2
+print T
+
+A = vstack([log(array(N_val)),ones(len(N_val))]).T
+    
+    
+LS=linalg.lstsq(A, log(array(T)))[0]
+print LS
 
 plt.plot(array(N_val),array(T))
+plt.plot(array(N_val),exp(LS[1])*array(N_val)**LS[0])
+plt.legend(['time','poly'],loc=2)
 plt.xlabel('dofs')
 plt.ylabel('time in seconds')
 plt.show()
