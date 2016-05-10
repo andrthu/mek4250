@@ -141,7 +141,7 @@ def dcsrch(stp, f, g, ftol, gtol, xtol, task, stpmin, stpmax, isave, dsave):
     """
 
     from dcstep import dcstep
-
+    #print stp
     xtrapl=1.1
     xtrapu=4.0
 
@@ -241,7 +241,9 @@ def dcsrch(stp, f, g, ftol, gtol, xtol, task, stpmin, stpmax, isave, dsave):
     # If psi(stp) <= 0 and f'(stp) >= 0 for some step, then the
     # algorithm enters the second stage.
     ftest = finit + stp*gtest
+    #print 'loool',stage,f,g,ftest
     if stage == 1 and f <= ftest and g >= 0.0: 
+        
         stage = 2
 
     # Test for warnings.
@@ -249,6 +251,7 @@ def dcsrch(stp, f, g, ftol, gtol, xtol, task, stpmin, stpmax, isave, dsave):
         task = 'Warning: Rounding errors prevent progress'
     if brackt and stmax-stmin <= xtol*stmax:
         task = 'Warning: xtol test satisfied'
+        #print stmax,stmin,stmax-stmin,xtol*stmax,stp
     if stp == stpmax and f <= ftest and g <= gtest:
         task = 'Warning: stp = stpmax'
     if stp == stpmin and (f > ftest or g >= gtest):

@@ -84,7 +84,7 @@ class StrongWolfeLineSearch(LineSearch):
             stpmax = self.stpmax
 
         stp = min(self.start_stp, stpmax)
-
+        #print stp
         while True:
             stp, task, isave, dsave = self.__csrch__(f, g, stp, task, isave, dsave, stpmax)
 
