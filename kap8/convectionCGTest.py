@@ -17,7 +17,7 @@ def solving_time(A,b,solver):
 
     
         #solve(A,U.vector(),b,solver[0])
-    #solver.parameters["maximum_iterations"]=50000
+    #solver.parameters["maximum_iterations"]=1000
     
     solver.solve(A,U.vector(),b)
     t1=time.time()
