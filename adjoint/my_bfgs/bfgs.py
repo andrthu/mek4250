@@ -99,17 +99,17 @@ if __name__ == "__main__":
 
     def J(x):
 
-        s=0
+        s=1
         for i in range(len(x)):
-            s = s + np.exp((x[i])**2)
+            s = s*np.exp((x[i]-1)**2)
         return s
 
 
     def d_J(x):
 
-        return 2*(x)*np.exp((x)**2)
+        return 2*(x-1)*np.exp((x-1)**2)
 
-    x0=np.zeros(30)
+    x0=np.zeros(2)
     tol = 0.000001
     x=bfgs(J,x0,d_J,tol,beta=1,max_iter=1000)
     
