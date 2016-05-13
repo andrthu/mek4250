@@ -1,7 +1,7 @@
 from linalg.vector import Vector
 import numpy as np
 
-class SimmpleVector(Vector):
+class SimpleVector(Vector):
 
     def __getitem__(self, index):
         ''' Returns the value of the (local) index. '''
@@ -42,15 +42,27 @@ class SimmpleVector(Vector):
     def matDot(self,A):
         n=len(self.data)
         y = np.zeros(n)
-
+        A = np.matrix(A)
         for i in range(n):
-            y[i]=np.sum(A[i,:]*self.data)
+            y[i]=np.sum(np.array(A[i,:][0])*self.data)
         return y
     
     def matApy(self,A):
         y = self.matDot(A)
         self.set(y)
-    
+
+    def vecVecMat(self,x):
+        a=np.matrix(x.array().copy())
+        b=np.matrix(self.array().copy())
+
+        
+
+        return b.T*a
+
+    def copy(self):
+        ''' Returns a deep-copy of the vector. '''
+        d = self.data.copy()
+        return SimpleVector(d)
 if __name__ == "__main__":
 
     x = SimmpleVector(np.zeros(10))
