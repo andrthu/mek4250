@@ -98,6 +98,39 @@ class Lbfgs():
 
     def solve(self):
 
-        return 'lol'
+        x0=self.x0
+        n=x0.size()
+        x = SimpleVector(np.zeros(n))
+        
+        Hk = self.data['lbfgs']
+
+        df0 = SimpleVector( self.d_J(x0.array()))
+        df1 = SimpleVector(np.zeros(n))
+
+        iter_k = 0
+
+        p = SimpleVector(np.zeros(n))
+
+        tol = self.data['jtol']
+        max_iter = self.data['maxiter']
+
+        while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
 
         
+            p = Hk.matvec(-df0)
+
+            x,alfa = self.do_linesearch(sel.J,sel.d_J,x0,p)
+
+            df1.set(d_J(x.array()))
+            
+            s = x-x0
+            y = df1-df0
+
+            Hk.update(y,s)
+             
+            x0=x.copy()
+            df0=df1.copy()
+
+            iter_k=iter_k+1
+
+        return x
