@@ -1,5 +1,5 @@
 import numpy as np
-
+from my_vector import SimpleVector
 class LimMemoryHessian():
 
     def __init__(self,Hint,mem_lim=10,beta=1):
@@ -43,9 +43,10 @@ class LimMemoryHessian():
         if k == -1:
             k = len(self)
         if k==0:
-            return self.beta * (x.matDot(Hint))
+            return SimpleVector(self.beta * (x.matDot(self.Hint)))
         rhok, yk, sk = self[k]
-
+        
+        #print rhok,yk,sk
         t = x - rhok * x.dot(sk) * yk
         t = self.matvec(t,k-1)
         t = t - rhok * yk.dot(t) * sk

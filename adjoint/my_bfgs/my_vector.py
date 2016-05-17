@@ -36,7 +36,7 @@ class SimpleVector(Vector):
         return len(self.data)
 
     def dot(self,y):
-
+        
         return np.sum(self.data*y.data)
     
     def matDot(self,A):

@@ -14,14 +14,14 @@ class Lbfgs():
         self.x0   = x0
         self.lam0 = lam0
 
-        self.set_optons(options)
+        self.set_options(options)
 
         mem_lim = self.options['mem_lim']
         
         if Hinit==None:
             self.Hinit = np.identity(x0.size())
 
-        self.data = {'control'   : initial_point,
+        self.data = {'control'   : x0,
                      'iteration' : 0,
                      'lbfgs'     : LimMemoryHessian(self.Hinit,mem_lim) }
 
@@ -74,7 +74,8 @@ class Lbfgs():
             djs = p.dot(SimpleVector(d_J(x_new.array())))
         
             return f,float(djs)
-    
+            
+        #print p.dot(SimpleVector(d_J(x.array())))
         phi_dphi0 = J(x.array()),float(p.dot(SimpleVector(d_J(x.array()))))
         #print phi_dphi0
         
@@ -84,7 +85,7 @@ class Lbfgs():
             ftol     = ls_parm["ftol"]
             gtol     = ls_parm["gtol"]
             xtol     = ls_parm["xtol"]
-            star_stp = ls_parm["start_stp"]
+            start_stp = ls_parm["start_stp"]
             
             ls =  StrongWolfeLineSearch(ftol,gtol,xtol,start_stp)
 
@@ -111,15 +112,16 @@ class Lbfgs():
 
         p = SimpleVector(np.zeros(n))
 
-        tol = self.data['jtol']
-        max_iter = self.data['maxiter']
+        tol = self.options["jtol"]
+        max_iter = self.options['maxiter']
 
         while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
 
         
             p = Hk.matvec(-df0)
-
-            x,alfa = self.do_linesearch(sel.J,sel.d_J,x0,p)
+            #print df0.array()
+            #print p.array()
+            x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
             df1.set(d_J(x.array()))
             
@@ -134,3 +136,25 @@ class Lbfgs():
             iter_k=iter_k+1
 
         return x
+
+if __name__== "__main__":
+
+    
+    def J(x):
+
+        s=0
+        for i in range(len(x)):
+            s = s + (x[i]-1)**2
+        return s
+
+
+    def d_J(x):
+
+        return 2*(x-1)
+
+    x0=SimpleVector(np.linspace(1,30,30))
+    
+
+    solver = Lbfgs(J,d_J,x0)
+    
+    print solver.solve().array()
