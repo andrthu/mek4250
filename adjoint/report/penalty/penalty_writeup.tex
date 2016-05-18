@@ -24,9 +24,9 @@ We have the penalized functional
 \begin{align*}
 J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{2}(y_n(T)-y_T)^2 + \frac{\mu}{2} \sum_{i=1}^n (y_{i-1}(T_i)-\lambda_i)^2 
 \end{align*}
-Our state equation is divided into $n+1$ equations on each interval:
+Our state equation is solved separately on $n+1$ intervals:
 \begin{align*}
-\frac{\partial }{\partial t} y_i &= y_i + u \\
+\frac{\partial }{\partial t} y_i &= y_i + u \ \text{for $t \in [T_{i},T_{i+1}]$}\\
 y_i(T_i) &= \lambda_i
 \end{align*}
 here $i=0,...,n$, $\lambda_0=y_0$ and $0=T_0<T_1<\cdots<T_n<T_{n+1}=T$. Want the gradient of the reduced functional:

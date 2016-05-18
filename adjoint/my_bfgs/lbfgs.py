@@ -109,7 +109,7 @@ class Lbfgs():
         df1 = SimpleVector(np.zeros(n))
 
         iter_k = 0
-
+    
         p = SimpleVector(np.zeros(n))
 
         tol = self.options["jtol"]
@@ -123,7 +123,7 @@ class Lbfgs():
             #print p.array()
             x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
-            df1.set(d_J(x.array()))
+            df1.set(self.d_J(x.array()))
             
             s = x-x0
             y = df1-df0
