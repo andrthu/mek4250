@@ -63,6 +63,80 @@ class SimpleVector(Vector):
         ''' Returns a deep-copy of the vector. '''
         d = self.data.copy()
         return SimpleVector(d)
+
+
+
+class MuVector(Vector):
+
+    #data =[x,x_mu]
+
+    def __getitem__(self, index):
+        ''' Returns the value of the (local) index. '''
+        
+        def J (mu):
+            return self.data[0][index]+ mu*self.data[1][index]
+        return J
+
+    def __setitem__(self, index, value):
+        ''' Sets the value of the (local) index. '''
+        self.data[0][index]=value[0]
+        self.data[1][index]=value[1]
+
+    def array(self, local=True):
+        ''' Returns the vector as a numpy.array object. If local=False, the 
+        global array must be returned in a distributed environment. '''
+        return self.data[0].array()
+
+    def copy(self):
+        ''' Returns a deep-copy of the vector. '''
+        d = [self.data[0].copy(),self.data[1].copy()]
+        return MuVector(d)
+
+    def axpy(self,a,y):
+
+        self.data[0].axpy(a,y.data[0])
+        self.data[1].axpy(a,y.data[1])
+
+    def size(self):
+        ''' Returns the (global) size of the vector. '''
+        return len(self.data[0])
+        
+class MuVectors():
+
+    def __init__(self,sk_u,sk_l,yk_u,ADJk,STAk,mu):
+
+
+        self.sk_u = sk_u
+        self.sk_l = sk_l
+        self.yk_u = yk_u
+        self.ADJk = ADJk
+        self.STAk = STAk
+        self.mu   = mu
+
+        self.Rho = self.create_Mu_Rho()
+
+
+    def __len__(self):
+
+        return len(sk_u) + len(sk_l)
+
+    def create_Mu_Rho(self):
+
+        sk_u = self.sk_u
+        sk_l = self.sk_l
+        yk_u = self.yk_u
+        ADJk = self.ADJk
+        STAk = self.STAk
+
+
+        def F(mu):
+
+            Irho = sk_u.dot(yk_u) + sk_l.dot(ADJk) - mu*sk_l.dot(STAk-sk_l)
+
+            return 1./Irho
+
+
+    
 if __name__ == "__main__":
 
     x = SimmpleVector(np.zeros(10))
