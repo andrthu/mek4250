@@ -63,6 +63,6 @@ def opti(y0,a,T,yT,n,F,sol,adj,gr):
 
 if __name__ == '__main__':
 
-    opti(1,2,1,1,100,Func,solver,adjoint_solver,L2_grad)
+    opti(1,15,1,1,100,Func,solver,adjoint_solver,L2_grad)
 
 

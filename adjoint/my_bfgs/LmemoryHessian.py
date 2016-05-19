@@ -1,6 +1,40 @@
 import numpy as np
 from my_vector import SimpleVector
-class LimMemoryHessian():
+
+class InvertedHessian():
+
+    
+    def update(self,yk,sk):
+
+        raise NotImplementedError, 'InvertedHessian.update() not implementrd '
+
+    def matvec(self,x,k = -1):
+
+
+        raise NotImplementedError, 'InvertedHessian.matvec() not implementrd '
+
+class MuLMIH(InvertedHessian):
+    
+
+    def __init__(self,Hint,mu,H=None,mem_lim=10,beta=1):
+
+        self.Hint    = Hint
+        self.mu      = mu
+        self.mem_lim = mem_lim
+        self.y       = []
+        self.s       = []
+        self.rho     = []
+        self.beta    = beta
+
+    def update(self,yk,sk):
+        
+        return 'lol'
+
+    def matvec(self,x,k = -1):
+
+        return 'lol'
+
+class LimMemoryHessian(InvertedHessian):
 
     def __init__(self,Hint,mem_lim=10,beta=1):
 
