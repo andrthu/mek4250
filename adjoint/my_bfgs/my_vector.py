@@ -100,10 +100,43 @@ class MuVector(Vector):
     def size(self):
         ''' Returns the (global) size of the vector. '''
         return len(self.data[0])
+
+    def scale(self,a):
+        self.data[0].scale(a)
+        self.data[1].scale(a)
+
+    def lin_func():
+
+        def F(mu):
+
+            return self.data[0].axpy(mu,self.data[1])
+        return F
+
+    def muVecVec(self,x):
+        
+        def F(mu):
+            d = x.dot(self.data[0])
+            d_mu = x.dot(self.data[0])
+            return d + mu*d_mu
+
+        
+        return F
+
+class MuRho():
+
+    def __init__(self,sk,yk):
+
+        self.sk = sk
+        self.yk = yk
+
+    def func(self,mu):
+
+        Irho = yk.muVecVec(sk.data[0])(mu)
+        return 1./Irho
         
 class MuVectors():
 
-    def __init__(self,sk_u,sk_l,yk_u,ADJk,STAk,mu):
+    def __init__(self,sk_u,sk_l,yk_u,ADJk,STAk,mu,Vec=SimpleVector):
 
 
         self.sk_u = sk_u
@@ -112,6 +145,11 @@ class MuVectors():
         self.ADJk = ADJk
         self.STAk = STAk
         self.mu   = mu
+        self.Vec  = Vec
+        
+
+        self.sk = self.create_sk()
+        self.yk = self.create_yk()
 
         self.Rho = self.create_Mu_Rho()
 
@@ -128,15 +166,42 @@ class MuVectors():
         ADJk = self.ADJk
         STAk = self.STAk
 
-
+        
         def F(mu):
 
             Irho = sk_u.dot(yk_u) + sk_l.dot(ADJk) - mu*sk_l.dot(STAk-sk_l)
 
             return 1./Irho
 
+    def create_sk(self):
 
-    
+        n = len(self)
+        n_u = len(self.sk_u)
+        n_l = n-n_u
+        
+        s = np.zeros(n)
+        s1 = np.zeros(n)
+        s[:n_u] = self.sk_u.array()[:]
+        s[n_u:] = self.sk_l.array()[:]
+
+        return MuVector([self.Vec(s),self.Vec(s1)])
+
+
+    def create_yk(self):
+
+        n = len(self)
+        n_u = len(self.sk_u)
+        n_l = n-n_u
+
+        y  = np.zeros(n)
+        y1 = np.zeros(n)
+
+        y[:n_u]  = self.yk_u.array()[:]
+        y[n_u:]  = self.ADJk.array()[:]
+        y1[n_u:] = (self.sk_l-self.STAk).array()[:]
+
+        return MuVector([self.Vec(y),self.Vec(y1)])
+        
 if __name__ == "__main__":
 
     x = SimmpleVector(np.zeros(10))

@@ -108,7 +108,7 @@ class Lbfgs():
         df0 = SimpleVector( self.d_J(x0.array()))
         df1 = SimpleVector(np.zeros(n))
 
-        iter_k = 0
+        iter_k = self.data['iteration']
     
         p = SimpleVector(np.zeros(n))
 
@@ -134,6 +134,7 @@ class Lbfgs():
             df0=df1.copy()
 
             iter_k=iter_k+1
+            self.data['iteration'] = iter_k
 
         return x
 
