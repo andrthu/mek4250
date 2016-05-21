@@ -53,7 +53,7 @@ def opti(y0,a,T,yT,n,F,sol,adj,gr):
         l = adj(y0,a,len(u)-1,u,T,yT)
         return gr(u,l,dt)
 
-    S = Lbfgs(J,grad_J,x0)
+    S = Lbfgs(J,grad_J,x0,options={"mem_lim" : 10})
 
     x = S.solve()
     print x.array()

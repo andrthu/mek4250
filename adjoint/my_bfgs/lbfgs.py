@@ -2,7 +2,7 @@ import numpy as np
 from linesearch.strong_wolfe import *
 
 from my_vector import SimpleVector
-from LmemoryHessian import LimMemoryHessian
+from LmemoryHessian import LimMemoryHessian, MuLMIH
 
 
 class Lbfgs():
@@ -20,17 +20,33 @@ class Lbfgs():
         
         if Hinit==None:
             self.Hinit = np.identity(x0.size())
+        
+
+        beta = self.options["beta"]
+        if self.options["inverted_Hessian"] == "normal":
+            
+            Hessian = LimMemoryHessian(self.Hinit,mem_lim,beta=beta)
+
+        elif self.options["inverted_Hessian"] == "mu":
+
+            mu = self.options["mu_val"]
+            H  = self.options["old_hessian"]
+            
+            Hessian = MuLMIH(self.Hinit,mu=mu,H=H,mem_lim=mem_lim,beta=beta)
 
         self.data = {'control'   : x0,
                      'iteration' : 0,
-                     'lbfgs'     : LimMemoryHessian(self.Hinit,mem_lim) }
+                     'lbfgs'     : Hessian }
 
     def set_options(self,user_options):
 
+        options = self.default_options()
+
         if user_options!=None:
-            options=user_options  
-        else:
-            options = self.default_options()
+            for key, val in user_options.iteritems():
+                options[key]=val
+        
+            
 
         self.options = options
     
@@ -47,7 +63,11 @@ class Lbfgs():
                    "line_search_options"    : ls,
                    # method specific parameters:
                    "mem_lim"                : 5,
-                   "Hinit"                  : "default",}
+                   "Hinit"                  : "default",
+                   "inverted_Hessian"       : "normal",
+                   "beta"                   : 1, 
+                   "mu_val"                 : 1,
+                   "old_hessian"            : None,}
         
         return default
 
