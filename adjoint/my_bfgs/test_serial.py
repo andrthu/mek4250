@@ -1,4 +1,4 @@
-from my_vector import SimpleVector
+from my_vector import *
 from lbfgs import Lbfgs
 import numpy as np
 from matplotlib.pyplot import *
