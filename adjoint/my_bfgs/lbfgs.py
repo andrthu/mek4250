@@ -54,27 +54,7 @@ class LbfgsParent():
     
     def default_options(self):
         raise NotImplementedError, 'Lbfgs.default_options() not implemented' 
-        """
-        ls = {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1}
         
-        default = {"jtol"                   : 1e-4,
-                   "rjtol"                  : 1e-6,
-                   "gtol"                   : 1e-4,
-                   "rgtol"                  : 1e-5,
-                   "maxiter"                :  200,
-                   "display"                :    2,
-                   "line_search"            : "strong_wolfe",
-                   "line_search_options"    : ls,
-                   # method specific parameters:
-                   "mem_lim"                : 5,
-                   "Hinit"                  : "default",
-                   "inverted_Hessian"       : "normal",
-                   "beta"                   : 1, 
-                   "mu_val"                 : 1,
-                   "old_hessian"            : None,}
-        
-        return default
-        """
 
     def do_linesearch(self,J,d_J,x,p):
         
@@ -123,46 +103,8 @@ class LbfgsParent():
 
     def solve(self):
         raise NotImplementedError, 'Lbfgs.default_solve() not implemented'
-        """
-        x0=self.x0
-        n=x0.size()
-        x = SimpleVector(np.zeros(n))
-        
-        Hk = self.data['lbfgs']
 
-        df0 = SimpleVector( self.d_J(x0.array()))
-        df1 = SimpleVector(np.zeros(n))
 
-        iter_k = self.data['iteration']
-    
-        p = SimpleVector(np.zeros(n))
-
-        tol = self.options["jtol"]
-        max_iter = self.options['maxiter']
-
-        while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
-
-        
-            p = Hk.matvec(-df0)
-            #print df0.array()
-            #print p.array()
-            x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
-
-            df1.set(self.d_J(x.array()))
-            
-            s = x-x0
-            y = df1-df0
-
-            Hk.update(y,s)
-             
-            x0=x.copy()
-            df0=df1.copy()
-
-            iter_k=iter_k+1
-            self.data['iteration'] = iter_k
-
-        return x
-        """
 class Lbfgs(LbfgsParent):
 
     def __init__(self,J,d_J,x0,Hinit=None,lam0=None,options=None):
@@ -276,11 +218,18 @@ class MuLbfgs(LbfgsParent):
                    "beta"                   : 1, 
                    "mu_val"                 : 1,
                    "old_hessian"            : None,
-                   "penaly_number"          : 1}
+                   "penaly_number"          : 1,
+                   "return_data"            : False, }
         
         return default
 
+    def find_s_and_y(self,x0,m):
 
+        return "lol"
+
+    def copy_vals(self,u1,l1,du1,ADJ1,STA1):
+        
+        return "lol2"
 
     def solve(self):
         
@@ -291,12 +240,10 @@ class MuLbfgs(LbfgsParent):
         x = SimpleVector(np.zeros(n))
         
         Hk = self.data['lbfgs']
+        
+        u0,l0,du0,ADJ0,STA0 = self.find_s_and_y(x0,m)
 
-        u0   = np.zeros(n-m)
-        l0   = np.zeros(m)
-        du0  = np.zeros(n-m)
-        ADJ0 = np.zeros(m)
-        STA0 = np.zeros(m)
+        
 
         u1   = None
         l1   = None
@@ -314,11 +261,50 @@ class MuLbfgs(LbfgsParent):
 
         
         iter_k = self.data['iteration']
-    
+
+
+        df0 = SimpleVector(self.d_J(x0))
+        df1 = SimpleVector(np.zeros(n))
+
         p = SimpleVector(np.zeros(n))
 
         tol = self.options["jtol"]
         max_iter = self.options['maxiter']
+
+
+
+        while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
+
+        
+            p = Hk.matvec(-df0)
+            #print df0.array()
+            #print p.array()
+            x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
+
+            df1.set(self.d_J(x.array()))
+            
+            u1,l1,du1,ADJ1,STA1 = self.find_s_and_y(x,m)
+            
+            SandY = MuVectors(u1-u0,l1-l0,du1-du0,ADJ1-ADJ0,STA1-STA0,mu)
+            
+
+            Hk.update(SandY.create_yk(),SandY.create(sk))
+             
+            x0=x.copy()
+            df0=df1.copy()
+            u0,l0,du0,ADJ0,STA0 = copy_vals(u1,l1,du1,ADJ1,STA1)
+
+            iter_k=iter_k+1
+            self.data['iteration'] = iter_k
+            self.data['control']   = x
+            
+        if self.options["return_data"] == True:
+            return self.data
+
+        return x
+
+
+
     
 if __name__== "__main__":
 
