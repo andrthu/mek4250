@@ -252,13 +252,6 @@ class MuLbfgs(LbfgsParent):
         ADJ1 = None
         STA1 = None
         
-        """
-        self.sk_u = sk_u
-        self.sk_l = sk_l
-        self.yk_u = yk_u
-        self.ADJk = ADJk
-        self.STAk = STAk
-        """
 
         
         iter_k = self.data['iteration']
