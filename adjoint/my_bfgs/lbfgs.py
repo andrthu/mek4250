@@ -86,7 +86,12 @@ class LbfgsParent():
 
     def solve(self):
         raise NotImplementedError, 'Lbfgs.default_solve() not implemented'
-
+########################################
+##########################
+############################
+#########################     LBFGS
+############################
+##############################################
 
 class Lbfgs(LbfgsParent):
 
@@ -168,6 +173,13 @@ class Lbfgs(LbfgsParent):
 
         return x
 
+########################################
+##########################
+############################
+#########################     MU LBFGS
+############################
+##############################################
+
 
 class MuLbfgs(LbfgsParent):
 
@@ -200,7 +212,6 @@ class MuLbfgs(LbfgsParent):
                    "display"                :    2,
                    "line_search"            : "strong_wolfe",
                    "line_search_options"    : ls,
-                   # method specific parameters:
                    "mem_lim"                : 5,
                    "Hinit"                  : "default",
                    "beta"                   : 1, 
@@ -211,9 +222,9 @@ class MuLbfgs(LbfgsParent):
         
         return default
 
-    def find_s_and_y(self,x0,m):
+    def find_s_and_y(self,x0):
         
-        u,l,du,ADJ,STA = self.Mud_J(x0,m)
+        u,l,du,ADJ,STA = self.Mud_J(x0)
 
         u1   = SimpleVector(u)
         l1   = SimpleVector(l)
@@ -242,7 +253,7 @@ class MuLbfgs(LbfgsParent):
         
         Hk = self.data['lbfgs']
         
-        u0,l0,du0,ADJ0,STA0 = self.find_s_and_y(x0,m)
+        u0,l0,du0,ADJ0,STA0 = self.find_s_and_y(x0)
 
         
 
