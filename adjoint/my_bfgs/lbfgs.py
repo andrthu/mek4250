@@ -21,24 +21,7 @@ class LbfgsParent():
         if Hinit==None:
             self.Hinit = np.identity(x0.size())
             
-        """
-        mem_lim = self.options['mem_lim']
-        beta = self.options["beta"]
-        if self.options["inverted_Hessian"] == "normal":
-            
-            Hessian = LimMemoryHessian(self.Hinit,mem_lim,beta=beta)
 
-        elif self.options["inverted_Hessian"] == "mu":
-
-            mu = self.options["mu_val"]
-            H  = self.options["old_hessian"]
-            
-            Hessian = MuLMIH(self.Hinit,mu=mu,H=H,mem_lim=mem_lim,beta=beta)
-
-        self.data = {'control'   : x0,
-                     'iteration' : 0,
-                     'lbfgs'     : Hessian }
-        """
 
     def set_options(self,user_options):
 
@@ -134,7 +117,8 @@ class Lbfgs(LbfgsParent):
                    # method specific parameters:
                    "mem_lim"                : 5,
                    "Hinit"                  : "default",
-                   "beta"                   : 1,}
+                   "beta"                   : 1,
+                   "return_data"            : False,}
         
         return default
 
@@ -177,6 +161,10 @@ class Lbfgs(LbfgsParent):
 
             iter_k=iter_k+1
             self.data['iteration'] = iter_k
+
+            
+        if self.options["return_data"] == True:
+            return self.data
 
         return x
 
@@ -224,12 +212,25 @@ class MuLbfgs(LbfgsParent):
         return default
 
     def find_s_and_y(self,x0,m):
+        
+        u,l,du,ADJ,STA = self.Mud_J(x0,m)
 
-        return "lol"
+        u1   = SimpleVector(u)
+        l1   = SimpleVector(l)
+        du1  = SimpleVector(du)
+        ADJ1 = SimpleVector(ADJ)
+        STA1 = SimpleVector(STA)
+
+        return u1,l1,du1,ADJ1,STA1
 
     def copy_vals(self,u1,l1,du1,ADJ1,STA1):
+        u2 = u1.copy()
+        l2 = l1.copy()
+        du2 = du1.copy()
+        ADJ2 = ADJ1.copy()
+        STA2 = STA1.copy()
         
-        return "lol2"
+        return u2,l2,du2,ADJ2,STA2
 
     def solve(self):
         
