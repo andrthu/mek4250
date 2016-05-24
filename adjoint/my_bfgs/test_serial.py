@@ -52,8 +52,10 @@ def opti(y0,a,T,yT,n,F,sol,adj,gr):
     def grad_J(u):
         l = adj(y0,a,len(u)-1,u,T,yT)
         return gr(u,l,dt)
-
+        
     S = Lbfgs(J,grad_J,x0,options={"mem_lim" : 10})
+    
+    #S = MuLbfgs(J,d_J,x0,Hinit=None,lam0=None,options=None))
 
     x = S.solve()
     print x.array()

@@ -95,7 +95,8 @@ def Functional2(y,u,lam,yT,T,my):
         
     return 0.5*(F+penalty)
 
-def mini_solver(y0,a,T,yT,n,m,my0):
+
+def mini_solver(y0,a,T,yT,n,m,my_list):
     
     t=np.linspace(0,T,n+1)
     #initial guess for control and penalty control is set to be 0
@@ -105,19 +106,19 @@ def mini_solver(y0,a,T,yT,n,m,my0):
     y,Y = solver(y0,a,n,m,x[:n+1],x[n+1:],T)
     val = Functional2(y,zeros(n+1),zeros(m-1),yT,T,my0)     
     
+    H = None
     
-    multi=3
     #solve problem for increasing mu
-    for k in range(3):
+    for k in range(len(my_list)):
         #define reduced functional dependent only on u
         def J(u):
             y,Y=solver(y0,a,n,m,u[:n+1],u[n+1:],T)
-            return Functional2(y,u[:n+1],u[n+1:],yT,T,10**(multi*k)*my0)
+            return Functional2(y,u[:n+1],u[n+1:],yT,T,my_list[k])
         
         #define our gradient using by solving adjoint equation
         def grad_J(u):
             #adjoint_solver(y0,a,n,m,u,lam,T,yT,my)
-            l,L = adjoint_solver(y0,a,n,m,u[:n+1],u[n+1:],T,yT,10**(multi*k)*my0)
+            l,L = adjoint_solver(y0,a,n,m,u[:n+1],u[n+1:],T,yT,my_list[k])
             g =zeros(len(u))
             
             g[:n+1]=float(T)*(u[:n+1]+L)/n
@@ -143,27 +144,34 @@ def mini_solver(y0,a,T,yT,n,m,my0):
             return u1,l1,du1,ADJ1,STA1
             
         #minimize J using initial guess x, and the gradient/functional above
-        res = minimize(J,x,method='L-BFGS-B', jac=grad_J,
-                        options={'gtol': 1e-6, 'disp': True})
-
-        #update initial guess
-        u=res.x
-        x=u
-
+        """
+        default = {"jtol"                   : 1e-4,
+                   "rjtol"                  : 1e-6,
+                   "gtol"                   : 1e-4,
+                   "rgtol"                  : 1e-5,
+                   "maxiter"                :  200,
+                   "display"                :    2,
+                   "line_search"            : "strong_wolfe",
+                   "line_search_options"    : ls,
+                   "mem_lim"                : 5,
+                   "Hinit"                  : "default",
+                   "beta"                   : 1, 
+                   "mu_val"                 : 1,
+                   "old_hessian"            : None,
+                   "penaly_number"          : 1,
+                   "return_data"            : False, }
+        """
+        options = {"mu_val": mu_list[k], "old_hessian": H, 
+                   "return_data": True,"mem_lim":10, }
         
-        #print res.x
-        print res.message
+        S = MuLbfgs(J,d_J,x0,Mud_J,Hinit=None,lam0=None,options=None)
 
-        #plot our optimal sate and control, and print out optimal value       
-        y,Y = solver(y0,a,n,m,u[:n+1],u[n+1:],T)
-        val = J(u)
-        plot(t,u[:n+1])
-        plot(t,Y)
-        legend(['control','state'])
-        title('J(u)= '+str(val)+ ", mu="+str(10**(multi*k)*my0)+" iter="+str(k+1))
-        print J(u)
-        print 10**(multi*(k+1))*my0, max(x)/n
-        show()
+        data = S.solve()
+        
+        x0 = data['control']
+        H = data['lbfgs']
+
+    print x0.array()
 
 
 
