@@ -10,7 +10,10 @@ class SimpleVector(Vector):
     def __setitem__(self, index, value):
         ''' Sets the value of the (local) index. '''
         self.data[index]=value
-
+        
+    def local_size(self):
+        return len(self.data)
+    
     def array(self, local=True):
         ''' Returns the vector as a numpy.array object. If local=False, the 
         global array must be returned in a distributed environment. '''
@@ -131,7 +134,7 @@ class MuRho():
 
     def func(self,mu):
 
-        Irho = yk.muVecVec(sk.data[0])(mu)
+        Irho = self.yk.muVecVec(self.sk.data[0])(mu)
         return 1./Irho
         
 class MuVectors():
@@ -156,7 +159,7 @@ class MuVectors():
 
     def __len__(self):
 
-        return len(sk_u) + len(sk_l)
+        return len(self.sk_u) + len(self.sk_l)
 
 
     

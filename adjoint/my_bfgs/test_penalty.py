@@ -68,7 +68,7 @@ def adjoint_solver(y0,a,n,m,u,lam,T,yT,my,get_y=False):
         for j in range(len(l[i])-1):
             l[i][-(j+2)]=(1+dt*a)*l[i][-(j+1)]
 
-    L=zeros(n+1)
+    L=np.zeros(n+1)
 
     start=0
     for i in range(m):
@@ -102,9 +102,7 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
     #initial guess for control and penalty control is set to be 0
     x0 = SimpleVector(np.zeros(n+m))
 
-    #initial result when u=0
-    y,Y = solver(y0,a,n,m,x[:n+1],x[n+1:],T)
-    val = Functional2(y,zeros(n+1),zeros(m-1),yT,T,my0)     
+    
     
     H = None
     
@@ -119,7 +117,7 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
         def grad_J(u):
             #adjoint_solver(y0,a,n,m,u,lam,T,yT,my)
             l,L = adjoint_solver(y0,a,n,m,u[:n+1],u[n+1:],T,yT,my_list[k])
-            g =zeros(len(u))
+            g = np.zeros(len(u))
             
             g[:n+1]=float(T)*(u[:n+1]+L)/n
 
@@ -128,9 +126,9 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
                 
             return g
     
-        def Mud_j(u):
+        def Mud_J(u):
             
-            l,L,y,Y = adjoint_solver(y0,a,n,m,u[:n+1],u[n+1:],T,yT,10**(multi*k)*my0,get_y=True)
+            l,L,y,Y = adjoint_solver(y0,a,n,m,u[:n+1],u[n+1:],T,yT,my_list[k],get_y=True)
 
             u1   = u[:n+1]
             l1   = u[n+1:]
@@ -161,10 +159,10 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
                    "penaly_number"          : 1,
                    "return_data"            : False, }
         """
-        options = {"mu_val": mu_list[k], "old_hessian": H, 
+        options = {"mu_val": my_list[k], "old_hessian": H, 
                    "return_data": True,"mem_lim":10, }
         
-        S = MuLbfgs(J,d_J,x0,Mud_J,Hinit=None,lam0=None,options=None)
+        S = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=None)
 
         data = S.solve()
         
@@ -173,5 +171,17 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
 
     print x0.array()
 
+if __name__ == "__main__":
 
+
+    y0 = 1
+    a = 1
+    T = 1
+    yT = 10
+    n = 100
+    m = 10
+
+    my_list = [1,100,1000]
+    
+    mini_solver(y0,a,T,yT,n,m,my_list)
 

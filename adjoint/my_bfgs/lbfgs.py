@@ -1,7 +1,7 @@
 import numpy as np
 from linesearch.strong_wolfe import *
 
-from my_vector import SimpleVector
+from my_vector import SimpleVector, MuVector,MuVectors
 from LmemoryHessian import LimMemoryHessian, MuLMIH
 
 
@@ -255,7 +255,7 @@ class MuLbfgs(LbfgsParent):
         
         u0,l0,du0,ADJ0,STA0 = self.find_s_and_y(x0)
 
-        
+        mu = self.options["mu_val"]
 
         u1   = None
         l1   = None
@@ -268,7 +268,7 @@ class MuLbfgs(LbfgsParent):
         iter_k = self.data['iteration']
 
 
-        df0 = SimpleVector(self.d_J(x0))
+        df0 = SimpleVector(self.d_J(x0.array()))
         df1 = SimpleVector(np.zeros(n))
 
         p = SimpleVector(np.zeros(n))
@@ -288,16 +288,16 @@ class MuLbfgs(LbfgsParent):
 
             df1.set(self.d_J(x.array()))
             
-            u1,l1,du1,ADJ1,STA1 = self.find_s_and_y(x,m)
+            u1,l1,du1,ADJ1,STA1 = self.find_s_and_y(x)
             
             SandY = MuVectors(u1-u0,l1-l0,du1-du0,ADJ1-ADJ0,STA1-STA0,mu)
             
 
-            Hk.update(SandY.create_yk(),SandY.create(sk))
+            Hk.update(SandY.create_yk(),SandY.create_sk())
              
             x0=x.copy()
             df0=df1.copy()
-            u0,l0,du0,ADJ0,STA0 = copy_vals(u1,l1,du1,ADJ1,STA1)
+            u0,l0,du0,ADJ0,STA0 = self.copy_vals(u1,l1,du1,ADJ1,STA1)
 
             iter_k=iter_k+1
             self.data['iteration'] = iter_k
