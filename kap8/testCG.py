@@ -6,7 +6,7 @@ from numpy import array
 
 
 
-
+#Solver=[["cg","none"],["cg","jacobi"],["cg","amg"],["cg","ilu"]]
 
 def solving_time(A,b,solver,V):
     U = Function(V)
@@ -21,7 +21,7 @@ def solving_time(A,b,solver,V):
     Loser.solve(A,U.vector(), b)
     t1=time.time()
     
-    return t1-t0
+    return t1-t0,U
 
 def amg_solving_time(A,b,solver,V):
 
@@ -30,15 +30,19 @@ def amg_solving_time(A,b,solver,V):
     solve(A,U.vector(),b,solver[0],solver[1])
     t1=time.time()
     
-    return t1-t0
+    return t1-t0,U
 
 cg_time     = [[],[]]
 amg_time    = [[],[]]
 ilu_time    = [[],[]]
 jacobi_time = [[],[]]
 
+cg_error     = [[],[]]
+amg_error    = [[],[]]
+ilu_error    = [[],[]]
+jacobi_error = [[],[]]
 Time = [cg_time,jacobi_time,amg_time,ilu_time]
-
+Error = [cg_error,jacobi_error,amg_error,ilu_error]
 
 def test_PC(pc,N):
     
@@ -46,7 +50,8 @@ def test_PC(pc,N):
 
     M = [UnitIntervalMesh,UnitSquareMesh]
 
-    Time = [[],[]]
+    Time  = [[],[]]
+    Error = [[],[]]
     
     for i in range(len(M)):
 
@@ -67,32 +72,50 @@ def test_PC(pc,N):
             v=TestFunction(V)
 
             a=inner(grad(u),grad(v))*dx
+            
             if i==0:
-                f=Expression("pow(pi,2)*sin(pi*x[0])")            
+                f=Expression("pow(pi,2)*sin(pi*x[0])")
+                ue=Expression("sin(pi*x[0])")            
             else:
                 f=Expression("2*pow(pi,2)*sin(pi*x[0])*sin(pi*x[1])")
-            
+                ue=Expression("sin(pi*x[0])*sin(pi*x[1])")
+
+                
             L=f*v*dx
 
             A,b = assemble_system(a,L,bc)
 
             if pc[1] == 'amg':
-                t2 = amg_solving_time(A,b,pc,V)
+                t2,U = amg_solving_time(A,b,pc,V)
                 Time[i].append(t2)
             else:
             
-                t2 = solving_time(A,b,pc,V)
+                t2,U = solving_time(A,b,pc,V)
                 Time[i].append(t2)
-    return Time
+
+            #Error[i].append(errornorm(ue,U,'H1'))
+    return Time,Error
 
 Solver=[["cg","none"],["cg","jacobi"],["cg","amg"],["cg","ilu"]]
 N = [16,32,64,128,256,512]
-amg_time    = test_PC(Solver[2],N)
-cg_time     = test_PC(Solver[0],N)
-ilu_time    = test_PC(Solver[3],N)
-jacobi_time = test_PC(Solver[1],N)
 
-
+amg_time, amg_error       = test_PC(Solver[2],N)
+cg_time, cg_error         = test_PC(Solver[0],N)
+ilu_time, ilu_error       = test_PC(Solver[3],N)
+jacobi_time, jacobi_error = test_PC(Solver[1],N)
+"""
+print "cg error"
+print cg_error
+print
+print "jacobi error"
+print jacobi_error
+print
+print "ilu_error"
+print ilu_error
+print
+print "amg error"
+print amg_error
+"""
 list_krylov_solver_preconditioners()
 
 plt.plot(array(N),array(cg_time[0]))
