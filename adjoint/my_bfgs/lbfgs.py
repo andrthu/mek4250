@@ -26,8 +26,9 @@ class LbfgsParent():
     def set_options(self,user_options):
 
         options = self.default_options()
-
+        
         if user_options!=None:
+            #print key
             for key, val in user_options.iteritems():
                 options[key]=val
         
@@ -185,7 +186,7 @@ class MuLbfgs(LbfgsParent):
 
     def __init__(self,J,d_J,x0,Mud_J,Hinit=None,lam0=None,options=None):
 
-        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,lam0=None,options=None)
+        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,lam0=None,options=options)
 
         self.Mud_J = Mud_J
         
@@ -302,8 +303,8 @@ class MuLbfgs(LbfgsParent):
             iter_k=iter_k+1
             self.data['iteration'] = iter_k
             self.data['control']   = x
-            
-        if self.options["return_data"] == True:
+        
+        if self.options["return_data"]:
             return self.data
 
         return x

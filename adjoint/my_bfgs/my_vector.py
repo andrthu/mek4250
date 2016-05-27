@@ -64,9 +64,13 @@ class SimpleVector(Vector):
 
     def copy(self):
         ''' Returns a deep-copy of the vector. '''
+        """
         d = self.data.copy()
+        """
+        d = np.zeros(len(self.data))
+        for i in range(len(d)):
+            d[i]=self.data[i]
         return SimpleVector(d)
-
 
 
 class MuVector(Vector):
@@ -108,22 +112,23 @@ class MuVector(Vector):
         self.data[0].scale(a)
         self.data[1].scale(a)
 
-    def lin_func():
-
-        def F(mu):
-
-            return self.data[0].axpy(mu,self.data[1])
-        return F
-
-    def muVecVec(self,x):
-        
-        def F(mu):
-            d = x.dot(self.data[0])
-            d_mu = x.dot(self.data[0])
-            return d + mu*d_mu
+    def lin_func(self,mu):
 
         
-        return F
+        a = self.data[0] + mu*self.data[1]
+        
+        return a.copy().array()
+        
+
+    def muVecVec(self,x,mu):
+        
+        
+        d = x.dot(self.data[0])
+        d_mu = x.dot(self.data[0])
+        return d + mu*d_mu
+
+        
+        
 
 class MuRho():
 
@@ -134,7 +139,7 @@ class MuRho():
 
     def func(self,mu):
 
-        Irho = self.yk.muVecVec(self.sk.data[0])(mu)
+        Irho = self.yk.muVecVec(self.sk.data[0],mu)
         return 1./Irho
         
 class MuVectors():

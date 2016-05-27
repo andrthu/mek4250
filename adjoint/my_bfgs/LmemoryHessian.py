@@ -53,15 +53,15 @@ class MuLMIH(InvertedHessian):
         self.beta    = beta
 
         if H!=None:
-            if len(H[0]) > mem_lim:
-                start = len(H[0])-mem_lin
-                self.y   = H[0][start:]
-                self.s   = H[1][start:]
-                self.rho = H[2][start:]
+            if len(H.y) > mem_lim:
+                start = len(H.y)-mem_lim
+                self.y   = H.y[start:]
+                self.s   = H.s[start:]
+                self.rho = H.rho[start:]
             else:
-                self.y   = H[0]
-                self.s   = H[1]
-                self.rho = H[2]
+                self.y   = H.y
+                self.s   = H.s
+                self.rho = H.rho
 
     def make_rho(self,yk,sk):
         
@@ -76,12 +76,17 @@ class MuLMIH(InvertedHessian):
             return SimpleVector(self.beta * (x.matDot(self.Hint)))
         rhok, yk, sk = self[k]
         
-        mu = self.mu 
+        mu = self.mu
+        print mu
+        #print "lol",rhok.func(mu) * sk.muVecVec(x)(mu)
+        #print yk.lin_func(mu)
+        A = (yk.data[0]+ mu*yk.data[1]).copy()
         
-        t = x - rhok.func(mu) * sk.muVecVec(x)(mu) * yk.lin_func(mu)
+        (float(rhok.func(mu) * sk.muVecVec(x,mu))*A).data.copy()
+        t = x - float(rhok.func(mu) * sk.muVecVec(x,mu)) * A
         t = self.matvec(t,k-1)
-        t = t - rhok.func(mu) * yk.muVecVec(t)(mu) * sk
-        t = t + rhok.func(mu) * sk.muVecVec(x)(mu) * sk
+        t = t - float(rhok.func(mu) * yk.muVecVec(t,mu)) * sk.data[0]
+        t = t + float(rhok.func(mu) * sk.muVecVec(x,mu)) * sk.data[0]
         return t
 
 class LimMemoryHessian(InvertedHessian):
