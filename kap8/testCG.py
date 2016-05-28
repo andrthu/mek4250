@@ -1,8 +1,8 @@
 from dolfin import *
 import time
 import matplotlib.pyplot as plt
-from numpy import array
-
+from numpy import array,matrix,log,vstack,ones,zeros,sqrt,exp
+from scipy import linalg, random
 
 
 
@@ -32,16 +32,25 @@ def amg_solving_time(A,b,solver,V):
     
     return t1-t0,U
 
+def direct_solving_time(A,b,V):
+    U = Function(V)
+    t0=time.time()
+    solve(A,U.vector(),b)
+    t1=time.time()
+    return t1-t0,U
+
+direct_time = [[],[]]
 cg_time     = [[],[]]
 amg_time    = [[],[]]
 ilu_time    = [[],[]]
 jacobi_time = [[],[]]
 
+direct_error = [[],[]]
 cg_error     = [[],[]]
 amg_error    = [[],[]]
 ilu_error    = [[],[]]
 jacobi_error = [[],[]]
-Time = [cg_time,jacobi_time,amg_time,ilu_time]
+Time = [direct_time,cg_time,jacobi_time,amg_time,ilu_time]
 Error = [cg_error,jacobi_error,amg_error,ilu_error]
 
 def test_PC(pc,N):
@@ -84,9 +93,12 @@ def test_PC(pc,N):
             L=f*v*dx
 
             A,b = assemble_system(a,L,bc)
-
+            
             if pc[1] == 'amg':
                 t2,U = amg_solving_time(A,b,pc,V)
+                Time[i].append(t2)
+            elif pc[0] == "direct":
+                t2,U = direct_solving_time(A,b,V)
                 Time[i].append(t2)
             else:
             
@@ -97,12 +109,18 @@ def test_PC(pc,N):
     return Time,Error
 
 Solver=[["cg","none"],["cg","jacobi"],["cg","amg"],["cg","ilu"]]
-N = [16,32,64,128,256,512]
+#N = [16,32,64,128,256,375,512]
+N = [128,180,256,375,512,750,1056]
 
+direct_time, direct_error = test_PC(["direct",'none'],N)
 amg_time, amg_error       = test_PC(Solver[2],N)
 cg_time, cg_error         = test_PC(Solver[0],N)
 ilu_time, ilu_error       = test_PC(Solver[3],N)
 jacobi_time, jacobi_error = test_PC(Solver[1],N)
+Time = [direct_time,cg_time,jacobi_time,amg_time,ilu_time]
+Names = ["direct","cg","jacobi","amg","ilu"]
+Error = [cg_error,jacobi_error,amg_error,ilu_error]
+
 """
 print "cg error"
 print cg_error
@@ -116,14 +134,31 @@ print
 print "amg error"
 print amg_error
 """
+
+def LS(N,T):
+
+    A = vstack([log(array(N)),ones(len(N))]).T
+    
+    ls = linalg.lstsq(A, log(array(T)))[0]
+    return ls
+
+for i in range(len(Time)):
+    ls = LS(array(N)**2,Time[i][1])
+    print
+    print "Time as a function of dofs for " + Names[i]
+    print "T(n) =%e*N**%f" %(exp(ls[1]),ls[0]) 
+    print
+
 list_krylov_solver_preconditioners()
+list_linear_solver_methods()
 
 plt.plot(array(N),array(cg_time[0]))
 plt.plot(array(N),array(amg_time[0]))
 plt.plot(array(N),array(ilu_time[0]))
 plt.plot(array(N),array(jacobi_time[0]))
+plt.plot(array(N),array(direct_time[0]))
 
-plt.legend(['cg','amg','ilu','jacobi'],loc=2)
+plt.legend(['cg','amg','ilu','jacobi','direct'],loc=2)
 plt.xlabel('dofs')
 plt.ylabel('time in seconds')
 plt.show()
@@ -133,11 +168,14 @@ plt.plot(array(N)**2,array(cg_time[1]))
 plt.plot(array(N)**2,array(amg_time[1]))
 plt.plot(array(N)**2,array(ilu_time[1]))
 plt.plot(array(N)**2,array(jacobi_time[1]))
-
-plt.legend(['cg','amg','ilu','jacobi'],loc=2)
+plt.plot(array(N)**2,array(direct_time[1]))
+plt.legend(['cg','amg','ilu','jacobi','direct'],loc=2)
 plt.xlabel('dofs')
 plt.ylabel('time in seconds')
 plt.show()
+
+
+
 
 """
 for i in range(len(M)):
