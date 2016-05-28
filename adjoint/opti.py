@@ -37,7 +37,7 @@ def mini_solver(y0,a,T,yT,n,F,sol,adj,gr):
    
 if __name__ == '__main__':
     #mini_solver(y0,a,T,yT,n)
-    mini_solver(1,2,1,1,1000,Functional2,solver,adjoint_solver,L2_grad)
+    mini_solver(1,1,1,1,100,Functional2,solver,adjoint_solver,L2_grad)
     #mini_solver(1,2,1,1,1000,quad_F,solver,adjoint_solver,quad_grad)
     #mini_solver(1,10,1,1,1000,exp_Func,solver,adjoint_solver,exp_grad)
     #mini_solver(1,10,1,-20,1000,add_lin_F,solver,adjoint_solver,add_lin_grad)

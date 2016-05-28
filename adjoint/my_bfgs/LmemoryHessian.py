@@ -77,7 +77,7 @@ class MuLMIH(InvertedHessian):
         rhok, yk, sk = self[k]
         
         mu = self.mu
-        print mu
+        
         #print "lol",rhok.func(mu) * sk.muVecVec(x)(mu)
         #print yk.lin_func(mu)
         A = (yk.data[0]+ mu*yk.data[1]).copy()
