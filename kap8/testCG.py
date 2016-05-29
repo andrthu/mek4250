@@ -35,7 +35,7 @@ def amg_solving_time(A,b,solver,V):
 def direct_solving_time(A,b,V):
     U = Function(V)
     t0=time.time()
-    solve(A,U.vector(),b)
+    solve(A,U.vector(),b,'lu')
     t1=time.time()
     return t1-t0,U
 
@@ -109,8 +109,8 @@ def test_PC(pc,N):
     return Time,Error
 
 Solver=[["cg","none"],["cg","jacobi"],["cg","amg"],["cg","ilu"]]
-#N = [16,32,64,128,256,375,512]
-N = [128,180,256,375,512,750,1056]
+N = [16,32,64,128,256,375,512]
+#N = [128,180,256,375,512,750,1056]
 
 direct_time, direct_error = test_PC(["direct",'none'],N)
 amg_time, amg_error       = test_PC(Solver[2],N)
