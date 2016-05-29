@@ -160,7 +160,7 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
                    "return_data"            : False, }
         """
         options = {"mu_val": my_list[k], "old_hessian": None, 
-                   "return_data": True,"mem_lim":10, }
+                   "return_data": True,"mem_lim":10, "beta":0.1,}
         
         S = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
 
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     n = 100
     m = 10
 
-    my_list = [2,10,1000]
+    my_list = [1,5,1000]
     
     mini_solver(y0,a,T,yT,n,m,my_list)
 

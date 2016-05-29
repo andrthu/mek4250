@@ -203,7 +203,7 @@ class MuLbfgs(LbfgsParent):
 
     
     def default_options(self):
-        ls = {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1}
+        ls = {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-10, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
                    "rjtol"                  : 1e-6,
