@@ -1,6 +1,8 @@
 import numpy as np
 from linesearch.strong_wolfe import *
 
+from matplotlib.pyplot import *
+
 from my_vector import SimpleVector, MuVector,MuVectors
 from LmemoryHessian import LimMemoryHessian, MuLMIH
 
@@ -149,7 +151,8 @@ class Lbfgs(LbfgsParent):
 
         while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
 
-        
+            plot(np.linspace(0,1,n),x0.array())
+            show()
             p = Hk.matvec(-df0)
             #print df0.array()
             #print p.array()
@@ -281,7 +284,10 @@ class MuLbfgs(LbfgsParent):
 
         while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
 
-        
+            plot(np.linspace(0,1,len(u0)),x0.array()[:len(u0)])
+            show()
+            print self.d_J(x0.array())
+            
             p = Hk.matvec(-df0)
             #print df0.array()
             #print p.array()
