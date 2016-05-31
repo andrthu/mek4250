@@ -100,7 +100,7 @@ class Lbfgs(LbfgsParent):
 
     def __init__(self,J,d_J,x0,Hinit=None,lam0=None,options=None):
 
-        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,lam0=None,options=None)
+        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,lam0=None,options=options)
         
         mem_lim = self.options['mem_lim']
         beta = self.options["beta"]
@@ -151,8 +151,8 @@ class Lbfgs(LbfgsParent):
 
         while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
 
-            plot(np.linspace(0,1,n),x0.array())
-            show()
+            #plot(np.linspace(0,1,n),x0.array())
+            #show()
             p = Hk.matvec(-df0)
             #print df0.array()
             #print p.array()
@@ -170,7 +170,7 @@ class Lbfgs(LbfgsParent):
 
             iter_k=iter_k+1
             self.data['iteration'] = iter_k
-
+            self.data['control'] = x
             
         if self.options["return_data"] == True:
             return self.data
@@ -284,9 +284,9 @@ class MuLbfgs(LbfgsParent):
 
         while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
 
-            plot(np.linspace(0,1,len(u0)),x0.array()[:len(u0)])
-            show()
-            print self.d_J(x0.array())
+            #plot(np.linspace(0,1,len(u0)),x0.array()[:len(u0)])
+            #show()
+            #print self.d_J(x0.array())
             
             p = Hk.matvec(-df0)
             #print df0.array()

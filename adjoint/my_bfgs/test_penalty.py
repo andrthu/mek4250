@@ -158,11 +158,13 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
                    "penaly_number"          : 1,
                    "return_data"            : False, }
         """
-        options = {"mu_val": my_list[k], "old_hessian": None, 
+        
+        options = {"mu_val": my_list[k], "old_hessian": H, 
                    "return_data": True,"mem_lim":10, "beta":1,}
         
+        
         S = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
-
+        #S = Lbfgs(J,grad_J,x0,options={"mem_lim" : 10,"return_data": True,})
         data = S.solve()
         
         x0 = data['control']
@@ -179,7 +181,7 @@ if __name__ == "__main__":
     y0 = 1
     a = 1
     T = 1
-    yT = 10
+    yT = 1
     n = 100
     m = 10
 
