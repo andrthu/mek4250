@@ -1,10 +1,12 @@
 from dolfin import *
-from numpy import zeros, sqrt, pi
+from numpy import zeros, sqrt, pi,matrix
 import time
 
 def boundary(x,on_boundary): return on_boundary
-N=[80,60,40,22,9,7]
-P=[1,2,3,4,5,6]
+#N=[80,60,40,22,9,7]
+#P=[1,2,3,4,5,6]
+P=[1]
+N=[5]
 K=1
 for i in range(len(P)):
     
@@ -24,6 +26,11 @@ for i in range(len(P)):
 
     a = inner(grad(u),grad(v))*dx
     L = v*f*dx
+
+    A,b =assemble_system(a,L,bc)
+
+    print A.array().dot((zeros(36)+1))
+    print len(A.array())
 
     u=Function(V)
     solve(a==L,u,bc,
