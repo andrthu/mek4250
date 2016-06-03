@@ -30,7 +30,6 @@ class LbfgsParent():
         options = self.default_options()
         
         if user_options!=None:
-            #print key
             for key, val in user_options.iteritems():
                 options[key]=val
         
@@ -285,13 +284,11 @@ class MuLbfgs(LbfgsParent):
 
         while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
 
-            #plot(np.linspace(0,1,len(u0)),x0.array()[:len(u0)])
-            #show()
-            #print self.d_J(x0.array())
+            
             
             p = Hk.matvec(-df0)
-            #print df0.array()
-            #print p.array()
+            
+            
             x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
             df1.set(self.d_J(x.array()))
