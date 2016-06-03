@@ -103,6 +103,7 @@ class Lbfgs(LbfgsParent):
         LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,lam0=None,options=options)
         
         mem_lim = self.options['mem_lim']
+        
         beta = self.options["beta"]
         
             
@@ -206,7 +207,7 @@ class MuLbfgs(LbfgsParent):
 
     
     def default_options(self):
-        ls = {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-10, "start_stp": 1}
+        ls = {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
                    "rjtol"                  : 1e-6,

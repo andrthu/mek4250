@@ -78,11 +78,11 @@ class MuLMIH(InvertedHessian):
         
         mu = self.mu
         
-        #print "lol",rhok.func(mu) * sk.muVecVec(x)(mu)
-        #print yk.lin_func(mu)
+        
+        
         A = (yk.data[0]+ mu*yk.data[1]).copy()
         
-        (float(rhok.func(mu) * sk.muVecVec(x,mu))*A).data.copy()
+        #(float(rhok.func(mu) * sk.muVecVec(x,mu))*A).data.copy()
         t = x - float(rhok.func(mu) * sk.muVecVec(x,mu)) * A
         t = self.matvec(t,k-1)
         t = t - float(rhok.func(mu) * yk.muVecVec(t,mu)) * sk.data[0]

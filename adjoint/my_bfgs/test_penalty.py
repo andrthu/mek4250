@@ -137,7 +137,7 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
             for i in range(m-1):
                 ADJ1[i] = l[i+1][0]
                 STA1[i] = y[i][-1]
-
+            
             return u1,l1,du1,ADJ1,STA1
             
         #minimize J using initial guess x, and the gradient/functional above
@@ -160,24 +160,24 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
         """
         
         options = {"mu_val": my_list[k], "old_hessian": H, 
-                   "return_data": True,"mem_lim":10, "beta":1,}
+                   "return_data": True,"mem_lim":15, "beta":1,}
         
         
         S = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
-        #S = Lbfgs(J,grad_J,x0,options={"mem_lim" : 10,"return_data": True,})
+        #S = Lbfgs(J,grad_J,x0,options={"mem_lim" : 15,"return_data": True,})
         data = S.solve()
         
         x0 = data['control']
         H = data['lbfgs']
         #solver(y0,a,n,m,u,lam,T)
         plot(t,x0.array()[:n+1])
-        print x0.array()
+        print data['iteration']
         show()
     print x0.array()
 
 if __name__ == "__main__":
 
-
+    #-g 2.44540679848
     y0 = 1
     a = 1
     T = 1
