@@ -124,7 +124,7 @@ class MuVector(Vector):
         
         
         d = x.dot(self.data[0])
-        d_mu = x.dot(self.data[0])
+        d_mu = x.dot(self.data[1])
         return d + mu*d_mu
 
         
@@ -138,8 +138,9 @@ class MuRho():
         self.yk = yk
 
     def func(self,mu):
-
+        
         Irho = self.yk.muVecVec(self.sk.data[0],mu)
+        Irho = Irho + self.yk.muVecVec(mu*self.sk.data[1],mu)
         return 1./Irho
         
 class MuVectors():
