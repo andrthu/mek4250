@@ -42,7 +42,7 @@ class InvertedHessian():
 class MuLMIH(InvertedHessian):
     
 
-    def __init__(self,Hint,mu,H=None,mem_lim=10,beta=1):
+    def __init__(self,Hint,mu,H=None,mem_lim=10,beta=1,save_number=-1):
 
         self.Hint    = Hint
         self.mu      = mu
@@ -53,15 +53,22 @@ class MuLMIH(InvertedHessian):
         self.beta    = beta
 
         if H!=None:
-            if len(H.y) > mem_lim:
-                start = len(H.y)-mem_lim
+            if save_number==-1 or save_number>mem_lim:
+                if len(H.y) > mem_lim:
+                    start = len(H.y)-mem_lim
+                    self.y   = H.y[start:]
+                    self.s   = H.s[start:]
+                    self.rho = H.rho[start:]
+                else:                
+                    self.y   = H.y
+                    self.s   = H.s
+                    self.rho = H.rho
+            else:
+                start = len(H.y)-save_number
                 self.y   = H.y[start:]
                 self.s   = H.s[start:]
                 self.rho = H.rho[start:]
-            else:
-                self.y   = H.y
-                self.s   = H.s
-                self.rho = H.rho
+                
 
     def make_rho(self,yk,sk):
         
@@ -82,7 +89,7 @@ class MuLMIH(InvertedHessian):
         
         A = (yk.data[0]+ mu*yk.data[1]).copy()
         
-        #(float(rhok.func(mu) * sk.muVecVec(x,mu))*A).data.copy()
+        
         t = x - float(rhok.func(mu) * sk.muVecVec(x,mu)) * A
         t = self.matvec(t,k-1)
         t = t - float(rhok.func(mu) * yk.muVecVec(t,mu)) * sk.data[0]
@@ -101,31 +108,7 @@ class LimMemoryHessian(InvertedHessian):
         self.rho = []
         self.beta = beta
 
-    """
-    def __len__(self):
-        return len(self.y)
-
     
-    def __getitem__(self,k):
-        
-        if k==0:
-            return self.Hint
-        return (self.rho[k-1],self.y[k-1],self.s[k-1])
-
-    
-    def update(self,yk,sk):
-        if self.mem_lim==0:
-            return
-
-        if len(self) == self.mem_lim:
-            self.y = self.y[1:]
-            self.s = self.s[1:]
-            self.rho = self.rho[1:]
-        
-        self.y.append(yk)
-        self.s.append(sk)
-        self.rho.append(1./(yk.dot(sk)))
-    """
     def make_rho(self,yk,sk):
 
         return 1./(yk.dot(sk))

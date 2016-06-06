@@ -193,12 +193,14 @@ class MuLbfgs(LbfgsParent):
 
         self.Mud_J = Mud_J
         
-        mem_lim = self.options['mem_lim']
-        beta = self.options["beta"]
-        mu = self.options["mu_val"]
-        H  = self.options["old_hessian"]
-            
-        Hessian = MuLMIH(self.Hinit,mu=mu,H=H,mem_lim=mem_lim,beta=beta)
+        mem_lim  = self.options['mem_lim']
+        beta     = self.options["beta"]
+        mu       = self.options["mu_val"]
+        H        = self.options["old_hessian"]
+        save_num = self.options["save_number"]
+
+        Hessian = MuLMIH(self.Hinit,mu=mu,H=H,mem_lim=mem_lim,beta=beta,
+                         save_number=save_num)
 
         self.data = {'control'   : x0,
                      'iteration' : 0,
@@ -222,6 +224,7 @@ class MuLbfgs(LbfgsParent):
                    "mu_val"                 : 1,
                    "old_hessian"            : None,
                    "penaly_number"          : 1,
+                   "save_number"            :-1,          
                    "return_data"            : False, }
         
         return default

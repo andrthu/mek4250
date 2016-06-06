@@ -109,8 +109,8 @@ def test_PC(pc,N):
     return Time,Error
 
 Solver=[["cg","none"],["cg","jacobi"],["cg","amg"],["cg","ilu"]]
-N = [16,32,64,128,256,375,512]
-#N = [128,180,256,375,512,750,1056]
+#N = [16,32,64,128,256,375,512]
+N = [128,180,256,375,512,750,1056]
 
 direct_time, direct_error = test_PC(["direct",'none'],N)
 amg_time, amg_error       = test_PC(Solver[2],N)
