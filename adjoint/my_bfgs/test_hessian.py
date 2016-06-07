@@ -13,7 +13,7 @@ def test_matvec():
     s1 = SimpleVector(t)
     y1 = SimpleVector(np.exp(t))
         
-    s2 = MuVector([SimpleVector(t),SimpleVector(np.zeros(20))])
+    s2 = MuVector([SimpleVector(np.zeros(20)),SimpleVector(t)])
     y2 = MuVector([SimpleVector(np.zeros(20)),SimpleVector(np.exp(t))])
     
     H = LimMemoryHessian(I)
