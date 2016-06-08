@@ -87,8 +87,10 @@ class MuLMIH(InvertedHessian):
         
         
         
-        YK = (yk.data[0]+ mu*yk.data[1]).copy()
-        SK = (sk.data[0]+mu*sk.data[1]).copy()
+        YK = (yk.data[0] + mu*yk.data[1]).copy()
+        SK = (sk.data[0] + mu*sk.data[1]).copy()
+
+        
         
         t = x - float(rhok.func(mu) * sk.muVecVec(x,mu)) * YK
         t = self.matvec(t,k-1)
@@ -121,7 +123,8 @@ class LimMemoryHessian(InvertedHessian):
             return SimpleVector(self.beta * (x.matDot(self.Hint)))
         rhok, yk, sk = self[k]
         
-        #print rhok,yk,sk
+        #print float(rhok * x.dot(sk))
+        
         t = x - float(rhok * x.dot(sk)) * yk
         t = self.matvec(t,k-1)
         t = t - float(rhok * yk.dot(t)) * sk

@@ -229,26 +229,6 @@ class MuLbfgs(LbfgsParent):
         
         return default
 
-    def find_s_and_y(self,x0):
-        
-        u,l,du,ADJ,STA = self.Mud_J(x0)
-
-        u1   = SimpleVector(u)
-        l1   = SimpleVector(l)
-        du1  = SimpleVector(du)
-        ADJ1 = SimpleVector(ADJ)
-        STA1 = SimpleVector(STA)
-
-        return u1,l1,du1,ADJ1,STA1
-
-    def copy_vals(self,u1,l1,du1,ADJ1,STA1):
-        u2 = u1.copy()
-        l2 = l1.copy()
-        du2 = du1.copy()
-        ADJ2 = ADJ1.copy()
-        STA2 = STA1.copy()
-        
-        return u2,l2,du2,ADJ2,STA2
 
     def solve(self):
         
@@ -260,18 +240,15 @@ class MuLbfgs(LbfgsParent):
         
         Hk = self.data['lbfgs']
         
-        u0,l0,du0,ADJ0,STA0 = self.find_s_and_y(x0)
+        
 
         mu = self.options["mu_val"]
-
-        u1   = None
-        l1   = None
-        du1  = None
-        ADJ1 = None
-        STA1 = None
+        
+        mu_df0, mu_x0 = self.Mud_J(x0)
+        mu_df1 = None
+        mu_x1  = None
         
 
-        
         iter_k = self.data['iteration']
 
 
@@ -294,18 +271,22 @@ class MuLbfgs(LbfgsParent):
             
             x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
-            df1.set(self.d_J(x.array()))
-            
-            u1,l1,du1,ADJ1,STA1 = self.find_s_and_y(x)
-            
-            SandY = MuVectors(u1-u0,l1-l0,du1-du0,ADJ1-ADJ0,STA1-STA0,mu)
-            
+            df1.set(self.d_J(x.array()))           
+            mu_df1,mu_x1 = self.Mud_J(x)
 
-            Hk.update(SandY.create_yk(),SandY.create_sk())
-             
+
+            Hk.update(mu_df1-mu_df0,mu_x1-mu_x0)
+
+
+
+            mu_df0 = mu_df1.copy()
+            mu_x0  = mu_x1.copy()
+            
+            
+            
             x0=x.copy()
             df0=df1.copy()
-            u0,l0,du0,ADJ0,STA0 = self.copy_vals(u1,l1,du1,ADJ1,STA1)
+            
 
             iter_k=iter_k+1
             self.data['iteration'] = iter_k

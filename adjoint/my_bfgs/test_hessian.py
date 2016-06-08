@@ -9,15 +9,17 @@ def test_matvec():
     I = np.identity(20)
 
     t = np.linspace(0,1,20)
+    
+    mu = 2
 
     s1 = SimpleVector(t)
-    y1 = SimpleVector(np.exp(t))
+    y1 = mu*SimpleVector(np.exp(t))
         
-    s2 = MuVector([SimpleVector(np.zeros(20)),SimpleVector(t)])
+    s2 = MuVector([SimpleVector(t),SimpleVector(np.zeros(20))])
     y2 = MuVector([SimpleVector(np.zeros(20)),SimpleVector(np.exp(t))])
     
     H = LimMemoryHessian(I)
-    MuH = MuLMIH(I,1)
+    MuH = MuLMIH(I,mu)
 
     H.update(y1,s1)
     MuH.update(y2,s2)

@@ -128,7 +128,7 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
         def Mud_J(u):
             
             l,L,y,Y = adjoint_solver(y0,a,n,m,u[:n+1],u[n+1:],T,yT,my_list[k],get_y=True)
-
+            
             u1   = u[:n+1]
             l1   = u[n+1:]
             du1  = float(T)*(u[:n+1]+L)/n
@@ -137,9 +137,26 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
             for i in range(m-1):
                 ADJ1[i] = l[i+1][0]
                 STA1[i] = y[i][-1]
+
+            y1 = np.zeros(len(u))
+            y2 = np.zeros(len(u))
             
-            return u1,l1,du1,ADJ1,STA1
+            y1[:n+1] = du1
+            y1[n+1:] = ADJ1
+            y2[n+1:] = l1 - STA1
             
+            Y1 = SimpleVector(y1)
+            Y2 = SimpleVector(y2)
+            
+            S1 = SimpleVector(u)
+            S2 = SimpleVector(np.zeros(len(u)))
+            return MuVector([Y1,Y2]),MuVector([S1,S2])
+
+            #return u1,l1,du1,ADJ1,STA1
+            
+            
+            
+
         #minimize J using initial guess x, and the gradient/functional above
         """
         default = {"jtol"                   : 1e-4,
@@ -159,13 +176,13 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
                    "return_data"            : False, }
         """
         mem_limit = 10
-        options = {"mu_val": my_list[k], "old_hessian": H, 
+        options = {"mu_val": my_list[k], "old_hessian": None, 
                    "return_data": True,"mem_lim":mem_limit, "beta":1,
                    "save_number":-1,}
         
         
-        #S = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
-        S = Lbfgs(J,grad_J,x0,options={"mem_lim" : mem_limit,"return_data": True,})
+        S = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
+        #S = Lbfgs(J,grad_J,x0,options={"mem_lim" : mem_limit,"return_data": True,})
         data = S.solve()
         
         x0 = data['control']
@@ -192,7 +209,7 @@ if __name__ == "__main__":
     n = 100
     m = 10
 
-    my_list = [1,10,20,200]
+    my_list = [0.1,10,20,50]
     
     mini_solver(y0,a,T,yT,n,m,my_list)
 
