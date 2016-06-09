@@ -95,7 +95,7 @@ def Functional2(y,u,lam,yT,T,my):
     return 0.5*(F+penalty)
 
 
-def mini_solver(y0,a,T,yT,n,m,my_list):
+def mini_solver(y0,a,T,yT,n,m,my_list,show_output=False):
     
     t=np.linspace(0,T,n+1)
     #initial guess for control and penalty control is set to be 0
@@ -112,6 +112,8 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
 
     res1 = minimize(ser_J,np.zeros(n+1),method='L-BFGS-B', jac=ser_grad_J,
                    options={'gtol': 1e-6, 'disp': False})
+    res2 = []
+    res3 = []
     
     H = None
     
@@ -192,20 +194,27 @@ def mini_solver(y0,a,T,yT,n,m,my_list):
         
         options2={"mem_lim" : mem_limit,"return_data": True,"jtol" : 1e-6,}
         
-        S = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
-        #S = Lbfgs(J,grad_J,x0,options=options2)
-        data = S.solve()
-        
-        x0 = data['control']
-        H = data['lbfgs']
-        
-        plot(t,x0.array()[:n+1])
-        plot(t,res1.x)
-        legend(["mu","normal"])
-        print data['iteration']
-        show()
-    
+        S1 = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
+        S2 = Lbfgs(J,grad_J,x0,options=options2)
+        data1 = S1.solve()
+        data2 = S2.solve()
 
+        res2.append(S1)
+        res3.append(S2)
+        
+        
+        H = data1['lbfgs']
+        
+        if show_output==True:
+            
+            x1 = data1['control']
+            plot(t,x1.array()[:n+1])
+            plot(t,res1.x)
+            legend(["mu","normal"])
+            print data1['iteration']
+            show()
+    
+    return res1,res2,res3
 
 
 
