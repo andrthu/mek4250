@@ -188,7 +188,7 @@ def mini_solver(y0,a,T,yT,n,m,my_list,show_output=False):
                    "return_data"            : False, }
         """
         mem_limit = 10
-        options = {"mu_val": my_list[k], "old_hessian": None, 
+        options = {"mu_val": my_list[k], "old_hessian": H, 
                    "return_data": True,"mem_lim":mem_limit, "beta":1,
                    "save_number":-1,"jtol" : 1e-6,}
         
@@ -196,11 +196,17 @@ def mini_solver(y0,a,T,yT,n,m,my_list,show_output=False):
         
         S1 = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
         S2 = Lbfgs(J,grad_J,x0,options=options2)
-        data1 = S1.solve()
-        data2 = S2.solve()
+        try:
+            data1 = S1.solve()
+        except:
+            data1  = {'control'   : x0, 'iteration' : -1, 'lbfgs': H }
+        try:
+            data2 = S2.solve()
+        except:
+            data2 = {'control'   : x0, 'iteration' : -1, 'lbfgs': H }
 
-        res2.append(S1)
-        res3.append(S2)
+        res2.append(data1)
+        res3.append(data2)
         
         
         H = data1['lbfgs']
@@ -217,10 +223,69 @@ def mini_solver(y0,a,T,yT,n,m,my_list,show_output=False):
     return res1,res2,res3
 
 
+def test_mu_values():
 
 
+    y0 = 1
+    a = 1
+    T = 1
+    yT = 1
+
+    M = [2, 5, 10]
+    N = [100, 300, 500, 900, 1000, 2000]
+
+    #MY = [0.05, 0.1, 0.2, 0.5, 0.8, 1]
+    A =0
+    B =0
+
+    iteration_number1=[[[],[],[],[],[],[]],[[],[],[],[],[],[]],[[],[],[],[],[],[]]]
+    iteration_number2 = [[[],[],[],[],[],[]],[[],[],[],[],[],[]],[[],[],[],[],[],[]]]
+    iteration_number3 =[[[],[],[],[],[],[]],[[],[],[],[],[],[]],[[],[],[],[],[],[]]]
+
+    for i in range(len(M)):
+        for j in range(len(N)):
+            n = N[j]
+            MY = [n*0.05, n*0.1, n*0.2, n*0.5, n*0.8]
+            try:
+                res1,res2,res3 = mini_solver(y0,a,T,yT,N[j],M[i],MY)
+                print M[i],N[j],"sucsess"
+                A=A+1
+                
+                iteration_number1[i][j].append(res1.nit)
+                
+                #nit2 = len(MY)*[[]]
+                #nit3 = len(MY)*[[]]
+
+                for k in range(len(MY)):
+                    #nit2[k].append(res2[k]['iteration'])
+                    #nit3[k].append(res3[k]['iteration'])
+
+                    iteration_number2[i][j].append(res2[k]['iteration'])
+                    iteration_number3[i][j].append(res3[k]['iteration'])
+   
+            except:
+                print M[i],N[j],"fail"
+                B=B+1
 
     
+    print A,B
+    for i in range(len(M)):
+        print 
+        print iteration_number1[i]
+        print 
+        print iteration_number2[i]
+        print 
+        print iteration_number3[i]
+
+        
+        for k in range(len(N)):
+            
+            figure()
+            plot(np.array(iteration_number2[i][k]))
+            plot(np.array(iteration_number3[i][k]),'--')
+            title("m="+str(M[i]) + " " + "n="+str(N[k]))
+            show()
+            
 if __name__ == "__main__":
 
     
@@ -234,5 +299,6 @@ if __name__ == "__main__":
     my_list = [0.1,10,20,100,500]
     #my_list = [500,800,900,1000]
     
-    mini_solver(y0,a,T,yT,n,m,my_list)
+    #mini_solver(y0,a,T,yT,n,m,my_list,show_output=True)
 
+    test_mu_values()
