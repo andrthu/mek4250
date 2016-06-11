@@ -36,7 +36,17 @@ class LbfgsParent():
             
 
         self.options = options
-    
+        
+    def check_convergance(self,df0,k):
+        if np.sqrt(np.sum((df0.array())**2)/len(df0))<self.options['jtol']:
+            return 1
+        if k>self.options['maxiter']:
+            return 1
+        return 0
+
+
+        
+        
     def default_options(self):
         raise NotImplementedError, 'Lbfgs.default_options() not implemented' 
         
@@ -149,8 +159,8 @@ class Lbfgs(LbfgsParent):
         tol = self.options["jtol"]
         max_iter = self.options['maxiter']
 
-        while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
-
+        #while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
+        while self.check_convergance(df0,iter_k)==0:
             #plot(np.linspace(0,1,n),x0.array())
             #show()
             p = Hk.matvec(-df0)
@@ -262,8 +272,8 @@ class MuLbfgs(LbfgsParent):
 
 
 
-        while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
-
+        #while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
+        while self.check_convergance(df0,iter_k)==0:
             
             
             p = Hk.matvec(-df0)
