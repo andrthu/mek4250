@@ -94,6 +94,9 @@ def Functional2(y,u,lam,yT,T,my):
         
     return 0.5*(F+penalty)
 
+def L2error(u,v,t):
+    x = (u-v)**2
+    return trapz(x,t)
 
 def mini_solver(y0,a,T,yT,n,m,my_list,show_output=False):
     
@@ -245,30 +248,36 @@ def test_mu_values():
     for i in range(len(M)):
         for j in range(len(N)):
             n = N[j]
+            t = np.linspace(0,1,n+1)
             MY = [n*0.05, n*0.1, n*0.2, n*0.5, n*0.8]
-            try:
-                res1,res2,res3 = mini_solver(y0,a,T,yT,N[j],M[i],MY)
-                print M[i],N[j],"sucsess"
-                A=A+1
-                
-                iteration_number1[i][j].append(res1.nit)
-                
-                #nit2 = len(MY)*[[]]
-                #nit3 = len(MY)*[[]]
+            
+            res1,res2,res3 = mini_solver(y0,a,T,yT,N[j],M[i],MY)
+            print M[i],N[j],"sucsess"
+            A=A+1
 
-                for k in range(len(MY)):
-                    #nit2[k].append(res2[k]['iteration'])
-                    #nit3[k].append(res3[k]['iteration'])
+                
+                
+            iteration_number1[i][j].append(res1.nit)
+                
+            #nit2 = len(MY)*[[]]
+            #nit3 = len(MY)*[[]]
+            print
+            print "-------------------------"
+            for k in range(len(MY)):
+                iteration_number2[i][j].append(res2[k]['iteration'])
+                iteration_number3[i][j].append(res3[k]['iteration'])
 
-                    iteration_number2[i][j].append(res2[k]['iteration'])
-                    iteration_number3[i][j].append(res3[k]['iteration'])
-   
-            except:
-                print M[i],N[j],"fail"
-                B=B+1
+                print L2error(res1.x,res2[k]['control'][:n+1],t)
+                print L2error(res1.x,res3[k]['control'][:n+1],t)
+                    
+            print "-------------------------"
+            print
+            
+                
+                
 
     
-    print A,B
+    
     for i in range(len(M)):
         print 
         print iteration_number1[i]

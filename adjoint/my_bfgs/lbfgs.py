@@ -159,13 +159,12 @@ class Lbfgs(LbfgsParent):
         tol = self.options["jtol"]
         max_iter = self.options['maxiter']
 
-        #while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
+        
         while self.check_convergance(df0,iter_k)==0:
-            #plot(np.linspace(0,1,n),x0.array())
-            #show()
+            
             p = Hk.matvec(-df0)
-            #print df0.array()
-            #print p.array()
+
+            
             x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
             df1.set(self.d_J(x.array()))
@@ -272,7 +271,6 @@ class MuLbfgs(LbfgsParent):
 
 
 
-        #while np.sqrt(np.sum((df0.array())**2))/n>tol and iter_k<max_iter:
         while self.check_convergance(df0,iter_k)==0:
             
             
