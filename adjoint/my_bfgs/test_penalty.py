@@ -259,8 +259,8 @@ def test_mu_values():
                 
             iteration_number1[i][j].append(res1.nit)
                 
-            #nit2 = len(MY)*[[]]
-            #nit3 = len(MY)*[[]]
+            
+            
             print
             print "-------------------------"
             for k in range(len(MY)):

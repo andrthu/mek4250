@@ -108,7 +108,7 @@ if __name__ == '__main__':
     opti(1,1,1,1,1000,Func,solver,adjoint_solver,L2_grad,printplot=True)
 
     
-    #opti(y0,a,T,yT,n,F,sol,adj,gr,printplot=False)
+    
     
     T = 1
     yT = 1
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     N = [50,100,300,800,1000,10000]
     a = [-1,0.1,1,2,10]
-    #Y = [0,1,10,100]
+    
     
     tol = 1e-12
 

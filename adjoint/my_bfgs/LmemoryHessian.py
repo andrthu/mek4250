@@ -123,7 +123,7 @@ class LimMemoryHessian(InvertedHessian):
             return SimpleVector(self.beta * (x.matDot(self.Hint)))
         rhok, yk, sk = self[k]
         
-        #print float(rhok * x.dot(sk))
+        
         
         t = x - float(rhok * x.dot(sk)) * yk
         t = self.matvec(t,k-1)
@@ -132,9 +132,3 @@ class LimMemoryHessian(InvertedHessian):
         return t
 
 
-"""
-t = x - rhok(mu) * x.dot(sk) * yk(u)
-t = self.matvec(t,k-1)
-t = t - rhok(mu) * yk(mu).dot(t) * sk
-t = t + rhok(mu) * x.dot(sk) * sk    
-"""

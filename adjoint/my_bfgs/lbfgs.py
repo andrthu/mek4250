@@ -131,8 +131,7 @@ class Lbfgs(LbfgsParent):
                    "maxiter"                :  200,
                    "display"                :    2,
                    "line_search"            : "strong_wolfe",
-                   "line_search_options"    : ls,
-                   # method specific parameters:
+                   "line_search_options"    : ls,                   
                    "mem_lim"                : 5,
                    "Hinit"                  : "default",
                    "beta"                   : 1,
