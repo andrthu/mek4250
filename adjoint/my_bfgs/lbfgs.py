@@ -8,17 +8,29 @@ from LmemoryHessian import LimMemoryHessian, MuLMIH
 
 
 class LbfgsParent():
+    """
+    Parent class for L-BFGS optimization algorithm.
+    """
 
-    def __init__(self,J,d_J,x0,Hinit=None,lam0=None,options=None):
+    def __init__(self,J,d_J,x0,Hinit=None,options=None):
+        """
+        Initials for LbfgsParent
+
+        Valid options are:
+
+        * J : Functional you want minimized
+        * d_J : Gradient of the functional
+        * x0 : Initial guess
+        * Hinit : Initial approximation for the inverted hessian
+        * options : Options are spesific to the sunder classes 
+        """
         
         self.J    = J
         self.d_J  = d_J
         self.x0   = x0
-        self.lam0 = lam0
+        
 
-        self.set_options(options)
-        
-        
+        self.set_options(options)        
         
         if Hinit==None:
             self.Hinit = np.identity(x0.size())
@@ -26,18 +38,22 @@ class LbfgsParent():
 
 
     def set_options(self,user_options):
-
+        """
+        Method for setting options
+        """
         options = self.default_options()
         
         if user_options!=None:
             for key, val in user_options.iteritems():
                 options[key]=val
-        
-            
-
         self.options = options
         
+
+
     def check_convergance(self,df0,k):
+        """
+        Stopping criterion for the algorithm based on L2norm of gardient.
+        """
         if np.sqrt(np.sum((df0.array())**2)/len(df0))<self.options['jtol']:
             return 1
         if k>self.options['maxiter']:
@@ -48,23 +64,46 @@ class LbfgsParent():
         
         
     def default_options(self):
+        """
+        Class spesific default options
+        """
         raise NotImplementedError, 'Lbfgs.default_options() not implemented' 
         
 
     def do_linesearch(self,J,d_J,x,p):
+        """
+        Method that does a linesearch using the strong Wolfie condition
+
+        Arguments:
+
+        * J : The functional
+        * d_J : The gradient
+        * x : The starting point of the linesearch
+        * p : The direction of the search, i.e. -d_J(x)
+
+        Return value:
         
+        * x_new : The ending point of the linesearch
+        * alpha : The step length
+        """
         x_new = x.copy()
     
     
 
         def phi(alpha):
+            """
+            Convert functional to a one variable functon dependent
+            on step size alpha
+            """
             
             x_new=x.copy()
             x_new.axpy(alpha,p)
             return J(x_new.array())
     
         def phi_dphi(alpha):
-        
+            """
+            Derivative of above function
+            """
             x_new = x.copy()
         
             x_new.axpy(alpha,p)
@@ -74,9 +113,9 @@ class LbfgsParent():
         
             return f,float(djs)
             
-        #print p.dot(SimpleVector(d_J(x.array())))
+        
         phi_dphi0 = J(x.array()),float(p.dot(SimpleVector(d_J(x.array()))))
-        #print phi_dphi0
+        
         
         if self.options["line_search"]=="strong_wolfe":
             ls_parm = self.options["line_search_options"]
@@ -97,7 +136,13 @@ class LbfgsParent():
         return x_new, float(alpha)
 
     def solve(self):
+        """
+        Method that does optimization
+        """
         raise NotImplementedError, 'Lbfgs.default_solve() not implemented'
+
+
+
 ########################################
 ##########################
 ############################
@@ -106,10 +151,30 @@ class LbfgsParent():
 ##############################################
 
 class Lbfgs(LbfgsParent):
+    """
+    Straight foreward L_BFGS implementation
+    """
+    def __init__(self,J,d_J,x0,Hinit=None,options=None):
+        """
+        Initials for LbfgsParent
 
-    def __init__(self,J,d_J,x0,Hinit=None,lam0=None,options=None):
+        Valid options are:
 
-        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,lam0=None,options=options)
+        * J : Functional you want minimized
+        * d_J : Gradient of the functional
+        * x0 : Initial guess
+        * Hinit : Initial approximation for the inverted hessian
+        * options : Options are as follows:
+          - jtol : Stopping tolerance
+          - maxiter : maximal amount of allowed iteration before exiting solver
+          - line_search_options: options for the linesearch
+          - mem_lim : Number of iterations the inverted hessian remembers
+          - Hinit : Initial inverted Hessian
+          - beta : scaling variable for inverted hessian
+          - return_data : boolean return the data instance or control
+        """
+
+        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,options=options)
         
         mem_lim = self.options['mem_lim']
         
@@ -122,6 +187,10 @@ class Lbfgs(LbfgsParent):
                      'lbfgs'     : Hessian }
 
     def default_options(self):
+        """
+        Method that gives sets the default options
+        """
+        
         ls = {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
@@ -141,24 +210,36 @@ class Lbfgs(LbfgsParent):
 
     
     def solve(self):
-        
-        x0=self.x0
-        n=x0.size()
-        x = SimpleVector(np.zeros(n))
-        
-        Hk = self.data['lbfgs']
+        """
+        Method that solves the opttmizaton problem
 
-        df0 = SimpleVector( self.d_J(x0.array()))
-        df1 = SimpleVector(np.zeros(n))
+        Return value:
+        * x : The optimal control
+        or : 
+        * data
+         - control : The optimal control
+         - iterations : number of iterations reqiered
+         - lbfgs : The class of the limited memory inverted hessian
+        """
 
-        iter_k = self.data['iteration']
+        
+        x0 = self.x0                     # set initial guess
+        n = x0.size()                    # find number of variables
+        x = SimpleVector(np.zeros(n))    # convert to vector class    
+        Hk = self.data['lbfgs']          # get inverted hessian
+
+
+        df0 = SimpleVector( self.d_J(x0.array())) # initial gradient
+        df1 = SimpleVector(np.zeros(n))           # space for gradient  
+
+        iter_k = self.data['iteration']           
     
         p = SimpleVector(np.zeros(n))
 
         tol = self.options["jtol"]
         max_iter = self.options['maxiter']
 
-        
+        #the iterations
         while self.check_convergance(df0,iter_k)==0:
             
             p = Hk.matvec(-df0)
@@ -194,10 +275,36 @@ class Lbfgs(LbfgsParent):
 
 
 class MuLbfgs(LbfgsParent):
+    """
+    L-BFGS class made s.t. it can save and take in previous invertad hessians
+    and modify them by updating a mu variable. Usful in a penalty setting.
+    """
 
-    def __init__(self,J,d_J,x0,Mud_J,Hinit=None,lam0=None,options=None):
+    def __init__(self,J,d_J,x0,Mud_J,Hinit=None,options=None):
+        """
+        Initials for LbfgsParent
 
-        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,lam0=None,options=options)
+        Valid options are:
+
+        * J : Functional you want minimized
+        * d_J : Gradient of the functional
+        * x0 : Initial guess
+        * Mud_J : Helps with the mu stuff
+        * Hinit : Initial approximation for the inverted hessian
+        * options : Options are as follows:
+          - jtol : Stopping tolerance
+          - maxiter : maximal amount of allowed iteration before exiting solver
+          - line_search_options: options for the linesearch
+          - mem_lim : Number of iterations the inverted hessian remembers
+          - Hinit : Initial inverted Hessian
+          - beta : scaling variable for inverted hessian
+          - mu_val : The current mu
+          - old_hessian : memory of previous inverted Hessian
+          - save_number : Size of memory taken from old hessian
+          - return_data : boolean return the data instance or control
+        """
+
+        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,options=options)
 
         self.Mud_J = Mud_J
         
@@ -216,6 +323,10 @@ class MuLbfgs(LbfgsParent):
 
     
     def default_options(self):
+        """
+        Method that gives sets the default options
+        """
+
         ls = {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
@@ -239,7 +350,19 @@ class MuLbfgs(LbfgsParent):
 
 
     def solve(self):
-        
+
+        """
+        Method that solves the opttmizaton problem
+
+        Return value:
+        * x : The optimal control
+        or : 
+        * data
+         - control : The optimal control
+         - iterations : number of iterations reqiered
+         - lbfgs : The class of the limited memory inverted hessian
+        """
+
         x0=self.x0
         n=x0.size()
         m=self.options["penaly_number"]
@@ -278,7 +401,7 @@ class MuLbfgs(LbfgsParent):
             
             x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
-            df1.set(self.d_J(x.array()))           
+            df1.set(self.d_J(x.array()))
             mu_df1,mu_x1 = self.Mud_J(x)
 
 

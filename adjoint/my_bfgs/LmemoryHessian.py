@@ -2,8 +2,18 @@ import numpy as np
 from my_vector import *
 
 class InvertedHessian():
+    """
+    Parent class for inverted hessian used in L-BFGS algorithm
+    """
 
     def update(self,yk,sk):
+        """
+        Method for updating the inverted hessian
+        
+        Arguments:
+        * yk : Difference in gradient between iterations
+        * sk : Difference in control between iterations
+        """
         if self.mem_lim==0:
             return
 
@@ -40,10 +50,23 @@ class InvertedHessian():
         raise NotImplementedError, 'InvertedHessian.matvec() not implemented '
 
 class MuLMIH(InvertedHessian):
-    
+    """
+    Inverted hessian for MuLbfgs
+    """
 
     def __init__(self,Hint,mu,H=None,mem_lim=10,beta=1,save_number=-1):
+        """
+        Initialazing the MuLMIH
 
+        Valid options are
+        
+        * Hint : Initial approximation of inverted hessian, typically 1 
+        * mu : scaling variable mu
+        * H : Other inverted hessian that you want to incorporate
+        * mem_lim : number of iterations the hessian remembers
+        * beta : scaling for Hinit
+        * save_number : number of values saved from H
+        """
         self.Hint    = Hint
         self.mu      = mu
         self.mem_lim = mem_lim
@@ -75,6 +98,16 @@ class MuLMIH(InvertedHessian):
         return MuRho(sk,yk)
 
     def matvec(self,x,k = -1):
+        """
+        Recursive method for multiplying a vector with the inverted hessian
+        
+        Method is based on formula
+        H(k+1) = [1-r(k)*y(k)*s(k)]H(k)[1-r(k)*y(k)*s(k)] + r(k)*s(k)*s(k)
+
+        Arguments:
+        * x : the vector you want to multiply the hessian with
+        * k : counting variable that decides level of recurion
+        """
         
         
         if k == -1:
@@ -99,8 +132,19 @@ class MuLMIH(InvertedHessian):
         return t
 
 class LimMemoryHessian(InvertedHessian):
-
+    """
+    Normal Inverted Hessian
+    """
     def __init__(self,Hint,mem_lim=10,beta=1):
+        """
+        Initialazing the LimMemoryHessian
+
+        Valid options are:
+        
+        * Hint : Initial approximation of inverted hessian, typically 1
+        * mem_lim : number of iterations the hessian remembers
+        * beta : scaling for Hinit
+        """
 
 
         self.Hint=Hint
@@ -116,6 +160,16 @@ class LimMemoryHessian(InvertedHessian):
         return 1./(yk.dot(sk))
     
     def matvec(self,x,k = -1):
+        """
+        Recursive method for multiplying a vector with the inverted hessian
+
+        Method is based on formula
+        H(k+1) = [1-r(k)*y(k)*s(k)]H(k)[1-r(k)*y(k)*s(k)] + r(k)*s(k)*s(k)
+
+        Arguments:
+        * x : the vector you want to multiply the hessian with
+        * k : counting variable that decides level of recurion
+        """
         
         if k == -1:
             k = len(self)

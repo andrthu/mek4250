@@ -197,7 +197,7 @@ def mini_solver(y0,a,T,yT,n,m,my_list,show_output=False):
         
         options2={"mem_lim" : mem_limit,"return_data": True,"jtol" : 1e-6,}
         
-        S1 = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,lam0=None,options=options)
+        S1 = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,options=options)
         S2 = Lbfgs(J,grad_J,x0,options=options2)
         try:
             data1 = S1.solve()
