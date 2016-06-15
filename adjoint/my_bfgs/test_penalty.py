@@ -193,15 +193,18 @@ def mini_solver(y0,a,T,yT,n,m,my_list,show_output=False):
         mem_limit = 10
         options = {"mu_val": my_list[k], "old_hessian": H, 
                    "return_data": True,"mem_lim":mem_limit, "beta":1,
-                   "save_number":-1,"jtol" : 1e-6,}
+                   "save_number":-1,"jtol" : 1e-4,}
         
-        options2={"mem_lim" : mem_limit,"return_data": True,"jtol" : 1e-6,}
+        options2={"mem_lim" : mem_limit,"return_data": True,"jtol" : 1e-4,}
         
         S1 = MuLbfgs(J,grad_J,x0,Mud_J,Hinit=None,options=options)
         S2 = Lbfgs(J,grad_J,x0,options=options2)
         try:
             data1 = S1.solve()
-        except:
+        except Warning:
+            data1  = {'control'   : x0, 'iteration' : -1, 'lbfgs': H }
+            
+        except RuntimeError:
             data1  = {'control'   : x0, 'iteration' : -1, 'lbfgs': H }
         try:
             data2 = S2.solve()
@@ -245,6 +248,9 @@ def test_mu_values():
     iteration_number2 = [[[],[],[],[],[],[]],[[],[],[],[],[],[]],[[],[],[],[],[],[]]]
     iteration_number3 =[[[],[],[],[],[],[]],[[],[],[],[],[],[]],[[],[],[],[],[],[]]]
 
+    Error1 = [[[],[],[],[],[],[]],[[],[],[],[],[],[]],[[],[],[],[],[],[]]]
+    Error2 = [[[],[],[],[],[],[]],[[],[],[],[],[],[]],[[],[],[],[],[],[]]]
+
     for i in range(len(M)):
         for j in range(len(N)):
             n = N[j]
@@ -266,17 +272,31 @@ def test_mu_values():
             for k in range(len(MY)):
                 iteration_number2[i][j].append(res2[k]['iteration'])
                 iteration_number3[i][j].append(res3[k]['iteration'])
+                
+                Le1 = L2error(res1.x,res2[k]['control'][:n+1],t)
+                Le2 = L2error(res1.x,res3[k]['control'][:n+1],t)
+                print Le1
+                print Le2
 
-                print L2error(res1.x,res2[k]['control'][:n+1],t)
-                print L2error(res1.x,res3[k]['control'][:n+1],t)
+                Error1[i][j].append(Le1)
+                Error2[i][j].append(Le2)
+                
                     
             print "-------------------------"
             print
             
                 
                 
-
-    
+    for i in range(len(M)):
+        print "----------------------------"
+        for j in range(len(N)):
+            print "error for M=%d and N=%d" % (M[i],N[j]) 
+            print "| %.1e| %.1e| %.1e| %.1e| %.1e" %(Error1[i][j][0],Error1[i][j][1],Error1[i][j][2],Error1[i][j][3],Error1[i][j][4])
+        print "----------------------------"
+        for j in range(len(N)):
+            print "error for M=%d and N=%d" % (M[i],N[j]) 
+            print "| %.1e| %.1e| %.1e| %.1e| %.1e" %(Error2[i][j][0],Error2[i][j][1],Error2[i][j][2],Error2[i][j][3],Error2[i][j][4])
+                                                     
     
     for i in range(len(M)):
         print 
@@ -294,6 +314,8 @@ def test_mu_values():
             plot(np.array(iteration_number3[i][k]),'--')
             title("m="+str(M[i]) + " " + "n="+str(N[k]))
             show()
+
+    
             
 if __name__ == "__main__":
 
