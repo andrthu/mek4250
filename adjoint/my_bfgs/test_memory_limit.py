@@ -62,12 +62,12 @@ def mini_solver(y0,a,T,yT,n,m,my_list,mem_limit,show_output=False):
     return res1,res2
 
 
-def test_mem():
+def test_mem(a=1):
 
 
     y0 = 1
     T  = 1
-    a  = 1
+    #a  = 1
     yT = 10
 
     M = [2,5,10,15,20,30]
@@ -138,4 +138,29 @@ def test_const_NM_rate():
 if __name__ == "__main__":
 
     #test_mem()
-    test_const_NM_rate()       
+    test_const_NM_rate()
+
+
+"""
+terminal>> python test_mem()
+--------------m=2--------------
+|lbfgs memory=2| #iterations=3| #iterations/m=1.50
+|lbfgs memory=4| #iterations=3| #iterations/m=1.50
+--------------m=5--------------
+|lbfgs memory=5| #iterations=12| #iterations/m=2.40
+|lbfgs memory=10| #iterations=9| #iterations/m=1.80
+--------------m=10--------------
+|lbfgs memory=10| #iterations=-1| #iterations/m=-0.10
+|lbfgs memory=20| #iterations=14| #iterations/m=1.40
+--------------m=15--------------
+|lbfgs memory=15| #iterations=32| #iterations/m=2.13
+|lbfgs memory=30| #iterations=19| #iterations/m=1.27
+--------------m=20--------------
+|lbfgs memory=20| #iterations=42| #iterations/m=2.10
+|lbfgs memory=40| #iterations=24| #iterations/m=1.20
+--------------m=30--------------
+|lbfgs memory=30| #iterations=61| #iterations/m=2.03
+|lbfgs memory=60| #iterations=34| #iterations/m=1.13
+
+
+"""
