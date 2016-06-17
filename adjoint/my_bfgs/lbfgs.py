@@ -120,9 +120,9 @@ class LbfgsParent():
         if self.options["line_search"]=="strong_wolfe":
             ls_parm = self.options["line_search_options"]
             
-            ftol     = ls_parm["ftol"]
-            gtol     = ls_parm["gtol"]
-            xtol     = ls_parm["xtol"]
+            ftol      = ls_parm["ftol"]
+            gtol      = ls_parm["gtol"]
+            xtol      = ls_parm["xtol"]
             start_stp = ls_parm["start_stp"]
             
             ls =  StrongWolfeLineSearch(ftol,gtol,xtol,start_stp)

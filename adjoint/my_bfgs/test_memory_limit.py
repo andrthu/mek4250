@@ -120,10 +120,19 @@ def test_const_NM_rate():
         t =np.linspace(0,T,N+1)
         res1,res2 = mini_solver(y0,a,T,yT,N,M[i],[my],2*M[i])
 
-        print M[i],res2[0]['iteration']
+
+        e = pen.L2error(res1.x,res2[0]['control'][:N+1],t)
+        #print M[i],res2[0]['iteration']
+        print
+        print "number of procesess: %d" % M[i]
+        print "number of iterations needed: %d" % res2[0]['iteration']
+        print "L2 diffrence between normal and penalty approach: %.2e"% e
+        print
+        
         figure()
         plot(t,res1.x)
         plot(t,res2[0]['control'][:N+1])
+        legend(['serial','penalty'])
         show()
            
 if __name__ == "__main__":

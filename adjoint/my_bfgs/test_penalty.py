@@ -47,7 +47,7 @@ def solver(y0,a,n,m,u,lam,T):
     start=0
     for i in range(m):
         Y[start:start+len(y[i])-1]=y[i][:-1]
-        start =start+len(y[i])-1
+        start = start+len(y[i])-1
     Y[-1]=y[-1][-1]
     return y,Y
 
@@ -62,18 +62,18 @@ def adjoint_solver(y0,a,n,m,u,lam,T,yT,my,get_y=False):
     #"initial" values
     l[-1][-1] = y[-1][-1] - yT
     for i in range(m-1):
-        l[i][-1]=my*(y[i][-1]-lam[i])
+        l[i][-1] = my*(y[i][-1]-lam[i])
 
     for i in range(m):
         for j in range(len(l[i])-1):
-            l[i][-(j+2)]=(1+dt*a)*l[i][-(j+1)]
+            l[i][-(j+2)] = (1+dt*a)*l[i][-(j+1)]
 
     L=np.zeros(n+1)
 
     start=0
     for i in range(m):
-        L[start:start+len(l[i])-1]=l[i][:-1]
-        start =start+len(l[i])-1
+        L[start:start+len(l[i])-1] = l[i][:-1]
+        start = start + len(l[i])-1
     L[-1]=l[-1][-1]
 
     
@@ -348,7 +348,13 @@ def test_MuLbfgs():
         plot(t,res1.x)
         for j in range(len(MY)):
             plot(t,res2[j]['control'][:N[i]+1])
-            print res2[j]['iteration'],res3[j]['iteration']
+            #print res2[j]['iteration'],res3[j]['iteration']
+            print
+            print "result for %d. iteration for N=%d " %(j+1,N[i])
+            print "number of iteration for MuLbfgs : %d" % res2[j]['iteration']
+            print "number of iteration for lbfgs : %d" % res3[j]['iteration']
+            print
+        legend(['serial','1. iter','2. iter'],loc=2)
         show()
     
 if __name__ == "__main__":
