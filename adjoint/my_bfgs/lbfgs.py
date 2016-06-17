@@ -88,7 +88,7 @@ class LbfgsParent():
         """
         x_new = x.copy()
     
-    
+        Vec = self.options['Vector']
 
         def phi(alpha):
             """
@@ -109,12 +109,12 @@ class LbfgsParent():
             x_new.axpy(alpha,p)
         
             f = J(x_new.array())
-            djs = p.dot(SimpleVector(d_J(x_new.array())))
+            djs = p.dot(Vec(d_J(x_new.array())))
         
             return f,float(djs)
             
         
-        phi_dphi0 = J(x.array()),float(p.dot(SimpleVector(d_J(x.array()))))
+        phi_dphi0 = J(x.array()),float(p.dot(Vec(d_J(x.array()))))
         
         
         if self.options["line_search"]=="strong_wolfe":
@@ -202,6 +202,7 @@ class Lbfgs(LbfgsParent):
                    "line_search"            : "strong_wolfe",
                    "line_search_options"    : ls,                   
                    "mem_lim"                : 5,
+                   "Vector"                 : SimpleVector,
                    "Hinit"                  : "default",
                    "beta"                   : 1,
                    "return_data"            : False,}
@@ -222,19 +223,19 @@ class Lbfgs(LbfgsParent):
          - lbfgs : The class of the limited memory inverted hessian
         """
 
-        
+        Vec = self.options['Vector']     # Choose vector type
         x0 = self.x0                     # set initial guess
         n = x0.size()                    # find number of variables
-        x = SimpleVector(np.zeros(n))    # convert to vector class    
+        x = Vec(np.zeros(n))             # convert to vector class    
         Hk = self.data['lbfgs']          # get inverted hessian
 
 
-        df0 = SimpleVector( self.d_J(x0.array())) # initial gradient
-        df1 = SimpleVector(np.zeros(n))           # space for gradient  
+        df0 = Vec( self.d_J(x0.array())) # initial gradient
+        df1 = Vec(np.zeros(n))           # space for gradient  
 
         iter_k = self.data['iteration']           
     
-        p = SimpleVector(np.zeros(n))
+        p = Vec(np.zeros(n))
 
         tol = self.options["jtol"]
         max_iter = self.options['maxiter']
@@ -338,6 +339,7 @@ class MuLbfgs(LbfgsParent):
                    "line_search"            : "strong_wolfe",
                    "line_search_options"    : ls,
                    "mem_lim"                : 5,
+                   "Vector"                 : SimpleVector,
                    "Hinit"                  : "default",
                    "beta"                   : 1, 
                    "mu_val"                 : 1,
@@ -363,11 +365,12 @@ class MuLbfgs(LbfgsParent):
          - lbfgs : The class of the limited memory inverted hessian
         """
 
+        Vec = self.options['Vector']
         x0=self.x0
         n=x0.size()
         m=self.options["penaly_number"]
         
-        x = SimpleVector(np.zeros(n))
+        x = Vec(np.zeros(n))
         
         Hk = self.data['lbfgs']
         
@@ -383,10 +386,10 @@ class MuLbfgs(LbfgsParent):
         iter_k = self.data['iteration']
 
 
-        df0 = SimpleVector(self.d_J(x0.array()))
-        df1 = SimpleVector(np.zeros(n))
+        df0 = Vec(self.d_J(x0.array()))
+        df1 = Vec(np.zeros(n))
 
-        p = SimpleVector(np.zeros(n))
+        p = Vec(np.zeros(n))
 
         tol = self.options["jtol"]
         max_iter = self.options['maxiter']
