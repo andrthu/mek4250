@@ -1,0 +1,49 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+
+\begin{document}
+\begin{center}
+
+\LARGE L-BFGS
+
+
+\end{center}
+\textbf{General algorithm}
+\\
+The BFGS and L-BFGS are quasi-Newton methods for solving unconstrained optimization problems on the form:
+\begin{align*}
+\min_{x \in \mathbb{R}^n} J(x)
+\end{align*} 
+This can looked on as solving the system of equations on the form \\$\nabla J(x) = F(x)=0$. Using the Newton method, that can be derived using Taylor series, we get the following iteration for solving the system:
+\begin{align*}
+x^{k+1} = x^k - F'(x^k)^{-1}F(x^k)
+\end{align*}
+Here $x^k \in \mathbb{R}^n$, $F:\mathbb{R}^n \rightarrow \mathbb{R}^n$ and $F':\mathbb{R}^{n\times n} \rightarrow \mathbb{R}^{n\times n}$. $F'$ is also the Hessian of $J$. The difference between Newton and BFGS is that we in BFGS approximate $F'(x)^{-1}$ with a matrix that we for each iteration update with information gained form current information. This means that we get a series of matrices $\{H^k\}$, that hopefully approximates the real hessian $H^kx^k \approx F'(x^k)^{-1}$. Without going into detail lets state the update formula for $H^k$:
+\begin{align*}
+H^{k+1} &= (\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k})H^k(\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k}) + \frac{s_k {s_k}^T}{\rho_k} \ \text{ where} \\
+s_k &= x^{k+1} - x^k \\
+y_k &= \nabla J(x^{k+1}) - \nabla J(x^k) \\
+\rho_k &= s_k^Ty_k
+\end{align*} 
+We also need an initial approximation $H^0$ to the inverted hessian. This is typically set to be $H^0 = \beta\mathbb{I}$, where $\mathbb{I}$ is the identity matrix and $\beta$ is some constant. The BFGS algorithm at step $k$ then looks like:
+\begin{align*}
+&\text{update control by:} \ x^{k+1}= x^{k} - H^kF(x^{k}) \\
+&\text{update $s_k$, $y_k$ and $\rho_k$ as described above} \\
+&\text{update $H$ by:} \ H^{k+1} = (\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k})H^k(\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k}) + \frac{s_k {s_k}^T}{\rho_k}
+\end{align*}
+\textbf{L-BFGS}
+\\
+
+\end{document}
