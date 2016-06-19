@@ -46,4 +46,34 @@ We also need an initial approximation $H^0$ to the inverted hessian. This is typ
 \textbf{L-BFGS}
 \\
 The difference between BFGS and L-BFGS is that one, in the L-BFGS case, base the approximation of the inverted Hessian on only the latest iterations. The size of the memory can wary. 
+\\
+\\
+\textbf{Optimal control with ODE constraints}
+\\
+We want to solve an optimal control problem with ODE constraints in parallel  using the penalty approach. The problem looks as follows:
+\begin{align*}
+\min_{u} J(y(u),u) &= \frac{1}{2}(\int_0^T u^2 dt + (y(T)-y_T)^2) \\
+y'(t) &= ay(t) +u(t)
+y(0) =y_0
+\end{align*} 
+For the penalty approach we partition the time domain $[0,T]$ into $m+1$ intervals $[T_i,T_{i+1}]$, and solve the problem on each interval separately. To enforce continuity we add penalty terms to the $J$ functional. This leads to a new functional:
+\begin{align*}
+J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{2}(y_n(T)-y_T)^2 + \frac{\mu}{2} \sum_{i=1}^n (y_{i-1}(T_i)-\lambda_i)^2
+\end{align*}
+Here $y_i$ is the solution of the ODE restricted to interval $i$, and $\lambda = \{ \lambda_i\}_{i=1}^n$ are the initial values of $y_i$. Using the adjoint equations $p_i$, we get the following gradient for $J$ with respect to $u$ and $\lambda$:
+\begin{align*}
+\langle \hat{J}'(u,\lambda), (s,l)\rangle&=\int_0^T (u+p)s \ dt +\sum_{i=1}^n(p_{i}(T_i) -p_{i-1}(T_i) )l_i \\
+&= \int_0^T (u+p)s \ dt +\sum_{i=1}^n(p_{i}(T_i) -\mu(y_{i-1}(T_i)-\lambda_i) )l_i
+\end{align*} 
+If we discritize the time interval using $N$ points, we get the following control:
+\begin{align*}
+x = (u^1,...,u^N, \lambda_1, ...,\lambda_m)
+\end{align*}
+and the gradient:
+\begin{align*}
+\nabla J(x) &= (\Delta t (u^1+p^1),\Delta t (u^2+p^2),...,\Delta t (u^N+p^N),p_{1}(T_1) -p_{0}(0),..,p_{m}(T_m) -p_{m-1}(T_m)) \\
+&=(\Delta t (u^1+p^1),...,\Delta t (u^N+p^N),p_{1}(T_1) -\mu(y_{0}(T_1)-\lambda_1),..,p_{m}(T_m) -\mu(y_{m-1}(T_m)-\lambda_m)) \\
+&= (\Delta t\{u^j+p^j\}_{j=1}^N|p_i(T_i)) + \mu(\{0\}_{j=1}^N|\lambda_i - y_{i-1}(T_i))
+\end{align*}
+
 \end{document}
