@@ -355,6 +355,9 @@ def test_MuLbfgs():
             print "number of iteration for lbfgs : %d" % res3[j]['iteration']
             print
         legend(['serial','1. iter','2. iter'],loc=2)
+        title('N='+str(N[i]))
+        xlabel('time')
+        ylabel('control')
         show()
     
 if __name__ == "__main__":

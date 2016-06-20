@@ -53,10 +53,10 @@ The difference between BFGS and L-BFGS is that one, in the L-BFGS case, base the
 We want to solve an optimal control problem with ODE constraints in parallel  using the penalty approach. The problem looks as follows:
 \begin{align*}
 \min_{u} J(y(u),u) &= \frac{1}{2}(\int_0^T u^2 dt + (y(T)-y_T)^2) \\
-y'(t) &= ay(t) +u(t)
-y(0) =y_0
+y'(t) &= ay(t) +u(t) \\
+y(0) &=y_0
 \end{align*} 
-For the penalty approach we partition the time domain $[0,T]$ into $m+1$ intervals $[T_i,T_{i+1}]$, and solve the problem on each interval separately. To enforce continuity we add penalty terms to the $J$ functional. This leads to a new functional:
+For the penalty approach we partition the time domain $[0,T]$ into $m+1$ intervals $\{[T_i,T_{i+1}]\}_{i=0}^m$, and solve the problem on each interval separately. To enforce continuity we add penalty terms to the $J$ functional. This leads to a new functional:
 \begin{align*}
 J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{2}(y_n(T)-y_T)^2 + \frac{\mu}{2} \sum_{i=1}^n (y_{i-1}(T_i)-\lambda_i)^2
 \end{align*}
@@ -75,5 +75,38 @@ and the gradient:
 &=(\Delta t (u^1+p^1),...,\Delta t (u^N+p^N),p_{1}(T_1) -\mu(y_{0}(T_1)-\lambda_1),..,p_{m}(T_m) -\mu(y_{m-1}(T_m)-\lambda_m)) \\
 &= (\Delta t\{u^j+p^j\}_{j=1}^N|p_i(T_i)) + \mu(\{0\}_{j=1}^N|\lambda_i - y_{i-1}(T_i))
 \end{align*}
+This expression for the gradient inspires a special initial Hessian approximation technique, where one for each $\mu$ iteration remember the Hessian, and then passes it on to the next iteration. We then use the previous Hessian with updated $\mu$ as initial Hessian $H_0$ instead of the identity.
+\\
+\\
+\textbf{Testing Hessian approximation technique} 
+\\
+For testing I solve the problem:
+\begin{align*}
+\min_{u} J(y(u),u) &= \frac{1}{2}(\int_0^1 u^2 dt + (y(1)-1)^2) \\
+y'(t) &= y(t) +u(t) \\
+y(0) &=1
+\end{align*}
+Numerically I solve the state equation and the adjoint equation using backward Euler method, and the trapezoidal rule for integration. I solved this problem without partitioning and penalties and with partition and penalty using both normal L-BFGS and L-BFGS with the $\mu$-trick. Partitioning the domain $I=[0,1]$into ten uniform parts and using $N=2000$ and $N=3000$ points to discretize $I$. To measure the performance of the two penalty methods, I counted the number of iterations needed in the L-BFGS algorithm to reach the wanted tolerance. For both dizcritizations I used $\mu=0.1N$ and $\mu=0.5N$. I got the following results: 
+\begin{figure}
+  \includegraphics[width=\linewidth]{mufail2000.png}
+  \caption{The second iteration gives a solution closer to the non-penalty solution, as we would expect. However the control from the second iteration is less smooth than the control from the first iteration.}
+  \label{Fig 1}
+\end{figure}
 
+\begin{figure}
+  \includegraphics[width=\linewidth]{mufail2000.png}
+  \caption{We see the same as for the $N=2000$ case. }
+  \label{Fig 2}
+\end{figure}
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+     & iterations L-BFGS & iterations  L-BFGS + $\mu$-trick \\ \hline
+    $N=2000$ and $\mu=0.1N$ &  15 & 15 \\ \hline
+    $N=2000$ and $\mu=0.5N$&  16 &  28	\\ \hline
+    $N=3000$ and $\mu=0.1N$ &  15 & 15 \\ \hline
+    $N=3000$ and $\mu=0.5N$&  27 &  28	\\ \hline
+    \end{tabular}
+\end{center}
+I also added plots of the controls I get from solving the problem using the $\mu$-trick compared with the control we get from not using any penalties. What both the iteration count and plots tells us is that the $\mu$-trick is not working very well. The number of iterations using is either the same or bigger than what we see for not using old Hessian. From the plots we also see that the solutions gets less smooth and distorted when using the $\mu$-trick. I have also done other tests, and they all yield similar results. 
 \end{document}
