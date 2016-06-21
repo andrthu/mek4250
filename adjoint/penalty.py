@@ -141,7 +141,7 @@ def mini_solver(y0,a,T,yT,n,m,my0):
         def grad_J(u):
             #adjoint_solver(y0,a,n,m,u,lam,T,yT,my)
             l,L = adjoint_solver(y0,a,n,m,u[:n+1],u[n+1:],T,yT,10**(multi*k)*my0)
-            g =zeros(len(u))
+            g = zeros(len(u))
             
             g[:n+1]=float(T)*(u[:n+1]+L)/n
 

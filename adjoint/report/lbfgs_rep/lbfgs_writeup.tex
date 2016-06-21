@@ -26,7 +26,7 @@ The BFGS and L-BFGS are quasi-Newton methods for solving unconstrained optimizat
 \begin{align*}
 \min_{x \in \mathbb{R}^n} J(x)
 \end{align*} 
-This can looked on as solving the system of equations on the form \\$\nabla J(x) = F(x)=0$. Using the Newton method, that can be derived using Taylor series, we get the following iteration for solving the system:
+This can be looked on as solving the system of equations on the form \\$\nabla J(x) = F(x)=0$. Using the Newton method, that can be derived using Taylor series, we get the following iteration for solving the system:
 \begin{align*}
 x^{k+1} = x^k - F'(x^k)^{-1}F(x^k)
 \end{align*}
@@ -39,9 +39,9 @@ y_k &= \nabla J(x^{k+1}) - \nabla J(x^k) \\
 \end{align*} 
 We also need an initial approximation $H^0$ to the inverted hessian. This is typically set to be $H^0 = \beta\mathbb{I}$, where $\mathbb{I}$ is the identity matrix and $\beta$ is some constant. The BFGS algorithm at step $k$ then looks like:
 \begin{align*}
-&\text{update control by:} \ x^{k+1}= x^{k} - H^kF(x^{k}) \\
-&\text{update $s_k$, $y_k$ and $\rho_k$ as described above} \\
-&\text{update $H$ by:} \ H^{k+1} = (\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k})H^k(\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k}) + \frac{s_k {s_k}^T}{\rho_k}
+&\text{1. update control by:} \ x^{k+1}= x^{k} - H^kF(x^{k}) \\
+&\text{2. update $s_k$, $y_k$ and $\rho_k$ as described above} \\
+&\text{3. update $H$ by:} \ H^{k+1} = (\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k})H^k(\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k}) + \frac{s_k {s_k}^T}{\rho_k}
 \end{align*}
 \textbf{L-BFGS}
 \\
@@ -75,7 +75,7 @@ and the gradient:
 &=(\Delta t (u^1+p^1),...,\Delta t (u^N+p^N),p_{1}(T_1) -\mu(y_{0}(T_1)-\lambda_1),..,p_{m}(T_m) -\mu(y_{m-1}(T_m)-\lambda_m)) \\
 &= (\Delta t\{u^j+p^j\}_{j=1}^N|p_i(T_i)) + \mu(\{0\}_{j=1}^N|\lambda_i - y_{i-1}(T_i))
 \end{align*}
-This expression for the gradient inspires a special initial Hessian approximation technique, where one for each $\mu$ iteration remember the Hessian, and then passes it on to the next iteration. We then use the previous Hessian with updated $\mu$ as initial Hessian $H_0$ instead of the identity.
+This expression for the gradient motivates a special initial Hessian approximation technique, where one for each $\mu$ iteration remember the Hessian, and then passes it on to the next iteration. We then use the previous Hessian with updated $\mu$ as initial Hessian $H_0$ instead of the identity.
 \\
 \\
 \textbf{Testing Hessian approximation technique} 
@@ -86,7 +86,7 @@ For testing I solve the problem:
 y'(t) &= y(t) +u(t) \\
 y(0) &=1
 \end{align*}
-Numerically I solve the state equation and the adjoint equation using backward Euler method, and the trapezoidal rule for integration. I solved this problem without partitioning and penalties and with partition and penalty using both normal L-BFGS and L-BFGS with the $\mu$-trick. Partitioning the domain $I=[0,1]$into ten uniform parts and using $N=2000$ and $N=3000$ points to discretize $I$. To measure the performance of the two penalty methods, I counted the number of iterations needed in the L-BFGS algorithm to reach the wanted tolerance. For both dizcritizations I used $\mu=0.1N$ and $\mu=0.5N$. I got the following results: 
+Numerically I solve the state equation and the adjoint equation using backward Euler method, and the trapezoidal rule for integration. I solved this problem without partitioning and penalties and with partition and penalty using both normal L-BFGS and L-BFGS with the $\mu$-trick. I partition the domain $I=[0,1]$ into ten uniform parts and use $N=2000$ and $N=3000$ points to discretize $I$. To measure the performance of the two penalty methods, I counted the number of iterations needed in the L-BFGS algorithm to reach the wanted tolerance. For both dizcritizations I used $\mu=0.1N$ and $\mu=0.5N$. I got the following results: 
 \begin{figure}
   \includegraphics[width=\linewidth]{mufail2000.png}
   \caption{The second iteration gives a solution closer to the non-penalty solution, as we would expect. However the control from the second iteration is less smooth than the control from the first iteration.}
