@@ -183,7 +183,7 @@ class OptimalControlProblem():
     def solve(self,N,x0=None,Lbfgs_options=None):
 
         
-        dt=float(T)/N
+        dt=float(self.T)/N
         if x0==None:
             x0 = self.Vec(np.zeros(N+1))
             
@@ -212,7 +212,7 @@ class OptimalControlProblem():
     def penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None):
 
 
-        dt=float(T)/N
+        dt=float(self.T)/N
         if x0==None:
             x0 = self.Vec(np.zeros(N+m))
         x = None
@@ -253,7 +253,23 @@ class OptimalControlProblem():
         return res
 
     
+    def plot_solve(self,N):
+        res = self.solve(N)
+        t = np.linspace(0,self.T,N+1)
+        u = res['control'].array()
 
+        import matplotlib.pyplot as plt
+
+        plt.plot(t,u)
+        plt.ylabel('control')
+        plt.xlabel('time')
+        plt.show()
+
+        return res
+        
+        
+
+        
 class Problem1(OptimalControlProblem):
     """
     optimal control with ODE y=ay'+u
@@ -272,11 +288,11 @@ class Problem1(OptimalControlProblem):
 
 
     def adjoint_update(self,l,i,dt):
-
+        a = self.a
         return (1+dt*a)*l[-(i+1)] 
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
     from matplotlib.pyplot import *
 
