@@ -2,6 +2,7 @@ from my_vector import *
 from lbfgs import Lbfgs,MuLbfgs
 import numpy as np
 from matplotlib.pyplot import *
+import matplotlib.pyplot as plt
 from scipy.integrate import trapz
 from scipy.optimize import minimize
 import test_serial as ser
@@ -112,15 +113,16 @@ def test_const_NM_rate():
     yT = 10
 
     M = [2,5,10,20]
-
+    
+    fig,axs = subplots(2, 2)
     for i in range(len(M)):
-
+    
         N = M[i]*200
         my =0.5*N
         t =np.linspace(0,T,N+1)
         res1,res2 = mini_solver(y0,a,T,yT,N,M[i],[my],2*M[i])
-
-
+    
+    
         e = pen.L2error(res1.x,res2[0]['control'][:N+1],t)
         #print M[i],res2[0]['iteration']
         print
@@ -129,11 +131,15 @@ def test_const_NM_rate():
         print "L2 diffrence between normal and penalty approach: %.2e"% e
         print
         
-        figure()
-        plot(t,res1.x)
-        plot(t,res2[0]['control'][:N+1])
-        legend(['serial','penalty'])
-        show()
+        x1 = i/2
+        x2= i%2
+        axs[x1,x2].plot(t,res1.x)
+        axs[x1,x2].plot(t,res2[0]['control'][:N+1])
+        axs[x1,x2].legend(['serial','penalty'])
+        axs[x1,x2].set_title('m='+str(M[i])+' N='+str(N)+' my='+str(my))
+        axs[x1,x2].set_xlabel("t")
+        axs[x1,x2].set_ylabel("control")
+    show()
            
 if __name__ == "__main__":
 

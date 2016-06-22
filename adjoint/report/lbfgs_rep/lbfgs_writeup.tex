@@ -109,4 +109,44 @@ Numerically I solve the state equation and the adjoint equation using backward E
     \end{tabular}
 \end{center}
 I also added plots of the controls I get from solving the problem using the $\mu$-trick compared with the control we get from not using any penalties. What both the iteration count and plots tells us is that the $\mu$-trick is not working very well. The number of iterations using is either the same or bigger than what we see for not using old Hessian. From the plots we also see that the solutions gets less smooth and distorted when using the $\mu$-trick. I have also done other tests, and they all yield similar results. 
+\\
+\\
+\textbf{L-BFGS memory}
+\\
+Doing tests I noticed that the number of iterations needed for the L-BFGS to converge were dependent on the memory of the method. By memory I mean the number of iterations the approximation of the inverted Hessian were based on. I tested the problem stated above with $N=1000$, for different number of processes, and for different L-BFGS memory size. Below I have added a table that tells us the number of iteration required for the method to converge for different combinations of number of processes and memory.
+
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem=m$& $mem=2m$ \\ \hline
+    $m=2$  &  3 & 3 \\ \hline
+    $m=5$  &  12 &  9	\\ \hline
+    $m=10$ &  Fail & 14 \\ \hline
+    $m=15$ &  32 &  19	\\ \hline
+    $m=20$ &  42 & 24 \\ \hline
+    $m=30$ &  61 &  34	\\ \hline
+    \end{tabular}
+\end{center}
+If we solve this problem without using any penalties, we need two iterations. This means, that if we assume no overhead and perfect scaling and so on, we get faster execution using the penalty method, than the serial situation.
+\\
+\\
+\textbf{Relation between $\mu$ and number of processes $m$}
+\\
+If we let $\mu$ and the number of discretization points $N$ be constant, and then increase the number of processes $m$, we see that the penalty solution deviates from the serial solution. If we instead let the relation $\frac{N}{m}=C$, and set $\mu = \alpha C$, we see that the resulting control of the penalty method are similar for different $m$'s. Illustrate this with test results using $C=200$, and increasing $N$:
+\begin{figure}
+  \includegraphics[width=\linewidth]{Mu_mRelation.png}
+  \caption{Testing penalty method with different number of processes, and letting $\frac{N}{m}=200$. Notice that this yields very similar controls. }
+  \label{Fig 3}
+\end{figure}
+\begin{center}
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+     & $N$ & iterations & $||\text{penalty}-\text{serial} ||_{L^2} $  \\ \hline
+    $m=2$  &  400 & 3 & 1.11e-04  \\ \hline
+    $m=5$  &  1000 &  9&	3.34e-04 \\ \hline
+    $m=10$ &  2000 & 14&  4.07e-04\\ \hline
+    $m=20$ &  4000 &  25	& 5.07e-04\\ \hline
+	\end{tabular}
+\end{center}  
+
 \end{document}
