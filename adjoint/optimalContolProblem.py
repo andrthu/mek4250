@@ -59,7 +59,8 @@ class OptimalControlProblem():
     def default_options(self):
 
         default = {"Vector" : SimpleVector,
-                   "Lbfgs"  : Lbfgs,}
+                   "Lbfgs"  : Lbfgs,
+                   "alpga"  : 1,}
         return default
         
         
@@ -118,13 +119,14 @@ class OptimalControlProblem():
         T = self.T
         y0 = self.y0
         dt = float(T)/N
-        yT = self.yT       
+        yT = self.yT
+        alpha = self.options["alpha"]      
 
         y = self.ODE_solver(u,N)
 
         l=np.zeros(N+1)
         
-        l[-1] = y[-1] -yT
+        l[-1] = alpha*(y[-1] -yT)
         for i in range(N):
             l[-(i+2)] = self.adjoint_update(l,i,dt)
              
@@ -136,12 +138,13 @@ class OptimalControlProblem():
         y0 = self.y0
         dt = float(T)/N
         yT = self.yT
+        alpha = self.options["alpha"]
         
         l = partition_func(N+1,m)
         y,Y = self.ODE_penalty_solver(u,N,m)
 
             
-        l[-1][-1] = y[-1][-1] - yT
+        l[-1][-1] = alpha*(y[-1][-1] - yT)
         for i in range(m-1):
             l[i][-1]=my*(y[i][-1]-u[N+1+i])
 
@@ -290,6 +293,30 @@ class Problem1(OptimalControlProblem):
     def adjoint_update(self,l,i,dt):
         a = self.a
         return (1+dt*a)*l[-(i+1)] 
+
+class Problem2(OptimalControlProblem):
+    """
+    optimal control with ODE y=ay'+u
+    """
+
+    def __init__(self,y0,yT,T,a,J,grad_J,options=None):
+
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
+
+        self.a = a
+
+
+    def ODE_update(self,y,u,i,j,dt):
+        a = self.a
+        return (y[i] +dt*u[j+1])/(1.-dt*a(dt*(j+1))
+
+
+    def adjoint_update(self,l,i,dt):
+        a = self.a
+        
+        return (1+dt*a(self.T-dt*i))*l[-(i+1)] 
+
+
 
 
 if __name__ == "__main__":
