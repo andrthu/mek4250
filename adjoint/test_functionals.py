@@ -30,7 +30,7 @@ def test_coef():
     a  = 1
     N = 700   
 
-    C = [0.05,0.1,2,]
+    C = [0.1,2,100]
     D = [1,100,1000]
 
     for i in range(len(C)):
@@ -94,7 +94,7 @@ def test_adjoint_coef():
     yT = 1
     T  = 1
     a  = 1
-    N = 700
+    N = 1000
     m=15
 
     C = [0.1,2,10]
@@ -143,7 +143,31 @@ def test_variable_a():
 
     res = problem.plot_solve(N)
 
+def memory_test():
+
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+    N = 1000
+    my = [500]
+    mul = [2]
     
+    M = [2,4,8,16,32]
+    
+    J,grad_J = make_coef_J(2,100)
+    
+    problem = Problem1(y0,yT,T,a,J,grad_J)
+
+    L = []
+    for i in range(len(M)):
+    
+        L.append(problem.lbfgs_memory_solve(N,M[i],my,mul=mul))
+
+    for i in range(len(M)):
+        print "--------------m=%d--------------" %(M[i])
+        for j in range(len(mul)):
+            print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*M[i],L[i][j]['iteration'],L[i][j]['iteration']/float(M[i])) 
      
 if __name__ == "__main__":
 
@@ -151,3 +175,4 @@ if __name__ == "__main__":
     #test_alpha()
     test_adjoint_coef()
     #test_variable_a()
+    #memory_test()

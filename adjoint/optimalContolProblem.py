@@ -47,7 +47,7 @@ class OptimalControlProblem():
     def default_Lbfgs_options(self):
         
         default = {"jtol"                   : 1e-4,
-                   "maxiter"                : 200,
+                   "maxiter"                : 500,
                    "mem_lim"                : 10,
                    "Vector"                 : SimpleVector,
                    "Hinit"                  : "default",
@@ -221,7 +221,7 @@ class OptimalControlProblem():
         if x0==None:
             x0 = self.Vec(np.zeros(N+m))
         x = None
-        
+        Result = []
         for i in range(len(my_list)):
         
             def J(u):                
@@ -251,11 +251,13 @@ class OptimalControlProblem():
             solver = Lbfgs(J,grad_J,x0,options=Loptions)
             
             res = solver.solve()
-            
+            Result.append(res)
             x0 = res['control'].array()
             
-
-        return res
+        if len(Result)==1:
+            return res
+        else:
+            return Result
 
     
     def plot_solve(self,N):
@@ -291,6 +293,19 @@ class OptimalControlProblem():
         return res1,res2
 
     
+    def lbfgs_memory_solve(self,N,m,my_list,mul=[1,2]):
+
+        
+        results = []
+        for i in range(len(mul)):
+            opt = {"mem_lim" :mul[i]*m}
+            try:
+                res = self.penalty_solve(N,m,my_list)
+            except Warning:
+                res = {'iteration' : -1}
+            results.append(res)
+        return results
+        
         
 
         
