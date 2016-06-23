@@ -59,8 +59,7 @@ class OptimalControlProblem():
     def default_options(self):
 
         default = {"Vector" : SimpleVector,
-                   "Lbfgs"  : Lbfgs,
-                   "alpga"  : 1,}
+                   "Lbfgs"  : Lbfgs,}
         return default
         
         
@@ -69,6 +68,9 @@ class OptimalControlProblem():
 
     def adjoint_update(self,l,i,dt):
         raise NotImplementedError,'adjoint_update not implemented'
+
+    def initial_adjoint(self,y):
+        return y - self.yT
     
     def ODE_solver(self,u,N):
         
@@ -120,13 +122,13 @@ class OptimalControlProblem():
         y0 = self.y0
         dt = float(T)/N
         yT = self.yT
-        alpha = self.options["alpha"]      
+              
 
         y = self.ODE_solver(u,N)
 
         l=np.zeros(N+1)
         
-        l[-1] = alpha*(y[-1] -yT)
+        l[-1] = self.initial_adjoint(y[-1])
         for i in range(N):
             l[-(i+2)] = self.adjoint_update(l,i,dt)
              
@@ -138,13 +140,13 @@ class OptimalControlProblem():
         y0 = self.y0
         dt = float(T)/N
         yT = self.yT
-        alpha = self.options["alpha"]
+        
         
         l = partition_func(N+1,m)
         y,Y = self.ODE_penalty_solver(u,N,m)
 
             
-        l[-1][-1] = alpha*(y[-1][-1] - yT)
+        l[-1][-1] = self.initial_adjoint(y[-1][-1])
         for i in range(m-1):
             l[i][-1]=my*(y[i][-1]-u[N+1+i])
 
@@ -270,6 +272,25 @@ class OptimalControlProblem():
 
         return res
         
+    def penalty_and_normal_solve(self,N,m,my_list,x0=None,Lbfgs_options=None,
+                                 show_plot=False):
+
+        res1 = self.penalty_solve(N,m,my_list,x0,Lbfgs_options)
+        res2 = self.solve(N,x0,Lbfgs_options)
+        if show_plot==True:
+            import matplotlib.pyplot as plt
+            t = np.linspace(0,self.T,N+1)
+            u1 = res1['control'].array()[:N+1]
+            u2 = res2['control'].array()
+            plt.plot(t,u1)
+            plt.plot(t,u2)
+            plt.ylabel('control')
+            plt.xlabel('time')
+            plt.show()
+            
+        return res1,res2
+
+    
         
 
         
@@ -296,7 +317,7 @@ class Problem1(OptimalControlProblem):
 
 class Problem2(OptimalControlProblem):
     """
-    optimal control with ODE y=ay'+u
+    optimal control with ODE y=a(t)y' + u
     """
 
     def __init__(self,y0,yT,T,a,J,grad_J,options=None):
@@ -308,7 +329,7 @@ class Problem2(OptimalControlProblem):
 
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
-        return (y[i] +dt*u[j+1])/(1.-dt*a(dt*(j+1))
+        return (y[i] +dt*u[j+1])/(1.-dt*a(dt*(j+1)))
 
 
     def adjoint_update(self,l,i,dt):
@@ -317,7 +338,39 @@ class Problem2(OptimalControlProblem):
         return (1+dt*a(self.T-dt*i))*l[-(i+1)] 
 
 
+class Problem3(OptimalControlProblem):
+    """
+    optimal control with ODE y=ay'+u
+    and J(u)=||u||**2 + alpha*(y(T)-yT)**2
+    """
 
+    def __init__(self,y0,yT,T,a,alpha,J,grad_J,options=None):
+
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
+
+        self.a = a
+        self.alpha = alpha
+        
+        def JJ(u,y,yT,T):
+            return J(u,y,yT,T,self.alpha)
+        def grad_JJ(u,p,dt):
+            return grad_J(u,p,dt,self.alpha)
+        self.J=JJ
+        self.grad_J = grad_JJ
+
+
+    def initial_adjoint(self,y):
+        return self.alpha*(y - self.yT)
+
+    
+    def ODE_update(self,y,u,i,j,dt):
+        a = self.a
+        return (y[i] +dt*u[j+1])/(1.-dt*a)
+
+
+    def adjoint_update(self,l,i,dt):
+        a = self.a
+        return (1+dt*a)*l[-(i+1)] 
 
 if __name__ == "__main__":
 

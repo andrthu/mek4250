@@ -125,7 +125,8 @@ class LbfgsParent():
             xtol      = ls_parm["xtol"]
             start_stp = ls_parm["start_stp"]
             
-            ls =  StrongWolfeLineSearch(ftol,gtol,xtol,start_stp)
+            ls = StrongWolfeLineSearch(ftol,gtol,xtol,start_stp,
+                                        ignore_warnings=False)
 
         alpha = ls.search(phi, phi_dphi, phi_dphi0)
 
