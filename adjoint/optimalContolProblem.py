@@ -2,6 +2,7 @@ from my_bfgs.lbfgs import Lbfgs
 from my_bfgs.my_vector import SimpleVector
 from penalty import partition_func
 from scipy.integrate import trapz
+from scipy.optimize import minimize
 import numpy as np
 
 class OptimalControlProblem():
@@ -298,13 +299,30 @@ class OptimalControlProblem():
         
         results = []
         for i in range(len(mul)):
-            opt = {"mem_lim" :mul[i]*m}
+            opt = {"mem_lim" : mul[i]*max(m,10)}
             try:
-                res = self.penalty_solve(N,m,my_list)
+                res = self.penalty_solve(N,m,my_list,Lbfgs_options=opt)
             except Warning:
                 res = {'iteration' : -1}
             results.append(res)
         return results
+
+    def scipy_solver(self,N):
+
+        dt=float(self.T)/N
+        
+            
+        def J(u):
+            return self.Functional(u,N)
+
+        def grad_J(u):
+            l = self.adjoint_solver(u,N)
+            return self.grad_J(u,l,dt)
+
+        res = minimize(J,np.zeros(N+1),method='L-BFGS-B', jac=grad_J,
+               options={'gtol': 1e-6, 'disp': False})
+        
+        return res
         
         
 

@@ -151,24 +151,44 @@ def memory_test():
     a  = 1
     N = 1000
     my = [500]
-    mul = [2]
+    mul = [1,3]
     
     M = [2,4,8,16,32]
     
-    J,grad_J = make_coef_J(2,100)
+    J,grad_J = make_coef_J(0.1,100)
     
     problem = Problem1(y0,yT,T,a,J,grad_J)
 
     L = []
+    
     for i in range(len(M)):
     
         L.append(problem.lbfgs_memory_solve(N,M[i],my,mul=mul))
 
+    res1 = problem.solve(N)
+    print "--------------m=1--------------" 
+    print "|lbfgs memory=10| #iterations=%d| #iterations/m=%.2f"%(res1['iteration'],res1['iteration']) 
     for i in range(len(M)):
         print "--------------m=%d--------------" %(M[i])
         for j in range(len(mul)):
-            print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*M[i],L[i][j]['iteration'],L[i][j]['iteration']/float(M[i])) 
-     
+            print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*max(M[i],10),L[i][j]['iteration'],L[i][j]['iteration']/float(M[i]))
+
+
+def test_scipy_solve():
+
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+    N = 1000
+    
+    J,grad_J = make_coef_J(0.1,100)
+    
+    problem = Problem1(y0,yT,T,a,J,grad_J)
+
+    res = problem.scipy_solver(N)
+    print res.nit
+    
 if __name__ == "__main__":
 
     #test_coef()
@@ -176,3 +196,4 @@ if __name__ == "__main__":
     test_adjoint_coef()
     #test_variable_a()
     #memory_test()
+    #test_scipy_solve()
