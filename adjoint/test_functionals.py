@@ -154,26 +154,34 @@ def memory_test():
     mul = [1,3]
     
     M = [2,4,8,16,32]
-    
-    J,grad_J = make_coef_J(0.1,100)
-    
-    problem = Problem1(y0,yT,T,a,J,grad_J)
 
-    L = []
+    coef=[[2,1000],[2,-1],[0.1,100],[10,100]]
     
-    for i in range(len(M)):
+    for k in range(len(coef)):
+        J,grad_J = make_coef_J(coef[k][0],coef[k][1])
     
-        L.append(problem.lbfgs_memory_solve(N,M[i],my,mul=mul))
+        problem = Problem1(y0,yT,T,a,J,grad_J)
 
-    res1 = problem.solve(N)
-    print "--------------m=1--------------" 
-    print "|lbfgs memory=10| #iterations=%d| #iterations/m=%.2f"%(res1['iteration'],res1['iteration']) 
-    for i in range(len(M)):
-        print "--------------m=%d--------------" %(M[i])
-        for j in range(len(mul)):
-            print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*max(M[i],10),L[i][j]['iteration'],L[i][j]['iteration']/float(M[i]))
+        L = []
+    
+        for i in range(len(M)):
+    
+            L.append(problem.lbfgs_memory_solve(N,M[i],my,mul=mul))
 
+        res1 = problem.solve(N)
+        print "*******************************"
+        print "J(u) = Integral( (%.1fu - %d)**2) " % (coef[k][0],coef[k][1])
+        print "--------------m=1--------------" 
+        print "|lbfgs memory=10| #iterations=%d| #iterations/m=%.2f"%(res1['iteration'],res1['iteration']) 
+        for i in range(len(M)):
+            print "--------------m=%d--------------" %(M[i])
+            for j in range(len(mul)):
+                print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*max(M[i],10),L[i][j]['iteration'],L[i][j]['iteration']/float(M[i]))
 
+        import matplotlib.pyplot as plt
+        
+        plt.plot(np.linspace(1,2,2),np.zeros(2))
+        plt.show()
 def test_scipy_solve():
 
     y0 = 1
@@ -193,7 +201,95 @@ if __name__ == "__main__":
 
     #test_coef()
     #test_alpha()
-    test_adjoint_coef()
+    #test_adjoint_coef()
     #test_variable_a()
-    #memory_test()
+    memory_test()
     #test_scipy_solve()
+
+
+
+"""
+*******************************
+J(u) = Integral( (2.0u - 1000)**2) 
+--------------m=1--------------
+|lbfgs memory=10| #iterations=5| #iterations/m=5.00
+--------------m=2--------------
+|lbfgs memory=10| #iterations=6| #iterations/m=3.00
+|lbfgs memory=30| #iterations=6| #iterations/m=3.00
+--------------m=4--------------
+|lbfgs memory=10| #iterations=8| #iterations/m=2.00
+|lbfgs memory=30| #iterations=8| #iterations/m=2.00
+--------------m=8--------------
+|lbfgs memory=10| #iterations=-1| #iterations/m=-0.12
+|lbfgs memory=30| #iterations=12| #iterations/m=1.50
+--------------m=16--------------
+|lbfgs memory=16| #iterations=-1| #iterations/m=-0.06
+|lbfgs memory=48| #iterations=21| #iterations/m=1.31
+--------------m=32--------------
+|lbfgs memory=32| #iterations=-1| #iterations/m=-0.03
+|lbfgs memory=96| #iterations=39| #iterations/m=1.22
+
+    
+*******************************
+J(u) = Integral( (2.0u - -1)**2) 
+--------------m=1--------------
+|lbfgs memory=10| #iterations=4| #iterations/m=4.00
+--------------m=2--------------
+|lbfgs memory=10| #iterations=5| #iterations/m=2.50
+|lbfgs memory=30| #iterations=5| #iterations/m=2.50
+--------------m=4--------------
+|lbfgs memory=10| #iterations=17| #iterations/m=4.25
+|lbfgs memory=30| #iterations=17| #iterations/m=4.25
+--------------m=8--------------
+|lbfgs memory=10| #iterations=22| #iterations/m=2.75
+|lbfgs memory=30| #iterations=20| #iterations/m=2.50
+--------------m=16--------------
+|lbfgs memory=16| #iterations=51| #iterations/m=3.19
+|lbfgs memory=48| #iterations=28| #iterations/m=1.75
+--------------m=32--------------
+|lbfgs memory=32| #iterations=100| #iterations/m=3.12
+|lbfgs memory=96| #iterations=43| #iterations/m=1.34
+
+
+*******************************
+J(u) = Integral( (0.1u - 100)**2) 
+--------------m=1--------------
+|lbfgs memory=10| #iterations=11| #iterations/m=11.00
+--------------m=2--------------
+|lbfgs memory=10| #iterations=-1| #iterations/m=-0.50
+|lbfgs memory=30| #iterations=12| #iterations/m=6.00
+--------------m=4--------------
+|lbfgs memory=10| #iterations=-1| #iterations/m=-0.25
+|lbfgs memory=30| #iterations=-1| #iterations/m=-0.25
+--------------m=8--------------
+|lbfgs memory=10| #iterations=-1| #iterations/m=-0.12
+|lbfgs memory=30| #iterations=28| #iterations/m=3.50
+--------------m=16--------------
+|lbfgs memory=16| #iterations=-1| #iterations/m=-0.06
+|lbfgs memory=48| #iterations=35| #iterations/m=2.19
+--------------m=32--------------
+|lbfgs memory=32| #iterations=-1| #iterations/m=-0.03
+|lbfgs memory=96| #iterations=51| #iterations/m=1.59
+
+
+*******************************
+J(u) = Integral( (10.0u -100)**2) 
+--------------m=1--------------
+|lbfgs memory=10| #iterations=4| #iterations/m=4.00
+--------------m=2--------------
+|lbfgs memory=10| #iterations=5| #iterations/m=2.50
+|lbfgs memory=30| #iterations=5| #iterations/m=2.50
+--------------m=4--------------
+|lbfgs memory=10| #iterations=7| #iterations/m=1.75
+|lbfgs memory=30| #iterations=7| #iterations/m=1.75
+--------------m=8--------------
+|lbfgs memory=10| #iterations=11| #iterations/m=1.38
+|lbfgs memory=30| #iterations=11| #iterations/m=1.38
+--------------m=16--------------
+|lbfgs memory=16| #iterations=33| #iterations/m=2.06
+|lbfgs memory=48| #iterations=19| #iterations/m=1.19
+--------------m=32--------------
+|lbfgs memory=32| #iterations=-1| #iterations/m=-0.03
+|lbfgs memory=96| #iterations=35| #iterations/m=1.09
+
+"""
