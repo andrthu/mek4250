@@ -148,5 +148,47 @@ If we let $\mu$ and the number of discretization points $N$ be constant, and the
     $m=20$ &  4000 &  25	& 5.07e-04\\ \hline
 	\end{tabular}
 \end{center}  
-
+\textbf{More iterations}
+\\
+Tried solving the problem using functional 
+\begin{align*}
+J(u,y)=\int_0^T (C_0u(t)-C_1)^2dt + (y(T)-y_T)^2
+\end{align*}
+This resulted in more iterations for the serial L-BFGS. Results for can be found below:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=2max(m,10)$\\ \hline
+    $m=1$  &  5 &  \\ \hline
+    $m=2$  &  6 &  6	\\ \hline
+    $m=4$ &  8 & 8 \\ \hline
+    $m=8$ &  Fail &  12	\\ \hline
+    $m=16$ &  Fail & 21 \\ \hline
+    $m=32$ &  Fail &  39	\\ \hline
+    \end{tabular}
+\end{center}
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=2max(m,10)$\\ \hline
+    $m=1$  &  11 &  \\ \hline
+    $m=2$  &  Fail &  12	\\ \hline
+    $m=4$ &  Fail & Fail \\ \hline
+    $m=8$ &  Fail &  28	\\ \hline
+    $m=16$ &  Fail & 35 \\ \hline
+    $m=32$ &  Fail &  51	\\ \hline
+    \end{tabular}
+\end{center}
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=2max(m,10)$\\ \hline
+    $m=1$  &  14 &  \\ \hline
+    $m=2$  &  5 &  5	\\ \hline
+    $m=4$ &  17 & 17 \\ \hline
+    $m=8$ &  22 &  20	\\ \hline
+    $m=16$ &  51 & 28 \\ \hline
+    $m=32$ &  100 &  43	\\ \hline
+    \end{tabular}
+\end{center}
 \end{document}
