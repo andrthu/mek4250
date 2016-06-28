@@ -67,7 +67,7 @@ class OptimalControlProblem():
     def ODE_update(self,y,u,i,j,dt):
         raise NotImplementedError,'ODE_update not implemented'
 
-    def adjoint_update(self,l,i,dt):
+    def adjoint_update(self,l,y,i,dt):
         raise NotImplementedError,'adjoint_update not implemented'
 
     def initial_adjoint(self,y):
@@ -131,7 +131,7 @@ class OptimalControlProblem():
         
         l[-1] = self.initial_adjoint(y[-1])
         for i in range(N):
-            l[-(i+2)] = self.adjoint_update(l,i,dt)
+            l[-(i+2)] = self.adjoint_update(l,y,i,dt)
              
         return l
     
@@ -153,7 +153,7 @@ class OptimalControlProblem():
 
         for i in range(m):
             for j in range(len(l[i])-1):
-                l[i][-(j+2)] = self.adjoint_update(l[i],j,dt)
+                l[i][-(j+2)] = self.adjoint_update(l[i],y[i],j,dt)
             
         L=np.zeros(N+1)
             
@@ -344,7 +344,7 @@ class Problem1(OptimalControlProblem):
         return (y[i] +dt*u[j+1])/(1.-dt*a)
 
 
-    def adjoint_update(self,l,i,dt):
+    def adjoint_update(self,l,y,i,dt):
         a = self.a
         return (1+dt*a)*l[-(i+1)] 
 
@@ -365,7 +365,7 @@ class Problem2(OptimalControlProblem):
         return (y[i] +dt*u[j+1])/(1.-dt*a(dt*(j+1)))
 
 
-    def adjoint_update(self,l,i,dt):
+    def adjoint_update(self,l,y,i,dt):
         a = self.a
         
         return (1+dt*a(self.T-dt*i))*l[-(i+1)] 
@@ -401,7 +401,7 @@ class Problem3(OptimalControlProblem):
         return (y[i] +dt*u[j+1])/(1.-dt*a)
 
 
-    def adjoint_update(self,l,i,dt):
+    def adjoint_update(self,l,y,i,dt):
         a = self.a
         return (1+dt*a)*l[-(i+1)] 
 
