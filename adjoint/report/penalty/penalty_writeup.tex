@@ -16,7 +16,7 @@
 \begin{document}
 \begin{center}
 
-\LARGE Penalty gradient
+\LARGE Penalty gradient and non-linear ODEs 
 
 
 \end{center}
@@ -76,4 +76,42 @@ Lets put everything into our expression for or gradient:
 &=\int_0^T (u+p)s \ dt +\sum_{i=1}^n(p_{i}(T_i) -\mu(y_{i-1}(T_i)-\lambda_i) )l_i \\
 &= \int_0^T (u+p)s \ dt +\sum_{i=1}^n(p_{i}(T_i) -p_{i-1}(T_i) )l_i
 \end{align*} 
+\textbf{Non-linear ODEs}
+\\
+We want to solve the ODE constrained optimization problem:
+\begin{align*}
+\min_{u}J(u,y(u)) \ \text{with } E(u,y)=0
+\end{align*}
+For the most part, we have let the ODE $E(u,y)=0$ be linear both in $y$ and $u$, and on the form:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	E(y,u) = y'-\alpha y -u\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align*} 
+Now I want to comment on what happens, when we let $E$ be non-linear in $y$. Let us then have the following equation:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	E(y,u) = y'- F(y) -u\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align*} 
+Here $F:\mathbb{R} \rightarrow \mathbb{R}$, is some differentiable function. We then get $E_y = \frac{\partial}{\partial t} - F'(y)$. To derive the adjoint equation, we need to the the adjoint of the operator $E_y$. This is problematic since it depends on $y$, however since we need to solve the state equation before the adjoint, we can think of $F'(y)$ as a function of $t$. Using this linearisation, we get the following adjoint equation: 
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	\lambda'(t)=F'(y(t))\lambda(t)\\
+       	   \lambda(T)= y(T)-y_T
+     \end{array}
+   \right.
+\end{align*}
+The "initial" condition is derived in the usual way assuming: 
+\begin{align*}
+J(y,u)=L(u) + (y(T)-y_T)^2
+\end{align*}
+Where $L$ is some functional.
 \end{document}

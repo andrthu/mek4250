@@ -147,14 +147,14 @@ If we let $\mu$ and the number of discretization points $N$ be constant, and the
     $m=10$ &  2000 & 14&  4.07e-04\\ \hline
     $m=20$ &  4000 &  25	& 5.07e-04\\ \hline
 	\end{tabular}
-\end{center}  
+\end{center} 
 \textbf{More iterations}
 \\
 Tried solving the problem using functional 
 \begin{align*}
 J(u,y)=\int_0^T (C_0u(t)-C_1)^2dt + (y(T)-y_T)^2
 \end{align*}
-This resulted in more iterations for the serial L-BFGS. Results for can be found below:
+This resulted in more iterations for the serial L-BFGS. Results for $C_0=2 $ and $C_1= 1000$ can be found below:
 \begin{center}
     \begin{tabular}{| l | l | l |}
     \hline
@@ -167,6 +167,7 @@ This resulted in more iterations for the serial L-BFGS. Results for can be found
     $m=32$ &  Fail &  39	\\ \hline
     \end{tabular}
 \end{center}
+Results for for $C_0=0.1 $ and $C_1= 100$:
 \begin{center}
     \begin{tabular}{| l | l | l |}
     \hline
@@ -179,11 +180,12 @@ This resulted in more iterations for the serial L-BFGS. Results for can be found
     $m=32$ &  Fail &  51	\\ \hline
     \end{tabular}
 \end{center}
+Results for for $C_0=2 $ and $C_1= -1$:
 \begin{center}
     \begin{tabular}{| l | l | l |}
     \hline
     m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=2max(m,10)$\\ \hline
-    $m=1$  &  14 &  \\ \hline
+    $m=1$  &  4 &  \\ \hline
     $m=2$  &  5 &  5	\\ \hline
     $m=4$ &  17 & 17 \\ \hline
     $m=8$ &  22 &  20	\\ \hline
