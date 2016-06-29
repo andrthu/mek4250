@@ -1,5 +1,5 @@
-from  optimalContolProblem import *
-
+from optimalContolProblem import *
+from non_linear import *
 import numpy as np
 from scipy.integrate import trapz
 
@@ -196,6 +196,34 @@ def test_scipy_solve():
 
     res = problem.scipy_solver(N)
     print res.nit
+
+def non_linear_and_coef():
+
+
+    y0 = 1
+    yT = 10
+    T  = 1
+    a  = 1
+    N1 = 8000
+    
+
+
+    C = [0.1,2,100]
+    D = [-1,0.01,1000]
+
+    for i in range(len(C)):
+        for j in range(len(D)):
+
+            J,grad_J = make_coef_J(C[i],D[j])
+            opt = {"mem_lim" : 10}
+            try:
+                problem = Explicit_sine(y0,yT,T,a,J,grad_J)
+
+                res = problem.plot_solve(N1,opt=opt,state=True)
+                print res['iteration']
+                print C[i],D[j]
+            except:
+                print 'lol'
     
 if __name__ == "__main__":
 
@@ -203,9 +231,9 @@ if __name__ == "__main__":
     #test_alpha()
     #test_adjoint_coef()
     #test_variable_a()
-    memory_test()
+    #memory_test()
     #test_scipy_solve()
-
+    non_linear_and_coef()
 
 
 """

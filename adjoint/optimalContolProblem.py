@@ -261,16 +261,24 @@ class OptimalControlProblem():
             return Result
 
     
-    def plot_solve(self,N):
-        res = self.solve(N)
+    def plot_solve(self,N,opt=None,state=False):
+        res = self.solve(N,Lbfgs_options=opt)
         t = np.linspace(0,self.T,N+1)
         u = res['control'].array()
 
         import matplotlib.pyplot as plt
 
-        plt.plot(t,u)
-        plt.ylabel('control')
-        plt.xlabel('time')
+        if state==False:
+            plt.plot(t,u)
+            plt.ylabel('control')
+            plt.xlabel('time')
+        else:
+            y = self.ODE_solver(u,N)
+            plt.plot(t,u)
+            plt.plot(t,y)
+            plt.xlabel('time')
+            plt.legend(["con","state"])
+            
         plt.show()
 
         return res
