@@ -192,6 +192,8 @@ class OptimalControlProblem():
         dt=float(self.T)/N
         if x0==None:
             x0 = self.Vec(np.zeros(N+1))
+        else:
+            x0 = self.Vec(x0)
             
         def J(u):
             return self.Functional(u,N)
@@ -261,8 +263,8 @@ class OptimalControlProblem():
             return Result
 
     
-    def plot_solve(self,N,opt=None,state=False):
-        res = self.solve(N,Lbfgs_options=opt)
+    def plot_solve(self,N,x0=None,opt=None,state=False):
+        res = self.solve(N,x0=x0,Lbfgs_options=opt)
         t = np.linspace(0,self.T,N+1)
         u = res['control'].array()
 

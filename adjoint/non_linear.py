@@ -80,14 +80,16 @@ def test_nonLinear():
     import matplotlib.pyplot as plt
 
     y0 = 1
-    yT = 1
+    yT = 2
     T  = 1
-    N1 = 8000
+    N1 = 2000
     N2 = 5000
-    m=2
+    m=10
+    a=0.1
     #"""
-    F  = lambda x : np.sin(x) + 0.5*x
-    DF = lambda x : np.cos(x) + 0.5
+    F  = lambda x : a*np.exp(-x)*np.cos(x*np.pi)
+    
+    DF = lambda x : -a*np.exp(-x)*(np.pi*np.sin(np.pi*x)+np.cos(np.pi*x))
     """
     F = lambda x : np.exp(-x**2)
     DF = lambda x : -2*x*np.exp(-x**2)
@@ -106,6 +108,7 @@ def test_nonLinear():
     problem = ExplicitNonLinear(y0,yT,T,F,DF,J,grad_J)
 
     opt = {"mem_lim":40}
+    
     res1=problem.plot_solve(N1,opt=opt,state= True)
     #res2=problem.solve(N2,Lbfgs_options=opt)
     
@@ -117,8 +120,8 @@ def test_nonLinear():
 
     
     try:
-        res3=problem.penalty_solve(N1,m,[0.1*N1],Lbfgs_options=opt)
-        print res1['iteration'],res2['iteration'],res3['iteration']
+        res3=problem.penalty_solve(N1,m,[0.5*N1],Lbfgs_options=opt)
+        print res1['iteration'],res3['iteration']
         plt.plot(t1,res3['control'][:N1+1])
     except:
         #print res1['iteration'],res2['iteration']
