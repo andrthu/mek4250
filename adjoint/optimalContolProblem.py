@@ -164,7 +164,20 @@ class OptimalControlProblem():
         L[-1]=l[-1][-1]
             
         return l,L
-        
+
+    def Lagrange_Penalty_Functional(self,u,N,m,my,G):
+        y,Y = self.ODE_penalty_solver(u,N,m)
+
+        J_val = self.J(u[:N+1],y[-1][-1],self.yT,self.T)
+
+        pen = 0
+
+        for i in range(m-1):
+            pen = pen + (my*(y[i][-1]-u[N+1+i])+2*G[i])*(y[i][-1]-u[N+1+i])
+    
+        return J_val + 0.5*pen
+
+    
         
     def Functional(self,u,N):
 
@@ -262,7 +275,59 @@ class OptimalControlProblem():
         else:
             return Result
 
-    
+    def lagrange_penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None):
+
+
+        dt=float(self.T)/N
+        if x0==None:
+            x0 = self.Vec(np.zeros(N+m))
+        x = None
+        Result = []
+
+        G = np.zeros(m-1)
+        for i in range(len(my_list)):
+        
+            def J(u):                
+                return self.Lagrange_Penalty_Functional(u,N,m,my_list[i],G)
+
+            def grad_J(u):
+
+                l,L = self.adjoint_penalty_solver(u,N,m,my_list[i])
+
+                g = np.zeros(len(u))
+
+                g[:N+1]=self.grad_J(u[:N+1],L,dt)
+
+                for j in range(m-1):
+                    g[N+1+j]=l[j+1][0]-l[j][-1]+G[j]*u[N+1+j]
+                    
+                return g
+            
+            if Lbfgs_options==None:
+                Loptions = self.Lbfgs_options
+            else:
+                Loptions = self.Lbfgs_options
+                for key, val in Lbfgs_options.iteritems():
+                    Loptions[key]=val
+
+            
+            solver = Lbfgs(J,grad_J,x0,options=Loptions)
+
+            
+            res = solver.solve()
+            Result.append(res)
+            x0 = res['control'].array()
+            
+            for j in range(len(y)-1):
+                G[j]= G[j] - my0*(y[j][-1]-lam[j])
+
+        if len(Result)==1:
+            return res
+        else:
+            return Result
+
+
+        
     def plot_solve(self,N,x0=None,opt=None,state=False):
         res = self.solve(N,x0=x0,Lbfgs_options=opt)
         t = np.linspace(0,self.T,N+1)
