@@ -268,7 +268,7 @@ class OptimalControlProblem():
             
             res = solver.solve()
             Result.append(res)
-            x0 = res['control'].array()
+            x0 = res['control']
             
         if len(Result)==1:
             return res
@@ -316,10 +316,11 @@ class OptimalControlProblem():
             
             res = solver.solve()
             Result.append(res)
-            x0 = res['control'].array()
-            
-            for j in range(len(y)-1):
-                G[j]= G[j] - my0*(y[j][-1]-lam[j])
+            x0 = res['control']
+            print 
+            y,Y = self.ODE_penalty_solver(res['control'].array(),N,m)
+            for j in range(m-1):
+                G[j]=G[j]-my_list[i]*(y[j][-1]-res['control'].array()[N+1+j])
 
         if len(Result)==1:
             return res
