@@ -76,6 +76,30 @@ Lets put everything into our expression for or gradient:
 &=\int_0^T (u+p)s \ dt +\sum_{i=1}^n(p_{i}(T_i) -\mu(y_{i-1}(T_i)-\lambda_i) )l_i \\
 &= \int_0^T (u+p)s \ dt +\sum_{i=1}^n(p_{i}(T_i) -p_{i-1}(T_i) )l_i
 \end{align*} 
+\textbf{Augmented Lagrange}
+\\
+An alternative to the penalty method is the augmented Lagrange method. This method is similar to the penalty method, but it is apparently more stable. The main difference is in the functional, which now reads as:
+\begin{align*}
+J(y,u,\lambda) &= \int_0^T u^2 dt + \frac{1}{2}(y_n(T)-y_T)^2 + \frac{\mu}{2} \sum_{i=1}^n (y_{i-1}(T_i)-\lambda_i)^2 + \sum_{i=1}^n \Gamma_i(y_{i-1}(T_i)-\lambda_i) \\
+&= \int_0^T u^2 dt + \frac{1}{2}(y_n(T)-y_T)^2 +  (y_{i-1}(T_i)-\lambda_i)\sum_{i=1}^n (\Gamma_i+\frac{\mu}{2}(y_{i-1}(T_i)-\lambda_i))
+\end{align*}
+The difference is that we add non squared penalty terms with a Lagrange multiplication factor $\Gamma_i$. Since we change the functional, its derivative changes, however the only the $J_y$ and $J_{\lambda_i}$ terms change:
+\begin{align*}
+J_{\lambda_i}&= -\mu(y_{i-1}(T_i)-\lambda_i) -\Gamma_i\\
+J_y &= \delta_{T_{n+1}}(y_n(T_{n+1})-y_T) +  \sum_{i=1}^n \delta_{T_{i}}[\mu(y_{i-1}(T_i)-\lambda_i ) + \Gamma_i]
+\end{align*}
+This changes both the adjoint equations and the gradient. For the adjoint equations the change happens in the 'initial' condition:
+\begin{align*}
+-\frac{\partial }{\partial t}p_i &=p_i  \\
+p_i(T_{i+1}) &= \mu(y_{i}(T_{i+1})-\lambda_{i+1} ) + \Gamma_{i+1}
+\end{align*}
+For the gradient the change happens in the $\lambda$ part of the control:
+\begin{align*}
+\langle \hat{J}'(u,\lambda), (s,l)\rangle&=\langle -(E_u+E_{\lambda})p, (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
+&= \int_0^T (u+p)s \ dt +\sum_{i=1}^n[(p_{i}(T_i) -p_{i-1}(T_i) )- \Gamma_i]l_i
+\end{align*}
+\\
+\\
 \textbf{Non-linear ODEs}
 \\
 We want to solve the ODE constrained optimization problem:
