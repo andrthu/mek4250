@@ -72,6 +72,14 @@ class OptimalControlProblem():
 
     def initial_adjoint(self,y):
         return y - self.yT
+
+    def initial_penalty(self,y,u,my,N,i):
+        
+        return my*(y[i][-1]-u[N+1+i])
+
+    def initial_lagrange(self,y,u,my,N,i,G):
+        
+        return my*(y[i][-1]-u[N+1+i]) + G[i]
     
     def ODE_solver(self,u,N):
         
@@ -135,7 +143,7 @@ class OptimalControlProblem():
              
         return l
     
-    def adjoint_penalty_solver(self,u,N,m,my):
+    def adjoint_penalty_solver(self,u,N,m,my,init=initial_penalty):
 
         T = self.T
         y0 = self.y0
@@ -149,7 +157,7 @@ class OptimalControlProblem():
             
         l[-1][-1] = self.initial_adjoint(y[-1][-1])
         for i in range(m-1):
-            l[i][-1]=my*(y[i][-1]-u[N+1+i])
+            l[i][-1]=init(self,y,u,my,N,i) #my*(y[i][-1]-u[N+1+i])
 
         for i in range(m):
             for j in range(len(l[i])-1):
@@ -252,7 +260,7 @@ class OptimalControlProblem():
                 g[:N+1]=self.grad_J(u[:N+1],L,dt)
 
                 for j in range(m-1):
-                    g[N+1+j]=l[j+1][0]-l[j][-1]
+                    g[N+1+j]= l[j+1][0] - l[j][-1]
                     
                 return g
             
@@ -286,20 +294,25 @@ class OptimalControlProblem():
 
         G = np.zeros(m-1)
         for i in range(len(my_list)):
-        
+            print
+            print my_list[i],G
+            print 
+            def init_pen(self,y,u,my,N,k):
+                return self.initial_lagrange(y,u,my,N,k,G)
+            
             def J(u):                
                 return self.Lagrange_Penalty_Functional(u,N,m,my_list[i],G)
 
             def grad_J(u):
 
-                l,L = self.adjoint_penalty_solver(u,N,m,my_list[i])
+                l,L = self.adjoint_penalty_solver(u,N,m,my_list[i],init=init_pen )
 
                 g = np.zeros(len(u))
 
                 g[:N+1]=self.grad_J(u[:N+1],L,dt)
 
                 for j in range(m-1):
-                    g[N+1+j]=l[j+1][0]-l[j][-1]+G[j]*u[N+1+j]
+                    g[N+1+j]=l[j+1][0]-l[j][-1] - G[j]
                     
                 return g
             

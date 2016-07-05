@@ -231,9 +231,9 @@ if __name__ == "__main__":
     #test_alpha()
     #test_adjoint_coef()
     #test_variable_a()
-    #memory_test()
+    memory_test()
     #test_scipy_solve()
-    non_linear_and_coef()
+    #non_linear_and_coef()
 
 
 """
