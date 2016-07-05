@@ -24,8 +24,10 @@ class CubicY(Problem1):
     
 if __name__ == '__main__':
 
+    from matplotlib.pyplot import *
+
     y0 = 1
-    yT = 1
+    yT = -10.07778237
     T  = 1
     a  = 1
     P  = 3
@@ -38,9 +40,27 @@ if __name__ == '__main__':
 
         return 0.5*(I + (y-yT)**power)
 
+    def J2(u,y,yT,T):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + (y-yT)**2)
+
     def grad_J(u,p,dt):
         return dt*(u+p)
     
-    Problem = CubicY(y0,yT,T,a,P,J,grad_J)
+    problem  = CubicY(y0,yT,T,a,P,J,grad_J)
+    problem2 = Problem1(y0,yT,T,a,J2,grad_J)
 
-    Problem.plot_solve(N)
+    res1 = problem.plot_solve(N,state=True)
+    print 
+    res2 = problem2.plot_solve(N,state=True)
+
+    t = np.linspace(0,T,N+1)
+
+
+    plot(t,res1['control'].array())
+    plot(t,res2['control'].array(),'r--')
+    show()
+    
