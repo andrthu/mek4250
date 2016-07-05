@@ -29,6 +29,7 @@ if __name__ == '__main__':
     T  = 1
     a  = 1
     P  = 3
+    N=700
     
     def J(u,y,yT,T,power):
         t = np.linspace(0,T,len(u))
@@ -41,3 +42,5 @@ if __name__ == '__main__':
         return dt*(u+p)
     
     Problem = CubicY(y0,yT,T,a,P,J,grad_J)
+
+    Problem.plot_solve(N)
