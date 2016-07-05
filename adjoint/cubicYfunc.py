@@ -5,7 +5,12 @@ from scipy.integrate import trapz
 
 
 
-class CubicY(Problem1):
+class GeneralPowerY(Problem1):
+    """
+    class for the opti-problem:
+    J(u,y) = 0.5*||u||**2 + 1/p*(y(T)-yT)**p
+    with y' = ay + u
+    """
 
     def __init__(self,y0,yT,T,a,power,J,grad_J,options=None):
         Problem1.__init__(self,y0,yT,T,a,J,grad_J,options)
@@ -19,15 +24,28 @@ class CubicY(Problem1):
     def initial_adjoint(self,y):
         
         p = self.power
-        return (y - self.yT)**p
-
+        return (y - self.yT)**(p-1)
+    
+class CubicY(Problem1):
+     """
+    class for the opti-problem:
+    J(u,y) = 0.5*||u||**2 + 1/3*(y(T)-yT)**3
+    with y' = ay + u
+    """
+    def __init__(self,y0,yT,T,a,J,grad_J,options=None):
+        Problem1.__init__(self,y0,yT,T,a,J,grad_J,options)
+    
+    def initial_adjoint(self,y):
+        
+        p = 2
+        return (y - self.yT)**(p-1)
     
 if __name__ == '__main__':
 
     from matplotlib.pyplot import *
 
     y0 = 1
-    yT = -10.07778237
+    yT = 0
     T  = 1
     a  = 1
     P  = 3
@@ -38,7 +56,7 @@ if __name__ == '__main__':
 
         I = trapz(u**2,t)
 
-        return 0.5*(I + (y-yT)**power)
+        return (0.5*I + (1./power)*(y-yT)**power)
 
     def J2(u,y,yT,T):
         t = np.linspace(0,T,len(u))
@@ -50,7 +68,7 @@ if __name__ == '__main__':
     def grad_J(u,p,dt):
         return dt*(u+p)
     
-    problem  = CubicY(y0,yT,T,a,P,J,grad_J)
+    problem  = GeneralPowerY(y0,yT,T,a,P,J,grad_J)
     problem2 = Problem1(y0,yT,T,a,J2,grad_J)
 
     res1 = problem.plot_solve(N,state=True)
@@ -63,4 +81,6 @@ if __name__ == '__main__':
     plot(t,res1['control'].array())
     plot(t,res2['control'].array(),'r--')
     show()
+
+    problem.simple_test(N)
     

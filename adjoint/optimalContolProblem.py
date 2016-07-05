@@ -396,6 +396,25 @@ class OptimalControlProblem():
             results.append(res)
         return results
 
+    def simple_test(self,N):
+
+        M = [2,4,8,16,32]
+        L=[]
+        mul=[1,3]
+        for i in range(len(M)):
+
+            L.append(self.lbfgs_memory_solve(N,M[i],[0.5*N],mul=mul))
+
+        res1 = self.solve(N)
+
+
+        print "--------------m=1--------------" 
+        print "|lbfgs memory=10| #iterations=%d| #iterations/m=%.2f"%(res1['iteration'],res1['iteration']) 
+        for i in range(len(M)):
+            print "--------------m=%d--------------" %(M[i])
+            for j in range(len(mul)):
+                print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*max(M[i],10),L[i][j]['iteration'],L[i][j]['iteration']/float(M[i]))
+
     def scipy_solver(self,N):
 
         dt=float(self.T)/N
