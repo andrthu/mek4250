@@ -79,7 +79,7 @@ class OptimalControlProblem():
 
     def initial_lagrange(self,y,u,my,N,i,G):
         
-        return my*(y[i][-1]-u[N+1+i]) + G[i]
+        return self.initial_penalty(y,u,my,N,i) + G[i]
     
     def ODE_solver(self,u,N):
         

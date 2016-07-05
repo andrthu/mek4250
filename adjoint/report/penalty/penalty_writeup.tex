@@ -98,6 +98,7 @@ For the gradient the change happens in the $\lambda$ part of the control:
 \langle \hat{J}'(u,\lambda), (s,l)\rangle&=\langle -(E_u+E_{\lambda})p, (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
 &= \int_0^T (u+p)s \ dt +\sum_{i=1}^n[(p_{i}(T_i) -p_{i-1}(T_i) )- \Gamma_i]l_i
 \end{align*}
+The $\Gamma$ need to be updated for each iteration, i.e. eac time we change $\mu$.
 \\
 \\
 \textbf{Non-linear ODEs}
@@ -138,4 +139,21 @@ The "initial" condition is derived in the usual way assuming:
 J(y,u)=L(u) + (y(T)-y_T)^2
 \end{align*}
 Where $L$ is some functional.
+\\
+\\
+\textbf{Non-quadratic y-term in functional}
+\\
+To make the problem a bit more complicated, lets change the functional in its last term:
+\begin{align*}
+J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{3}(y(T)-y_T)^3
+\end{align*}
+This change results in a different $J_y$, and therefore a changed adjoint equation. The derivative of $J$ with respect to $y$ is now:
+\begin{align*}
+J_y = (y(T)-y_T)^2\delta_T
+\end{align*}
+This changes the 'initial' condition of the adjoint equation. We now get the following ODE:
+\begin{align*}
+-\frac{\partial }{\partial t}p(t) &=p(t)  \\
+p(T) &= (y(T)-y_T)^2
+\end{align*}
 \end{document}
