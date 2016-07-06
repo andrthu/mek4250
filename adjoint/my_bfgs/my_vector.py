@@ -68,8 +68,12 @@ class SimpleVector(Vector):
         d = self.data.copy()
         """
         d = np.zeros(len(self.data))
+        
+        d[:]=self.data[:]
+        """
         for i in range(len(d)):
-            d[i]=self.data[i]
+            d[i] = self.data[i]
+        """
         return SimpleVector(d)
 
 

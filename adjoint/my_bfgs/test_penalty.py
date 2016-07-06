@@ -329,7 +329,8 @@ def test_mu_values():
     
 def test_MuLbfgs():
 
-
+    import time as time
+    
     y0 = 1
     T = 1
     yT = 1
@@ -339,11 +340,14 @@ def test_MuLbfgs():
     m = 10
 
     for i in range(len(N)):
+        t0 = time.time()
         MY = [0.1*N[i],0.5*N[i]]
         t = np.linspace(0,T,N[i]+1)
         
         res1,res2,res3 = mini_solver(y0,a,T,yT,N[i],m,MY)
-
+        t1 = time.time()
+        print
+        print t1-t0
         figure()
         plot(t,res1.x)
         for j in range(len(MY)):
