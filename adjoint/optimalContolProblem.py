@@ -6,16 +6,37 @@ from scipy.optimize import minimize
 import numpy as np
 
 class OptimalControlProblem():
+    """
+    class for solving problem on the form
+
+    minimize J(y(u),u) = A(u) + B(y(T),yT)
+    E(y(t),u(t)) = 0
+    """
 
     def __init__(self,y0,yT,T,J,grad_J,Lbfgs_options=None,options=None):
         """
         Initialize OptimalControlProblem
 
         Valid options are:
-        - T: End time 
-        - J: Functional depending on u and y and dt
-        - options: More options
+        * y0: initial condition of the ODE
+        * yT: 'End goal' of the ODE in the functional
+        * T: End time 
+        * J: Functional depending on u,y,T and yT.
+        * grad_J : gradient for above Functional, depends on u, p and dt 
+        * Lbfgs_options: options for the L-bfgs algorithm for solving
+          - jtol: Tolorance for end criteria in L-BFGS
+          - maxiter: maximal number of iterations
+          - mem_lim: number of iterations remembered by inverted hessian
+          - Vector: Vector type
+          - Hinit: initial approximation to inverted hessian
+          - beta: scalar multiplied with Hinit
+          - return_data: output is just control, or more information
+        * options: More options
+          - Vector: What type of vector shall be used. 
+          - Lbfgs: which L-bfgs implementation shall be used
         """
+
+        
         self.T      = T
         self.y0     = y0
         self.yT     = yT
@@ -46,7 +67,9 @@ class OptimalControlProblem():
         self.Lbfgs_options = Lbfgs_options
 
     def default_Lbfgs_options(self):
-        
+        """
+        default options for LGFGS
+        """
         default = {"jtol"                   : 1e-4,
                    "maxiter"                : 500,
                    "mem_lim"                : 10,
@@ -58,6 +81,9 @@ class OptimalControlProblem():
         return default
 
     def default_options(self):
+        """
+        Default options
+        """
 
         default = {"Vector" : SimpleVector,
                    "Lbfgs"  : Lbfgs,}
@@ -65,24 +91,43 @@ class OptimalControlProblem():
         
         
     def ODE_update(self,y,u,i,j,dt):
+        """
+        Finite diffrence scheme for state equation
+        """
         raise NotImplementedError,'ODE_update not implemented'
 
     def adjoint_update(self,l,y,i,dt):
+        """
+        Finite diffrence scheme for adjoint equation
+        """
         raise NotImplementedError,'adjoint_update not implemented'
 
     def initial_adjoint(self,y):
+        """
+        Initial condition for adjoint equation. Depends on the Functional
+        """
         return y - self.yT
 
     def initial_penalty(self,y,u,my,N,i):
-        
+        """
+        initial conditian for the adjoint equations, when partitioning in time
+        """
         return my*(y[i][-1]-u[N+1+i])
 
     def initial_lagrange(self,y,u,my,N,i,G):
-        
+        """
+        Same as above, when we use augmented Lagrange
+        """
         return self.initial_penalty(y,u,my,N,i) + G[i]
     
     def ODE_solver(self,u,N):
-        
+        """
+        Solving the state equation without partitoning
+
+        Arguments:
+        * u: the control
+        * N: Number of discritization points
+        """
         T = self.T
         y0 = self.y0
         dt = float(T)/N
@@ -99,7 +144,14 @@ class OptimalControlProblem():
         return y
 
     def ODE_penalty_solver(self,u,N,m):
-        
+        """
+        Solving the state equation with partitioning
+
+        Arguments:
+        * u: the control
+        * N: Number of discritization points
+        * m: Number of intervals we partition time in
+        """
         T = self.T
         y0 = self.y0
         dt = float(T)/N
@@ -126,6 +178,13 @@ class OptimalControlProblem():
         return y,Y
 
     def adjoint_solver(self,u,N):
+        """
+        Solving the adjoint equation using finite difference
+
+        Arguments:
+        * u: the control
+        * N: Number of discritization points
+        """
         
         T = self.T
         y0 = self.y0
@@ -144,6 +203,15 @@ class OptimalControlProblem():
         return l
     
     def adjoint_penalty_solver(self,u,N,m,my,init=initial_penalty):
+         """
+        Solving the adjoint equation using finite difference, and partitioning
+        the time interval.
+
+        Arguments:
+        * u: the control
+        * N: Number of discritization points
+        * m: Number of intervals we partition time in
+        """
 
         T = self.T
         y0 = self.y0
@@ -174,6 +242,19 @@ class OptimalControlProblem():
         return l,L
 
     def Lagrange_Penalty_Functional(self,u,N,m,my,G):
+        """
+        Add penalty terms and lagrangian terms to the functional, for
+        augmented lagrange method
+
+        Arguments:
+
+        * u: control
+        * N: discretization points
+        * m: number of parttition intervalls
+        * my: penalty variable
+        * G: lagrange multiplier
+        
+        """
         y,Y = self.ODE_penalty_solver(u,N,m)
 
         J_val = self.J(u[:N+1],y[-1][-1],self.yT,self.T)
@@ -188,11 +269,17 @@ class OptimalControlProblem():
     
         
     def Functional(self,u,N):
+        """
+        Reduced functional, that only depend on control u 
+        """
 
         return self.J(u,self.ODE_solver(u,N)[-1],self.yT,self.T)
 
     def Penalty_Functional(self,u,N,m,my):
-
+        """
+        Reduced functional, that only depend on control u. Also adds
+        penalty terms
+        """
         y,Y = self.ODE_penalty_solver(u,N,m)
 
         J_val = self.J(u[:N+1],y[-1][-1],self.yT,self.T)
@@ -208,7 +295,14 @@ class OptimalControlProblem():
     
     
     def solve(self,N,x0=None,Lbfgs_options=None):
+        """
+        Solve the optimazation problem without penalty
 
+        Arguments:
+        * N: number of discritization points
+        * x0: initial guess for control
+        * Lbfgs_options: same as for class initialisation
+        """
         
         dt=float(self.T)/N
         if x0==None:
@@ -239,7 +333,17 @@ class OptimalControlProblem():
 
 
     def penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None):
+        """
+        Solve the optimazation problem with penalty
 
+        Arguments:
+        * N: number of discritization points
+        * m: number ot processes
+        * my_list: list of penalty variables, that we want to solve the problem
+                   for.
+        * x0: initial guess for control
+        * Lbfgs_options: same as for class initialisation
+        """
 
         dt=float(self.T)/N
         if x0==None:
@@ -284,7 +388,17 @@ class OptimalControlProblem():
             return Result
 
     def lagrange_penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None):
+        """
+        Solve the optimazation problem with augmented lagrange
 
+        Arguments:
+        * N: number of discritization points
+        * m: number ot processes
+        * my_list: list of penalty variables, that we want to solve the problem
+                   for.
+        * x0: initial guess for control
+        * Lbfgs_options: same as for class initialisation
+        """
 
         dt=float(self.T)/N
         if x0==None:
@@ -343,6 +457,16 @@ class OptimalControlProblem():
 
         
     def plot_solve(self,N,x0=None,opt=None,state=False):
+        """
+        Solve the problem and plot the control
+
+        Arguments:
+
+        * N: # discrite points
+        * x0: inital gues
+        * opt: optians for Lbfgs
+        * state: if not false, method also plots the state
+        """
         res = self.solve(N,x0=x0,Lbfgs_options=opt)
         t = np.linspace(0,self.T,N+1)
         u = res['control'].array()
@@ -366,7 +490,9 @@ class OptimalControlProblem():
         
     def penalty_and_normal_solve(self,N,m,my_list,x0=None,Lbfgs_options=None,
                                  show_plot=False):
-
+        """
+        solves problem using both normal and penalty approach 
+        """
         res1 = self.penalty_solve(N,m,my_list,x0,Lbfgs_options)
         res2 = self.solve(N,x0,Lbfgs_options)
         if show_plot==True:
@@ -384,7 +510,9 @@ class OptimalControlProblem():
 
     
     def lbfgs_memory_solve(self,N,m,my_list,mul=[1,2]):
-
+        """
+        Method used in testing
+        """
         
         results = []
         for i in range(len(mul)):
@@ -404,8 +532,10 @@ class OptimalControlProblem():
         for i in range(len(M)):
 
             L.append(self.lbfgs_memory_solve(N,M[i],[0.5*N],mul=mul))
-
-        res1 = self.solve(N)
+        try:
+            res1 = self.solve(N)
+        except Warning:
+            res1 = {'iteration' : -1}
 
 
         print "--------------m=1--------------" 
@@ -416,7 +546,9 @@ class OptimalControlProblem():
                 print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*max(M[i],10),L[i][j]['iteration'],L[i][j]['iteration']/float(M[i]))
 
     def scipy_solver(self,N):
-
+        """
+        solve the problem using scipy LBFGS instead of self made LBFGS
+        """
         dt=float(self.T)/N
         
             

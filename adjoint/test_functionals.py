@@ -2,17 +2,17 @@ from optimalContolProblem import *
 from non_linear import *
 import numpy as np
 from scipy.integrate import trapz
+from cubicYfunc import *
 
 
-
-def make_coef_J(c,d):
+def make_coef_J(c,d,power=2):
     
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
 
         I = trapz((c*u-d)**2,t)
 
-        return 0.5*(I + (y-yT)**2)
+        return 0.5*I + (1./power)*(y-yT)**power
 
     def grad_J(u,p,dt):
 
@@ -224,6 +224,29 @@ def non_linear_and_coef():
                 print C[i],D[j]
             except:
                 print 'lol'
+
+def test_cubic():
+
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+    N = 1000
+    
+    M = [2,4,8,16,32]
+
+    coef=[[2,0],[1,-1],[1,0.5]]
+
+    for i in range(len(coef)):
+
+        J, grad_J = make_coef_J(coef[i][0],coef[i][1],power=3)
+
+        problem = CubicY(y0,yT,T,a,J,grad_J)
+
+        problem.simple_test(N)
+
+
+    
     
 if __name__ == "__main__":
 
@@ -231,10 +254,10 @@ if __name__ == "__main__":
     #test_alpha()
     #test_adjoint_coef()
     #test_variable_a()
-    memory_test()
+    #memory_test()
     #test_scipy_solve()
     #non_linear_and_coef()
-
+    test_cubic()
 
 """
 *******************************

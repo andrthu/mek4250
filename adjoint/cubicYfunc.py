@@ -15,7 +15,7 @@ class GeneralPowerY(Problem1):
     def __init__(self,y0,yT,T,a,power,J,grad_J,options=None):
         Problem1.__init__(self,y0,yT,T,a,J,grad_J,options)
         self.power = power
-
+    
         def J_func(u,y,yT,T):
             return J(u,y,yT,T,self.power)
         
@@ -27,7 +27,7 @@ class GeneralPowerY(Problem1):
         return (y - self.yT)**(p-1)
     
 class CubicY(Problem1):
-     """
+    """
     class for the opti-problem:
     J(u,y) = 0.5*||u||**2 + 1/3*(y(T)-yT)**3
     with y' = ay + u
