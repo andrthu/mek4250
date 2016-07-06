@@ -2,28 +2,61 @@ from dolfin import *
 #from dolfin_adjoint import *
 
 
-def boundary(x,on_boundary):
-    if on_boundary:
-        return x[0]==0
+def ODE_solver(y0,N,u,show_plot=False):
 
-mesh = UnitIntervalMesh(100)
+    mesh = UnitIntervalMesh(N)
 
-V = FunctionSpace(mesh,'CG',1)
+    V = FunctionSpace(mesh,'CG',1)
 
-u = TrialFunction(V)
-v = TestFunction(V)
+    y = TrialFunction(V)
+    v = TestFunction(V)
 
-y = interpolate(Constant(0.0),V)
+    u = interpolate(u,V)
 
-a = (u.dx(0)*v - v*u)*dx
-L = y*v*dx
+    a = (y.dx(0)*v - v*y)*dx
+    L = u*v*dx
 
-ic = 1.0
-bc = DirichletBC(V, Constant(ic),boundary)
+    ic = y0
+    bc = DirichletBC(V, Constant(ic),"on_boundary && near(x[0],0.0)")
 
-U = Function(V)
+    Y = Function(V)
+    #A,b=assemble_system(a,L,bc)
+    solve(a==L,Y,bc)
+    if show_plot:
+        plot(Y)
+        interactive()
+    return Y
 
-solve(a==L,U,bc)
+def adjoint_ODE_solver(y0,yT,N,u):
+    
+    mesh = UnitIntervalMesh(N)
 
-#plot(u)
-#interactive()
+    V = FunctionSpace(mesh,'CG',1)
+    y = ODE_solver(y0,N,u)
+
+    l = TrialFunction(V)
+    v = TestFunction(V)
+
+    a = (-l.dx(0)*v -v*l)*dx
+    L = Constant(0.0)*v*dx
+
+    ic = y.vector().array()[0]-yT
+
+    bc = DirichletBC(V, Constant(ic),"on_boundary && near(x[0],1.0)")
+    lam = Function(V)
+
+    solve(a==L,lam,bc)
+
+    plot(lam)
+    interactive()
+    
+    
+if __name__ == "__main__":
+    u = Constant(0.0)
+    y0=1
+    yT=1
+    N=100
+    
+    y = ODE_solver(y0,N,u,show_plot=True)
+
+    adjoint_ODE_solver(y0,yT,N,u)
