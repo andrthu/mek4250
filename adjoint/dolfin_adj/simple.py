@@ -1,8 +1,10 @@
 from dolfin import *
+from scipy.optimize import minimize
+import numpy as np
 #from dolfin_adjoint import *
 
 
-def ODE_solver(y0,N,u,show_plot=False):
+def ODE_solver(y0,N,U,show_plot=False):
 
     mesh = UnitIntervalMesh(N)
 
@@ -11,7 +13,9 @@ def ODE_solver(y0,N,u,show_plot=False):
     y = TrialFunction(V)
     v = TestFunction(V)
 
-    u = interpolate(u,V)
+    #u = Function(V)
+    #u.vector().array()[:]=U[:]
+    u = interpolate(U,V)
 
     a = (y.dx(0)*v - v*y)*dx
     L = u*v*dx
@@ -50,13 +54,38 @@ def adjoint_ODE_solver(y0,yT,N,u):
     plot(lam)
     interactive()
     
+
+def J_Func(u,y0,yT,N):
     
+    y = ODE_solver(y0,N,u,show_plot=False)
+
+    A = assemble(u**2*dx)
+
+    return 0.5*(A + (y.vector().array()[0]-yT)**2)
+
+def opti(y0,yT,N):
+
+    mesh = UnitIntervalMesh(N)
+    dt = mesh.hmax()
+    
+    def J(u):
+        return J_Func(u,y0,yT,N)
+
+    def grad_J(u):
+
+        lam = adjoint_ODE_solver(y0,yT,N,u)
+
+        gr = u + lam
+
+        return gr.vector().array()*dt
+        
 if __name__ == "__main__":
-    u = Constant(0.0)
+    
     y0=1
     yT=1
     N=100
-    
+    #u = np.zeros(N+1)
+    u= Constant(0.0)
     y = ODE_solver(y0,N,u,show_plot=True)
 
     adjoint_ODE_solver(y0,yT,N,u)
