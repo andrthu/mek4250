@@ -4,7 +4,7 @@ import numpy as np
 #from dolfin_adjoint import *
 
 
-def ODE_solver(y0,N,U,show_plot=False):
+def ODE_solver(y0,alpha,N,U,show_plot=False):
 
     mesh = UnitIntervalMesh(N)
 
@@ -16,8 +16,9 @@ def ODE_solver(y0,N,U,show_plot=False):
     u = Function(V)
     u.vector()[:]=U.copy()[:]
     #u = interpolate(U,V)
-
-    a = (y.dx(0)*v - v*y)*dx
+    alpha = Constant(alpha)
+    
+    a = (y.dx(0)*v - alpha*v*y)*dx
     L = u*v*dx
 
     ic = y0
@@ -31,17 +32,18 @@ def ODE_solver(y0,N,U,show_plot=False):
         interactive()
     return Y
 
-def adjoint_ODE_solver(y0,yT,N,u,show_plot=False):
+def adjoint_ODE_solver(y0,alpha,yT,N,u,show_plot=False):
     
     mesh = UnitIntervalMesh(N)
 
     V = FunctionSpace(mesh,'CG',1)
-    y = ODE_solver(y0,N,u.copy())
+    y = ODE_solver(y0,alpha,N,u.copy())
 
     l = TrialFunction(V)
     v = TestFunction(V)
-
-    a = (-l.dx(0)*v -v*l)*dx
+    alpha = Constant(alpha)
+    
+    a = (-l.dx(0)*v - alpha*v*l)*dx
     L = Constant(0.0)*v*dx
 
     ic = y.vector().array()[0]-yT
@@ -56,9 +58,9 @@ def adjoint_ODE_solver(y0,yT,N,u,show_plot=False):
     return lam
     
 
-def J_Func(u,y0,yT,N):
+def J_Func(u,y0,alpha,yT,N):
     
-    y = ODE_solver(y0,N,u,show_plot=False)
+    y = ODE_solver(y0,alpha,N,u,show_plot=False)
 
     
     mesh = UnitIntervalMesh(N)
@@ -69,18 +71,18 @@ def J_Func(u,y0,yT,N):
     A = assemble(U**2*dx)
     return 0.5*A + 0.5*(y.vector().array()[0]-yT)**2
 
-def opti(y0,yT,N):
+def opti(y0,alpha,yT,N):
 
     mesh = UnitIntervalMesh(N)
     V = FunctionSpace(mesh,'CG',1)
     dt = mesh.hmax()
     print dt,'loool'
     def J(u):
-        return J_Func(u,y0,yT,N)
+        return J_Func(u,y0,alpha,yT,N)
 
     def grad_J(u):
 
-        lam = adjoint_ODE_solver(y0,yT,N,u)
+        lam = adjoint_ODE_solver(y0,alpha,yT,N,u)
 
         gr = u.copy() + lam.vector().array().copy()
         
@@ -91,7 +93,7 @@ def opti(y0,yT,N):
                options={'gtol': 1e-6, 'disp': True})
 
     
-    y = ODE_solver(y0,N,res.x,show_plot=True)
+    y = ODE_solver(y0,alpha,N,res.x,show_plot=True)
     print res.x
     x = Function(V)
     x.vector()[:] = res.x[:]
@@ -121,14 +123,15 @@ if __name__ == "__main__":
     y0=1
     yT=10
     N=10
+    a=1
     u = np.zeros(N+1)
     u[N/2]=1
     #u= Constant(0.0)
-    #y = ODE_solver(y0,N,u,show_plot=True)
+    #y = ODE_solver(y0,a,N,u,show_plot=True)
 
-    #adjoint_ODE_solver(y0,yT,N,u,show_plot=True)
+    #adjoint_ODE_solver(y0,a,yT,N,u,show_plot=True)
 
-    opti(y0,yT,N)
+    opti(y0,a,yT,N)
 
     """
     a = finite_diff(u,y0,yT,N,J_Func)
