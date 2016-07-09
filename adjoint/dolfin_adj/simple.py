@@ -123,26 +123,27 @@ if __name__ == "__main__":
     y0=1
     yT=10
     N=10
-    a=1
+    a=[1,2,5]
     u = np.zeros(N+1)
     u[N/2]=1
     #u= Constant(0.0)
-    #y = ODE_solver(y0,a,N,u,show_plot=True)
+    for i in range(len(a)):
+        #y = ODE_solver(y0,a[i],N,u,show_plot=True)
 
-    #adjoint_ODE_solver(y0,a,yT,N,u,show_plot=True)
+        #adjoint_ODE_solver(y0,a[i],yT,N,u,show_plot=True)
 
-    opti(y0,a,yT,N)
+        opti(y0,a[i],yT,N)
 
-    """
-    a = finite_diff(u,y0,yT,N,J_Func)
+        """
+        a = finite_diff(u,y0,yT,N,J_Func)
 
-    mesh = UnitIntervalMesh(N)
+        mesh = UnitIntervalMesh(N)
 
-    V = FunctionSpace(mesh,'CG',1)
+        V = FunctionSpace(mesh,'CG',1)
 
-    A = Function(V)
-    A.vector()[:]=a
-    print a 
-    plot(A)
-    interactive()
-    """
+        A = Function(V)
+        A.vector()[:]=a
+        print a 
+        plot(A)
+        interactive()
+        """
