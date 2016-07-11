@@ -203,7 +203,7 @@ class OptimalControlProblem():
         return l
     
     def adjoint_penalty_solver(self,u,N,m,my,init=initial_penalty):
-         """
+        """
         Solving the adjoint equation using finite difference, and partitioning
         the time interval.
 

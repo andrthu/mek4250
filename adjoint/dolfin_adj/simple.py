@@ -1,7 +1,7 @@
 from dolfin import *
 from scipy.optimize import minimize
 import numpy as np
-from dolfin_adjoint import *
+#from dolfin_adjoint import *
 
 
 def ODE_solver(y0,alpha,N,U,show_plot=False):

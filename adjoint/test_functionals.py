@@ -225,6 +225,33 @@ def non_linear_and_coef():
             except:
                 print 'lol'
 
+def test_quadratic():
+
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+    N = 1000
+    
+    M = [2,4,8,16,32]
+
+    coef=[[2,0],[1,-1],[1,0.5]]
+
+    power = 4
+
+    for i in range(len(coef)):
+
+        J, grad_J = make_coef_J(coef[i][0],coef[i][1],power=power)
+        
+        def Jfunc(u,y,yT,T,power):
+            return J(u,y,yT,T)
+            
+        problem = GeneralPowerY(y0,yT,T,a,power,Jfunc,grad_J)
+        
+
+        problem.simple_test(N)
+
+
 def test_cubic():
 
     y0 = 1
@@ -241,12 +268,11 @@ def test_cubic():
 
         J, grad_J = make_coef_J(coef[i][0],coef[i][1],power=3)
 
+        
+
         problem = CubicY(y0,yT,T,a,J,grad_J)
 
         problem.simple_test(N)
-
-
-    
     
 if __name__ == "__main__":
 
@@ -257,7 +283,8 @@ if __name__ == "__main__":
     #memory_test()
     #test_scipy_solve()
     #non_linear_and_coef()
-    test_cubic()
+    #test_cubic()
+    test_quadratic()
 
 """
 *******************************
