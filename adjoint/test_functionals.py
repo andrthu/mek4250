@@ -283,8 +283,8 @@ if __name__ == "__main__":
     #memory_test()
     #test_scipy_solve()
     #non_linear_and_coef()
-    #test_cubic()
-    test_quadratic()
+    test_cubic()
+    #test_quadratic()
 
 """
 *******************************

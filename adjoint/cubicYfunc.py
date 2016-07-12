@@ -37,7 +37,7 @@ class CubicY(Problem1):
     
     def initial_adjoint(self,y):
         
-        p = 2
+        p = 3
         return (y - self.yT)**(p-1)
     
 if __name__ == '__main__':
