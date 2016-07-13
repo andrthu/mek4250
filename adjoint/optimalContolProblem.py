@@ -524,7 +524,11 @@ class OptimalControlProblem():
             results.append(res)
         return results
 
-    def simple_test(self,N):
+    def simple_test(self,N,make_plot=False):
+
+        if make_plot:
+            import matplotlib.pyplot as plt
+            t = np.linspace(0,self.T,N+1)
 
         M = [2,4,8,16,32]
         L=[]
@@ -540,10 +544,20 @@ class OptimalControlProblem():
 
         print "--------------m=1--------------" 
         print "|lbfgs memory=10| #iterations=%d| #iterations/m=%.2f"%(res1['iteration'],res1['iteration']) 
+        if make_plot:
+            if res1['iteration']!=-1:
+                plt.plot(t,res1['control'].array(),'r--')
         for i in range(len(M)):
             print "--------------m=%d--------------" %(M[i])
             for j in range(len(mul)):
                 print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*max(M[i],10),L[i][j]['iteration'],L[i][j]['iteration']/float(M[i]))
+
+                if make_plot:
+                    if j == len(mul)-1:
+                        if L[i][j]['iteration']!=-1:
+                            plt.plot(t,L[i][j]['control'].array()[:N+1])
+        if make_plot:
+            plt.show()
 
     def scipy_solver(self,N):
         """

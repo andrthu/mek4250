@@ -273,7 +273,26 @@ def test_cubic():
         problem = CubicY(y0,yT,T,a,J,grad_J)
 
         problem.simple_test(N)
+
+def test_quadratic_result():
     
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+    N = 700
+    power = 4
+    coef = [1,0.5]
+
+    J, grad_J = make_coef_J(coef[0],coef[1],power=power)
+        
+    def Jfunc(u,y,yT,T,power):
+        return J(u,y,yT,T)
+            
+    problem = GeneralPowerY(y0,yT,T,a,power,Jfunc,grad_J)
+
+    problem.simple_test(N,make_plot=True)
+
 if __name__ == "__main__":
 
     #test_coef()
@@ -283,8 +302,9 @@ if __name__ == "__main__":
     #memory_test()
     #test_scipy_solve()
     #non_linear_and_coef()
-    test_cubic()
+    #test_cubic()
     #test_quadratic()
+    test_quadratic_result()
 
 """
 *******************************
