@@ -527,6 +527,7 @@ class OptimalControlProblem():
     def simple_test(self,N,make_plot=False):
 
         if make_plot:
+            teller=0
             import matplotlib.pyplot as plt
             t = np.linspace(0,self.T,N+1)
 
@@ -553,12 +554,19 @@ class OptimalControlProblem():
                 print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*max(M[i],10),L[i][j]['iteration'],L[i][j]['iteration']/float(M[i]))
 
                 if make_plot:
+                    
                     if j == len(mul)-1:
                         if L[i][j]['iteration']!=-1:
                             plt.plot(t,L[i][j]['control'].array()[:N+1])
+                            teller =teller+1
         if make_plot:
+            
+            if teller==len(M):
+                plt.legend(['m=1','m=2','m=4','m=8','m=16','m=32'],loc=4)
+            plt.title('Controlls for non linear in y term problem')
+            plt.xlabel('time')
+            plt.ylabel('controls')
             plt.show()
-
     def scipy_solver(self,N):
         """
         solve the problem using scipy LBFGS instead of self made LBFGS

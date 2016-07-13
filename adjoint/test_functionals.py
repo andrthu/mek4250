@@ -280,7 +280,7 @@ def test_quadratic_result():
     yT = 1
     T  = 1
     a  = 1
-    N = 700
+    N = 1000
     power = 4
     coef = [1,0.5]
 

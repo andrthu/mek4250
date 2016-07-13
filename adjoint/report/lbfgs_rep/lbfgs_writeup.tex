@@ -193,4 +193,27 @@ Results for for $C_0=2 $ and $C_1= -1$:
     $m=32$ &  100 &  43	\\ \hline
     \end{tabular}
 \end{center}
+\textbf{Non-linear example}
+To make the problem more difficult we can change the functional by increasing the power of the $y(T)-yT$ term in the following way:
+\begin{align*}
+J(u,y) = \int_0^T (C_0u(t)-C_1)^2dt + \frac{1}{4}(y(T)-y_T)^4
+\end{align*}
+When doing this one need to change the adjoint equation, but it is quite simple. Here is a result of solving this problem using $C_0=1 $ and $C_1= 0.5$:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=2max(m,10)$\\ \hline
+    $m=1$  &  14 &  \\ \hline
+    $m=2$  &  16 & 21 	\\ \hline
+    $m=4$ &  22 & 21 \\ \hline
+    $m=8$ &  Fail &  28	\\ \hline
+    $m=16$ &  Fail & 28 \\ \hline
+    $m=32$ &  124 &  52	\\ \hline
+    \end{tabular}
+\end{center}
+\begin{figure}
+  \includegraphics[width=\linewidth]{non_linY.png}
+  \caption{Plot of control for different m values, that are the result of the non-linear problem I have iteration results for above. }
+  \label{Fig 4}
+\end{figure}
 \end{document}
