@@ -3,7 +3,9 @@ from matplotlib.pyplot import *
 from scipy.integrate import simps
 
 from scipy.optimize import minimize
-
+"""
+lol
+"""
 def solver(y0,a,n,u,T):
     dt = float(T)/(2*n)
     
