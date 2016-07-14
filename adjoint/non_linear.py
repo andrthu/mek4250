@@ -26,7 +26,7 @@ class Explicit_quadratic(OptimalControlProblem):
         a = self.a
         #return (1+dt*a)*l[-(i+1)]
 
-        return (1-2*dt*y[-(i+1)])*l[-(i+1)]
+        return (1-a*2*dt*y[-(i+1)])*l[-(i+1)]
 
 
 class Explicit_sine(OptimalControlProblem):
@@ -49,7 +49,7 @@ class Explicit_sine(OptimalControlProblem):
         a = self.a
         
 
-        return (1+2*dt*np.cos(y[-(i+1)]))*l[-(i+1)]
+        return (1+2*dt*a*np.cos(y[-(i+1)]))*l[-(i+1)]
     
 class ExplicitNonLinear(OptimalControlProblem):
 
@@ -134,12 +134,12 @@ def test_sine():
     import matplotlib.pyplot as plt
 
     y0 = 1
-    yT = 10
+    yT = 2
     T  = 1
-    a  = 2
-    N1 = 4000
-    N2 = 5000
-    m=5
+    a  = 0.3
+    N1 = 1000
+    N2 = 2000
+    m=10
     
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
@@ -169,6 +169,7 @@ def test_sine():
         res3=problem.penalty_solve(N1,m,[0.1*N1],Lbfgs_options=opt)
         print res1['iteration'],res2['iteration'],res3['iteration']
         plt.plot(t1,res3['control'][:N1+1])
+        plt.legend(['m=1,N='+str(N1),'m=1,N='+str(N2),'m='+str(m)+',N='+str(N1)])
     except:
         print 'lol'
     plt.show()
@@ -178,12 +179,12 @@ def test_quad():
     import matplotlib.pyplot as plt
 
     y0 = 1
-    yT = 10
+    yT = 5
     T  = 1
     a  = 1
-    N1 = 4000
-    N2 = 5000
-    m=3
+    N1 = 1000
+    N2 = 2000
+    m=30
     
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
@@ -198,7 +199,7 @@ def test_quad():
 
     problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)
 
-    opt = {"mem_lim":40}
+    opt = {"mem_lim":80}
     res1=problem.solve(N1,Lbfgs_options=opt)
     res2=problem.solve(N2,Lbfgs_options=opt)
     
@@ -213,12 +214,12 @@ def test_quad():
     res3=problem.penalty_solve(N1,m,[0.5*N1],Lbfgs_options=opt)
     print res1['iteration'],res2['iteration'],res3['iteration']
     plt.plot(t1,res3['control'][:N1+1])
-    
+    plt.legend(['m=1,N='+str(N1),'m=1,N='+str(N2),'m='+str(m)+',N='+str(N1)],loc=2)
     plt.show()
     
 if __name__ == "__main__":
 
-    #test_quad()
+    test_quad()
     #test_sine()
-    test_nonLinear()
+    #test_nonLinear()
     
