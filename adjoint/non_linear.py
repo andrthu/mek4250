@@ -139,7 +139,7 @@ def test_sine():
     a  = 0.3
     N1 = 1000
     N2 = 2000
-    m=10
+    m=30
     
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
@@ -167,7 +167,12 @@ def test_sine():
     
     try:
         res3=problem.penalty_solve(N1,m,[0.1*N1],Lbfgs_options=opt)
-        print res1['iteration'],res2['iteration'],res3['iteration']
+        #print res1['iteration'],res2['iteration'],res3['iteration']
+        print
+        print "number of iterations for m=%d and N=%d: %d"%(1,N1,res1['iteration'])
+        print "number of iterations for m=%d and N=%d: %d"%(1,N2,res2['iteration'])
+        print "number of iterations for m=%d and N=%d: %d"%(m,N1,res3['iteration'])
+        print
         plt.plot(t1,res3['control'][:N1+1])
         plt.legend(['m=1,N='+str(N1),'m=1,N='+str(N2),'m='+str(m)+',N='+str(N1)])
     except:
@@ -212,7 +217,12 @@ def test_quad():
     
     
     res3=problem.penalty_solve(N1,m,[0.5*N1],Lbfgs_options=opt)
-    print res1['iteration'],res2['iteration'],res3['iteration']
+    #print res1['iteration'],res2['iteration'],res3['iteration']
+    print
+    print "number of iterations for m=%d and N=%d: %d"%(1,N1,res1['iteration'])
+    print "number of iterations for m=%d and N=%d: %d"%(1,N2,res2['iteration'])
+    print "number of iterations for m=%d and N=%d: %d"%(m,N1,res3['iteration'])
+    print
     plt.plot(t1,res3['control'][:N1+1])
     plt.legend(['m=1,N='+str(N1),'m=1,N='+str(N2),'m='+str(m)+',N='+str(N1)],loc=2)
     plt.show()
