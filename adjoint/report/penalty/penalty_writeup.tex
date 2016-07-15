@@ -98,7 +98,7 @@ For the gradient the change happens in the $\lambda$ part of the control:
 \langle \hat{J}'(u,\lambda), (s,l)\rangle&=\langle -(E_u+E_{\lambda})p, (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
 &= \int_0^T (u+p)s \ dt +\sum_{i=1}^n[(p_{i}(T_i) -p_{i-1}(T_i) )- \Gamma_i]l_i
 \end{align*}
-The $\Gamma$ need to be updated for each iteration, i.e. eac time we change $\mu$.
+The $\Gamma$ need to be updated for each iteration, i.e. each time we change $\mu$.
 \\
 \\
 \textbf{Non-linear ODEs}
@@ -125,7 +125,7 @@ Now I want to comment on what happens, when we let $E$ be non-linear in $y$. Let
      \end{array}
    \right.
 \end{align*} 
-Here $F:\mathbb{R} \rightarrow \mathbb{R}$, is some differentiable function. We then get $E_y = \frac{\partial}{\partial t} - F'(y)$. To derive the adjoint equation, we need to the the adjoint of the operator $E_y$. This is problematic since it depends on $y$, however since we need to solve the state equation before the adjoint, we can think of $F'(y)$ as a function of $t$. Using this linearisation, we get the following adjoint equation: 
+Here $F:\mathbb{R} \rightarrow \mathbb{R}$, is some differentiable function. We then get $E_y = \frac{\partial}{\partial t} - F'(y)$. To derive the adjoint equation, we need to take the adjoint of the operator $E_y$. This is problematic since it depends on $y$, however since we need to solve the state equation before the adjoint, we can think of $F'(y)$ as a function of $t$. Using this linearisation, we get the following adjoint equation: 
 \begin{align*}
 \left\{
      \begin{array}{lr}
@@ -155,5 +155,14 @@ This changes the 'initial' condition of the adjoint equation. We now get the fol
 \begin{align*}
 -\frac{\partial }{\partial t}p(t) &=p(t)  \\
 p(T) &= (y(T)-y_T)^2
+\end{align*}
+We can make this more general and look at the functional:
+\begin{align*}
+J(y,u) = \int_0^T u^2 dt + \frac{1}{q}(y(T)-y_T)^q
+\end{align*}
+This will then give us the adjoint equation:
+\begin{align*}
+-\frac{\partial }{\partial t}p(t) &=p(t)  \\
+p(T) &= (y(T)-y_T)^{q-1}
 \end{align*}
 \end{document}

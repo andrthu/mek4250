@@ -29,9 +29,10 @@ def test_LagAndPen():
             
             res1 = problem.penalty_solve(N,m,my,Lbfgs_options=opt)
             
-
-            res2 = problem.lagrange_penalty_solve(N,m,my,Lbfgs_options=opt)
-
+            try:
+                res2 = problem.lagrange_penalty_solve(N,m,my,Lbfgs_options=opt)
+            except:
+                res2 = [{'iteration':-1},{'iteration':-1},{'iteration':-1}]
             print 
             print res1[0]['iteration'],res1[1]['iteration'],res1[2]['iteration']
             print res2[0]['iteration'],res2[1]['iteration'],res2[2]['iteration']

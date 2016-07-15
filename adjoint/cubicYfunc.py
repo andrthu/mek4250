@@ -45,10 +45,10 @@ if __name__ == '__main__':
     from matplotlib.pyplot import *
 
     y0 = 1
-    yT = 0
+    yT = 10
     T  = 1
     a  = 1
-    P  = 3
+    P  = 4
     N=700
     
     def J(u,y,yT,T,power):
