@@ -233,3 +233,12 @@ if __name__ == "__main__":
     #test_sine()
     #test_nonLinear()
     
+"""
+terminal> python non_linear (test_quad())
+
+number of iterations for m=1 and N=1000: 11
+number of iterations for m=1 and N=2000: 11
+number of iterations for m=30 and N=1000: 53
+
+
+"""
