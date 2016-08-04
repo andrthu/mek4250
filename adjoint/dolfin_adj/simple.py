@@ -1,7 +1,7 @@
 from dolfin import *
-from scipy.optimize import minimize
+from scipy.optimize import minimize as Mini
 import numpy as np
-#from dolfin_adjoint import *
+from dolfin_adjoint import *
 
 
 def ODE_solver(y0,alpha,N,U,show_plot=False):
@@ -89,7 +89,7 @@ def opti(y0,alpha,yT,N):
         return gr*dt
 
 
-    res = minimize(J,np.zeros(N+1),method='L-BFGS-B', jac=grad_J,
+    res = Mini(J,np.zeros(N+1),method='L-BFGS-B', jac=grad_J,
                options={'gtol': 1e-6, 'disp': True})
 
     
@@ -116,7 +116,36 @@ def finite_diff(u,y0,yT,N,J):
 
     return grad_J
 
- 
+def dol_solve(y0,alpha,yT,N,U):
+
+    mesh = UnitIntervalMesh(N)
+    V = FunctionSpace(mesh,'CG',1)
+    dt = mesh.hmax()
+
+
+    y = TrialFunction(V)
+    v = TestFunction(V)
+
+    u = Function(V)
+    u.vector()[:]=U.copy()[:]
+    #u = interpolate(U,V)
+    alpha = Constant(alpha)
+    
+    a = (y.dx(0)*v - alpha*v*y)*dx
+    L = u*v*dx
+
+    ic = y0
+    bc = DirichletBC(V, Constant(ic),"on_boundary && near(x[0],0.0)")
+
+    Y = Function(V)
+    #A,b=assemble_system(a,L,bc)
+    solve(a==L,Y,bc)
+
+    J = Functional(inner(u,u)*dx + (Y(1)-yT)**2)
+
+    
+    dJ = compute_gradient(J, Control(u))
+
     
 if __name__ == "__main__":
     
@@ -126,6 +155,7 @@ if __name__ == "__main__":
     a=[1,2,5]
     u = np.zeros(N+1)
     u[N/2]=1
+    dol_solve(y0,1,yT,N,u)
     #u= Constant(0.0)
     for i in range(len(a)):
         #y = ODE_solver(y0,a[i],N,u,show_plot=True)
