@@ -85,7 +85,7 @@ if __name__ == '__main__':
     problem.simple_test(N)
     
 """
-terminal> åython cubicYfunc.py
+terminal> python cubicYfunc.py
 
 --------------m=1--------------
 |lbfgs memory=10| #iterations=9| #iterations/m=9.00
