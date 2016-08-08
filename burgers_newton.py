@@ -59,7 +59,9 @@ if __name__ == "__main__":
  
     # TODO: Should read this from file
     ic1 = project(Expression("sin(2*pi*x[0])"),  V, annotate=True, name="ic1")
-    ic2 = project(Expression("sin(2*pi*x[0])"),  V, annotate=True, name="ic2")
+    
+    ic2 = project(Expression("100*sin(2*pi*x[0])"),  V, annotate=True, name="ic2")
+    ic3 = project(Constant(0.0),  V, annotate=True, name="ic3")
 
     # Run the first interval, starting from ic1
     adj_start_timestep(0.0) 
@@ -68,20 +70,28 @@ if __name__ == "__main__":
     J1 = Functional(u1*dx*dt + (u1-ic2)**2*dx*dt[FINISH_TIME])
     
 
-    u2 = main(ic2, 0.2, 0.4, annotate=True)
-
-    J2 = Functional(u**2*dx*dt)
+    
 
     ctrls = Control(ic1)
     
-    rf = ReducedFunctional(J, ctrls)
+    rf = ReducedFunctional(J1, ctrls)
     print "Evaluate functional at ic1", rf([ic1])
     grad = rf.derivative(forget=False)
     print norm(grad[0])
+
+
     #minimize(rf, method="L-BFGS-B")
+    
+    u2 = main(ic3, 0.2, 0.4, annotate=True)
 
+    J2 = Functional(u2**2*dx*dt)
 
+    ctrls2 = Control(ic3)
 
+    rf2 = ReducedFunctional(J2, ctrls2)
+    print "Evaluate functional at ic2", rf2([ic3])
+    grad = rf2.derivative(forget=False)
+    print norm(grad[0])
 
 
 
