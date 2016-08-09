@@ -1,0 +1,37 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+
+\begin{document}
+\begin{center}
+
+\LARGE Burgers equation
+
+
+\end{center}
+
+Lets look at the optimal control with PDE constraint problem, where the equation is the burgers equation:
+\begin{align*}
+u_t + a\cdot \nabla u + \nu\Delta u &= 0 \ \text{for $(x,t)\in \Omega\times(0,\infty)$}\\
+u(x,t) &= h(x,t) \ \text{for $(x,t) \in\partial\Omega\times(0,\infty)$ } \\
+u(x,0) &= g(x) \ \text{for $x \in\Omega$ }
+\end{align*} 
+The functional is on the form:
+\begin{align*}
+J(u(g),g) = \int_0^T\int_{\Omega} u(x,t)^2 dxdt
+\end{align*}
+Here we want to minimize $J$ with resppect to the initial condition $g$.
+
+
+\end{document}
