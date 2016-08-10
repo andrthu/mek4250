@@ -1,7 +1,7 @@
 from dolfin import *
 from scipy.optimize import minimize as Mini
 import numpy as np
-from dolfin_adjoint import *
+#from dolfin_adjoint import *
 
 
 def ODE_solver(y0,alpha,N,U,show_plot=False):
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     a=[1,2,5]
     u = np.zeros(N+1)
     u[N/2]=1
-    dol_solve(y0,1,yT,N,u)
+    #dol_solve(y0,1,yT,N,u)
     #u= Constant(0.0)
     for i in range(len(a)):
         #y = ODE_solver(y0,a[i],N,u,show_plot=True)
