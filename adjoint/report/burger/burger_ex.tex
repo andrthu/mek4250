@@ -23,7 +23,7 @@
 
 Lets look at the optimal control with PDE constraint problem, where the equation is the burgers equation:
 \begin{align*}
-u_t + a\cdot \nabla u + \nu\Delta u &= 0 \ \text{for $(x,t)\in \Omega\times(0,\infty)$}\\
+u_t + \frac{1}{2}|\nabla u|^2 + \nu\Delta u &= 0 \ \text{for $(x,t)\in \Omega\times(0,\infty)$}\\
 u(x,t) &= h(x,t) \ \text{for $(x,t) \in\partial\Omega\times(0,\infty)$ } \\
 u(x,0) &= g(x) \ \text{for $x \in\Omega$ }
 \end{align*} 
@@ -31,7 +31,30 @@ The functional is on the form:
 \begin{align*}
 J(u(g),g) = \int_0^T\int_{\Omega} u(x,t)^2 dxdt
 \end{align*}
-Here we want to minimize $J$ with resppect to the initial condition $g$.
-
-
+Here we want to minimize $J$ with respect to the initial condition $g$. If we differentiate $J$ with respect to $g$, we get:
+\begin{align*}
+\hat{J}'(g)(s) &= \langle u'(g)^*J_u,s \rangle \\
+&= \langle -E_gp,s \rangle
+\end{align*}
+where $p$ is the solution of the adjoint equation:
+\begin{align*}
+E_u^*p = J_u
+\end{align*}
+By $E$ I mean burgers equation, which means that:
+\begin{align*}
+E_u &= \frac{\partial}{\partial t} + \nabla u \cdot \nabla + \nu\Delta + \delta_{t=0} + \delta_{\partial \Omega} \\
+E_g &= -\delta_{t=0} \\
+E_u^* &= -\frac{\partial}{\partial t} -\nabla u \cdot \nabla + \nu\Delta + \delta_{t=T} + \delta_{\partial \Omega} \\
+J_u &= u
+\end{align*}
+The adjoint equation would then look like:
+\begin{align*}
+-\frac{\partial}{\partial t}p -\nabla u \cdot \nabla p + \nu\Delta p &= u \ \text{for $(x,t)\in \Omega\times(0,\infty)$}\\
+p(x,t) &= 0 \ \text{for $(x,t) \in\partial\Omega\times(0,\infty)$ } \\
+p(x,T) &= 0 \ \text{for $x \in\Omega$ }
+\end{align*}
+This would mean that the gradient of $\hat{J}$ is:
+\begin{align*}
+\hat{J}'(g)(s) = \langle p(\cdot,0), s\rangle
+\end{align*}
 \end{document}
