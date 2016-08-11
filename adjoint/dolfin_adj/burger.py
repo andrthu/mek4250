@@ -1,4 +1,6 @@
 from dolfin import *
+from scipy.optimize import minimize as Mini
+
 
 def Dt(u,u_,timestep):
     return (u-u_)/timestep
@@ -43,8 +45,11 @@ def J(U,T):
     n = len(U)
     timestep = T/float(n)
     s = 0
-    for i in range(n):
-        s += assemble(U[i]**2*dx)
+    
+    s += 0.5*assemble(U[0]**2*dx)
+    for i in range(n-2):
+        s += assemble(U[i+1]**2*dx)
+    s += 0.5*assemble(U[-1]**2*dx)
     return timestep*s
 
 def adjoint_burger_solve(ic,start,end,V,Tn):
@@ -81,6 +86,37 @@ def adjoint_burger_solve(ic,start,end,V,Tn):
         t = t - float(timestep)
     
     return P
+
+def opti(ic,start,end,V,Tn,mesh):
+    
+    h = mesh.hmax()
+
+    def red_J(g):
+        G = Function(V)
+        G.vector()[:]=g.copy()[:]
+        U = burger_solve(G,start,end,V,Tn)
+        return J(U,end-start)
+
+    def grad_J(g):
+        G = Function(V)
+        G.vector()[:]=g.copy()[:]
+        P = adjoint_burger_solve(G,start,end,V,Tn)
+
+        return -h*P[-1].vector().array().copy()
+    
+    
+    
+
+    res = Mini(red_J,ic.vector().array().copy(),method='L-BFGS-B', jac=grad_J,
+               options={'gtol': 1e-6, 'disp': True})
+
+    X = Function(V)
+    X.vector()[:] = res.x.copy()[:]
+
+    plot(X)
+    interactive()
+
+    
     
 if __name__ == "__main__":
     
@@ -92,19 +128,23 @@ if __name__ == "__main__":
     V = FunctionSpace(mesh,"CG",1)
 
     ic = project(Expression("x[0]*(1-x[0])"),V)
-
+    #ic = project(Constant(0.0),V)
     U = burger_solve(ic,start,end,V,Tn,show_plot=False)
 
-    print J(U,end-start)
+    
 
 
     P = adjoint_burger_solve(ic,start,end,V,Tn)
-    
+    """
     for i in range(len(P)):
         plot(P[i])
         interactive()
     """
     
-    plot(ic + P[-1])
-    interactive()
-    """
+    #plot(ic + P[-1])
+    #interactive()
+
+    opti(ic,start,end,V,Tn,mesh)
+    #print J(U,end-start)
+    
+    
