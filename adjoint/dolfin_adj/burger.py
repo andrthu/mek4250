@@ -52,10 +52,46 @@ def J(U,T):
     s += 0.5*assemble(U[-1]**2*dx)
     return timestep*s
 
-def adjoint_burger_solve(ic,start,end,V,Tn):
+def interval_adjoint(p_ic,U,start,end,V,Tn):
+    P = []
+    timestep = Constant((end-start)/float(Tn))
+
+    nu = Constant(0.0001)
+    
+    p_ = p_ic.copy()
+    P.append(p_.copy())
+
+    p = Function(V)
+    v = TestFunction(V)
+    
+    u = U[-1].copy()
+
+    F = (Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +u*v)*dx
+    
+    bc = DirichletBC(V,0.0,"on_boundary")
+
+    t = end
+    count = -2
+    while ( t> start + DOLFIN_EPS):
+
+        solve(F==0,p,bc)
+        p_.assign(p)
+        u.assign(U[count].copy())
+        
+        P.append(p_.copy())
+        count = count -1
+        t = t - float(timestep)
+    
+    return P
     
 
+def adjoint_burger_solve(ic,start,end,V,Tn):
+    
+    
     U = burger_solve(ic,start,end,V,Tn)
+    p_ic = project(Constant(0.0),V)
+    return interval_adjoint(p_ic,U,start,end,V,Tn)
+    """
     P = []
     timestep = Constant((end-start)/float(Tn))
 
@@ -86,7 +122,7 @@ def adjoint_burger_solve(ic,start,end,V,Tn):
         t = t - float(timestep)
     
     return P
-
+    """
 def opti(ic,start,end,V,Tn,mesh):
     
     h = mesh.hmax()
@@ -116,7 +152,51 @@ def opti(ic,start,end,V,Tn,mesh):
     plot(X)
     interactive()
 
+def dubble_J(U,T,mu):
     
+    timestep = T/(len(U[0])+len(U[1])-1)
+    s = 0
+    s += 0.5*assemble(U[0][0]**2*dx)
+    for i in range(len(U[0])-2):
+        s += assemble(U[0][i+1]**2*dx)
+    s += 0.5*assemble(U[0][-1]**2*dx)
+
+    s += 0.5*assemble(U[1][0]**2*dx)
+    for i in range(len(U[1])-2):
+        s += assemble(U[1][i+1]**2*dx)
+    s += 0.5*assemble(U[1][-1]**2*dx)
+
+    penalty = 0.5*mu*assemble((U[0][-1]-U[1][0])**2*dx)
+    return timestep*s + penalty
+
+def double_burger_solver(ic,lam_ic,start,end,V,Tn):
+
+    
+    
+    T = end-start
+    mid = start + (T/2+T%2)*(T/float(Tn))
+    
+    U1 = burger_solve(ic,start,mid,V,Tn/2 +Tn%2)    
+    U2 = burger_solve(lam_ic,mid,end,V,Tn/2)
+
+    return [U1,U2]
+
+def double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu):
+
+    U = double_burger_solver(ic,lam_ic,start,end,V,Tn)
+    T = end-start
+    mid = start + (T/2+T%2)*(T/float(Tn))
+    
+    p1_ic = Constant(mu)*(U[0][-1]-lam_ic)
+    
+    P1 = interval_adjoint(p1_ic,U[0],start,mid,V,len(U[0])-1)
+    P2 = interval_adjoint(project(Constant(0.0),v),U[1],mid,end,V,len(U[1])-1)
+    return [P1,P2]
+    
+
+def double_opti(ic,start,end,V,Tn,mesh):
+    
+    return 'hmm'
     
 if __name__ == "__main__":
     
@@ -135,6 +215,7 @@ if __name__ == "__main__":
 
 
     P = adjoint_burger_solve(ic,start,end,V,Tn)
+
     """
     for i in range(len(P)):
         plot(P[i])
@@ -146,5 +227,5 @@ if __name__ == "__main__":
 
     opti(ic,start,end,V,Tn,mesh)
     #print J(U,end-start)
-    
+    print len(U),len(P)
     
