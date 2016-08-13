@@ -66,7 +66,7 @@ def interval_adjoint(p_ic,U,start,end,V,Tn):
     
     u = U[-1].copy()
 
-    F = (Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +u*v)*dx
+    F = -(Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +2*u*v)*dx
     
     bc = DirichletBC(V,0.0,"on_boundary")
 
@@ -154,7 +154,7 @@ def opti(ic,start,end,V,Tn,mesh):
 
 def double_J(U,T,mu):
     
-    timestep = T/(len(U[0])+len(U[1])-1)
+    timestep = T/float((len(U[0])+len(U[1])-1))
     s = 0
     s += 0.5*assemble(U[0][0]**2*dx)
     for i in range(len(U[0])-2):
@@ -167,6 +167,7 @@ def double_J(U,T,mu):
     s += 0.5*assemble(U[1][-1]**2*dx)
 
     penalty = 0.5*mu*assemble((U[0][-1]-U[1][0])**2*dx)
+    
     return timestep*s + penalty
 
 def double_burger_solver(ic,lam_ic,start,end,V,Tn,show_plot=False):
@@ -183,15 +184,15 @@ def double_burger_solver(ic,lam_ic,start,end,V,Tn,show_plot=False):
 
 def double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu):
 
-    U = double_burger_solver(ic,lam_ic,start,end,V,Tn,show_plot=True)
+    U = double_burger_solver(ic,lam_ic,start,end,V,Tn,show_plot=False)
     T = end-start
     mid = start + (Tn/2+Tn%2)*(T/float(Tn))
     print
     print start,end,mid
     print
     p1_ic = project((U[0][-1]-lam_ic)*Constant(mu),V)
-    plot(p1_ic)
-    interactive()
+    #plot(p1_ic)
+    #interactive()
     P1 = interval_adjoint(p1_ic,U[0],start,mid,V,len(U[0])-1)
     P2 = interval_adjoint(project(Constant(0.0),V),U[1],mid,end,V,len(U[1])-1)
     return [P1,P2]
@@ -221,9 +222,9 @@ def double_opti(ic,start,end,V,Tn,mesh,mu):
         P = double_adjoint_burger_solve(G,lam,start,end,V,Tn,mu)
         
         grad = x.copy()
-        grad[:xN/2] = P[0][-1].vector().array().copy()[:]
-        grad[xN/2:] = project((P[1][-1]-P[0][0]),V).vector().array().copy()[:]
-        return -h*grad
+        grad[:xN/2] = -P[0][-1].vector().array().copy()[:]
+        grad[xN/2:] = project((-P[1][-1]-P[0][0]),V).vector().array().copy()[:]
+        return h*grad
     
     icN = len(ic.vector().array())
     init = np.zeros(2*icN)
@@ -234,9 +235,13 @@ def double_opti(ic,start,end,V,Tn,mesh,mu):
                options={'gtol': 1e-6, 'disp': True})
 
     X = Function(V)
+    Y = Function(V)
     X.vector()[:] = res.x.copy()[:icN]
-
+    Y.vector()[:] = res.x.copy()[icN:]
+    
     plot(X)
+    interactive()
+    plot(Y)
     interactive()
     
 if __name__ == "__main__":
@@ -260,11 +265,12 @@ if __name__ == "__main__":
     
     #D_U = double_burger_solver(ic,lam_ic,start,end,V,Tn,show_plot=True)
     D_P = double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu)
-    
+    """
     for k in range(2):
         for i in range(len(D_P[k])):
             plot(D_P[k][i])
             interactive()
+    """
     """
     for i in range(len(P)):
         plot(P[i])
@@ -275,7 +281,7 @@ if __name__ == "__main__":
     #interactive()
 
     #opti(ic,start,end,V,Tn,mesh)
-    #double_opti(ic,start,end,V,Tn,mesh,mu)
+    double_opti(ic,start,end,V,Tn,mesh,mu)
     #print J(U,end-start)
     #print len(U),len(P)
     
