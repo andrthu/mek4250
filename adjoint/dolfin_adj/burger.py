@@ -187,9 +187,6 @@ def double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu):
     U = double_burger_solver(ic,lam_ic,start,end,V,Tn,show_plot=False)
     T = end-start
     mid = start + (Tn/2+Tn%2)*(T/float(Tn))
-    print
-    print start,end,mid
-    print
     p1_ic = project((U[0][-1]-lam_ic)*Constant(mu),V)
     #plot(p1_ic)
     #interactive()
@@ -224,7 +221,7 @@ def double_opti(ic,start,end,V,Tn,mesh,mu):
         grad = x.copy()
         grad[:xN/2] = P[0][-1].vector().array().copy()[:]
         grad[xN/2:] = project((P[1][-1]-P[0][0]),V).vector().array().copy()[:]
-        print grad
+        
         return h*grad
     
     icN = len(ic.vector().array())
@@ -251,7 +248,7 @@ if __name__ == "__main__":
     Tn = 30
     start = 0
     end = 0.5
-    mu = 1
+    mu = 10
     mesh = UnitIntervalMesh(n)
     V = FunctionSpace(mesh,"CG",1)
 
