@@ -66,7 +66,7 @@ def interval_adjoint(p_ic,U,start,end,V,Tn):
     
     u = U[-1].copy()
 
-    F = -(Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +2*u*v)*dx
+    F = -(-Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +2*u*v)*dx
     
     bc = DirichletBC(V,0.0,"on_boundary")
 
@@ -138,7 +138,7 @@ def opti(ic,start,end,V,Tn,mesh):
         G.vector()[:]=g.copy()[:]
         P = adjoint_burger_solve(G,start,end,V,Tn)
 
-        return -h*P[-1].vector().array().copy()
+        return h*P[-1].vector().array().copy()
     
     
     
@@ -222,8 +222,9 @@ def double_opti(ic,start,end,V,Tn,mesh,mu):
         P = double_adjoint_burger_solve(G,lam,start,end,V,Tn,mu)
         
         grad = x.copy()
-        grad[:xN/2] = -P[0][-1].vector().array().copy()[:]
-        grad[xN/2:] = project((-P[1][-1]-P[0][0]),V).vector().array().copy()[:]
+        grad[:xN/2] = P[0][-1].vector().array().copy()[:]
+        grad[xN/2:] = project((P[1][-1]-P[0][0]),V).vector().array().copy()[:]
+        print grad
         return h*grad
     
     icN = len(ic.vector().array())
@@ -264,7 +265,7 @@ if __name__ == "__main__":
     #P = adjoint_burger_solve(ic,start,end,V,Tn)
     
     #D_U = double_burger_solver(ic,lam_ic,start,end,V,Tn,show_plot=True)
-    D_P = double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu)
+    #D_P = double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu)
     """
     for k in range(2):
         for i in range(len(D_P[k])):
