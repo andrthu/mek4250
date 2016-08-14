@@ -241,7 +241,78 @@ def double_opti(ic,start,end,V,Tn,mesh,mu):
     interactive()
     plot(Y)
     interactive()
+
+def time_partition(start,end,Tn,m):
+
+    N = np.zeros(m)
+    T = np.zeros(m+1) 
+
+    timestep = float(end-start)/Tn
+
+    fraq = Tn/m
+    rest = Tn%m
+
+    t = start
+    T[0] = t
+
+    for i in range(0,m):
+        if rest-i >0:
+            N[i] = fraq + 1
+        else:
+            N[i] = fraq
+
+        t = t + timestep*N[i]
+        T[i+1] = t
+
+def general_burger_solver(ic,lam_ic,start,end,V,Tn,m,show_plot=False):
+
+    N,T = time_partition(start,end,Tn,m)
+
+    U = []
+
+    U.append(burger_solve(ic,T[0],T[1],V,N[0],show_plot=show_plot))
+    for i in range(1,m):
+        U.append(burger_solve(lam_ic[i-1],T[i],T[i+1],V,N[i],show_plot=show_plot))
+
+    return U
+
+def general_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,m,mu):
+
+    N,T = time_partition(start,end,Tn,m)
     
+    U =  general_burger_solver(ic,lam_ic,start,end,V,Tn,m)
+
+    P = []
+    
+    for i in range(m-1):
+        P_ic = project((U[i][-1]-lam_ic[i])*Constant(mu),V)
+
+        P.append(interval_adjoint(P_ic,U[i],T[i],T[i+1],V,N[i]))
+
+    P_ic = project(Constant(0.0),V)
+    P.append(interval_adjoint(P_ic,U[-1],T[-2],T[-1],V,N[-1]))
+    
+    return P 
+def general_J(U,T,mu):
+    
+    N = sum([len(u) for u in U]) - m + 1
+    timestep = T/float(N)
+    s = 0
+    for i in range(len(U)):
+        s += 0.5*assemble(U[i][0]**2*dx)
+        for j in range(len(U[i])-2):
+            s += assemble(U[i][j+1]**2*dx)
+        s += 0.5*assemble(U[i][-1]**2*dx)
+
+    penalty = 0
+    for i in range(len(U)-1):
+        penalty = penalty +0.5*assemble((U[i][-1]-U[i+1][0])**2*dx)
+    
+    return timestep*s + mu*penalty
+
+def general_opti(ic,start,end,V,Tn,mesh,mu,m):
+    return 'oy'
+
 if __name__ == "__main__":
     
     n = 40
