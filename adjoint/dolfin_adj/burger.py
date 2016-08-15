@@ -91,38 +91,7 @@ def adjoint_burger_solve(ic,start,end,V,Tn):
     U = burger_solve(ic,start,end,V,Tn)
     p_ic = project(Constant(0.0),V)
     return interval_adjoint(p_ic,U,start,end,V,Tn)
-    """
-    P = []
-    timestep = Constant((end-start)/float(Tn))
-
-    nu = Constant(0.0001)
     
-    p_ = project(Constant(0.0),V)
-    P.append(p_.copy())
-
-    p = Function(V)
-    v = TestFunction(V)
-    
-    u = U[-1].copy()
-
-    F = (Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +u*v)*dx
-    
-    bc = DirichletBC(V,0.0,"on_boundary")
-
-    t = end
-    count = -2
-    while ( t> start + DOLFIN_EPS):
-
-        solve(F==0,p,bc)
-        p_.assign(p)
-        u.assign(U[count].copy())
-        
-        P.append(p_.copy())
-        count = count -1
-        t = t - float(timestep)
-    
-    return P
-    """
 def opti(ic,start,end,V,Tn,mesh):
     
     h = mesh.hmax()
@@ -188,8 +157,7 @@ def double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu):
     T = end-start
     mid = start + (Tn/2+Tn%2)*(T/float(Tn))
     p1_ic = project((U[0][-1]-lam_ic)*Constant(mu),V)
-    #plot(p1_ic)
-    #interactive()
+    
     P1 = interval_adjoint(p1_ic,U[0],start,mid,V,len(U[0])-1)
     P2 = interval_adjoint(project(Constant(0.0),V),U[1],mid,end,V,len(U[1])-1)
     return [P1,P2]
@@ -264,6 +232,8 @@ def time_partition(start,end,Tn,m):
         t = t + timestep*N[i]
         T[i+1] = t
 
+    return N,T
+
 def general_burger_solver(ic,lam_ic,start,end,V,Tn,m,show_plot=False):
 
     N,T = time_partition(start,end,Tn,m)
@@ -311,10 +281,68 @@ def general_J(U,T,mu):
     return timestep*s + mu*penalty
 
 def general_opti(ic,start,end,V,Tn,mesh,mu,m):
-    return 'oy'
+    h = mesh.hmax()
+
+    def red_J(x):
+        G = Function(V)
+        lam = []
+        xN = len(x)/m
+        G.vector()[:] = x.copy()[:xN]
+        
+        for i in range(m-1):
+            l = Function(V)
+            l.vector()[:] = x.copy()[(i+1)*xN:(i+2)*xN]
+            lam.append(l.copy())
+
+        U = general_burger_solver(G,lam,start,end,V,Tn,m)
+        return general_J(U,end-start,mu)
+
+    def grad_J(x):
+        G = Function(V)
+        lam = []
+        xN = len(x)/m
+        G.vector()[:] = x.copy()[:xN]
+        
+        
+        for i in range(m-1):
+            l = Function(V)
+            l.vector()[:] = x.copy()[(i+1)*xN:(i+2)*xN]
+            lam.append(l.copy())
+
+        P = general_adjoint_burger_solve(G,lam,start,end,V,Tn,m,mu)
+        
+        grad = x.copy()
+        grad[:xN] = P[0][-1].vector().array().copy()[:]
+        for i in range(m-1):
+            grad[(i+1)*xN:(i+2)*xN] = project((P[i+1][-1]-P[i][0]),V).vector().array().copy()[:]
+        
+        return h*grad
+    
+    icN = len(ic.vector().array())
+    init = np.zeros(m*icN)
+
+    init[:icN] = ic.vector().array().copy()[:]
+
+    res = Mini(red_J,init,method='L-BFGS-B', jac=grad_J,
+               options={'gtol': 1e-6, 'disp': True})
+
+    X = Function(V)
+    
+    X.vector()[:] = res.x.copy()[:icN]
+    plot(X)
+    interactive()
+
+    for i in range(m-1):
+        Y = Function(V)
+        Y.vector()[:] = res.x.copy()[(i+1)*icN:(i+2)*icN]
+        plot(Y)
+        interactive()
+    
 
 if __name__ == "__main__":
-    
+
+    set_log_level(ERROR)
+
     n = 40
     Tn = 30
     start = 0
@@ -322,6 +350,8 @@ if __name__ == "__main__":
     mu = 10
     mesh = UnitIntervalMesh(n)
     V = FunctionSpace(mesh,"CG",1)
+
+    m = 3
 
     ic = project(Expression("x[0]*(1-x[0])"),V)
     lam_ic = project(Constant(0.0),V)
@@ -334,23 +364,11 @@ if __name__ == "__main__":
     
     #D_U = double_burger_solver(ic,lam_ic,start,end,V,Tn,show_plot=True)
     #D_P = double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu)
-    """
-    for k in range(2):
-        for i in range(len(D_P[k])):
-            plot(D_P[k][i])
-            interactive()
-    """
-    """
-    for i in range(len(P)):
-        plot(P[i])
-        interactive()
-    """
     
-    #plot(ic + P[-1])
-    #interactive()
 
-    #opti(ic,start,end,V,Tn,mesh)
-    double_opti(ic,start,end,V,Tn,mesh,mu)
+    opti(ic,start,end,V,Tn,mesh)
+    #double_opti(ic,start,end,V,Tn,mesh,mu)
+    #general_opti(ic,start,end,V,Tn,mesh,mu,m)
     #print J(U,end-start)
     #print len(U),len(P)
     
