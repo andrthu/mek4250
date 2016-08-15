@@ -13,7 +13,7 @@ def burger_solve(ic,start,end,V,Tn,show_plot=False):
     U.append(u_.copy())
     if show_plot:
         plot(u_)
-        interactive()
+        
 
     u = Function(V)
     v = TestFunction(V)
@@ -36,7 +36,7 @@ def burger_solve(ic,start,end,V,Tn,show_plot=False):
         t += float(timestep)
         if show_plot:
             plot(u_)
-            interactive()
+            
 
     return U
 
@@ -346,16 +346,17 @@ if __name__ == "__main__":
     n = 40
     Tn = 30
     start = 0
-    end = 0.5
+    end = 2
     mu = 10
     mesh = UnitIntervalMesh(n)
     V = FunctionSpace(mesh,"CG",1)
 
-    m = 3
+    m = 5
 
     ic = project(Expression("x[0]*(1-x[0])"),V)
+    #ic = project(Expression("sin(pi*x[0])"),V)
     lam_ic = project(Constant(0.0),V)
-    #U = burger_solve(ic,start,end,V,Tn,show_plot=True)
+    U = burger_solve(ic,start,end,V,Tn,show_plot=True)
 
     
 
@@ -366,9 +367,9 @@ if __name__ == "__main__":
     #D_P = double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu)
     
 
-    opti(ic,start,end,V,Tn,mesh)
+    #opti(ic,start,end,V,Tn,mesh)
     #double_opti(ic,start,end,V,Tn,mesh,mu)
-    #general_opti(ic,start,end,V,Tn,mesh,mu,m)
+    general_opti(ic,start,end,V,Tn,mesh,mu,m)
     #print J(U,end-start)
     #print len(U),len(P)
     
