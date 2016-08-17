@@ -49,4 +49,17 @@ If we can solve this equation for $\lambda$, the gradient of $\hat{J}$ will be g
 \textbf{Optimal control with ODE constraints}
 \\
 \\
+Lets try to derive the gradient, when we let $E(y,u)$ be the following ODE:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	y'(t)=\alpha y(t) +u(t), \ t \in (0,T)\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align*}
+We also choose the functional to be
+\begin{align*}
+J(y,u) = \frac{1}{2}\int_0^Tu(t)^2dt + \frac{1}{2}(y(T)-y^T)^2
+\end{align*}
 \end{document}

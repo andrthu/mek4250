@@ -178,7 +178,7 @@ if __name__ == '__main__':
     legend(['state','adjoint'])
     show()
 
-    """
+    
     n=100
     t = linspace(0,1,n+1)
     T=1
@@ -208,7 +208,7 @@ if __name__ == '__main__':
     
     print 2*n*trapz((l+u)*eps,t),(u[k]+l[k]), l2[0]
     show()
-    """
+    
 
 
 
