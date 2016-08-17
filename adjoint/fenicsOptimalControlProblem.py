@@ -206,4 +206,37 @@ class FenicsOptimalControlProblem():
         return res
 
 
+class Burger1(FenicsOptimalControlProblem):
+    
+    #opt = {nu : ...}
+    def adjoint_ic(self,opt):
+        return project(Constant(0.0),self.V)
 
+    def Dt(u,u_,timestep):
+        return (u-u_)/timestep
+
+    def PDE_form(self,ic,opt,u,u_,v,timestep):
+        nu = Constant(opt['nu'])
+        F = (self.Dt(u,u_,timestep)*v + u*u.dx(0)*v + nu*u.dx(0)*v.dx(0))*dx
+
+        return F
+
+    def adjoint_form(self,opt,u,p,p_,v,timestep):
+        nu = Constant(opt['nu'])
+
+        F = -(-Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +2*u*v)*dx
+        return F
+
+    def get_control(self,opt,ic,m):
+        
+        return ic.copy().vector().array()
+
+    def get_opt(self,control,opt,ic,m):
+
+        g = Function(self.V)
+
+        g.vector()[:] = control[:]
+
+        return opt,g
+        
+        
