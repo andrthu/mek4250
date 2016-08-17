@@ -38,7 +38,7 @@ class FenicsOptimalControlProblem():
 
         self.V = V
         self.mesh = mesh
-        self.T = T
+        
 
         self.Lbfgs_options = self.default_Lbfgs_options()
         
@@ -73,12 +73,13 @@ class FenicsOptimalControlProblem():
         raise NotImplementedError, 'get_opt not implemented'
 
 
-    def PDE_solver(self,ic,opt,start,end,Tn):
+    def PDE_solver(self,ic,opt,start,end,Tn,show_plot=False):
 
         U = []
 
         u_ = ic.copy()
-
+        if show_plot:
+            plot(u_)
         U.append(u_.copy())
 
         u = Function(self.V)
@@ -86,7 +87,7 @@ class FenicsOptimalControlProblem():
 
         timestep = Constant((end-start)/float(Tn))
 
-        F,bc = self.PDE_form(control,opt,u,u_,v,timestep)
+        F,bc = self.PDE_form(ic,opt,u,u_,v,timestep)
 
 
         t  = start
@@ -97,6 +98,9 @@ class FenicsOptimalControlProblem():
             U.append(u_.copy())
 
             t += float(timestep)
+
+            if show_plot:
+                plot(u_)
 
         return U
 
@@ -172,7 +176,7 @@ class FenicsOptimalControlProblem():
 
         return P
 
-    def solver(self,opt,ic,start,end,Tn,Lbfgs_options=None)):
+    def solver(self,opt,ic,start,end,Tn,Lbfgs_options=None):
 
         def J(x):
             loc_opt,loc_ic = self.get_opt(x,opt,ic,1)
@@ -212,14 +216,14 @@ class Burger1(FenicsOptimalControlProblem):
     def adjoint_ic(self,opt):
         return project(Constant(0.0),self.V)
 
-    def Dt(u,u_,timestep):
+    def Dt(self,u,u_,timestep):
         return (u-u_)/timestep
 
     def PDE_form(self,ic,opt,u,u_,v,timestep):
         nu = Constant(opt['nu'])
         F = (self.Dt(u,u_,timestep)*v + u*u.dx(0)*v + nu*u.dx(0)*v.dx(0))*dx
-
-        return F
+        bc = DirichletBC(self.V,0.0,"on_boundary")
+        return F,bc
 
     def adjoint_form(self,opt,u,p,p_,v,timestep):
         nu = Constant(opt['nu'])
@@ -240,3 +244,16 @@ class Burger1(FenicsOptimalControlProblem):
         return opt,g
         
         
+if __name__ == "__main__":
+
+    mesh = UnitIntervalMesh(30)
+
+    V = FunctionSpace(mesh,"CG",1)
+
+    test1 = Burger1(V,mesh)
+
+    opt = {'nu' : 0.001}
+    ic = project(Expression("x[0]*(1-x[0])"),V)
+    
+    
+    test1.PDE_solver(ic,opt,0,0.5,30,show_plot=True)
