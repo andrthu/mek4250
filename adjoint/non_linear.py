@@ -49,7 +49,7 @@ class Explicit_sine(OptimalControlProblem):
         a = self.a
         
 
-        return (1+2*dt*a*np.cos(y[-(i+1)]))*l[-(i+1)]
+        return (1+dt*a*np.cos(y[-(i+1)]))*l[-(i+1)]
     
 class ExplicitNonLinear(OptimalControlProblem):
 
@@ -71,7 +71,7 @@ class ExplicitNonLinear(OptimalControlProblem):
         DF = self.DF
         
 
-        return (1+2*dt*DF(y[-(i+1)]))*l[-(i+1)]
+        return (1+dt*DF(y[-(i+1)]))*l[-(i+1)]
 
 
 def test_nonLinear():

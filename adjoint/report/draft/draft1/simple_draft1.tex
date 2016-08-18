@@ -244,5 +244,94 @@ This will then give us the gradient:
 \begin{align*}
 \langle\hat{J}'(u),s\rangle = \int_0^T(p(t)+u(t)-1)s(t)dt
 \end{align*}
-Now we want 
+Now we want to choose $y^T$ such that $u=1$ yields $J(1)=0$. To do this we notice that the ODE:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	y' =  y +1\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align*}
+has the solution $y(t)=(y_0+1)e^t -1$. This means that we should get $J(1)=0$, if we choose $y^T =  (y_0+1)e^T -1$. As above I measure the error between numerical solution $u^N$ and exact solution $u=1$ in max-norm $max_i{|u^N_i-1|}_{i=0}^N$. Then using $T=1$, initial control $u(t)=0$ and the scipy L-bfgs algorithm, I get the following errors:
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 500 & 1000  & 1500 & 2000 & 5000 & 8000 \\ \hline
+    E & 0.003702 & 0.001844 &0.001227 & 0.000919 & 0.000366 & 0.000228	\\ \hline
+    \end{tabular}
+\end{center}
+Using least squares we get that $E\leq \Delta t^{\alpha}C$, with $C\approx 1.9$ and $\alpha\approx1$. for each $N$, the L-bfgs algorithm used 4 iterations to get to the predefined gradient size tolerance.
+\\
+\\
+\textbf{Non-linear ODE}
+\\
+\\
+The ODE equation we have looked at so far is linear and quite simple. To make things more interesting, I will change the equation in the following way:
+ \begin{align*}
+\left\{
+     \begin{array}{lr}
+       	y'= F(y) +u\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align*} 
+Here $F:\mathbb{R} \rightarrow \mathbb{R}$, is some differentiable function. We then get $E_y = \frac{\partial}{\partial t} - F'(y)$. To derive the adjoint equation, we need to take the adjoint of the operator $E_y$. This is problematic since it depends on $y$, however since we need to solve the state equation before the adjoint, we can think of $F'(y)$ as a function of $t$. Using this linearisation, we get the following adjoint equation: 
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	p'(t)=F'(y(t))p(t)\\
+       	   p(T)= y(T)-y_T
+     \end{array}
+   \right.
+\end{align*}
+The "initial" condition is derived in the usual way assuming: 
+\begin{align*}
+J(y,u)=L(u) + (y(T)-y_T)^2
+\end{align*}
+Where $L$ is some functional. When we are dealing with a non-linear ODE, it is more difficult to solve the state equation implicitly. I have therefore only solved this numerically using explicit finite difference for both the state and the adjoint equation. the schemes now look like: 
+  \begin{align*}
+\frac{y^n-y^{n-1}}{\Delta t} &= F(y^{n-1}) + u^{n-1}\\
+y^{n} &= y^{n-1} +F(y^{n-1})+\Delta t u^{n-1} 
+\end{align*} 
+and for the adjoint equation we get:
+\begin{align*}
+-\frac{p^n-p^{n-1}}{\Delta t} -F'(y^{n})p^n &=0 \\
+p^{n-1} &= (1+\Delta t F'(y^{n}))p^n
+\end{align*} 
+\\
+\\
+\textbf{Non-linear example}
+\\
+\\
+Lets look at the case where $F(y) = y^2$, and \begin{align*}
+J(y,u) = \frac{1}{2}\int_0^T(u(t)-D)^2dt + \frac{1}{2}(y(T)-y^T)^2
+\end{align*}
+Want to do a manufactured solution test as did for the  linear ODE case. However since the equation now is non-linear, I don't know its exact solution, when $u$ is non-zero. To get around this I choose $y^T$, by solving the equation numerically with a very high number of unknowns, while I solve the control problem with a smaller number of unknowns. As above I measure the error between numerical solution $u^N$ and exact solution $u=D$ in max-norm $max_i{|u^N_i-1|}_{i=0}^N$. Then using $T=1$, $D=3.1$, initial control $u(t)=0$ and the scipy L-bfgs algorithm, I get the following errors:
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 50 & 100  & 150 & 200 & 500 & 1000 \\ \hline
+    E & 0.002541 & 0.001222 &0.000779 & 0.000556 & 0.000213 & 0.000083	\\ \hline
+    Iter & 6 & 5  & 5 & 5 & 5 & 5 \\ \hline
+    \end{tabular}
+\end{center}
+Using least squares we get that $E\leq \Delta t^{\alpha}C$, with $C\approx 0.22$ and $\alpha\approx1.1$. 
+\\
+\\
+\textbf{Changing the power of the $y(T)-y^T$ term}
+\\
+Another way of changing the problem to make it more complex is to alter the functional we have been using so far. I will now look at what happens with the adjoint equation when we change the functional in the following way:
+  \begin{align*}
+J(y,u) = \int_0^T u^2 dt + \frac{1}{q}(y(T)-y_T)^q
+\end{align*}
+This change results in a different $J_y$, and therefore a changed adjoint equation. The derivative of $J$ with respect to $y$ is now:
+\begin{align*}
+J_y = (y(T)-y_T)^{q-1}\delta_T
+\end{align*}
+This changes the 'initial' condition of the adjoint equation. We now get the following ODE:
+\begin{align*}
+-\frac{\partial }{\partial t}p(t) &=p(t)  \\
+p(T) &= (y(T)-y_T)^{q-1}
+\end{align*}
 \end{document}

@@ -2,6 +2,7 @@ from optimalContolProblem import *
 from non_linear import *
 import numpy as np
 from scipy.integrate import trapz
+from scipy import linalg
 from cubicYfunc import *
 
 
@@ -32,27 +33,113 @@ def test_manufactured_solution():
     J,grad_J = make_coef_J(1,1)
 
     
-    
-
-    
-    """
+    h_val = []
+    error = []
     for N in [500,1000,1500,2000,5000,8000]:
         
-
-        
-        problem = Problem1(y0,yT,T,a,J,grad_J)
-        res = problem.plot_solve(N)
-
-        print max(abs(res['control'].array()-1)),res['iteration']
-    """
-    for N in [500,1000,1500,2000,5000,8000]:
-        
-
+        h_val.append(1./N) 
         
         problem = Problem1(y0,yT,T,a,J,grad_J)
         res = problem.scipy_solver(N,disp=False)
+        
+        err = max(abs(res.x-1))
+        error.append(err)
+        print "max(|u-1|)=%f for N=%d and iter=%d"%(err,N,res.nit)
 
-        print max(abs(res.x-1))
+    Q = np.vstack([np.log(np.array(h_val)),np.ones(len(h_val))]).T
+    LS=linalg.lstsq(Q, np.log(np.array(error)))[0]
+    print LS[0],np.exp(LS[1])
+
+    import matplotlib.pyplot as plt
+
+    plt.plot(np.log(np.array(h_val)),np.log(np.array(error)))
+    plt.xlabel('log(1/N)')
+    plt.ylabel('log(error)')
+    plt.show()
+
+
+def test_quadratic_manufactured_solution():
+    
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+    
+    solution = 3.1
+
+    J,grad_J = make_coef_J(1,solution)
+
+    
+    problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)
+    N = 200000
+    u = np.zeros(N+1) + solution
+    yT = problem.ODE_solver(u,N)[-1]
+    print "yT=%f"%yT
+    
+    h_val = []
+    error = []
+    for N in [50,100,150,200,500,1000]:
+        
+        h_val.append(1./N) 
+        
+        problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)
+        res = problem.scipy_solver(N,disp=False)
+        
+        err = max(abs(res.x-solution))
+        error.append(err)
+        print "max(|u-%.1f|)=%f for N=%d and iter=%d"%(solution,err,N,res.nit)
+
+    Q = np.vstack([np.log(np.array(h_val)),np.ones(len(h_val))]).T
+    LS=linalg.lstsq(Q, np.log(np.array(error)))[0]
+    print LS[0],np.exp(LS[1])
+
+    import matplotlib.pyplot as plt
+
+    plt.plot(np.log(np.array(h_val)),np.log(np.array(error)))
+    plt.xlabel('log(1/N)')
+    plt.ylabel('log(error)')
+    plt.show()
+def test_manufactured_resultChange_solution():
+    
+    solution = 8
+    T = 1
+    y0 = 1
+    yT = (solution+1)*np.exp(T) - solution    
+    a  = 1
+    power = 4
+
+    J,grad_J = make_coef_J(1,solution,power=power)
+    def Jfunc(u,y,yT,T,power):
+        return J(u,y,yT,T)
+    
+    h_val = []
+    error = []
+    for N in [50,100,150,200,500,1000]:
+        
+        h_val.append(1./N) 
+        
+        problem = GeneralPowerY(y0,yT,T,a,power,Jfunc,grad_J)
+
+
+        res = problem.scipy_solver(N,disp=False)
+        
+        err = max(abs(res.x-solution))
+        error.append(err)
+        print "max(|u-%.1f|)=%f for N=%d and iter=%d"%(solution,err,N,res.nit)
+
+    Q = np.vstack([np.log(np.array(h_val)),np.ones(len(h_val))]).T
+    LS=linalg.lstsq(Q, np.log(np.array(error)))[0]
+    print LS[0],np.exp(LS[1])
+
+    import matplotlib.pyplot as plt
+
+    plt.plot(np.log(np.array(h_val)),np.log(np.array(error)))
+    plt.xlabel('log(1/N)')
+    plt.ylabel('log(error)')
+    plt.show()
+
+
+
 
 def test_coef():
 
@@ -214,6 +301,7 @@ def memory_test():
         
         plt.plot(np.linspace(1,2,2),np.zeros(2))
         plt.show()
+
 def test_scipy_solve():
 
     y0 = 1
@@ -337,7 +425,9 @@ if __name__ == "__main__":
     #test_cubic()
     #test_quadratic()
     #test_quadratic_result()
-    test_manufactured_solution()
+    #test_manufactured_solution()
+    #test_quadratic_manufactured_solution()
+    test_manufactured_resultChange_solution()
 
 """
 *******************************
