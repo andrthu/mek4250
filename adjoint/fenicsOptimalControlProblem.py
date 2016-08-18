@@ -5,7 +5,7 @@ from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
 import numpy as np
-
+from my_bfgs.my_vector import SimpleVector
 
 def time_partition(start,end,Tn,m):
 
@@ -72,7 +72,13 @@ class FenicsOptimalControlProblem():
     def get_opt(self,control,opt,ic,m):
         raise NotImplementedError, 'get_opt not implemented'
 
+    def grad_J(self,P,opt,ic,h):
+        raise NotImplementedError, 'grad_J not implemented'
+    
+    def J(self,opt,ic,U,start,end):
+        raise NotImplementedError, 'J not implemented'
 
+        
     def PDE_solver(self,ic,opt,start,end,Tn,show_plot=False):
 
         U = []
@@ -177,23 +183,24 @@ class FenicsOptimalControlProblem():
         return P
 
     def solver(self,opt,ic,start,end,Tn,Lbfgs_options=None):
-
+        h = self.mesh.hmax()
+        
         def J(x):
             loc_opt,loc_ic = self.get_opt(x,opt,ic,1)
             
             U = self.PDE_solver(loc_ic,loc_opt,start,end,Tn)
-            return self.J(opt,ic,U,start,end)
+            return self.J(loc_opt,loc_ic,U,start,end)
         
         def grad_J(x):
 
             loc_opt,loc_ic = self.get_opt(x,opt,ic,1)
             
-            P = self.adjoint_solver(loc_ic,loc_opti,start,end,Tn)
+            P = self.adjoint_solver(loc_ic,loc_opt,start,end,Tn)
 
-            return self.grad_J(P,loc_opt,loc_ic)
+            return self.grad_J(P,loc_opt,loc_ic,h)
 
 
-        control0 = self.get_control(opt,ic,m)
+        control0 = SimpleVector(self.get_control(opt,ic,1))
 
         if Lbfgs_options==None:
             Loptions = self.Lbfgs_options
@@ -206,7 +213,11 @@ class FenicsOptimalControlProblem():
         solver = Lbfgs(J,grad_J,control0,options=Loptions)
 
         res = solver.solve()
+        x = Function(self.V)
 
+        x.vector()[:] = res['control'].array()
+        plot(x)
+        interactive()
         return res
 
 
@@ -228,8 +239,9 @@ class Burger1(FenicsOptimalControlProblem):
     def adjoint_form(self,opt,u,p,p_,v,timestep):
         nu = Constant(opt['nu'])
 
-        F = -(-Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +2*u*v)*dx
-        return F
+        F = -(-self.Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +2*u*v)*dx
+        bc = DirichletBC(self.V,0.0,"on_boundary")
+        return F,bc
 
     def get_control(self,opt,ic,m):
         
@@ -242,6 +254,20 @@ class Burger1(FenicsOptimalControlProblem):
         g.vector()[:] = control[:]
 
         return opt,g
+
+    def grad_J(self,P,opt,ic,h):
+        return h*P[-1].vector().array()
+    
+    def J(self,opt,ic,U,start,end):
+        n = len(U)
+        timestep = (end-start)/float(n)
+        s = 0
+    
+        s += 0.5*assemble(U[0]**2*dx)
+        for i in range(n-2):
+            s += assemble(U[i+1]**2*dx)
+        s += 0.5*assemble(U[-1]**2*dx)
+        return timestep*s
         
         
 if __name__ == "__main__":
@@ -254,6 +280,12 @@ if __name__ == "__main__":
 
     opt = {'nu' : 0.001}
     ic = project(Expression("x[0]*(1-x[0])"),V)
+    start = 0
+    end = 0.5
+    Tn = 30
     
-    
-    test1.PDE_solver(ic,opt,0,0.5,30,show_plot=True)
+    #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
+
+    #test1.adjoint_solver(ic,opt,start,end,Tn)
+
+    test1.solver(opt,ic,start,end,Tn)
