@@ -29,6 +29,7 @@ def adjoint_solver(y0,a,n,u,T,yT):
     
     for i in range(n):
         l[-(i+2)]=(1+dt*a)*l[-(i+1)] 
+        #l[-(i+2)]=l[-(i+1)]/(1-dt*a)
     return l
 
 #Functional 0.5*(integral(u**2) +(y(T)-yT)**2)    
@@ -156,9 +157,9 @@ def test_finiteDiff():
 
 if __name__ == '__main__':
 
-    #print test_exact()
-    #print test_finiteDiff()
-    
+    print test_exact()
+    print test_finiteDiff()
+    """
     n=1000
     m=10
     T=1
@@ -208,7 +209,7 @@ if __name__ == '__main__':
     
     print 2*n*trapz((l+u)*eps,t),(u[k]+l[k]), l2[0]
     show()
-    
+    """
 
 
 

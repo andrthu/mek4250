@@ -21,6 +21,38 @@ def make_coef_J(c,d,power=2):
 
     return J, grad_J
 
+def test_manufactured_solution():
+    
+    y0 = 1
+    yT = 2*np.exp(1) - 1
+    T  = 1
+    a  = 1
+    
+
+    J,grad_J = make_coef_J(1,1)
+
+    
+    
+
+    
+    """
+    for N in [500,1000,1500,2000,5000,8000]:
+        
+
+        
+        problem = Problem1(y0,yT,T,a,J,grad_J)
+        res = problem.plot_solve(N)
+
+        print max(abs(res['control'].array()-1)),res['iteration']
+    """
+    for N in [500,1000,1500,2000,5000,8000]:
+        
+
+        
+        problem = Problem1(y0,yT,T,a,J,grad_J)
+        res = problem.scipy_solver(N,disp=False)
+
+        print max(abs(res.x-1))
 
 def test_coef():
 
@@ -304,7 +336,8 @@ if __name__ == "__main__":
     #non_linear_and_coef()
     #test_cubic()
     #test_quadratic()
-    test_quadratic_result()
+    #test_quadratic_result()
+    test_manufactured_solution()
 
 """
 *******************************

@@ -70,7 +70,7 @@ class OptimalControlProblem():
         """
         default options for LGFGS
         """
-        default = {"jtol"                   : 1e-4,
+        default = {"jtol"                   : 1e-6,
                    "maxiter"                : 500,
                    "mem_lim"                : 10,
                    "Vector"                 : SimpleVector,
@@ -567,7 +567,7 @@ class OptimalControlProblem():
             plt.xlabel('time')
             plt.ylabel('controls')
             plt.show()
-    def scipy_solver(self,N):
+    def scipy_solver(self,N,disp=False):
         """
         solve the problem using scipy LBFGS instead of self made LBFGS
         """
@@ -582,7 +582,7 @@ class OptimalControlProblem():
             return self.grad_J(u,l,dt)
 
         res = minimize(J,np.zeros(N+1),method='L-BFGS-B', jac=grad_J,
-               options={'gtol': 1e-6, 'disp': False})
+                       options={'gtol': 1e-6, 'disp': disp})
         
         return res
         

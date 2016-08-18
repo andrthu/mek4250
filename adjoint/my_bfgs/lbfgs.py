@@ -54,8 +54,11 @@ class LbfgsParent():
         """
         Stopping criterion for the algorithm based on L2norm of gardient.
         """
+
+        
         if np.sqrt(np.sum((df0.array())**2)/len(df0))<self.options['jtol']:
             return 1
+            
         if k>self.options['maxiter']:
             return 1
         return 0
