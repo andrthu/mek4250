@@ -40,6 +40,8 @@ def test_manufactured_solution():
         h_val.append(1./N) 
         
         problem = Problem1(y0,yT,T,a,J,grad_J)
+        
+
         res = problem.scipy_solver(N,disp=False)
         
         err = max(abs(res.x-1))
@@ -84,6 +86,9 @@ def test_quadratic_manufactured_solution():
         
         problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)
         res = problem.scipy_solver(N,disp=False)
+
+        #u = np.zeros(N+1)
+        #problem.finite_diff(u,N)
         
         err = max(abs(res.x-solution))
         error.append(err)
@@ -101,7 +106,7 @@ def test_quadratic_manufactured_solution():
     plt.show()
 def test_manufactured_resultChange_solution():
     
-    solution = 8
+    solution = 20
     T = 1
     y0 = 1
     yT = (solution+1)*np.exp(T) - solution    
@@ -119,7 +124,8 @@ def test_manufactured_resultChange_solution():
         h_val.append(1./N) 
         
         problem = GeneralPowerY(y0,yT,T,a,power,Jfunc,grad_J)
-
+        #u = np.zeros(N+1)
+        #problem.finite_diff(u,N)
 
         res = problem.scipy_solver(N,disp=False)
         
@@ -413,6 +419,23 @@ def test_quadratic_result():
 
     problem.simple_test(N,make_plot=True)
 
+def test_finite_diff():
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+    N = 100
+
+    
+    J,grad_J=make_coef_J(1,10)
+    
+    problem = Problem1(y0,yT,T,a,J,grad_J)
+    
+    u = 10*np.sin(4*np.pi*np.linspace(0,T,N+1))
+
+    problem.finite_diff(u,N)
+    
+
 if __name__ == "__main__":
 
     #test_coef()
@@ -425,6 +448,7 @@ if __name__ == "__main__":
     #test_cubic()
     #test_quadratic()
     #test_quadratic_result()
+    #test_finite_diff()
     #test_manufactured_solution()
     #test_quadratic_manufactured_solution()
     test_manufactured_resultChange_solution()

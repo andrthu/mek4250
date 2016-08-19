@@ -585,8 +585,30 @@ class OptimalControlProblem():
                        options={'gtol': 1e-6, 'disp': disp})
         
         return res
+
+
+    def finite_diff(self,u,N):
         
+        import matplotlib.pyplot as plt
+        eps = 1./10000
+
+        finite_grad_J = np.zeros(len(u))
+
+        for i in range(len(u)):
+            e = np.zeros(len(u))
+            e[i]=eps
+            J1 = self.Functional(u,N)
+            J2 = self.Functional(u+e,N)
+            finite_grad_J[i] = (J2-J1)/eps
+
+        l = self.adjoint_solver(u,N)
         
+        grad_J = self.grad_J(u,l,self.T/float(N))
+        t = np.linspace(0,self.T,len(u))
+        plt.plot(t,grad_J)
+        plt.plot(t,finite_grad_J,'r--')
+        plt.legend(['adjoint','finite diff'])
+        plt.show()
 
         
 class Problem1(OptimalControlProblem):
