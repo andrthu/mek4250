@@ -346,7 +346,7 @@ if __name__ == "__main__":
     n = 40
     Tn = 30
     start = 0
-    end = 2
+    end = 0.5
     mu = 10
     mesh = UnitIntervalMesh(n)
     V = FunctionSpace(mesh,"CG",1)
@@ -367,9 +367,9 @@ if __name__ == "__main__":
     #D_P = double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu)
     
 
-    #opti(ic,start,end,V,Tn,mesh)
+    opti(ic,start,end,V,Tn,mesh)
     #double_opti(ic,start,end,V,Tn,mesh,mu)
-    general_opti(ic,start,end,V,Tn,mesh,mu,m)
+    #general_opti(ic,start,end,V,Tn,mesh,mu,m)
     #print J(U,end-start)
     #print len(U),len(P)
     

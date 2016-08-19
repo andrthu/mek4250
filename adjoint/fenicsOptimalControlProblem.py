@@ -47,7 +47,7 @@ class FenicsOptimalControlProblem():
         """
         default options for LGFGS
         """
-        default = {"jtol"                   : 1e-4,
+        default = {"jtol"                   : 1e-6,
                    "maxiter"                : 500,
                    "mem_lim"                : 10,
                    "Vector"                 : SimpleVector,
@@ -78,6 +78,21 @@ class FenicsOptimalControlProblem():
     def J(self,opt,ic,U,start,end):
         raise NotImplementedError, 'J not implemented'
 
+    def penalty_J(self,opt,ic,U,start,end,tn,m,mu):
+
+        
+        N,T=partition(start,end,Tn,m)
+
+        s = 0
+        for i in range(m):
+            s += self.J(opt,U[i][0],T[i],T[i+1])
+        penalty = 0
+        for i in range(len(U)-1):
+            penalty = penalty +0.5*assemble((U[i][-1]-U[i+1][0])**2*dx)
+    
+        return s + mu*penalty
+
+                
         
     def PDE_solver(self,ic,opt,start,end,Tn,show_plot=False):
 
@@ -221,6 +236,24 @@ class FenicsOptimalControlProblem():
         return res
 
 
+    def pnalty_solver(self,opt,ic,start,end,Tn,m,mu_list,Lbfgs_options=None):
+
+        h = self.mesh.hmax()
+        
+        def J(x):
+            loc_opt,loc_ic = self.get_opt(x,opt,ic,1)
+            
+            U = self.PDE_solver(loc_ic,loc_opt,start,end,Tn)
+            return self.J(loc_opt,loc_ic,U,start,end)
+        
+        def grad_J(x):
+
+            loc_opt,loc_ic = self.get_opt(x,opt,ic,1)
+            
+            P = self.adjoint_solver(loc_ic,loc_opt,start,end,Tn)
+
+            return self.grad_J(P,loc_opt,loc_ic,h)
+
 class Burger1(FenicsOptimalControlProblem):
     
     #opt = {nu : ...}
@@ -271,14 +304,15 @@ class Burger1(FenicsOptimalControlProblem):
         
         
 if __name__ == "__main__":
+    set_log_level(ERROR)
 
-    mesh = UnitIntervalMesh(30)
+    mesh = UnitIntervalMesh(40)
 
     V = FunctionSpace(mesh,"CG",1)
 
     test1 = Burger1(V,mesh)
 
-    opt = {'nu' : 0.001}
+    opt = {'nu' : 0.0001}
     ic = project(Expression("x[0]*(1-x[0])"),V)
     start = 0
     end = 0.5
@@ -288,4 +322,6 @@ if __name__ == "__main__":
 
     #test1.adjoint_solver(ic,opt,start,end,Tn)
 
-    test1.solver(opt,ic,start,end,Tn)
+    res = test1.solver(opt,ic,start,end,Tn)
+
+    print res['iteration']

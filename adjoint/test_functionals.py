@@ -16,8 +16,16 @@ def make_coef_J(c,d,power=2):
         return 0.5*I + (1./power)*(y-yT)**power
 
     def grad_J(u,p,dt):
+        
 
         return dt*(c*(c*u-d)+p)
+        g = dt*(c*(c*u-d)+p)
+        i = -1
+        j = 0
+        g[i] = 0.5*dt*c*(c*u[i]-d)
+        g[j] = dt*(0.5*c*(c*u[j]-d)+p[j])
+
+        return g
 
 
     return J, grad_J
@@ -43,7 +51,7 @@ def test_manufactured_solution():
         
 
         res = problem.scipy_solver(N,disp=False)
-
+        """
         res2 = problem.scipy_penalty_solve(N,10,[0.01*N])
         res3 = problem.penalty_solve(N,10,[0.01*N])
         
@@ -51,6 +59,7 @@ def test_manufactured_solution():
         err3 = max(abs(res3['control'][:N+1]-1))
         print "scipy: err=%f for N=%d and iter=%d"%(err2,N,res2.nit)
         print "my: err=%f for N=%d and iter=%d"%(err3,N,res3['iteration'])
+        """
         err = max(abs(res.x-1))
         error.append(err)
         print "max(|u-1|)=%f for N=%d and iter=%d"%(err,N,res.nit)
@@ -94,8 +103,9 @@ def test_quadratic_manufactured_solution():
         problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)
         res = problem.scipy_solver(N,disp=False)
 
-        #u = np.zeros(N+1)
-        #problem.finite_diff(u,N)
+        u = np.zeros(N+1)
+        problem.finite_diff(u,N)
+        """
         opt = {"mem_lim":100}
         res2 = problem.scipy_penalty_solve(N,10,[5])
         res3 = problem.penalty_solve(N,3,[0.1*N],Lbfgs_options=opt)
@@ -104,7 +114,7 @@ def test_quadratic_manufactured_solution():
         err3 = max(abs(res3['control'][:N+1]-solution))
         print "scipy: err=%f for N=%d and iter=%d"%(err2,N,res2.nit)
         print "my: err=%f for N=%d and iter=%d"%(err3,N,res3['iteration'])
-
+        """
         
         err = max(abs(res.x-solution))
         error.append(err)
@@ -140,8 +150,8 @@ def test_manufactured_resultChange_solution():
         h_val.append(1./N) 
         
         problem = GeneralPowerY(y0,yT,T,a,power,Jfunc,grad_J)
-        #u = np.zeros(N+1)
-        #problem.finite_diff(u,N)
+        u = np.zeros(N+1)
+        problem.finite_diff(u,N)
 
         res = problem.scipy_solver(N,disp=False)
         
