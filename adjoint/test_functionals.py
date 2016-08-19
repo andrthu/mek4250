@@ -43,7 +43,14 @@ def test_manufactured_solution():
         
 
         res = problem.scipy_solver(N,disp=False)
+
+        res2 = problem.scipy_penalty_solve(N,10,[0.01*N])
+        res3 = problem.penalty_solve(N,10,[0.01*N])
         
+        err2 = max(abs(res2.x[:N+1]-1))
+        err3 = max(abs(res3['control'][:N+1]-1))
+        print "scipy: err=%f for N=%d and iter=%d"%(err2,N,res2.nit)
+        print "my: err=%f for N=%d and iter=%d"%(err3,N,res3['iteration'])
         err = max(abs(res.x-1))
         error.append(err)
         print "max(|u-1|)=%f for N=%d and iter=%d"%(err,N,res.nit)
@@ -89,6 +96,15 @@ def test_quadratic_manufactured_solution():
 
         #u = np.zeros(N+1)
         #problem.finite_diff(u,N)
+        opt = {"mem_lim":100}
+        res2 = problem.scipy_penalty_solve(N,10,[5])
+        res3 = problem.penalty_solve(N,3,[0.1*N],Lbfgs_options=opt)
+        
+        err2 = max(abs(res2.x[:N+1]-solution))
+        err3 = max(abs(res3['control'][:N+1]-solution))
+        print "scipy: err=%f for N=%d and iter=%d"%(err2,N,res2.nit)
+        print "my: err=%f for N=%d and iter=%d"%(err3,N,res3['iteration'])
+
         
         err = max(abs(res.x-solution))
         error.append(err)
@@ -450,8 +466,8 @@ if __name__ == "__main__":
     #test_quadratic_result()
     #test_finite_diff()
     #test_manufactured_solution()
-    #test_quadratic_manufactured_solution()
-    test_manufactured_resultChange_solution()
+    test_quadratic_manufactured_solution()
+    #test_manufactured_resultChange_solution()
 
 """
 *******************************

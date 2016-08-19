@@ -586,6 +586,43 @@ class OptimalControlProblem():
         
         return res
 
+    def scipy_penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None):
+        
+        dt=float(self.T)/N
+        if x0==None:
+
+            x0 = np.zeros(N+m)
+
+        Result = []
+
+        for i in range(len(my_list)):
+        
+            def J(u):                
+                return self.Penalty_Functional(u,N,m,my_list[i])
+
+            def grad_J(u):
+
+                l,L = self.adjoint_penalty_solver(u,N,m,my_list[i])
+
+                g = np.zeros(len(u))
+
+                g[:N+1]=self.grad_J(u[:N+1],L,dt)
+
+                for j in range(m-1):
+                    g[N+1+j]= l[j+1][0] - l[j][-1]
+                    
+                return g
+
+            res = minimize(J,x0,method='L-BFGS-B', jac=grad_J,
+                           options={'gtol': 1e-6, 'disp': False,
+                                    'maxcor':20})
+
+            Result.append(res.copy())
+
+        if len(Result)==1:
+            return res
+        else:
+            return Result
 
     def finite_diff(self,u,N):
         
