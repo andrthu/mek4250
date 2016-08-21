@@ -164,7 +164,7 @@ class FenicsOptimalControlProblem():
         return self.adjoint_interval_solver(opt,p_ic,U,start,end,Tn)
 
 
-    def penalty_PDE_solver(self,opt,lam_ic,start,end,Tn,m):
+    def penalty_PDE_solver(self,opt,ic,lam_ic,start,end,Tn,m):
 
         N,T = time_partition(start,end,Tn,m)
 
@@ -239,20 +239,41 @@ class FenicsOptimalControlProblem():
     def pnalty_solver(self,opt,ic,start,end,Tn,m,mu_list,Lbfgs_options=None):
 
         h = self.mesh.hmax()
-        
+        X = Function(self.V)
+        xN = len(C.vector().array())
+
         def J(x):
-            loc_opt,loc_ic = self.get_opt(x,opt,ic,1)
             
-            U = self.PDE_solver(loc_ic,loc_opt,start,end,Tn)
-            return self.J(loc_opt,loc_ic,U,start,end)
+            cont_e = len(x)-(m-1)*xN 
+            loc_opt,loc_ic = self.get_opt(x[:cont_e],opt,ic,m)
+
+            lam = []
+            lam.append(loc_ic)
+            for i in range(m-1):
+                l = Function(self.V)
+                l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
+                lam.append(l.copy())
+            
+            
+
+            U = self.penalty_PDE_solver(loc_opt,loc_ic,lam_ic,start,end,Tn,m):
+            return self.penalty_J(loc_opt,loc_ic,U,start,end,tn,m,mu_list[0])
         
         def grad_J(x):
 
-            loc_opt,loc_ic = self.get_opt(x,opt,ic,1)
+            cont_e = len(x)-(m-1)*xN 
+            lopt,lic = self.get_opt(x[:cont_e],opt,ic,m)
             
-            P = self.adjoint_solver(loc_ic,loc_opt,start,end,Tn)
+            lam = []
+            lam.append(loc_ic)
+            for i in range(m-1):
+                l = Function(self.V)
+                l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
+                lam.append(l.copy())
+            mu = mu_list[0]
+            P=self.penalty_adjoint_solver(lic,lam,lopt,start,end,Tn,m,mu)
 
-            return self.grad_J(P,loc_opt,loc_ic,h)
+            return self.penalty_grad_J(P,lopt,lic,h)
 
 class Burger1(FenicsOptimalControlProblem):
     
