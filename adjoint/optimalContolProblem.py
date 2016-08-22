@@ -615,7 +615,7 @@ class OptimalControlProblem():
 
             res = minimize(J,x0,method='L-BFGS-B', jac=grad_J,
                            options={'gtol': 1e-6, 'disp': False,
-                                    'maxcor':20})
+                                    'maxcor':10})
 
             Result.append(res.copy())
 

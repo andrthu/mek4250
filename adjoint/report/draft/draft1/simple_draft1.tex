@@ -328,6 +328,53 @@ has the solution $y(t)=(y_0+1)e^t -1$. This means that we should get $J(1)=0$, i
 Using least squares we get that $E\leq \Delta t^{\alpha}C$, with $C\approx 1.9$ and $\alpha\approx1$. for each $N$, the L-bfgs algorithm used 4 iterations to get to the predefined gradient size tolerance.
 \\
 \\
+Its also interesting to look at what happens when we use at the difference between exact and numeric solution when we are using the penalty method, so below comes result of the same experiment using 2, 4 and 8 partitions of the time interval, and using $\mu=10$ as penalty parameter.
+\\
+$m=2$:
+\begin{figure}
+  \includegraphics[width=\linewidth]{lin_manu_control.png}
+  \caption{The control for different mesh sizes and different number of time interval partitions. }
+  \label{Fig 3}
+\end{figure}
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 500 & 1000  & 1500 & 2000 & 5000 & 8000 \\ \hline
+    E & 0.003369 & 0.001675 &0.001113 & 0.000858 & 0.000332 & 0.000238	\\ \hline
+    Iter & 14 & 20  & 20 & 14 & 22 & 14 \\ \hline
+    \end{tabular}
+\end{center}
+$m=4$
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 500 & 1000  & 1500 & 2000 & 5000 & 8000 \\ \hline
+    E & 0.003095 & 0. 001481& 0.001003 & 0.000740 & 0.000303 & 0.000183\\ \hline
+    Iter & 40 & 41  & 41 & 43 & 49 & 41 \\ \hline
+    \end{tabular}
+\end{center}
+$m=8$:
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 500 & 1000  & 1500 & 2000 & 5000 & 8000 \\ \hline
+    E & 0.002385 & 0.001183 &0.000751 & 0.000592 & 0.000246 & 0.000130	\\ \hline
+    Iter & 59 & 55  & 69 & 65 & 71 & 73 \\ \hline
+    \end{tabular}
+\end{center}
+As for the non-penalty case i used least square to find the following $C\Delta t^{\alpha}$ relation to the error. The following table sums up the results:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m & $\alpha$ & C \\ \hline
+    2 &0.97 &1.35 \\ \hline
+    4 & 1.01&1.63 \\ \hline
+    8 & 1.03&1.43 \\ \hline
+    \end{tabular}
+\end{center}
+We notice that the errors and the convergence rate of the penalty solutions are quite similar to the non-penalty approach, however we see that the number of iterations it takes to reach the solution becomes larger as we choose a bigger $m$. 
+\\
+\\
 \textbf{Non-linear ODE}
 \\
 \\
@@ -412,6 +459,47 @@ this yielded the following table:
     \end{tabular}
 \end{center}
 Using least squares we get that $E\leq \Delta t^{\alpha}C$, with $C\approx 2533$ and $\alpha\approx2.4$.
+\\
+\\
+As I did for the other examples I will look at the difference between exact and numeric solution when we are using the penalty method. Below comes result of the above setting using 2, 4 and 8 partitions of the time interval, and using $\mu=1$ as penalty parameter.
+\\
+$m=2$:
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 50 & 100  & 150 & 200 & 500 & 1000 \\ \hline
+    E & 0.0.108561 & 0.029858 &0.012150 & 0.006006 & 0.000471 & 0.0.000660	\\ \hline
+    Iter & 32 & 46  & 44 & 47 & 49 & 39 \\ \hline
+    \end{tabular}
+\end{center}
+$m=4$
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 50 & 100  & 150 & 200 & 500 & 1000 \\ \hline
+    E & 0.065024 & 0.020627& 0.009187& 0.004942 & 0.000993 & 0.000347\\ \hline
+    Iter & 49 & 51  & 55 & 55 & 51 & 48 \\ \hline
+    \end{tabular}
+\end{center}
+$m=8$:
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 50 & 100  & 150 & 200 & 500 & 1000 \\ \hline
+    E & 0.036287 & 0.014180 &0.006379 & 0.004230 & 0.000484 & 0.000288	\\ \hline
+    Iter & 53 & 56  & 64 & 61 & 78 & 64 \\ \hline
+    \end{tabular}
+\end{center}
+As for the non-penalty case i used least square to find the following $C\Delta t^{\alpha}$ relation to the error. The following table sums up the results:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m & $\alpha$ & C \\ \hline
+    2 & 1.90& 159.6\\ \hline
+    4 & 1.78& 67.2\\ \hline
+    8 & 1.73&35.2 \\ \hline
+    \end{tabular}
+\end{center}
 \begin{center}
 
 \LARGE Burgers equation
