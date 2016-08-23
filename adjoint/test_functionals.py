@@ -128,6 +128,11 @@ def test_quadratic_manufactured_solution():
     error = []
     error2 = [[],[],[]]
     M = [2,4,8]
+    
+    import matplotlib.pyplot as plt
+
+    fig,ax = plt.subplots(2, 2)
+    teller = -1
     for N in [50,100,150,200,500,1000]:
         
         h_val.append(1./N) 
@@ -137,33 +142,39 @@ def test_quadratic_manufactured_solution():
 
         #u = np.zeros(N+1)
         #problem.finite_diff(u,N)
-        """
-        opt = {"mem_lim":100}
-        res2 = problem.scipy_penalty_solve(N,10,[5])
-        res3 = problem.penalty_solve(N,3,[0.1*N],Lbfgs_options=opt)
+        t = np.linspace(0,T,N+1)
         
-        err2 = max(abs(res2.x[:N+1]-solution))
-        err3 = max(abs(res3['control'][:N+1]-solution))
-        print "scipy: err=%f for N=%d and iter=%d"%(err2,N,res2.nit)
-        print "my: err=%f for N=%d and iter=%d"%(err3,N,res3['iteration'])
-        """
+        if N!= 100 and N!=500:
+            teller += 1
+            ax[teller/2,teller%2].plot(t,res.x)
+            
         
         err = max(abs(res.x-solution))
         error.append(err)
         print "max(|u-%.1f|)=%f for N=%d and iter=%d"%(solution,err,N,res.nit)
-
+        
         for i in range(len(M)):
-            res2 = problem.scipy_penalty_solve(N,M[i],[1])
+            res2 = problem.scipy_penalty_solve(N,M[i],[100])
 
             err2 = max(abs(res2.x[:N+1]-solution))
             print "m=%d: err=%f for N=%d and iter=%d"%(M[i],err2,N,res2.nit)
             error2[i].append(err2)
 
+            
+            if N!= 100 and N!=500:
+                ax[teller/2,teller%2].plot(t,res2.x[:N+1])
+        if N!= 100 and N!=500:
+            ax[teller/2,teller%2].legend(['m=1','m=2','m=4','m=8'],loc=4)
+            ax[teller/2,teller%2].set_title('N='+str(N))
+        
+    plt.show()
+            
+
     Q = np.vstack([np.log(np.array(h_val)),np.ones(len(h_val))]).T
     LS=linalg.lstsq(Q, np.log(np.array(error)))[0]
     print LS[0],np.exp(LS[1])
 
-    import matplotlib.pyplot as plt
+    
 
     plt.plot(np.log(np.array(h_val)),np.log(np.array(error)))
     plt.xlabel('log(1/N)')
