@@ -70,7 +70,7 @@ class OptimalControlProblem():
         """
         default options for LGFGS
         """
-        default = {"jtol"                   : 1e-6,
+        default = {"jtol"                   : 1e-4,
                    "maxiter"                : 500,
                    "mem_lim"                : 10,
                    "Vector"                 : SimpleVector,
@@ -226,7 +226,7 @@ class OptimalControlProblem():
         l[-1][-1] = self.initial_adjoint(y[-1][-1])
         for i in range(m-1):
             l[i][-1]=init(self,y,u,my,N,i) #my*(y[i][-1]-u[N+1+i])
-
+            
         for i in range(m):
             for j in range(len(l[i])-1):
                 l[i][-(j+2)] = self.adjoint_update(l[i],y[i],j,dt)
@@ -238,7 +238,10 @@ class OptimalControlProblem():
             L[start:start+len(l[i])-1] = l[i][:-1]
             start = start + len(l[i])-1
         L[-1]=l[-1][-1]
-            
+        
+        import matplotlib.pyplot as plt
+        
+        
         return l,L
 
     def Lagrange_Penalty_Functional(self,u,N,m,my,G):

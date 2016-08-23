@@ -12,7 +12,7 @@ def test_LagAndPen():
     N  = 700   
     m  = 2
 
-    C = [2,3,1]
+    C = [1]
     D = [0]
 
     my = [0.1*N,0.7*N,2*N]

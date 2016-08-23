@@ -55,15 +55,7 @@ def test_manufactured_solution():
         
 
         res = problem.scipy_solver(N,disp=False)
-        """
-        res2 = problem.scipy_penalty_solve(N,10,[0.01*N])
-        #res3 = problem.penalty_solve(N,10,[0.01*N])
         
-        err2 = max(abs(res2.x[:N+1]-1))
-        #err3 = max(abs(res3['control'][:N+1]-1))
-        print "scipy: err=%f for N=%d and iter=%d"%(err2,N,res2.nit)
-        #print "my: err=%f for N=%d and iter=%d"%(err3,N,res3['iteration'])
-        """
         err = max(abs(res.x-1))
         error.append(err)
         print "max(|u-1|)=%f for N=%d and iter=%d"%(err,N,res.nit)
@@ -72,7 +64,7 @@ def test_manufactured_solution():
             teller += 1
             ax[teller/2,teller%2].plot(t,res.x)
         for i in range(len(M)):
-            res2 = problem.scipy_penalty_solve(N,M[i],[10])
+            res2 = problem.scipy_penalty_solve(N,M[i],[0])
 
             err2 = max(abs(res2.x[:N+1]-1))
             print "m=%d: err=%f for N=%d and iter=%d"%(M[i],err2,N,res2.nit)
@@ -569,9 +561,9 @@ if __name__ == "__main__":
     #test_quadratic()
     #test_quadratic_result()
     #test_finite_diff()
-    #test_manufactured_solution()
+    test_manufactured_solution()
     #test_quadratic_manufactured_solution()
-    test_manufactured_resultChange_solution()
+    #test_manufactured_resultChange_solution()
 
 """
 *******************************
