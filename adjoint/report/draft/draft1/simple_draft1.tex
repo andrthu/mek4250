@@ -552,6 +552,47 @@ As for the non-penalty case i used least square to find the following $C\Delta t
     8 & 1.73&35.2 \\ \hline
     \end{tabular}
 \end{center}
+\textbf{Comment on the manufactured solutions}
+\\
+The manufactured solutions I have used for testing here have showed that both optimization problem is solvable both with and without penalties. There is however one problem with these examples, which i will illustrate by running the linear ODE example with 
+\begin{align*}
+J(y,u) = \frac{1}{2}\int_0^T(u(t)-1)^2dt + \frac{1}{2}(y(T)-y^T)^2
+\end{align*}
+using $\mu=0$. This yields the following error tables for different $m$:
+\\
+$m=2$:
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 500 & 1000  & 1500 & 2000 & 5000 & 8000 \\ \hline
+    E & 0.000412 & 0.000053 &0.000156 & 0.000114 & 0.000001 & 0.000029	\\ \hline
+    Iter & 7 & 7  & 7 & 7 & 6 & 7 \\ \hline
+    \end{tabular}
+\end{center}
+$m=4$
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 500 & 1000  & 1500 & 2000 & 5000 & 8000 \\ \hline
+    E & 0.000018 & 0.000136& 0.000057& 0.000012 & 0.000030& 0.000009\\ \hline
+    Iter & 6 & 7  & 7 & 7 & 7 & 7 \\ \hline
+    \end{tabular}
+\end{center}
+$m=8$:
+\begin{center}
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    N & 500 & 1000  & 1500 & 2000 & 5000 & 8000 \\ \hline
+    E & 0.000041 & 0.000090 &0.000049 & 0.000023 & 0.000019 & 0.000010	\\ \hline
+    Iter & 6 & 7& 7 & 7 & 7 & 7 \\ \hline
+    \end{tabular}
+\end{center}
+We notice two things here. The first one is that the error is very small, and the second is that the number of iterations to reach this error is very low. This is not what we expect, since the penalty approach should only go to the real solution when $\mu$ goes to infinity. The reason for this anomaly we see by looking closer at the functional 
+\begin{align*}
+J(y,u) = \frac{1}{2}\int_0^T(u(t)-1)^2dt + \frac{1}{2}(y(T)-y^T)^2
+\end{align*}
+$J$ is here made up of two parts, the integral over the control \\$f(u)=\frac{1}{2}\int_0^T(u(t)-1)^2dt $, and the difference squared difference \\$g(y)= (y(T)-y^T)^2$. Since we have constructed our problem such that the $u$ that minimize $f$ is also the $u$ that minimizes $g$, minimizing $f$ is equivalent to minimizing $J$. When we set $\mu=0$, we will not be able to solve the adjoint equation on more than the last time interval. However since we still have the $f$ part of the gradient on the entire interval, we still are able to minimize $J$. This means that the examples I have used up until now are not good for understanding how the choice of $\mu$ affects the algorithm. 
+
 \begin{center}
 
 \LARGE Burgers equation
