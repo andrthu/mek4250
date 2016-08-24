@@ -620,7 +620,9 @@ class OptimalControlProblem():
                            options={'gtol': 1e-6, 'disp': False,
                                     'maxcor':10})
 
-            Result.append(res.copy())
+            Result.append(res)
+
+            x0 = res.x.copy()
 
         if len(Result)==1:
             return res

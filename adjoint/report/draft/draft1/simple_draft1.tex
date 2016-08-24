@@ -592,6 +592,43 @@ We notice two things here. The first one is that the error is very small, and th
 J(y,u) = \frac{1}{2}\int_0^T(u(t)-1)^2dt + \frac{1}{2}(y(T)-y^T)^2
 \end{align*}
 $J$ is here made up of two parts, the integral over the control \\$f(u)=\frac{1}{2}\int_0^T(u(t)-1)^2dt $, and the difference squared difference \\$g(y)= (y(T)-y^T)^2$. Since we have constructed our problem such that the $u$ that minimize $f$ is also the $u$ that minimizes $g$, minimizing $f$ is equivalent to minimizing $J$. When we set $\mu=0$, we will not be able to solve the adjoint equation on more than the last time interval. However since we still have the $f$ part of the gradient on the entire interval, we still are able to minimize $J$. This means that the examples I have used up until now are not good for understanding how the choice of $\mu$ affects the algorithm. 
+\\
+\\
+\textbf{Relation between $\mu$ and number of time partitions $m$}
+Generally one would assume that difference between the numerical solution of the optimization problem with and without penalty would increase when you increase the number of time interval partitions $m$. This seems to be the case as the following example illustrates. Lets solve the following problem:
+\begin{align*}
+J(y,u) =\frac{1}{2} \int_0^1 (u(t)-100)^2dt + \frac{1}{2}(y(1)-1)^2
+\end{align*}  
+with 
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	y' =  y +u\\
+       	   y(0)=1
+     \end{array}
+   \right.
+\end{align*}
+When solving this numerically I will use $\Delta t= \frac{1}{100}$ and $\mu=20$ for $m=\{1,2,4,8,16\}$ time interval partitions. I then calculate the square integral difference, between the solution of $m=1$ $u_1$and the other cases, i.e.
+\begin{align*}
+||u_1-u_m||_2^2 = \int_0^1 (u_1(t)-u_m(t))^2dt
+\end{align*} 
+This yields the following:
+\begin{center}
+    \begin{tabular}{| l | l |}
+    \hline
+    m & $ ||u_1-u_m||_2$ \\ \hline
+    2 & 2.33\\ \hline
+    4 & 6.98\\ \hline
+    8 & 15.09\\ \hline
+    16 & 24.90 \\ \hline
+    \end{tabular}
+\end{center}
+We see that increased $m$ increases the difference between the penalty and non-penalty solution. This fact is even clearer observed when looking at the plot of the different controls. 
+\begin{figure}
+  \includegraphics[width=\linewidth]{m_plots.png}
+  \caption{Same problem different ms}
+  \label{Fig 6}
+\end{figure}
 
 \begin{center}
 

@@ -379,8 +379,8 @@ if __name__ == "__main__":
     
     #mini_solver(y0,a,T,yT,n,m,my_list,show_output=True)
 
-    #test_mu_values()
-    test_MuLbfgs()
+    test_mu_values()
+    #test_MuLbfgs()
 
 """
 terminal>> python test_mu_values()
