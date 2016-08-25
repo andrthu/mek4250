@@ -347,11 +347,11 @@ if __name__ == "__main__":
     Tn = 30
     start = 0
     end = 0.5
-    mu = 10
+    mu = 1
     mesh = UnitIntervalMesh(n)
     V = FunctionSpace(mesh,"CG",1)
 
-    m = 5
+    m = 2
 
     ic = project(Expression("x[0]*(1-x[0])"),V)
     #ic = project(Expression("sin(pi*x[0])"),V)
@@ -367,9 +367,9 @@ if __name__ == "__main__":
     #D_P = double_adjoint_burger_solve(ic,lam_ic,start,end,V,Tn,mu)
     
 
-    opti(ic,start,end,V,Tn,mesh)
+    #opti(ic,start,end,V,Tn,mesh)
     #double_opti(ic,start,end,V,Tn,mesh,mu)
-    #general_opti(ic,start,end,V,Tn,mesh,mu,m)
+    general_opti(ic,start,end,V,Tn,mesh,mu,m)
     #print J(U,end-start)
     #print len(U),len(P)
     

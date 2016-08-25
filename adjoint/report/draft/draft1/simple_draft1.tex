@@ -723,8 +723,8 @@ When doing this one need to change the adjoint equation, but it is quite simple.
 \end{center}
 Lets look at the optimal control with PDE constraint problem, where the equation is the burgers equation:
 \begin{align*}
-u_t + uu_x - \nu u_{xx} &= 0 \ \text{for $(x,t)\in \Omega\times(0,\infty)$}\\
-u(x,t) &= h(x,t) \ \text{for $(x,t) \in\partial\Omega\times(0,\infty)$ } \\
+u_t + uu_x - \nu u_{xx} &= 0 \ \text{for $(x,t)\in \Omega\times(0,T)$}\\
+u(x,t) &= h(x,t) \ \text{for $(x,t) \in\partial\Omega\times(0,T)$ } \\
 u(x,0) &= g(x) \ \text{for $x \in\Omega$ }
 \end{align*} 
 Here $\Omega = (a,b)$. The functional is on the form:
@@ -773,7 +773,7 @@ If write this equation as en operator $E^i$, we get:
 \begin{align*}
 E^i &= u_t^i + u^iu_x^i - \nu u_{xx}^i +\delta_{t=T_{i-1}}(u^i-\lambda_{i-1}) + \delta_{\partial \Omega}(u^i-h)
 \end{align*}
-Now lets look at the gradient. The gradient expression for $m$ intervals is the same as for 2 intervals, however $\lambda$ is now a vector, i.e. $\lambda =(\lambda_1,...,\lambda_{m-1})$. First the gradient:
+Now lets look at the gradient. The gradient expression for $m$ intervals depends on both $g$ and $\lambda$, which is now a vector $\lambda =(\lambda_1,...,\lambda_{m-1})$. First the gradient:
 \begin{align*}
 \langle \hat{J}'(g,\lambda), (s,l)\rangle =\langle -(E_g+E_{\lambda})p , (s,l)\rangle + \langle J_g+J_{\lambda}, (s,l)\rangle
 \end{align*}

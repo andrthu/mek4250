@@ -78,14 +78,17 @@ class FenicsOptimalControlProblem():
     def J(self,opt,ic,U,start,end):
         raise NotImplementedError, 'J not implemented'
 
+    def penalty_grad_J(self,P,opt,ic,m,h):
+        raise NotImplementedError, 'penalty_grad_J not implemented'
+
     def penalty_J(self,opt,ic,U,start,end,tn,m,mu):
 
         
-        N,T=partition(start,end,Tn,m)
+        N,T=time_partition(start,end,Tn,m)
 
         s = 0
         for i in range(m):
-            s += self.J(opt,U[i][0],T[i],T[i+1])
+            s += self.J(opt,U[i][0],U[i],T[i],T[i+1])
         penalty = 0
         for i in range(len(U)-1):
             penalty = penalty +0.5*assemble((U[i][-1]-U[i+1][0])**2*dx)
@@ -105,7 +108,7 @@ class FenicsOptimalControlProblem():
 
         u = Function(self.V)
         v = TestFunction(self.V)
-
+        
         timestep = Constant((end-start)/float(Tn))
 
         F,bc = self.PDE_form(ic,opt,u,u_,v,timestep)
@@ -171,8 +174,8 @@ class FenicsOptimalControlProblem():
 
         U = []
         V = self.V
-
-        U.append(self.PDE_solver(ic,opt,T[0],T[1],V,N[0]))
+        #PDE_solver(self,ic,opt,start,end,Tn,show_plot=False)
+        U.append(self.PDE_solver(ic,opt,T[0],T[1],N[0]))
         for i in range(1,m):
             U.append(self.PDE_solver(lam_ic[i-1],opt,T[i],T[i+1],N[i]))
 
@@ -182,7 +185,7 @@ class FenicsOptimalControlProblem():
 
         N,T = time_partition(start,end,Tn,m)
     
-        U =  general_burger_solver(ic,lam_ic,start,end,V,Tn,m)
+        U =  self.penalty_PDE_solver(opti,ic,lam_ic,start,end,Tn,m)
         
         P = []
     
@@ -190,10 +193,11 @@ class FenicsOptimalControlProblem():
             P_ic = project((U[i][-1]-lam_ic[i])*Constant(mu),V)
             sta = T[i]
             en = T[i+1]
-            P.append(self.adjoint_interval_solver(opt,P_ic,U[i],sta,en,N[i]))
+            P.append(self.adjoint_interval_solver(opti,P_ic,U[i],sta,en,N[i]))
 
         P_ic = self.adjoint_ic(opt)
-        P.append(interval_adjoint(optP_ic,U[-1],T[-2],T[-1],N[-1]))
+        #adjoint_interval_solver(self,opt,p_ic,U,start,end,Tn):
+        P.append(self.adjoint_interval_solver(opti,P_ic,U[-1],T[-2],T[-1],N[-1]))
 
         return P
 
@@ -226,10 +230,10 @@ class FenicsOptimalControlProblem():
 
 
         solver = Lbfgs(J,grad_J,control0,options=Loptions)
-
+        
         res = solver.solve()
         x = Function(self.V)
-
+        
         x.vector()[:] = res['control'].array()
         plot(x)
         interactive()
@@ -240,10 +244,10 @@ class FenicsOptimalControlProblem():
 
         h = self.mesh.hmax()
         X = Function(self.V)
-        xN = len(C.vector().array())
-        
-
-        for i in range(len(mu_list)):
+        xN = len(ic.vector().array())
+        control0 = SimpleVector(self.get_control(opt,ic,m))
+        res =[]
+        for k in range(len(mu_list)):
             def J(x):
             
                 cont_e = len(x)-(m-1)*xN 
@@ -258,8 +262,9 @@ class FenicsOptimalControlProblem():
             
             
 
-                U = self.penalty_PDE_solver(loc_opt,loc_ic,lam_ic,start,end,Tn,m):
-                return self.penalty_J(loc_opt,loc_ic,U,start,end,tn,m,mu_list[i])
+                U = self.penalty_PDE_solver(loc_opt,loc_ic,lam,start,end,Tn,m)
+                mu = mu_list[k]
+                return self.penalty_J(loc_opt,loc_ic,U,start,end,Tn,m,mu)
         
             def grad_J(x):
 
@@ -267,18 +272,18 @@ class FenicsOptimalControlProblem():
                 lopt,lic = self.get_opt(x[:cont_e],opt,ic,m)
             
                 lam = []
-                lam.append(loc_ic)
+                lam.append(lic)
                 for i in range(m-1):
                     l = Function(self.V)
                     l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
                     lam.append(l.copy())
-                mu = mu_list[i]
+                mu = mu_list[k]
                 P=self.penalty_adjoint_solver(lic,lam,lopt,start,end,Tn,m,mu)
 
-                return self.penalty_grad_J(P,lopt,lic,h)
+                return self.penalty_grad_J(P,lopt,lic,m,h)
 
 
-            control0 = SimpleVector(self.get_control(opt,ic,m))
+            
 
             if Lbfgs_options==None:
                 Loptions = self.Lbfgs_options
@@ -290,8 +295,20 @@ class FenicsOptimalControlProblem():
 
             solver = Lbfgs(J,grad_J,control0,options=Loptions)
 
-            res = solver.solve()
-
+            res1 = solver.solve()
+            control0 = res1['control'].copy()
+            res.append(res1)
+        if len(res)==1:
+            x = Function(self.V)
+        
+            x.vector()[:] = res[0]['control'].array()[:xN]
+            plot(x)
+            interactive()
+            
+            return res[0]
+        
+        return res
+        
 
 class Burger1(FenicsOptimalControlProblem):
     
@@ -320,14 +337,10 @@ class Burger1(FenicsOptimalControlProblem):
             return ic.copy().vector().array()
         
         N = len(ic.vector().array())
-
         x = np.zeros(m*N)
+        x[:N] = ic.copy().vector().array()[:]
 
-        x[:N] = ic.copy().vector().array()
-
-        for i in range(m-1):
-
-            x[(i+1)*N:(i+2)
+        return x
         
     def get_opt(self,control,opt,ic,m):
 
@@ -350,7 +363,15 @@ class Burger1(FenicsOptimalControlProblem):
             s += assemble(U[i+1]**2*dx)
         s += 0.5*assemble(U[-1]**2*dx)
         return timestep*s
+    def penalty_grad_J(self,P,loc,ic,m,h):
+        xN = len(ic.vector().array())
         
+        grad = np.zeros(m*xN)
+        grad[:xN] = P[0][-1].vector().array().copy()[:]
+        for i in range(m-1):
+            grad[(i+1)*xN:(i+2)*xN] = project((P[i+1][-1]-P[i][0]),V).vector().array().copy()[:]
+        
+        return h*grad
         
 if __name__ == "__main__":
     set_log_level(ERROR)
@@ -371,6 +392,10 @@ if __name__ == "__main__":
 
     #test1.adjoint_solver(ic,opt,start,end,Tn)
 
-    res = test1.solver(opt,ic,start,end,Tn)
+    #res = test1.solver(opt,ic,start,end,Tn)
 
-    print res['iteration']
+    #print res['iteration']
+    
+    m=2
+
+    res2 = test1.penalty_solver(opt,ic,start,end,Tn,m,[1])
