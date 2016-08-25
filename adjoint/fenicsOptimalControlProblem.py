@@ -236,44 +236,62 @@ class FenicsOptimalControlProblem():
         return res
 
 
-    def pnalty_solver(self,opt,ic,start,end,Tn,m,mu_list,Lbfgs_options=None):
+    def penalty_solver(self,opt,ic,start,end,Tn,m,mu_list,Lbfgs_options=None):
 
         h = self.mesh.hmax()
         X = Function(self.V)
         xN = len(C.vector().array())
-
-        def J(x):
-            
-            cont_e = len(x)-(m-1)*xN 
-            loc_opt,loc_ic = self.get_opt(x[:cont_e],opt,ic,m)
-
-            lam = []
-            lam.append(loc_ic)
-            for i in range(m-1):
-                l = Function(self.V)
-                l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
-                lam.append(l.copy())
-            
-            
-
-            U = self.penalty_PDE_solver(loc_opt,loc_ic,lam_ic,start,end,Tn,m):
-            return self.penalty_J(loc_opt,loc_ic,U,start,end,tn,m,mu_list[0])
         
-        def grad_J(x):
 
-            cont_e = len(x)-(m-1)*xN 
-            lopt,lic = self.get_opt(x[:cont_e],opt,ic,m)
+        for i in range(len(mu_list)):
+            def J(x):
             
-            lam = []
-            lam.append(loc_ic)
-            for i in range(m-1):
-                l = Function(self.V)
-                l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
-                lam.append(l.copy())
-            mu = mu_list[0]
-            P=self.penalty_adjoint_solver(lic,lam,lopt,start,end,Tn,m,mu)
+                cont_e = len(x)-(m-1)*xN 
+                loc_opt,loc_ic = self.get_opt(x[:cont_e],opt,ic,m)
 
-            return self.penalty_grad_J(P,lopt,lic,h)
+                lam = []
+                lam.append(loc_ic)
+                for i in range(m-1):
+                    l = Function(self.V)
+                    l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
+                    lam.append(l.copy())
+            
+            
+
+                U = self.penalty_PDE_solver(loc_opt,loc_ic,lam_ic,start,end,Tn,m):
+                return self.penalty_J(loc_opt,loc_ic,U,start,end,tn,m,mu_list[i])
+        
+            def grad_J(x):
+
+                cont_e = len(x)-(m-1)*xN 
+                lopt,lic = self.get_opt(x[:cont_e],opt,ic,m)
+            
+                lam = []
+                lam.append(loc_ic)
+                for i in range(m-1):
+                    l = Function(self.V)
+                    l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
+                    lam.append(l.copy())
+                mu = mu_list[i]
+                P=self.penalty_adjoint_solver(lic,lam,lopt,start,end,Tn,m,mu)
+
+                return self.penalty_grad_J(P,lopt,lic,h)
+
+
+            control0 = SimpleVector(self.get_control(opt,ic,m))
+
+            if Lbfgs_options==None:
+                Loptions = self.Lbfgs_options
+            else:
+                Loptions = self.Lbfgs_options
+                for key, val in Lbfgs_options.iteritems():
+                    Loptions[key]=val
+
+
+            solver = Lbfgs(J,grad_J,control0,options=Loptions)
+
+            res = solver.solve()
+
 
 class Burger1(FenicsOptimalControlProblem):
     
@@ -298,9 +316,19 @@ class Burger1(FenicsOptimalControlProblem):
         return F,bc
 
     def get_control(self,opt,ic,m):
+        if m==1:
+            return ic.copy().vector().array()
         
-        return ic.copy().vector().array()
+        N = len(ic.vector().array())
 
+        x = np.zeros(m*N)
+
+        x[:N] = ic.copy().vector().array()
+
+        for i in range(m-1):
+
+            x[(i+1)*N:(i+2)
+        
     def get_opt(self,control,opt,ic,m):
 
         g = Function(self.V)
