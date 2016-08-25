@@ -778,5 +778,115 @@ We can also show that the gradient looks like the following:
 \langle \hat{J}'(g,\lambda), (s,l)\rangle &=\langle -(E_g+E_{\lambda})p , (s,l)\rangle + \langle J_g+J_{\lambda}, (s,l)\rangle \\
 &= \int_{\Omega} p^1(x,0)s(x)dx + \sum_{i=1}^{m-1}\int_{\Omega} (p^{i+1}(x,T_i)-p^i(x,T_i))l_i(x)dx
 \end{align*}
-
+\section{Extra stuff}
+I will add some things that I have done, that I don't think is that relevant, or that turned out to not work.
+\addcontentsline{toc}{section}{Augmented Lagrange}
+\section*{Augmented Lagrange}
+An alternative to the penalty method is the augmented Lagrange method. This method is similar to the penalty method, but it is apparently more stable. The main difference is in the functional, which now reads as:
+\begin{align*}
+J(y,u,\lambda) &= \int_0^T u^2 dt + \frac{1}{2}(y_n(T)-y_T)^2 + \frac{\mu}{2} \sum_{i=1}^n (y_{i-1}(T_i)-\lambda_i)^2 + \sum_{i=1}^n \Gamma_i(y_{i-1}(T_i)-\lambda_i) \\
+&= \int_0^T u^2 dt + \frac{1}{2}(y_n(T)-y_T)^2 +  (y_{i-1}(T_i)-\lambda_i)\sum_{i=1}^n (\Gamma_i+\frac{\mu}{2}(y_{i-1}(T_i)-\lambda_i))
+\end{align*}
+The difference is that we add non squared penalty terms with a Lagrange multiplication factor $\Gamma_i$. Since we change the functional, its derivative changes, however the only the $J_y$ and $J_{\lambda_i}$ terms change:
+\begin{align*}
+J_{\lambda_i}&= -\mu(y_{i-1}(T_i)-\lambda_i) -\Gamma_i\\
+J_y &= \delta_{T_{n+1}}(y_n(T_{n+1})-y_T) +  \sum_{i=1}^n \delta_{T_{i}}[\mu(y_{i-1}(T_i)-\lambda_i ) + \Gamma_i]
+\end{align*}
+This changes both the adjoint equations and the gradient. For the adjoint equations the change happens in the 'initial' condition:
+\begin{align*}
+-\frac{\partial }{\partial t}p_i &=p_i  \\
+p_i(T_{i+1}) &= \mu(y_{i}(T_{i+1})-\lambda_{i+1} ) + \Gamma_{i+1}
+\end{align*}
+For the gradient the change happens in the $\lambda$ part of the control:
+\begin{align*}
+\langle \hat{J}'(u,\lambda), (s,l)\rangle&=\langle -(E_u+E_{\lambda})p, (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
+&= \int_0^T (u+p)s \ dt +\sum_{i=1}^n[(p_{i}(T_i) -p_{i-1}(T_i) )- \Gamma_i]l_i
+\end{align*}
+The $\Gamma$ need to be updated for each iteration, i.e. each time we change $\mu$.
+\newpage
+\addcontentsline{toc}{section}{Comments on LBFGS and special Hessian update technique }
+\section*{Comments on LBFGS and special Hessian update technique}
+\textbf{General algorithm}
+\\
+The BFGS and L-BFGS are quasi-Newton methods for solving unconstrained optimization problems on the form:
+\begin{align*}
+\min_{x \in \mathbb{R}^n} J(x)
+\end{align*} 
+This can be looked on as solving the system of equations on the form \\$\nabla J(x) = F(x)=0$. Using the Newton method, that can be derived using Taylor series, we get the following iteration for solving the system:
+\begin{align*}
+x^{k+1} = x^k - F'(x^k)^{-1}F(x^k)
+\end{align*}
+Here $x^k \in \mathbb{R}^n$, $F:\mathbb{R}^n \rightarrow \mathbb{R}^n$ and $F':\mathbb{R}^{n\times n} \rightarrow \mathbb{R}^{n\times n}$. $F'$ is also the Hessian of $J$. The difference between Newton and BFGS is that we in BFGS approximate $F'(x)^{-1}$ with a matrix that we for each iteration update with information gained form current information. This means that we get a series of matrices $\{H^k\}$, that hopefully approximates the real hessian $H^kx^k \approx F'(x^k)^{-1}$. Without going into detail lets state the update formula for $H^k$:
+\begin{align*}
+H^{k+1} &= (\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k})H^k(\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k}) + \frac{s_k {s_k}^T}{\rho_k} \ \text{ where} \\
+s_k &= x^{k+1} - x^k \\
+y_k &= \nabla J(x^{k+1}) - \nabla J(x^k) \\
+\rho_k &= s_k^Ty_k
+\end{align*} 
+We also need an initial approximation $H^0$ to the inverted hessian. This is typically set to be $H^0 = \beta\mathbb{I}$, where $\mathbb{I}$ is the identity matrix and $\beta$ is some constant. The BFGS algorithm at step $k$ then looks like:
+\begin{align*}
+&\text{1. update control by:} \ x^{k+1}= x^{k} - H^kF(x^{k}) \\
+&\text{2. update $s_k$, $y_k$ and $\rho_k$ as described above} \\
+&\text{3. update $H$ by:} \ H^{k+1} = (\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k})H^k(\mathbb{I} - \frac{s_k {y_k}^T}{\rho_k}) + \frac{s_k {s_k}^T}{\rho_k}
+\end{align*}
+\textbf{L-BFGS}
+\\
+The difference between BFGS and L-BFGS is that one, in the L-BFGS case, base the approximation of the inverted Hessian on only the latest iterations. The size of the memory can wary. 
+\\
+\\
+\textbf{Optimal control with ODE constraints}
+\\
+We want to solve an optimal control problem with ODE constraints in parallel  using the penalty approach. The problem looks as follows:
+\begin{align*}
+\min_{u} J(y(u),u) &= \frac{1}{2}(\int_0^T u^2 dt + (y(T)-y_T)^2) \\
+y'(t) &= ay(t) +u(t) \\
+y(0) &=y_0
+\end{align*} 
+For the penalty approach we partition the time domain $[0,T]$ into $m+1$ intervals $\{[T_i,T_{i+1}]\}_{i=0}^m$, and solve the problem on each interval separately. To enforce continuity we add penalty terms to the $J$ functional. This leads to a new functional:
+\begin{align*}
+J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{2}(y_n(T)-y_T)^2 + \frac{\mu}{2} \sum_{i=1}^n (y_{i-1}(T_i)-\lambda_i)^2
+\end{align*}
+Here $y_i$ is the solution of the ODE restricted to interval $i$, and $\lambda = \{ \lambda_i\}_{i=1}^n$ are the initial values of $y_i$. Using the adjoint equations $p_i$, we get the following gradient for $J$ with respect to $u$ and $\lambda$:
+\begin{align*}
+\langle \hat{J}'(u,\lambda), (s,l)\rangle&=\int_0^T (u+p)s \ dt +\sum_{i=1}^n(p_{i}(T_i) -p_{i-1}(T_i) )l_i \\
+&= \int_0^T (u+p)s \ dt +\sum_{i=1}^n(p_{i}(T_i) -\mu(y_{i-1}(T_i)-\lambda_i) )l_i
+\end{align*} 
+If we discritize the time interval using $N$ points, we get the following control:
+\begin{align*}
+x = (u^1,...,u^N, \lambda_1, ...,\lambda_m)
+\end{align*}
+and the gradient:
+\begin{align*}
+\nabla J(x) &= (\Delta t (u^1+p^1),\Delta t (u^2+p^2),...,\Delta t (u^N+p^N),p_{1}(T_1) -p_{0}(0),..,p_{m}(T_m) -p_{m-1}(T_m)) \\
+&=(\Delta t (u^1+p^1),...,\Delta t (u^N+p^N),p_{1}(T_1) -\mu(y_{0}(T_1)-\lambda_1),..,p_{m}(T_m) -\mu(y_{m-1}(T_m)-\lambda_m)) \\
+&= (\Delta t\{u^j+p^j\}_{j=1}^N|p_i(T_i)) + \mu(\{0\}_{j=1}^N|\lambda_i - y_{i-1}(T_i))
+\end{align*}
+This expression for the gradient motivates a special initial Hessian approximation technique, where one for each $\mu$ iteration remember the Hessian, and then passes it on to the next iteration. We then use the previous Hessian with updated $\mu$ as initial Hessian $H_0$ instead of the identity.
+\\
+\\
+\textbf{Testing Hessian approximation technique} 
+\\
+For testing I solve the problem:
+\begin{align*}
+\min_{u} J(y(u),u) &= \frac{1}{2}(\int_0^1 u^2 dt + (y(1)-1)^2) \\
+y'(t) &= y(t) +u(t) \\
+y(0) &=1
+\end{align*}
+Numerically I solve the state equation and the adjoint equation using backward Euler method, and the trapezoidal rule for integration. I solved this problem without partitioning and penalties and with partition and penalty using both normal L-BFGS and L-BFGS with the $\mu$-trick. I partition the domain $I=[0,1]$ into ten uniform parts and use $N=2000$ and $N=3000$ points to discretize $I$. To measure the performance of the two penalty methods, I counted the number of iterations needed in the L-BFGS algorithm to reach the wanted tolerance. For both dizcritizations I used $\mu=0.1N$ and $\mu=0.5N$. I got the following results: 
+\begin{figure}
+  \includegraphics[width=\linewidth]{mufail2000.png}
+  \caption{The second iteration gives a solution closer to the non-penalty solution, as we would expect. However the control from the second iteration is less smooth than the control from the first iteration.}
+  \label{Fig 8}
+\end{figure}
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+     & iterations L-BFGS & iterations  L-BFGS + $\mu$-trick \\ \hline
+    $N=2000$ and $\mu=0.1N$ &  15 & 15 \\ \hline
+    $N=2000$ and $\mu=0.5N$&  16 &  28	\\ \hline
+    $N=3000$ and $\mu=0.1N$ &  15 & 15 \\ \hline
+    $N=3000$ and $\mu=0.5N$&  27 &  28	\\ \hline
+    \end{tabular}
+\end{center}
+I also added a plot of the controls I get from solving the problem using the $\mu$-trick compared with the control we get from not using any penalties. What both the iteration count and plot tells us is that the $\mu$-trick is not working very well. The number of iterations using is either the same or bigger than what we see for not using old Hessian. From the plot we also see that the solutions gets less smooth and distorted when using the $\mu$-trick. I have also done other tests, and they all yield similar results.
 \end{document}
