@@ -163,7 +163,7 @@ We also need $(E_y^i)^*$
 this means that $(E_y^i)^*=-\frac{\partial }{\partial t}-\alpha + \delta_{T_{i}}$. This gives us the following expressions for the adjoint equations:
 \\
 \\
-$i=n$ case:
+$i=m$ case:
 \begin{align*}
 -\frac{\partial }{\partial t}p_m &=\alpha p_m  \\
 p_m(T_{m}) &= y_m(T_{m})-y_T
@@ -623,14 +623,99 @@ This yields the following:
     16 & 24.90 \\ \hline
     \end{tabular}
 \end{center}
-We see that increased $m$ increases the difference between the penalty and non-penalty solution. This fact is even clearer observed when looking at the plot of the different controls. 
 \begin{figure}
   \includegraphics[width=\linewidth]{m_plots.png}
-  \caption{Same problem different ms}
+  \caption{Solution of the same problem using different number of time interval partitions.}
   \label{Fig 6}
 \end{figure}
-
+We see that increased $m$ increases the difference between the penalty and non-penalty solution. This fact is even clearer observed when looking at the plot of the different controls.
+\\
+\\
+By doing experiments, it seems that the  $||u_1-u_m||_2$ decreases when we increase $N=\frac{1}{\Delta t}$.  If we let the constant $C= \frac{N}{m}$ be fixed, and let $\mu=\beta N$, I will demonstrate that the $||u_1-u_m||_2$ error is similar for increased $m$. For the same problem as above, with $C=50$ and $\beta=0.2$, I got the following:
 \begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m &  N&$ ||u_1-u_m||_2$ \\ \hline
+    2 & 100 &2.33\\ \hline
+    4 & 200 &3.73\\ \hline
+    8 & 400 &4.46\\ \hline
+    16 & 800 &4.84 \\ \hline
+    \end{tabular}
+\end{center}
+\textbf{Number of lbfgs iterations and lbfgs memory}
+\\
+The entire point of parallelizing an algorithm is to decrease its runtime. To check if the penalty method actually achieves a speed-up, I will count the number of iterations the lbfgs algorithm uses to find a solution for both penalty and non-penalty problems. If the number of iterations divided by the number of time interval partitions for a penalty problem is lower than the number of iterations for the non-penalty problem, I will consider this as better performance. What i noticed when testing this is that the number of iterations the lbfgs algorithm needed to do, was related to the length of its memory. This will be demonstrated below: 
+\\
+\\   
+For the experiment I used the linear ODE $y'=y+u$ and the following functional: 
+\begin{align*}
+J(u,y)=\int_0^T (C_0u(t)-C_1)^2dt + (y(T)-y_T)^2
+\end{align*}
+This resulted in more iterations for the serial lbfgs. I used different combinations of $C_0$ and $C_1$, to get more results. Results for $C_0=2 $ and $C_1= 1000$ can be found below:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=3max(m,10)$\\ \hline
+    $m=1$  &  5 &  \\ \hline
+    $m=2$  &  6 &  6	\\ \hline
+    $m=4$ &  8 & 8 \\ \hline
+    $m=8$ &  Fail &  12	\\ \hline
+    $m=16$ &  Fail & 21 \\ \hline
+    $m=32$ &  Fail &  39	\\ \hline
+    \end{tabular}
+\end{center}
+Results for for $C_0=0.1 $ and $C_1= 100$:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=3max(m,10)$\\ \hline
+    $m=1$  &  11 &  \\ \hline
+    $m=2$  &  Fail &  12	\\ \hline
+    $m=4$ &  Fail & Fail \\ \hline
+    $m=8$ &  Fail &  28	\\ \hline
+    $m=16$ &  Fail & 35 \\ \hline
+    $m=32$ &  Fail &  51	\\ \hline
+    \end{tabular}
+\end{center}
+Results for for $C_0=2 $ and $C_1= -1$:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=3max(m,10)$\\ \hline
+    $m=1$  &  4 &  \\ \hline
+    $m=2$  &  5 &  5	\\ \hline
+    $m=4$ &  17 & 17 \\ \hline
+    $m=8$ &  22 &  20	\\ \hline
+    $m=16$ &  51 & 28 \\ \hline
+    $m=32$ &  100 &  43	\\ \hline
+    \end{tabular}
+\end{center}
+\textbf{Non-linear example}
+\\
+To make the problem more difficult we can change the functional by increasing the power of the $y(T)-yT$ term in the following way:
+\begin{align*}
+J(u,y) = \int_0^T (C_0u(t)-C_1)^2dt + \frac{1}{4}(y(T)-y_T)^4
+\end{align*}
+When doing this one need to change the adjoint equation, but it is quite simple. Here is a result of solving this problem using $C_0=1 $ and $C_1= 0.5$:
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    m\textbackslash L-BFGS memory & $mem =\max(m,10)$& $mem=3max(m,10)$\\ \hline
+    $m=1$  &  14 &  \\ \hline
+    $m=2$  &  16 & 21 	\\ \hline
+    $m=4$ &  22 & 21 \\ \hline
+    $m=8$ &  Fail &  28	\\ \hline
+    $m=16$ &  Fail & 28 \\ \hline
+    $m=32$ &  124 &  52	\\ \hline
+    \end{tabular}
+\end{center}
+\begin{figure}
+  \includegraphics[width=\linewidth]{non_linY.png}
+  \caption{Plot of control for different m values, that are the result of the non-linear problem I have iteration results for below. }
+  \label{Fig 7}
+\end{figure}
+\begin{center}
+
 
 \LARGE Burgers equation
 

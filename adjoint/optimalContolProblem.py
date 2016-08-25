@@ -652,6 +652,43 @@ class OptimalControlProblem():
         plt.legend(['adjoint','finite diff'])
         plt.show()
 
+
+    def mu_to_N_relation(self,C,gamma):
+
+        M = [2,4,8,16]
+        import matplotlib.pyplot as plt
+
+        fig,axs = plt.subplots(2, 2)
+        for i in range(len(M)):
+
+            N = C*M[i]
+            mu = gamma*N
+            
+            t = np.linspace(0,self.T,N+1)
+
+            res1 = self.scipy_solver(N)
+            res2 = self.scipy_penalty_solve(N,M[i],[mu])
+
+            e = np.sqrt(trapz((res1.x-res2.x[:N+1])**2,t))
+
+            print
+            print "number of procesess: %d" % M[i]
+            print "number of time intervals: %d" % N
+            print "number of iterations needed: %d and %d" % (res1.nit,res2.nit)
+            print "L2 diffrence between normal and penalty approach: %.2e"% e
+            print
+        
+
+            x1 = i/2
+            x2= i%2
+            axs[x1,x2].plot(t,res1.x)
+            axs[x1,x2].plot(t,res2.x[:N+1])
+            axs[x1,x2].legend(['serial','penalty'])
+            axs[x1,x2].set_title('m='+str(M[i])+' N='+str(N)+' my='+str(mu))
+            axs[x1,x2].set_xlabel("t")
+            axs[x1,x2].set_ylabel("control")
+        plt.show()
+
         
 class Problem1(OptimalControlProblem):
     """
