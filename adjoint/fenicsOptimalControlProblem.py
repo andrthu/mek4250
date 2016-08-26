@@ -47,7 +47,7 @@ class FenicsOptimalControlProblem():
         """
         default options for LGFGS
         """
-        default = {"jtol"                   : 1e-6,
+        default = {"jtol"                   : 1e-4,
                    "maxiter"                : 500,
                    "mem_lim"                : 10,
                    "Vector"                 : SimpleVector,
@@ -240,81 +240,16 @@ class FenicsOptimalControlProblem():
         return res
 
 
-    def penalty_solver(self,opt,ic,start,end,Tn,m,mu_list,Lbfgs_options=None):
+    def penalty_solver(self,opt,ic,start,end,Tn,m,mu_list,
+                       my_lbfgs=False,Lbfgs_options=None):
 
-        h = self.mesh.hmax()
-        X = Function(self.V)
-        xN = len(ic.vector().array())
-        control0 = SimpleVector(self.get_control(opt,ic,m))
-        res =[]
-        for k in range(len(mu_list)):
-            def J(x):
-            
-                cont_e = len(x)-(m-1)*xN 
-                loc_opt,loc_ic = self.get_opt(x[:cont_e],opt,ic,m)
-
-                lam = []
-                
-                for i in range(m-1):
-                    l = Function(self.V)
-                    l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
-                    lam.append(l.copy())
-            
-            
-
-                U = self.penalty_PDE_solver(loc_opt,loc_ic,lam,start,end,Tn,m)
-                mu = mu_list[k]
-                return self.penalty_J(loc_opt,loc_ic,U,start,end,Tn,m,mu)
-        
-            def grad_J(x):
-
-                cont_e = len(x)-(m-1)*xN 
-                lopt,lic = self.get_opt(x[:cont_e],opt,ic,m)
-            
-                lam = []
-                
-                for i in range(m-1):
-                    l = Function(self.V)
-                    l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
-                    lam.append(l.copy())
-                mu = mu_list[k]
-                P=self.penalty_adjoint_solver(lic,lam,lopt,start,end,Tn,m,mu)
-
-                return self.penalty_grad_J(P,lopt,lic,m,h)
-
-
-            
-
-            if Lbfgs_options==None:
-                Loptions = self.Lbfgs_options
-            else:
-                Loptions = self.Lbfgs_options
-                for key, val in Lbfgs_options.iteritems():
-                    Loptions[key]=val
-
-
-            solver = Lbfgs(J,grad_J,control0,options=Loptions)
-
-            res1 = solver.solve()
-            control0 = res1['control'].copy()
-            res.append(res1)
-        if len(res)==1:
-            x = Function(self.V)
-        
-            x.vector()[:] = res[0]['control'].array()[:xN]
-            plot(x)
-            interactive()
-            
-            return res[0]
-        
-        return res
-
-
-    def scipy_penalty_solver(self,opt,ic,start,end,Tn,m,mu_list,Lbfgs_options=None):
         h = self.mesh.hmax()
         X = Function(self.V)
         xN = len(ic.vector().array())
         control0 = self.get_control(opt,ic,m)
+        if my_lbfgs:
+            control0 = SimpleVector(control0)
+        
         res =[]
         for k in range(len(mu_list)):
             def J(x):
@@ -361,23 +296,26 @@ class FenicsOptimalControlProblem():
                 for key, val in Lbfgs_options.iteritems():
                     Loptions[key]=val
 
+            if my_lbfgs:
+                solver = Lbfgs(J,grad_J,control0,options=Loptions)
 
-            res1 = Mini(J,control0.copy(),method='L-BFGS-B', 
+                res1 = solver.solve()
+                control0 = res1['control'].copy()
+            else:
+                res1 = Mini(J,control0.copy(),method='L-BFGS-B', 
                        jac=grad_J,options={'gtol': 1e-6, 'disp': True})
+                control0 = res1.x.copy()
 
-            
-            control0 = res1.x.copy()
+
             res.append(res1)
         if len(res)==1:
-            x = Function(self.V)
-        
-            x.vector()[:] = res[0].x[:xN]
-            plot(x)
-            interactive()
             
             return res[0]
         
         return res
+
+
+    
 
 class Burger1(FenicsOptimalControlProblem):
     
@@ -466,13 +404,41 @@ if __name__ == "__main__":
     #print res['iteration']
     
     m=2
-    
-    res2 = test1.scipy_penalty_solver(opt,ic,start,end,Tn,m,[1])
+    my_l=False 
+    res2 = test1.penalty_solver(opt,ic,start,end,Tn,m,[10]),my_lbfgs=my_l)
     
     l = Function(V)
     
-    l.vector()[:] = res2.x[41:]
+    l.vector()[:] = res2.x[:41]
     plot(l)
     interactive()
 
     
+"""
+
+class focp(FenicsOptimalControlProblem):
+
+    def adjoint_ic(self,opt):
+        raise NotImplementedError, 'adjoint_ic not implemented'
+
+    def PDE_form(self,ic,opt,u,u_,v,timestep):
+        raise NotImplementedError, 'PDE_form not implemented'
+
+    def adjoint_form(self,opt,u,p,p_,v,timestep):
+        raise NotImplementedError, 'adjoint_form not implemented'
+
+    def get_control(self,opt,ic,m):
+        raise NotImplementedError, 'get_control not implemented'
+
+    def get_opt(self,control,opt,ic,m):
+        raise NotImplementedError, 'get_opt not implemented'
+
+    def grad_J(self,P,opt,ic,h):
+        raise NotImplementedError, 'grad_J not implemented'
+    
+    def J(self,opt,ic,U,start,end):
+        raise NotImplementedError, 'J not implemented'
+
+    def penalty_grad_J(self,P,opt,ic,m,h):
+        raise NotImplementedError, 'penalty_grad_J not implemented'
+"""
