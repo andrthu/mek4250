@@ -570,7 +570,7 @@ class OptimalControlProblem():
             plt.xlabel('time')
             plt.ylabel('controls')
             plt.show()
-    def scipy_solver(self,N,disp=False):
+    def scipy_solver(self,N,disp=False,options=None):
         """
         solve the problem using scipy LBFGS instead of self made LBFGS
         """
@@ -584,12 +584,20 @@ class OptimalControlProblem():
             l = self.adjoint_solver(u,N)
             return self.grad_J(u,l,dt)
 
+
+        opt={'gtol': 1e-6, 'disp': False,'maxcor':10}
+        
+        if options!=None:
+            for key, val in options.iteritems():
+                opt[key] = val
+
+        
         res = minimize(J,np.zeros(N+1),method='L-BFGS-B', jac=grad_J,
-                       options={'gtol': 1e-6, 'disp': disp})
+                       options=opt)
         
         return res
 
-    def scipy_penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None):
+    def scipy_penalty_solve(self,N,m,my_list,x0=None,options=None):
         
         dt=float(self.T)/N
         if x0==None:
@@ -615,10 +623,14 @@ class OptimalControlProblem():
                     g[N+1+j]= l[j+1][0] - l[j][-1]
                     
                 return g
+            opt={'gtol': 1e-6, 'disp': False,'maxcor':10}
+        
+            if options!=None:
+                for key, val in options.iteritems():
+                    opt[key] = val
 
             res = minimize(J,x0,method='L-BFGS-B', jac=grad_J,
-                           options={'gtol': 1e-6, 'disp': False,
-                                    'maxcor':10})
+                           options=opt)
 
             Result.append(res)
 

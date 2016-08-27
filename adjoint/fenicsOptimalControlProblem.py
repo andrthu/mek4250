@@ -201,7 +201,7 @@ class FenicsOptimalControlProblem():
 
         return P
 
-    def solver(self,opt,ic,start,end,Tn,Lbfgs_options=None):
+    def solver(self,opt,ic,start,end,Tn,my_lbfgs=False,Lbfgs_options=None):
         h = self.mesh.hmax()
         
         def J(x):
@@ -219,24 +219,25 @@ class FenicsOptimalControlProblem():
             return self.grad_J(P,loc_opt,loc_ic,h)
 
 
-        control0 = SimpleVector(self.get_control(opt,ic,1))
+        control0 = self.get_control(opt,ic,1)
+        if my_lbfgs:
+            control0 = SimpleVector(control0)
 
-        if Lbfgs_options==None:
-            Loptions = self.Lbfgs_options
+            if Lbfgs_options==None:
+                Loptions = self.Lbfgs_options
+            else:
+                Loptions = self.Lbfgs_options
+                for key, val in Lbfgs_options.iteritems():
+                    Loptions[key]=val
+
+
+            solver = Lbfgs(J,grad_J,control0,options=Loptions)
+        
+            res = solver.solve()
         else:
-            Loptions = self.Lbfgs_options
-            for key, val in Lbfgs_options.iteritems():
-                Loptions[key]=val
-
-
-        solver = Lbfgs(J,grad_J,control0,options=Loptions)
-        
-        res = solver.solve()
-        x = Function(self.V)
-        
-        x.vector()[:] = res['control'].array()
-        plot(x)
-        interactive()
+            res = Mini(J,control0.copy(),method='L-BFGS-B', 
+                       jac=grad_J,options={'gtol': 1e-6, 'disp': True})
+            
         return res
 
 
@@ -302,8 +303,8 @@ class FenicsOptimalControlProblem():
                 res1 = solver.solve()
                 control0 = res1['control'].copy()
             else:
-                res1 = Mini(J,control0.copy(),method='L-BFGS-B', 
-                       jac=grad_J,options={'gtol': 1e-6, 'disp': True})
+                res1 = Mini(J,control0.copy(),method='L-BFGS-B',jac=grad_J,
+                            options={'gtol': 1e-6, 'disp': True,'maxcor':10})
                 control0 = res1.x.copy()
 
 
@@ -395,24 +396,24 @@ if __name__ == "__main__":
     end = 0.5
     Tn = 30
     
-    #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
+    test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
 
-    #test1.adjoint_solver(ic,opt,start,end,Tn)
+    test1.adjoint_solver(ic,opt,start,end,Tn)
 
-    #res = test1.solver(opt,ic,start,end,Tn)
+    res = test1.solver(opt,ic,start,end,Tn)
 
-    #print res['iteration']
     
-    m=2
+    
+    m=10
     my_l=False 
-    res2 = test1.penalty_solver(opt,ic,start,end,Tn,m,[10]),my_lbfgs=my_l)
+    res2 = test1.penalty_solver(opt,ic,start,end,Tn,m,[10],my_lbfgs=my_l)
     
     l = Function(V)
     
     l.vector()[:] = res2.x[:41]
     plot(l)
     interactive()
-
+    
     
 """
 

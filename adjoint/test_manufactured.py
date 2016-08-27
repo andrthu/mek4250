@@ -193,7 +193,9 @@ def test_manufactured_resultChange_solution():
     error = []
     error2=[[],[],[]]
     M=[2,4,8]
+    
 
+    opt={'gtol': 1e-6, 'disp': False,'maxcor':10}
 
     fig,ax = plt.subplots(2, 2)
     teller = -1
@@ -205,7 +207,7 @@ def test_manufactured_resultChange_solution():
         #u = np.zeros(N+1)
         #problem.finite_diff(u,N)
 
-        res = problem.scipy_solver(N,disp=False)
+        res = problem.scipy_solver(N,disp=False,options=opt)
         
         err = max(abs(res.x-solution))
         error.append(err)
@@ -217,9 +219,9 @@ def test_manufactured_resultChange_solution():
             teller += 1
             ax[teller/2,teller%2].plot(t,res.x)
 
-
+        
         for i in range(len(M)):
-            res2 = problem.scipy_penalty_solve(N,M[i],[1])
+            res2 = problem.scipy_penalty_solve(N,M[i],[1],options=opt)
 
             err2 = max(abs(res2.x[:N+1]-solution))
             print "m=%d: err=%f for N=%d and iter=%d"%(M[i],err2,N,res2.nit)
@@ -278,8 +280,8 @@ def test_sin_solution():
 if __name__ == "__main__":
 
     #test_sin_solution()
-    test_manufactured_solution()
-    test_quadratic_manufactured_solution()
+    #test_manufactured_solution()
+    #test_quadratic_manufactured_solution()
     test_manufactured_resultChange_solution()
 
     
