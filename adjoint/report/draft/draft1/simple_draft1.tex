@@ -7,7 +7,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
  
-\usepackage[nottoc]{tocbibind}
+\usepackage{biblatex}
+\addbibresource{maday.bib}
 
 
 
@@ -901,7 +902,6 @@ Numerically I solve the state equation and the adjoint equation using backward E
     \end{tabular}
 \end{center}
 I also added a plot of the controls I get from solving the problem using the $\mu$-trick compared with the control we get from not using any penalties. What both the iteration count and plot tells us is that the $\mu$-trick is not working very well. The number of iterations using is either the same or bigger than what we see for not using old Hessian. From the plot we also see that the solutions gets less smooth and distorted when using the $\mu$-trick. I have also done other tests, and they all yield similar results.
-\bibliographystyle{unsrt}
-\addcontentsline{toc}{section}{References}
-\bibliography{maday}
+\printbibliography
+
 \end{document}
