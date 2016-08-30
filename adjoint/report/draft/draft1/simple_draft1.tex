@@ -7,8 +7,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
  
-\usepackage{biblatex}
-\addbibresource{maday.bib}
+\usepackage{cite}
 
 
 
@@ -28,8 +27,10 @@
 \begin{document}
 \maketitle
 \tableofcontents
-\section{General problem}
-lol \cite{maday2002parareal}
+\addcontentsline{toc}{section}{References}
+\bibliography{maday}
+\bibliographystyle{plain}
+lol \cite{maday2002parareal,rao2016time}
 Looking at an optimal control problem $$\underset{y,u}{\text{min}} \ J(y,u) \ \text{subject to} \ E(y,u)=0$$ Where $u \in U$ is the control and $y \in Y$ is the state that depends on $u$. Usually $u$ and $y$ are functions, and $U$ and $Y$ are either Hilbert or Banach spaces. I will not go into detail about these spaces, but they are mostly chosen to fit the differential equation $E$, which is an operator on $U\times Y$.
 \\
 \\
@@ -902,6 +903,6 @@ Numerically I solve the state equation and the adjoint equation using backward E
     \end{tabular}
 \end{center}
 I also added a plot of the controls I get from solving the problem using the $\mu$-trick compared with the control we get from not using any penalties. What both the iteration count and plot tells us is that the $\mu$-trick is not working very well. The number of iterations using is either the same or bigger than what we see for not using old Hessian. From the plot we also see that the solutions gets less smooth and distorted when using the $\mu$-trick. I have also done other tests, and they all yield similar results.
-\printbibliography
+
 
 \end{document}
