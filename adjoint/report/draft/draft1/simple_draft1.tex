@@ -30,13 +30,32 @@
 \addcontentsline{toc}{section}{References}
 \bibliography{maday}
 \bibliographystyle{plain}
-lol \cite{maday2002parareal,rao2016time,rao2014adjoint}
+lel\cite{maday2002parareal,rao2016time,rao2014adjoint}
+\\
+In the paper \cite{maday2002parareal}, Maday and Turinici presents a way to solve a control problem with partial differential evolution constraints in parallel using parareal. The problem they look at is the following:
+\begin{align*}
+J(y,u) = \frac{1}{2}\int_0^T||u(t)||_U^2dt + \frac{\alpha}{2}||y(T)-y^T||^2
+\end{align*} 
+For the equation:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	\frac{\partial y}{\partial t}+Ay = Bu\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align*}
+They parallelize in time, by dividing up the time interval and enforcing continuity by adding a penalty to the functional. They then derive the adjoint equation and the gradient for the functional. The idea of parareal, is to sequentially solve a differential equation on a coarser mesh, and then using this solution to solve the same equation in parallel. 
+\\
+\\
+In \cite{rao2016time} the authors propose a augmented Lagrangian approach for time-parallel 4d variational data assimilation. This is basically a optimal control problem with PDE constraints. The augmented Lagrangian method is a modification of the penalty method for unconstrained optimization. Algorithms for calculating the modified functional and the gradient of the modified functional is derived, and the method is tested on a problem.    
+\section{General Problem}
 Looking at an optimal control problem $$\underset{y,u}{\text{min}} \ J(y,u) \ \text{subject to} \ E(y,u)=0$$ Where $u \in U$ is the control and $y \in Y$ is the state that depends on $u$. Usually $u$ and $y$ are functions, and $U$ and $Y$ are either Hilbert or Banach spaces. I will not go into detail about these spaces, but they are mostly chosen to fit the differential equation $E$, which is an operator on $U\times Y$.
 \\
 \\
 Differentiating $J$ is required for solving the problem. To do this we reduce $J$ to $\hat{J}(u) = J(y(u),u) $ and compute its gradient in direction $s \in U$. Will use the notation: $\langle\hat{J}'(u),s\rangle$ for the gradient.
 \begin{align*}    
-\langle\hat{J}'(u),s\rangle &= \langle\frac{\partial J(y(u),u)}{\partial u},s\rangle \\ &= \langle \frac{\partial y(u)}{\partial u}^*J_y(y(u),u),s\rangle + \langle J_u(y(u),u),s\rangle \\ &= \langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle
+\langle\hat{J}'(u),s\rangle &= \langle DJ(y(u),u) ,s\rangle \\ &= \langle \frac{\partial y(u)}{\partial u}^*J_y(y(u),u),s\rangle + \langle J_u(y(u),u),s\rangle \\ &= \langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle
 \end{align*}
 Here $\langle\cdot,\cdot\rangle$ is the $U$ inner product. The difficult term in the expression above is $y'(u)^*$, so lets first differentiate $E(y(u),u)=0$ with respect to $u$, and try to find an expression for $y'(u)^*$: 
 \begin{align*}
