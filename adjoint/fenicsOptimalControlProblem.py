@@ -390,13 +390,13 @@ if __name__ == "__main__":
 
     test1 = Burger1(V,mesh)
 
-    opt = {'nu' : 0.0001}
+    opt = {'nu' : 0.1}
     ic = project(Expression("x[0]*(1-x[0])"),V)
     start = 0
     end = 0.5
     Tn = 30
     
-    test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
+    #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
 
     test1.adjoint_solver(ic,opt,start,end,Tn)
 
