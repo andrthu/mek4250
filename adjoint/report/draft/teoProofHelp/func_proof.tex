@@ -1,0 +1,120 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+ 
+\usepackage{cite}
+
+
+\newtheorem{theorem}{Theorem}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+
+
+
+\begin{document}
+\section{General Problem}
+Looking at an optimal control problem $$\underset{y,u}{\text{min}} \ J(y,u) \ \text{subject to} \ E(y,u)=0$$ Where $u \in U$ is the control and $y \in Y$ is the state that depends on $u$. Usually $u$ and $y$ are functions, and $U$ and $Y$ are either Hilbert or Banach spaces. I will not go into detail about these spaces, but they are mostly chosen to fit the differential equation $E$, which is an operator on $U\times Y$.
+\\
+\\
+Differentiating $J$ is required for solving the problem. To do this we reduce $J$ to $\hat{J}(u) = J(y(u),u) $ and compute its gradient in direction $s \in U$. Will use the notation: $\langle\hat{J}'(u),s\rangle$ for the gradient.
+\begin{align*}    
+\langle\hat{J}'(u),s\rangle &= \langle DJ(y(u),u) ,s\rangle \\ &= \langle \frac{\partial y(u)}{\partial u}^*J_y(y(u),u),s\rangle + \langle J_u(y(u),u),s\rangle \\ &= \langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle
+\end{align*}
+Here $\langle\cdot,\cdot\rangle$ is the $U$ inner product. The difficult term in the expression above is $y'(u)^*$, so lets first differentiate $E(y(u),u)=0$ with respect to $u$, and try to find an expression for $y'(u)^*$: 
+\begin{align*}
+\frac{\partial}{\partial u}E(y(u),u)=0 &\Rightarrow E_y(y(u),u)y'(u)=-E_u(y(u),u) \\ &\Rightarrow y'(u)=-E_y(y(u),u)^{-1}E_u(y(u),u) \\ &\Rightarrow y'(u)^* = -E_u(y(u),u)^*E_y(y(u),u)^{-*}
+\end{align*} 
+By inserting our new expression for $y'(u)^*$ into $y'(u)^*J_y(u)$, we get:
+\begin{align*}
+y'(u)^*J_y(u)&=-E_u(y(u),u)^*E_y(y(u),u)^{-*}J_y(u) \\
+&=-E_u(y(u),u)^*p
+\end{align*}
+p is here the solution of the adjoint equation 
+\begin{gather*}
+E_y(y(u),u)^{*}p=J_y(u)
+\end{gather*}
+If we can solve this equation for p, the gradient of $\hat{J}$ will be given by the following formula:  
+\begin{gather}
+\langle\hat{J}'(u),s\rangle=\langle -E_u(y(u),u)p,s\rangle +\langle J_u(u),s\rangle
+\end{gather} 
+\section{Optimal control with ODE constraints}
+Lets try to derive the adjoint equation and the gradient, when we let $E(y,u)$ be the following ODE:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	y'(t)=\alpha y(t) +u(t), \ t \in (0,T)\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align*}
+We also choose the functional to be
+\begin{align*}
+J(y,u) = \frac{1}{2}\int_0^Tu(t)^2dt + \frac{1}{2}(y(T)-y^T)^2
+\end{align*}
+Before we calculate the different terms in the gradient, we want to fit our ODE into an expression $E$. we do this by formulating our ODEs weak form: 
+\begin{align*}
+E(y,v) = \int_0^T(y'(t)-\alpha y(t) - u(t))v(t)dt
+\end{align*}
+Here the $\delta_0$ means evaluation at $0$. Now  lets find $E_u$, $E_y$, $ \langle J_u(u),s\rangle$ and $J_y$ with respect to our $E$ and $J$.
+\begin{align*}
+E_u(y,v)&=-(\cdot,v) \\
+E_y(y,v)&=((\frac{\partial}{\partial t} - \alpha)\cdot,v) \\
+\langle J_u(u),s\rangle &= \int_0^T u(t)s(t) dt 
+\end{align*}
+Lets be more thorough with $J_y$, which is the right hand side in the adjoint equation.
+\begin{align*}
+J_y(y(u),u) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tu^2dt + \frac{1}{2}(y(T)-y^T)^2) \\ &= \frac{\partial}{\partial y} \frac{1}{2}(y(T)-y^T)^2 \\
+&= \frac{\partial}{\partial y}\frac{1}{2}(\int_0^T \delta_T(y-y^T)dt)^2 \\
+&= \delta_T\int_0^T \delta_T(y(t)-y^T)dt \\
+&= \delta_T(y(T)-y^T)=L
+\end{align*}
+We have $E_y(y(u),u)=\frac{\partial}{\partial t} - \alpha + \delta_0$, but for the adjoint equation we need to find $E_y^*$.
+To derive the adjoint of $E_y$, we will apply it to a function $v$ and then take the $L^2$ inner product with another function $w$. The next step is then to try to "move" the operator $E_y$ from $v$ to $w$. As becomes clear below, partial integration is the main trick to achieve this: 
+\begin{align*}
+\langle E_yv,w \rangle &=  \int_0^T(v'(t)-\alpha v(t)+\delta_0v(t))w(t)dt \\ &= \int_0^Tv'(t)w(t)dt -\alpha\int_0^Tv(t)w(t) dt +v(0)w(0) \\
+& = -\int_0^Tv(t)w'(t)dt +v(t)w(t)|_0^T-\alpha\langle v,w\rangle +v(0)w(0) \\
+&=-\int_0^Tv(t)w'(t)dt -\alpha\langle v,w\rangle +v(T)w(T) \\
+&= \langle v,Pw \rangle
+\end{align*} 
+Where $P=-\frac{\partial}{\partial t} -\alpha + \delta_T$. This means that $E_y^* = P$, and we now have the left hand side in the adjoint equation. The right hand side is $J_y(y(u),u)=L$, which we have already found. If we write the  adjoint equation on variational form it will look like this: $\langle Pp,w\rangle = \langle L,w\rangle$. To get back to standard ODE form, we can do some manipulation: 
+\begin{align*}
+\langle -p'-\alpha p +\delta_T p,w \rangle &= \langle \delta_T(y(T)-y^T),w\rangle \\
+\langle -p'-\alpha p ,w \rangle &= \langle \delta_T(y(T)-y^T -p),w\rangle
+\end{align*}
+The right hand side is point evaluation at $t=T$, while the left hand side is an expression for all $t$. This finally gives us our adjoint equation: 
+\begin{align*}
+   \left\{
+     \begin{array}{lr}
+       -p'(t) = \alpha p(t) \\
+       p(T) = y(T)-y^T
+     \end{array}
+   \right.
+\end{align*}
+This is a simple and easily solvable ODE.
+\\
+\\
+\textbf{Expression for the gradient}
+\\
+We now have all the ingredients for finding an expression for the gradient of $\hat{J}$. If we remember that $\langle\hat{J}'(u),s\rangle=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle$, and all the different expressions for all the terms we calculated, we find:
+\begin{align*}
+\langle\hat{J}'(u),s\rangle&=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle \\ &=\langle -E_u^*p,s\rangle +\langle J_u(u),s\rangle \\
+&=\langle -(-1)^*p,s\rangle +\langle u,s\rangle \\
+&=\langle p+u,s\rangle \\
+&= \int_0^T(p(t)+u(t))s(t)dt
+\end{align*} 
+Note that the adjoint of a constant is just the constant itself.
+\addcontentsline{toc}{section}{Parallelizeing in time using the penalty method}
+\end{document}
