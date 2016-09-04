@@ -64,7 +64,17 @@ We also choose the functional to be
 \begin{align*}
 J(y,u) = \frac{1}{2}\int_0^Tu(t)^2dt + \frac{1}{2}(y(T)-y^T)^2
 \end{align*}
-Before we calculate the different terms in the gradient, we want to fit our ODE into an expression $E$. we do this by formulating our ODEs weak form: 
+\begin{theorem}
+The adjoint equation of the above problem is:
+\begin{align*}     
+-p'(t) &= \alpha p(t) \\
+p(T) &= y(T)-y^T     
+\end{align*}
+\end{theorem}
+\begin{proof}
+
+
+Before we calculate the different terms in the gradient, we want to fit our ODE into an expression $E$. We do this by "moving" the initial condition into the equation:: 
 \begin{align*}
 E(y,v) = \int_0^T(y'(t)-\alpha y(t) - u(t))v(t)dt
 \end{align*}
@@ -104,8 +114,7 @@ The right hand side is point evaluation at $t=T$, while the left hand side is an
    \right.
 \end{align*}
 This is a simple and easily solvable ODE.
-\\
-\\
+\end{proof}
 \textbf{Expression for the gradient}
 \\
 We now have all the ingredients for finding an expression for the gradient of $\hat{J}$. If we remember that $\langle\hat{J}'(u),s\rangle=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle$, and all the different expressions for all the terms we calculated, we find:
