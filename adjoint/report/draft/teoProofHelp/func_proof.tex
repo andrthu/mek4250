@@ -72,39 +72,38 @@ p(T) &= y(T)-y^T
 \end{align*}
 \end{theorem}
 \begin{proof}
-
-
-Before we calculate the different terms in the gradient, we want to fit our ODE into an expression $E$. We do this by "moving" the initial condition into the equation:: 
+Before we calculate the different terms used to derive the adjoint equation, we want to fit our ODE into an expression $E$. We do this by writing up the weak formulation of the equation:
+\begin{gather*}
+L[y,\phi] = \int_0^Ty(t)\phi'(t)+\alpha y(t)\phi(t)dt +y(0)\phi(0)=- \int_0^Tu(t)\phi(t)=R[u,\phi]\\ \forall \ \phi \in C^{\infty}_c([0,T))
+\end{gather*}
+To derive the adjoint we need $E_y$ and $J_y$. For $E_y$ we define $(\cdot,\cdot)$ to be the $L^2$ inner product over $(0,T)$. This gives us:
 \begin{align*}
-E(y,v) = \int_0^T(y'(t)-\alpha y(t) - u(t))v(t)dt
-\end{align*}
-Here the $\delta_0$ means evaluation at $0$. Now  lets find $E_u$, $E_y$, $ \langle J_u(u),s\rangle$ and $J_y$ with respect to our $E$ and $J$.
-\begin{align*}
-E_u(y,v)&=-(\cdot,v) \\
-E_y(y,v)&=((\frac{\partial}{\partial t} - \alpha)\cdot,v) \\
-\langle J_u(u),s\rangle &= \int_0^T u(t)s(t) dt 
+E_y=L_y[\cdot,\phi]=(\cdot,(\frac{\partial}{\partial t} + \alpha + \delta_0)\phi)  
 \end{align*}
 Lets be more thorough with $J_y$, which is the right hand side in the adjoint equation.
 \begin{align*}
 J_y(y(u),u) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tu^2dt + \frac{1}{2}(y(T)-y^T)^2) \\ &= \frac{\partial}{\partial y} \frac{1}{2}(y(T)-y^T)^2 \\
 &= \frac{\partial}{\partial y}\frac{1}{2}(\int_0^T \delta_T(y-y^T)dt)^2 \\
 &= \delta_T\int_0^T \delta_T(y(t)-y^T)dt \\
-&= \delta_T(y(T)-y^T)=L
+&= \delta_T(y(T)-y^T)
 \end{align*}
-We have $E_y(y(u),u)=\frac{\partial}{\partial t} - \alpha + \delta_0$, but for the adjoint equation we need to find $E_y^*$.
-To derive the adjoint of $E_y$, we will apply it to a function $v$ and then take the $L^2$ inner product with another function $w$. The next step is then to try to "move" the operator $E_y$ from $v$ to $w$. As becomes clear below, partial integration is the main trick to achieve this: 
+We have $E_y=(\cdot,(\frac{\partial}{\partial t} + \alpha + \delta_0)\phi)$, but for the adjoint equation we need to find $E_y^*$.
+To derive the adjoint of $E_y$, we will insert two functions $v$ and $w$ into $L_y[v,w]$, and try to change the places of $v$ and $w$.
 \begin{align*}
-\langle E_yv,w \rangle &=  \int_0^T(v'(t)-\alpha v(t)+\delta_0v(t))w(t)dt \\ &= \int_0^Tv'(t)w(t)dt -\alpha\int_0^Tv(t)w(t) dt +v(0)w(0) \\
-& = -\int_0^Tv(t)w'(t)dt +v(t)w(t)|_0^T-\alpha\langle v,w\rangle +v(0)w(0) \\
-&=-\int_0^Tv(t)w'(t)dt -\alpha\langle v,w\rangle +v(T)w(T) \\
-&= \langle v,Pw \rangle
-\end{align*} 
-Where $P=-\frac{\partial}{\partial t} -\alpha + \delta_T$. This means that $E_y^* = P$, and we now have the left hand side in the adjoint equation. The right hand side is $J_y(y(u),u)=L$, which we have already found. If we write the  adjoint equation on variational form it will look like this: $\langle Pp,w\rangle = \langle L,w\rangle$. To get back to standard ODE form, we can do some manipulation: 
-\begin{align*}
-\langle -p'-\alpha p +\delta_T p,w \rangle &= \langle \delta_T(y(T)-y^T),w\rangle \\
-\langle -p'-\alpha p ,w \rangle &= \langle \delta_T(y(T)-y^T -p),w\rangle
+E_y&=L_y[v,w]=\int_0^Tv(t)(w'(t)+\alpha w(t))dt + v(0)w(0) \\
+&=\int_0^Tw(t)(-v'(t)+\alpha v(t))dt + v(0)w(0)+v(T)w(T) -v(0)w(0) \\
+&=\int_0^Tw(t)(-v'(t)+\alpha v(t))dt+v(T)w(T) \\
+&=L_y^*[w,v]=E_y^*
 \end{align*}
-The right hand side is point evaluation at $t=T$, while the left hand side is an expression for all $t$. This finally gives us our adjoint equation: 
+If we multiply $J_y$ with a test function $\psi$ and set $L_y^*[p,\psi]=(J_y,\psi)$, we get the following equation:
+\begin{align*}
+\int_0^T-p(t)\phi'(t)+\alpha p(t)\psi(t)dt +p(T)\psi(T)= (y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}_c((0,T])
+\end{align*}
+If we multiply the above with equation with $-1$ and then do partial integration, we get:
+\begin{align*}
+\int_0^T(-p'(t)-\alpha p(t))\psi(t)dt -p(T)\psi(T)= -(y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}_c((0,T])
+\end{align*}
+Using this we get the strong formulation:
 \begin{align*}
    \left\{
      \begin{array}{lr}
@@ -113,17 +112,26 @@ The right hand side is point evaluation at $t=T$, while the left hand side is an
      \end{array}
    \right.
 \end{align*}
-This is a simple and easily solvable ODE.
 \end{proof}
-\textbf{Expression for the gradient}
-\\
-We now have all the ingredients for finding an expression for the gradient of $\hat{J}$. If we remember that $\langle\hat{J}'(u),s\rangle=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle$, and all the different expressions for all the terms we calculated, we find:
+With the adjoint we can find the gradient of $\hat{J}$. Lets state the result first.
+\begin{theorem}
+The gradient of the reduced functional $\hat{J}$ with respect to u is 
+$$\hat{J}'(u)=u+p$$
+\end{theorem}
+\begin{proof}
+Firstly we need $J_u$ and $E_u^*$:
 \begin{align*}
-\langle\hat{J}'(u),s\rangle&=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle \\ &=\langle -E_u^*p,s\rangle +\langle J_u(u),s\rangle \\
-&=\langle -(-1)^*p,s\rangle +\langle u,s\rangle \\
-&=\langle p+u,s\rangle \\
-&= \int_0^T(p(t)+u(t))s(t)dt
+J_u &= u \\
+E_u &= R_u[\cdot,\phi] = -(\cdot,\phi)
+\end{align*}
+Since $R_u[\cdot,\phi]$ is symmetric, $E_u^*=E_u$, and strongly formulated, $E_u=-1$. The expression for the gradient is then simply:
+\begin{align*}
+\hat{J}'(u)&=-E_u^*p + J_u \\
+&= p+u
 \end{align*} 
-Note that the adjoint of a constant is just the constant itself.
-\addcontentsline{toc}{section}{Parallelizeing in time using the penalty method}
+the directional derivative $\langle\hat{J}'(u),s\rangle$, will therefore be:
+\begin{align*}
+\langle\hat{J}'(u),s\rangle =\int_0^T(p(t)+u(t))s(t)dt
+\end{align*}
+\end{proof}
 \end{document}
