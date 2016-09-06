@@ -74,11 +74,11 @@ p(T) &= y(T)-y^T
 \begin{proof}
 Before we calculate the different terms used to derive the adjoint equation, we want to fit our ODE into an expression $E$. We do this by writing up the weak formulation of the equation:
 \begin{gather*}
-L[y,\phi] = \int_0^Ty(t)\phi'(t)+\alpha y(t)\phi(t)dt +y(0)\phi(0)=- \int_0^Tu(t)\phi(t)=R[u,\phi]\\ \forall \ \phi \in C^{\infty}_c([0,T))
+L[y,\phi] = \int_0^T-y(t)\phi'(t)-\alpha y(t)\phi(t)dt -y_0\phi(0)+y(T)\phi(T)-\int_0^Tu(t)\phi(t)=0\\ \forall \ \phi \in C^{\infty}((0,T))
 \end{gather*}
 To derive the adjoint we need $E_y$ and $J_y$. For $E_y$ we define $(\cdot,\cdot)$ to be the $L^2$ inner product over $(0,T)$. This gives us:
 \begin{align*}
-E_y=L_y[\cdot,\phi]=(\cdot,(\frac{\partial}{\partial t} + \alpha + \delta_0)\phi)  
+E_y=L_y[\cdot,\phi]=(\cdot,(\frac{\partial}{-\partial t} - \alpha + \delta_T)\phi)  
 \end{align*}
 Lets be more thorough with $J_y$, which is the right hand side in the adjoint equation.
 \begin{align*}
@@ -87,21 +87,21 @@ J_y(y(u),u) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tu^2dt + \frac{1}{2
 &= \delta_T\int_0^T \delta_T(y(t)-y^T)dt \\
 &= \delta_T(y(T)-y^T)
 \end{align*}
-We have $E_y=(\cdot,(\frac{\partial}{\partial t} + \alpha + \delta_0)\phi)$, but for the adjoint equation we need to find $E_y^*$.
+We have $E_y=(\cdot,(-\frac{\partial}{\partial t} - \alpha + \delta_T)\phi)$, but for the adjoint equation we need to find $E_y^*$.
 To derive the adjoint of $E_y$, we will insert two functions $v$ and $w$ into $L_y[v,w]$, and try to change the places of $v$ and $w$.
 \begin{align*}
-E_y&=L_y[v,w]=\int_0^Tv(t)(w'(t)+\alpha w(t))dt + v(0)w(0) \\
-&=\int_0^Tw(t)(-v'(t)+\alpha v(t))dt + v(0)w(0)+v(T)w(T) -v(0)w(0) \\
-&=\int_0^Tw(t)(-v'(t)+\alpha v(t))dt+v(T)w(T) \\
+E_y&=L_y[v,w]=\int_0^T-v(t)(w'(t)+\alpha w(t))dt + v(T)w(T) \\
+&=\int_0^Tw(t)(v'(t)-\alpha v(t))dt + v(T)w(T)-v(T)w(T) +v(0)w(0) \\
+&=\int_0^Tw(t)(v'(t)-\alpha v(t))dt+v(0)w(0) \\
 &=L_y^*[w,v]=E_y^*
 \end{align*}
 If we multiply $J_y$ with a test function $\psi$ and set $L_y^*[p,\psi]=(J_y,\psi)$, we get the following equation:
 \begin{align*}
-\int_0^T-p(t)\phi'(t)+\alpha p(t)\psi(t)dt +p(T)\psi(T)= (y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}_c((0,T])
+\int_0^Tp(t)\psi'(t)-\alpha p(t)\psi(t)dt + p(0)\psi(0)= (y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
 \end{align*}
-If we multiply the above with equation with $-1$ and then do partial integration, we get:
+If we multiply then do partial integration, we get:
 \begin{align*}
-\int_0^T(-p'(t)-\alpha p(t))\psi(t)dt -p(T)\psi(T)= -(y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}_c((0,T])
+\int_0^T(-p'(t)-\alpha p(t))\psi(t)dt +p(T)\psi(T)= (y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
 \end{align*}
 Using this we get the strong formulation:
 \begin{align*}
@@ -122,7 +122,7 @@ $$\hat{J}'(u)=u+p$$
 Firstly we need $J_u$ and $E_u^*$:
 \begin{align*}
 J_u &= u \\
-E_u &= R_u[\cdot,\phi] = -(\cdot,\phi)
+E_u &= L_u[\cdot,\phi] = -(\cdot,\phi)
 \end{align*}
 Since $R_u[\cdot,\phi]$ is symmetric, $E_u^*=E_u$, and strongly formulated, $E_u=-1$. The expression for the gradient is then simply:
 \begin{align*}
@@ -153,44 +153,76 @@ This means that the problem now is to minimize $J$ with respect to both $u$ and 
 \langle \hat{J}'(u,\lambda), (s,l)\rangle &= \langle \frac{\partial y(u,\lambda)}{\partial(u,\lambda)}^* J_y(y(u,\lambda),u,\lambda), (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
 &=\langle -(E_u+E_{\lambda})p , (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle
 \end{align*} 
-Where p is the solution of the adjoint equation $E_y^*p=J_y$, and $E$ is the collection of the interval specific state equations $E^i$. Lets do as we did for non-penalty approach, and write up the weak formulation of the state equations:
-\begin{gather*}
-L^i[y,\phi] = \int_{T_{i-1}}^{T_{i}}y_i(t)\phi'(t)+\alpha y_i(t)\phi(t)dt +\lambda_{i-1}\phi(T_{i-1})=- \int_{T_{i-1}}^{T_{i}}u(t)\phi(t)=R^i[u,\phi]\\ \forall \ \phi \in C^{\infty}_c([T_{i-1},T_{i}))
-\end{gather*}
-\begin{align*}
-E^i(y,u,\lambda)= \frac{\partial }{\partial t} y_i - \alpha y_i -u+ \delta_{T_{i-1}}(y_i-\lambda_{i-1})
-\end{align*} 
-Lets differentiate $E$:
-\begin{align*}
-E_y^i &= \frac{\partial }{\partial t} - \alpha + \delta_{T_{i-1}} \\
-E_u^i &= -1 \\
-E_{\lambda_{i-1}}^i &= -\delta_{T_{i-1}} \ \text{for $i=2,...,m$}
-\end{align*}
-Lets differentiate $J$:
-\begin{align*}
-\langle J_u,s\rangle &= \int_0^T us \ dt \\
-J_{\lambda_i}&= -\mu(y_{i}(T_i)-\lambda_i) \\
-J_y &= \delta_{T_{m}}(y_n(T_{m})-y_T) + \mu \sum_{i=1}^{m-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
-\end{align*}
-We also need $(E_y^i)^*$
-\begin{align*}
-\int_{T_{i-1}}^{T_{i}} E_y^iw \ v \ dt & = \int_{T_{i-1}}^{T_{i}} (\frac{\partial }{\partial t}w -\alpha w) \ v \ dt + w(T_{i-1})v(T_{i-1}) \\
-&= \int_{T_{i-1}}^{T_{i}}-(\frac{\partial }{\partial t}v+\alpha v) \ w \ dt + w(T_{i})v(T_{i}) \\
-&= \int_{T_{i-1}}^{T_{i}} (-\frac{\partial }{\partial t}-\alpha + \delta_{T_{i}})v \ w \ dt
-\end{align*} 
-this means that $(E_y^i)^*=-\frac{\partial }{\partial t}-\alpha + \delta_{T_{i}}$. This gives us the following expressions for the adjoint equations:
-\\
-\\
-$i=m$ case:
+Where p is the solution of the adjoint equation $E_y^*p=J_y$, and $E$ is the collection of the interval specific state equations $E^i$. Since we now have separate state equations on each interval, the adjoint equation is also a collection of equations specific to each interval. I now state the new adjoints:
+\begin{theorem}
+The adjoint equation on interval $[T_{m-1},T_m]$ is:
 \begin{align*}
 -\frac{\partial }{\partial t}p_m &=\alpha p_m  \\
 p_m(T_{m}) &= y_m(T_{m})-y_T
 \end{align*}
-$i\neq m$ cases:
+On $[T_{i-1},T_i]$ the adjoint equation is:
 \begin{align*}
 -\frac{\partial }{\partial t}p_i &=p_i  \\
 p_i(T_{i}) &= \mu(y_{i}(T_{i})-\lambda_{i} )
 \end{align*}
+\end{theorem} 
+\begin{proof}
+Lets begin as we did for the non-penalty approach, by writing up the weak formulation of the state equations:
+\begin{gather*}
+L^i[y,\phi] = \int_{T_{i-1}}^{T_{i}}-y_i(t)(\phi'(t) +\alpha \phi(t))+u(t)\phi(t)dt -\lambda_{i-1}\phi(T_{i-1})+ y_i(T_i)\phi(T_i) =0\\ \forall \ \phi \in C^{\infty}((T_{i-1},T_{i}))
+\end{gather*} 
+To find the adjoint equations we want to differentiate the $E^i$s and the functional $J$ with respect to $y$. To make notation easier, let $(\cdot,\cdot)_i$ be $L^2$ inner product of the interval $[T_{i-1},T_i]$. 
+\begin{align*}
+E_y^i=L_y^i[\cdot,\phi]=(\cdot,-(\frac{\partial}{\partial t} + \alpha - \delta_{T_i})\phi) 
+\end{align*}
+Lets differentiate $J$:
+\begin{align*}
+J_y = \delta_{T_{m}}(y_n(T_{m})-y_T) + \mu \sum_{i=1}^{m-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
+\end{align*}
+Since $y$ really is a collection of functions, we can differentiate $J$ with respect to $y_i$. This gives us:
+\begin{align*}
+J_{y_m} &= \delta_{T_{m}}(y_n(T_{m})-y_T) \\
+J_{y_i} &= \mu\delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) \ i\neq m
+\end{align*}
+We will now find the adjoint equations, by finding the adjoint of the $E_y^i$s. This is done as above, by inserting two functions $v$, $w$ into $L_y^i[v,w]$, and then moving the derivative form $w$ to $v$.
+\begin{align*}
+E_y^i&=L_y^i[v,w]=\int_{T_{i-1}}^{T_i}-v(t)(w'(t)+\alpha w(t))dt + v(T_i)w(T_i) \\
+&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-\alpha v(t))dt + v(T_i)w(T_i)-v(T_i)w(T_i) +v(T_{i-1})w(T_{i-1}) \\
+&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-\alpha v(t))dt + v(T_{i-1})w(T_{i-1}) \\
+&=(L_y^i)^*[w,v]
+\end{align*}
+this means that $(E_y^i)^*=(L_y^i)^*[\cdot,\psi]$. The weak form of the adjoint equations is then found, by setting setting $(L_y^i)^*[p,\psi]=(J_{y_i},\psi)_i$. This gives to cases:
+\\
+\\
+$i=m$ case:
+\begin{align*}
+&\forall \ \psi \in C^{\infty}((T_{m-1},T_m)) \\
+&\int_{T_m-1}^{T_m}p_m(t)\psi'(t)-\alpha p_m(t)\psi(t)dt +p_m(T_{m-1})\psi(T_{m-1})
+= (y(T_m)-y^T)\psi(T_m)\ 
+\end{align*}
+$i\neq m$ cases:
+\begin{align*}
+&\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
+&\int_{T_i-1}^{T_i}p_i(t)\psi'(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i-1})\psi(T_{i-1})
+= \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
+\end{align*}
+If we want to go back to the strong formulation, we do partial integration, and get:
+\\
+\\
+ $i=m$ case:
+\begin{align*}
+&\forall \ \psi \in C^{\infty}((T_{m-1},T_m)) \\
+&\int_{T_m-1}^{T_m}-p_m'(t)\psi(t)-\alpha p_m(t)\psi(t)dt +p_m(T_{m})\psi(T_{m})
+= (y(T_m)-y^T)\psi(T_m)\ 
+\end{align*}
+$i\neq m$ cases:
+\begin{align*}
+&\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
+&\int_{T_i-1}^{T_i}-p_i('t)\psi(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
+= \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
+\end{align*}
+This gives us the ODEs we wanted.
+\end{proof}
 Lets put everything into our expression for or gradient:
 \begin{align*}
 \langle \hat{J}'(u,\lambda), (s,l)\rangle&=\langle -(E_u+E_{\lambda})p, (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
