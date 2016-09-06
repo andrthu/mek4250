@@ -145,14 +145,14 @@ To find the above gradient, we must solve first the state equation forward in ti
    \right.
 \end{align*}
 here $i=1,...,m$, $\lambda_0=y_0$ and $0=T_0<T_1<\cdots<T_{m}=T$. Since the equation on each interval depends on the equation in the previous interval, we need a trick, to get everything to hang together. We do this using the penalty method, which means adding a penalty to the functional. The new functional now looks like this:
-\begin{align*}
-J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{2}(y_m(T)-y^T)^2 + \frac{\mu}{2} \sum_{i=1}^{m-1} (y_{i}(T_i)-\lambda_i)^2 
-\end{align*}
+\begin{align}
+J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{2}(y_m(T)-y^T)^2 + \frac{\mu}{2} \sum_{i=1}^{m-1} (y_{i}(T_i)-\lambda_i)^2 \label{penalty_func}
+\end{align}
 This means that the problem now is to minimize $J$ with respect to both $u$ and $\lambda$, which means that the reduced functional depends on both $u$ and $\lambda$. Since we change the functional and the equation, both the adjoint equation and the gradient changes. Lets try to derive the new adjoint equations and the new gradient. The gradient of the reduced functional now looks like the following:
-\begin{align*}
+\begin{align}
 \langle \hat{J}'(u,\lambda), (s,l)\rangle &= \langle \frac{\partial y(u,\lambda)}{\partial(u,\lambda)}^* J_y(y(u,\lambda),u,\lambda), (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
-&=\langle -(E_u+E_{\lambda})p , (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle
-\end{align*} 
+&=\langle -(E_u+E_{\lambda})p , (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \label{pen_abs_grad}
+\end{align} 
 Where p is the solution of the adjoint equation $E_y^*p=J_y$, and $E$ is the collection of the interval specific state equations $E^i$. Since we now have separate state equations on each interval, the adjoint equation is also a collection of equations specific to each interval. I now state the new adjoints:
 \begin{theorem}
 The adjoint equation on interval $[T_{m-1},T_m]$ is:
@@ -223,7 +223,25 @@ $i\neq m$ cases:
 \end{align*}
 This gives us the ODEs we wanted.
 \end{proof}
-Lets put everything into our expression for or gradient:
+With the adjont equations we can find the gradient.
+\begin{theorem}
+The gradient of (\ref{penalty_func}), $\hat{J}'$, with respect to the control $(u,(\lambda_1,...,\lambda_{m-1}))$ is:
+\begin{align*}
+\hat{J}'(u,\lambda) = (u+p,p_{2}(T_1) -p_{1}(T_1),..., p_{m}(T_{m-1}) -p_{m}(T_{m-1}))
+\end{align*} 
+and the directional derivative with respect to $L^2$-norm in direction $(s,l)$ is:
+\begin{align*}
+\langle \hat{J}'(u,\lambda), (s,l)\rangle = \int_0^T (u+p)s \ dt +\sum_{i=1}^{m-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
+\end{align*}
+\end{theorem}
+\begin{proof}
+If we first find $E_u^*$, $E_{\lambda}^*$, $J_u$ and $J_{\lambda}$ find the gradient by simply inserting these expression into (\ref{pen_abs_grad}). We can begin with the $E$ terms:
+\begin{align*}
+E_u &= L_u[\cdot,\phi] = -(\cdot,\phi) \\
+E_{\lambda_{i-1}}^i &= L_{y_{i-1}}^i[\cdot,\phi] = -(\cdot,\delta_{T_{i-1}}\phi)_i
+\end{align*}
+Notice that both of these forms are symmetric, and we therefore don't need to do more work to find their adjoints.
+\end{proof}
 \begin{align*}
 \langle \hat{J}'(u,\lambda), (s,l)\rangle&=\langle -(E_u+E_{\lambda})p, (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
 &= \langle (p+\sum_{i=1}^{m-1} \delta_{T_i}p_{i+1}) , (s,l)\rangle+ \int_0^T us \ dt - \mu \sum_{i=1}^{m-1}(y_{i}(T_i)-\lambda_i)l_i\\
