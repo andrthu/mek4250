@@ -240,12 +240,23 @@ If we first find $E_u^*$, $E_{\lambda}^*$, $J_u$ and $J_{\lambda}$ find the grad
 E_u &= L_u[\cdot,\phi] = -(\cdot,\phi) \\
 E_{\lambda_{i-1}}^i &= L_{y_{i-1}}^i[\cdot,\phi] = -(\cdot,\delta_{T_{i-1}}\phi)_i
 \end{align*}
-Notice that both of these forms are symmetric, and we therefore don't need to do more work to find their adjoints.
-\end{proof}
+Notice that both of these forms are symmetric, and we therefore don't need to do more work to find their adjoints, they are however derived from the weak formulation, and it might therefore be easier to translate these forms to their strong counterpart:
+\begin{align*}
+E_u -1 \\
+E_{\lambda_{i-1}}^i &= -\delta_{T_{i-1}}
+\end{align*}
+Then lets differentiate $J$:
+\begin{align*}
+J_u &= u \\
+J_{\lambda} &= - \mu \sum_{i=1}^{m-1}(y_{i}(T_i)-\lambda_i)
+\end{align*}
+Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directional derivative:
 \begin{align*}
 \langle \hat{J}'(u,\lambda), (s,l)\rangle&=\langle -(E_u+E_{\lambda})p, (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
 &= \langle (p+\sum_{i=1}^{m-1} \delta_{T_i}p_{i+1}) , (s,l)\rangle+ \int_0^T us \ dt - \mu \sum_{i=1}^{m-1}(y_{i}(T_i)-\lambda_i)l_i\\
 &=\int_0^T (u+p)s \ dt +\sum_{i=1}^{m-1}(p_{i+1}(T_i) -\mu(y_{i}(T_i)-\lambda_i) )l_i \\
 &= \int_0^T (u+p)s \ dt +\sum_{i=1}^{m-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
 \end{align*} 
+Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this thet the gradient has thje form we stated above.
+\end{proof} 
 \end{document}
