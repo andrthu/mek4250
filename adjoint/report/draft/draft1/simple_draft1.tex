@@ -84,40 +84,52 @@ Lets try to derive the adjoint equation and the gradient, when we let $E(y,u)$ b
    \right.
 \end{align*}
 We also choose the functional to be
-\begin{align*}
-J(y,u) = \frac{1}{2}\int_0^Tu(t)^2dt + \frac{1}{2}(y(T)-y^T)^2
+\begin{align}
+J(y,u) = \frac{1}{2}\int_0^Tu(t)^2dt + \frac{1}{2}(y(T)-y^T)^2 \label{func}
+\end{align}
+\begin{theorem}
+The adjoint equation of the problem (\ref{func}) is:
+\begin{align*}     
+-p'(t) &= \alpha p(t) \\
+p(T) &= y(T)-y^T     
 \end{align*}
-Before we calculate the different terms in the gradient, we want to fit our ODE into an expression $E$. we do this by "moving" the initial condition into the equation:
+\end{theorem}
+\begin{proof}
+Before we calculate the different terms used to derive the adjoint equation, we want to fit our ODE into an expression $E$. We do this by writing up the weak formulation of the equation:
+\begin{gather*}
+\textit{Find $y \in L^2$ such that}\\
+L[y,\phi] = \int_0^T-y(t)\phi'(t)-\alpha y(t)\phi(t)dt -y_0\phi(0)+y(T)\phi(T)-\int_0^Tu(t)\phi(t)=0\\ \forall \ \phi \in C^{\infty}((0,T))
+\end{gather*}
+To derive the adjoint we need $E_y$ and $J_y$. For $E_y$ we define $(\cdot,\cdot)$ to be the $L^2$ inner product over $(0,T)$. This gives us:
 \begin{align*}
-E(y,u) = y'-\alpha y - u + \delta_0(y-y_0)
-\end{align*}
-Here the $\delta_0$ means evaluation at $0$. Now  lets find $E_u$, $E_y$, $ \langle J_u(u),s\rangle$ and $J_y$ with respect to our $E$ and $J$.
-\begin{align*}
-E_u(y(u),u)&=-1 \\
-E_y(y(u),u)&=\frac{\partial}{\partial t} - \alpha + \delta_0 \ \text{,where $\delta_0$ is evaluation at 0} \\
-\langle J_u(u),s\rangle &= \int_0^T u(t)s(t) dt 
+E_y=L_y[\cdot,\phi]=(\cdot,(\frac{\partial}{-\partial t} - \alpha + \delta_T)\phi)  
 \end{align*}
 Lets be more thorough with $J_y$, which is the right hand side in the adjoint equation.
 \begin{align*}
 J_y(y(u),u) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tu^2dt + \frac{1}{2}(y(T)-y^T)^2) \\ &= \frac{\partial}{\partial y} \frac{1}{2}(y(T)-y^T)^2 \\
 &= \frac{\partial}{\partial y}\frac{1}{2}(\int_0^T \delta_T(y-y^T)dt)^2 \\
 &= \delta_T\int_0^T \delta_T(y(t)-y^T)dt \\
-&= \delta_T(y(T)-y^T)=L
+&= \delta_T(y(T)-y^T)
 \end{align*}
-We have $E_y(y(u),u)=\frac{\partial}{\partial t} - \alpha + \delta_0$, but for the adjoint equation we need to find $E_y^*$.
-To derive the adjoint of $E_y$, we will apply it to a function $v$ and then take the $L^2$ inner product with another function $w$. The next step is then to try to "move" the operator $E_y$ from $v$ to $w$. As becomes clear below, partial integration is the main trick to achieve this: 
+We have $E_y=(\cdot,(-\frac{\partial}{\partial t} - \alpha + \delta_T)\phi)$, but for the adjoint equation we need to find $E_y^*$.
+To derive the adjoint of $E_y$, we will insert two functions $v$ and $w$ into $L_y[v,w]$, and try to change the places of $v$ and $w$.
 \begin{align*}
-\langle E_yv,w \rangle &=  \int_0^T(v'(t)-\alpha v(t)+\delta_0v(t))w(t)dt \\ &= \int_0^Tv'(t)w(t)dt -\alpha\int_0^Tv(t)w(t) dt +v(0)w(0) \\
-& = -\int_0^Tv(t)w'(t)dt +v(t)w(t)|_0^T-\alpha\langle v,w\rangle +v(0)w(0) \\
-&=-\int_0^Tv(t)w'(t)dt -\alpha\langle v,w\rangle +v(T)w(T) \\
-&= \langle v,Pw \rangle
-\end{align*} 
-Where $P=-\frac{\partial}{\partial t} -\alpha + \delta_T$. This means that $E_y^* = P$, and we now have the left hand side in the adjoint equation. The right hand side is $J_y(y(u),u)=L$, which we have already found. If we write the  adjoint equation on variational form it will look like this: $\langle Pp,w\rangle = \langle L,w\rangle$. To get back to standard ODE form, we can do some manipulation: 
-\begin{align*}
-\langle -p'-\alpha p +\delta_T p,w \rangle &= \langle \delta_T(y(T)-y^T),w\rangle \\
-\langle -p'-\alpha p ,w \rangle &= \langle \delta_T(y(T)-y^T -p),w\rangle
+E_y&=L_y[v,w]=\int_0^T-v(t)(w'(t)+\alpha w(t))dt + v(T)w(T) \\
+&=\int_0^Tw(t)(v'(t)-\alpha v(t))dt + v(T)w(T)-v(T)w(T) +v(0)w(0) \\
+&=\int_0^Tw(t)(v'(t)-\alpha v(t))dt+v(0)w(0) \\
+&=L_y^*[w,v]=E_y^*
 \end{align*}
-The right hand side is point evaluation at $t=T$, while the left hand side is an expression for all $t$. This finally gives us our adjoint equation: 
+If we multiply $J_y$ with a test function $\psi$ and set $L_y^*[p,\psi]=(J_y,\psi)$, we get the following equation:
+\begin{align*}
+&\textit{Find $p$ such that}\\
+&\int_0^Tp(t)\psi'(t)-\alpha p(t)\psi(t)dt + p(0)\psi(0)= (y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
+\end{align*}
+If we then do partial integration, we get:
+\begin{align*}
+&\textit{Find $p$ such that}\\
+&\int_0^T(-p'(t)-\alpha p(t))\psi(t)dt +p(T)\psi(T)= (y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
+\end{align*}
+Using this we get the strong formulation:
 \begin{align*}
    \left\{
      \begin{array}{lr}
@@ -126,19 +138,28 @@ The right hand side is point evaluation at $t=T$, while the left hand side is an
      \end{array}
    \right.
 \end{align*}
-This is a simple and easily solvable ODE.
-\\
-\\
-\textbf{Expression for the gradient}
-\\
-We now have all the ingredients for finding an expression for the gradient of $\hat{J}$. If we remember that $\langle\hat{J}'(u),s\rangle=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle$, and all the different expressions for all the terms we calculated, we find:
+\end{proof}
+With the adjoint we can find the gradient of $\hat{J}$. Lets state the result first.
+\begin{theorem}
+The gradient of the reduced functional $\hat{J}$ with respect to u is 
+$$\hat{J}'(u)=u+p$$
+\end{theorem}
+\begin{proof}
+Firstly we need $J_u$ and $E_u^*$:
 \begin{align*}
-\langle\hat{J}'(u),s\rangle&=\langle y'(u)^*J_y(u),s\rangle +\langle J_u(u),s\rangle \\ &=\langle -E_u^*p,s\rangle +\langle J_u(u),s\rangle \\
-&=\langle -(-1)^*p,s\rangle +\langle u,s\rangle \\
-&=\langle p+u,s\rangle \\
-&= \int_0^T(p(t)+u(t))s(t)dt
+J_u &= u \\
+E_u &= L_u[\cdot,\phi] = -(\cdot,\phi)
+\end{align*}
+Since $L_u[\cdot,\phi]$ is symmetric, $E_u^*=E_u$, and strongly formulated, $E_u=-1$. The expression for the gradient is then simply:
+\begin{align*}
+\hat{J}'(u)&=-E_u^*p + J_u \\
+&= p+u
 \end{align*} 
-Note that the adjoint of a constant is just the constant itself.
+the directional derivative $\langle\hat{J}'(u),s\rangle$, will therefore be:
+\begin{align*}
+\langle\hat{J}'(u),s\rangle =\int_0^T(p(t)+u(t))s(t)dt
+\end{align*}
+\end{proof}
 \addcontentsline{toc}{section}{Parallelizeing in time using the penalty method}
 \section*{Parallelizeing in time using the penalty method}
 To find the above gradient, we must solve first the state equation forward in time and then the adjoint equation backwards in time. One way of speeding things up is to parallelize the solvers by partitioning the time interval and then solving the equation separately on each partitioned interval. If we split the interval $[0,T]$ into $m$ parts we need to solve $m$ state equations on the following form:
@@ -151,56 +172,124 @@ To find the above gradient, we must solve first the state equation forward in ti
    \right.
 \end{align*}
 here $i=1,...,m$, $\lambda_0=y_0$ and $0=T_0<T_1<\cdots<T_{m}=T$. Since the equation on each interval depends on the equation in the previous interval, we need a trick, to get everything to hang together. We do this using the penalty method, which means adding a penalty to the functional. The new functional now looks like this:
-\begin{align*}
-J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{2}(y_m(T)-y^T)^2 + \frac{\mu}{2} \sum_{i=1}^{m-1} (y_{i}(T_i)-\lambda_i)^2 
-\end{align*}
-This means that the problem now is to minimize $J$ with respect to both $u$ and $\lambda$, which means that the reduced functional depends on both $u$ and $\lambda$. Since we change the functional and the equation, both the adjoint equation and the gradient changes. Lets try to derive the new adjoint equations and the new gradient. The gradient of the reduced functional now looks like the following:
-\begin{align*}
+\begin{align}
+J(y,u,\lambda) = \int_0^T u^2 dt + \frac{1}{2}(y_m(T)-y^T)^2 + \frac{\mu}{2} \sum_{i=1}^{m-1} (y_{i}(T_i)-\lambda_i)^2 \label{penalty_func}
+\end{align}
+This means that the problem now is to minimize $J$ with respect to both $u$ and $\lambda$, and that the reduced functional therefore depends on both $u$ and $\lambda$. We also see that the penalty terms $\frac{\mu}{2}(y_{i}(T_i)-\lambda_i)^2$ is the difference at the overlapping time $T_i$ between neighbouring state equations. This will enforce continuity. 
+\\
+\\
+Since we change the functional and the equation, both the adjoint equation and the gradient changes. Lets try to derive the new adjoint equations and the new gradient. The gradient of the reduced functional now looks like the following:
+\begin{align}
 \langle \hat{J}'(u,\lambda), (s,l)\rangle &= \langle \frac{\partial y(u,\lambda)}{\partial(u,\lambda)}^* J_y(y(u,\lambda),u,\lambda), (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
-&=\langle -(E_u+E_{\lambda})p , (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle
-\end{align*} 
-Where p is the solution of the adjoint equation $E_y^*p=J_y$, and $E$ is our ODEs:
-\begin{align*}
-E^i(y,u,\lambda)= \frac{\partial }{\partial t} y_i - \alpha y_i -u+ \delta_{T_{i-1}}(y_i-\lambda_{i-1})
-\end{align*} 
-Lets differentiate $E$:
-\begin{align*}
-E_y^i &= \frac{\partial }{\partial t} - \alpha + \delta_{T_{i-1}} \\
-E_u^i &= -1 \\
-E_{\lambda_{i-1}}^i &= -\delta_{T_{i-1}} \ \text{for $i=2,...,m$}
-\end{align*}
-Lets differentiate $J$:
-\begin{align*}
-\langle J_u,s\rangle &= \int_0^T us \ dt \\
-J_{\lambda_i}&= -\mu(y_{i}(T_i)-\lambda_i) \\
-J_y &= \delta_{T_{m}}(y_n(T_{m})-y_T) + \mu \sum_{i=1}^{m-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
-\end{align*}
-We also need $(E_y^i)^*$
-\begin{align*}
-\int_{T_{i-1}}^{T_{i}} E_y^iw \ v \ dt & = \int_{T_{i-1}}^{T_{i}} (\frac{\partial }{\partial t}w -\alpha w) \ v \ dt + w(T_{i-1})v(T_{i-1}) \\
-&= \int_{T_{i-1}}^{T_{i}}-(\frac{\partial }{\partial t}v+\alpha v) \ w \ dt + w(T_{i})v(T_{i}) \\
-&= \int_{T_{i-1}}^{T_{i}} (-\frac{\partial }{\partial t}-\alpha + \delta_{T_{i}})v \ w \ dt
-\end{align*} 
-this means that $(E_y^i)^*=-\frac{\partial }{\partial t}-\alpha + \delta_{T_{i}}$. This gives us the following expressions for the adjoint equations:
-\\
-\\
-$i=m$ case:
+&=\langle -(E_u+E_{\lambda})p , (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \label{pen_abs_grad}
+\end{align} 
+Where p is the solution of the adjoint equation $E_y^*p=J_y$, and $E$ is the collection of the interval specific state equations $E^i$. Since we now have separate state equations on each interval, the adjoint equation is also a collection of equations specific to each interval. I now state the new adjoints:
+\begin{theorem}
+The adjoint equation on interval $[T_{m-1},T_m]$ is:
 \begin{align*}
 -\frac{\partial }{\partial t}p_m &=\alpha p_m  \\
 p_m(T_{m}) &= y_m(T_{m})-y_T
 \end{align*}
-$i\neq m$ cases:
+On $[T_{i-1},T_i]$ the adjoint equation is:
 \begin{align*}
 -\frac{\partial }{\partial t}p_i &=p_i  \\
 p_i(T_{i}) &= \mu(y_{i}(T_{i})-\lambda_{i} )
 \end{align*}
-Lets put everything into our expression for or gradient:
+\end{theorem} 
+\begin{proof}
+Lets begin as we did for the non-penalty approach, by writing up the weak formulation of the state equations:
+\begin{gather*}
+\textit{Find $y_i \in L^2(T_{i-1},T_i)$ such that }\\
+L^i[y_i,\phi] = \int_{T_{i-1}}^{T_{i}}-y_i(t)(\phi'(t) +\alpha \phi(t))+u(t)\phi(t)dt -\lambda_{i-1}\phi(T_{i-1})+ y_i(T_i)\phi(T_i) =0\\ \forall \ \phi \in C^{\infty}((T_{i-1},T_{i}))
+\end{gather*} 
+To find the adjoint equations we want to differentiate the $E^i$s and the functional $J$ with respect to $y$. To make notation easier, let $(\cdot,\cdot)_i$ be $L^2$ inner product of the interval $[T_{i-1},T_i]$. 
+\begin{align*}
+E_y^i=L_y^i[\cdot,\phi]=(\cdot,-(\frac{\partial}{\partial t} + \alpha - \delta_{T_i})\phi)_i 
+\end{align*}
+Lets differentiate $J$:
+\begin{align*}
+J_y = \delta_{T_{m}}(y_n(T_{m})-y_T) + \mu \sum_{i=1}^{m-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
+\end{align*}
+Since $y$ really is a collection of functions, we can differentiate $J$ with respect to $y_i$. This gives us:
+\begin{align*}
+J_{y_m} &= \delta_{T_{m}}(y_n(T_{m})-y_T) \\
+J_{y_i} &= \mu\delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) \ i\neq m
+\end{align*}
+We will now find the adjoint equations, by finding the adjoint of the $E_y^i$s. This is done as above, by inserting two functions $v$, $w$ into $L_y^i[v,w]$, and then moving the derivative form $w$ to $v$.
+\begin{align*}
+E_y^i&=L_y^i[v,w]=\int_{T_{i-1}}^{T_i}-v(t)(w'(t)+\alpha w(t))dt + v(T_i)w(T_i) \\
+&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-\alpha v(t))dt + v(T_i)w(T_i)-v(T_i)w(T_i) +v(T_{i-1})w(T_{i-1}) \\
+&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-\alpha v(t))dt + v(T_{i-1})w(T_{i-1}) \\
+&=(L_y^i)^*[w,v]
+\end{align*}
+this means that $(E_y^i)^*=(L_y^i)^*[\cdot,\psi]$. The weak form of the adjoint equations is then found, by setting setting $(L_y^i)^*[p,\psi]=(J_{y_i},\psi)_i$. This gives to cases:
+\\
+\\
+$i=m$ case:
+\begin{align*}
+&\textit{Find $p_m \in L^2(T_{m-1},T_m)$ such that }\forall \ \psi \in C^{\infty}((T_{m-1},T_m)) \\
+&\int_{T_m-1}^{T_m}p_m(t)\psi'(t)-\alpha p_m(t)\psi(t)dt +p_m(T_{m-1})\psi(T_{m-1})
+= (y(T_m)-y^T)\psi(T_m)\ 
+\end{align*}
+$i\neq m$ cases:
+\begin{align*}
+&\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
+&\int_{T_i-1}^{T_i}p_i(t)\psi'(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i-1})\psi(T_{i-1})
+= \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
+\end{align*}
+If we want to go back to the strong formulation, we do partial integration, and get:
+\\
+\\
+ $i=m$ case:
+\begin{align*}
+&\textit{Find $p_m \in L^2(T_{m-1},T_m)$ such that }\forall \ \psi \in C^{\infty}((T_{m-1},T_m)) \\
+&\int_{T_m-1}^{T_m}-p_m'(t)\psi(t)-\alpha p_m(t)\psi(t)dt +p_m(T_{m})\psi(T_{m})
+= (y(T_m)-y^T)\psi(T_m)\ 
+\end{align*}
+$i\neq m$ cases:
+\begin{align*}
+&\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
+&\int_{T_i-1}^{T_i}-p_i('t)\psi(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
+= \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
+\end{align*}
+This gives us the ODEs we wanted.
+\end{proof}
+With the adjont equations we can find the gradient.
+\begin{theorem}
+The gradient of (\ref{penalty_func}), $\hat{J}'$, with respect to the control $(u,(\lambda_1,...,\lambda_{m-1}))$ is:
+\begin{align*}
+\hat{J}'(u,\lambda) = (u+p,p_{2}(T_1) -p_{1}(T_1),..., p_{m}(T_{m-1}) -p_{m}(T_{m-1}))
+\end{align*} 
+and the directional derivative with respect to $L^2$-norm in direction $(s,l)$ is:
+\begin{align*}
+\langle \hat{J}'(u,\lambda), (s,l)\rangle = \int_0^T (u+p)s \ dt +\sum_{i=1}^{m-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
+\end{align*}
+\end{theorem}
+\begin{proof}
+If we first find $E_u^*$, $E_{\lambda}^*$, $J_u$ and $J_{\lambda}$ find the gradient by simply inserting these expression into (\ref{pen_abs_grad}). We can begin with the $E$ terms:
+\begin{align*}
+E_u &= L_u[\cdot,\phi] = -(\cdot,\phi) \\
+E_{\lambda_{i-1}}^i &= L_{y_{i-1}}^i[\cdot,\phi] = -(\cdot,\delta_{T_{i-1}}\phi)_i
+\end{align*}
+Notice that both of these forms are symmetric, and we therefore don't need to do more work to find their adjoints, they are however derived from the weak formulation, and it might therefore be easier to translate these forms to their strong counterpart:
+\begin{align*}
+E_u -1 \\
+E_{\lambda_{i-1}}^i &= -\delta_{T_{i-1}}
+\end{align*}
+Then lets differentiate $J$:
+\begin{align*}
+J_u &= u \\
+J_{\lambda} &= - \mu \sum_{i=1}^{m-1}(y_{i}(T_i)-\lambda_i)
+\end{align*}
+Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directional derivative:
 \begin{align*}
 \langle \hat{J}'(u,\lambda), (s,l)\rangle&=\langle -(E_u+E_{\lambda})p, (s,l)\rangle + \langle J_u+J_{\lambda}, (s,l)\rangle \\
 &= \langle (p+\sum_{i=1}^{m-1} \delta_{T_i}p_{i+1}) , (s,l)\rangle+ \int_0^T us \ dt - \mu \sum_{i=1}^{m-1}(y_{i}(T_i)-\lambda_i)l_i\\
 &=\int_0^T (u+p)s \ dt +\sum_{i=1}^{m-1}(p_{i+1}(T_i) -\mu(y_{i}(T_i)-\lambda_i) )l_i \\
 &= \int_0^T (u+p)s \ dt +\sum_{i=1}^{m-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
 \end{align*} 
+Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, that the gradient has the form we stated above.
+\end{proof} 
 \addcontentsline{toc}{section}{Simple example}
 \section*{Simple example}
 Let $T=y_T=y_0=\alpha=1$ and assume that we want to find the gradient of $\hat{J}$ at $u(t)=0$. We then have:
