@@ -279,7 +279,11 @@ where $p$ is the solution of the adjoint equation:
 \begin{align*}
 E_u^*p = J_u
 \end{align*}
-As always, $E$ refers to the state equation, which in our case is Burgers equation(\ref{burger}). I will now write up the weak formulation of (\ref{burger}), since I will later use it to ssolve the equation, and :
+As always, $E$ refers to the state equation, which in our case is Burgers equation (\ref{burger}). I will now write up the weak formulation of (\ref{burger}), so that I can use it to derive the adjoint. Let $(\cdot,\cdot)$ be $L^2$ inner product over $\Omega$.
+\begin{align*}
+&\text{Find u s.t $\forall \phi \in C^{\infty}$} \\
+&(\dot{u},\phi) + (uu_x,\phi) + \nu( \nabla u, \nabla\phi) =0
+\end{align*}
 \begin{align*}
 E_u &= \frac{\partial}{\partial t} + u_x + u\frac{\partial}{\partial x} - \nu\Delta + \delta_{t=0} + \delta_{\partial \Omega} \\
 E_g &= -\delta_{t=0} \\
