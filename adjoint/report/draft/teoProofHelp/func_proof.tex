@@ -265,20 +265,24 @@ Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, 
 \end{proof} 
 \section{Burgers Equation}
 Lets look at the optimal control with PDE constraint problem, where the equation is the burgers equation:
+\begin{subequations}
 \begin{align}
 u_t + uu_x - \nu u_{xx} &= 0 \ \text{for $(x,t)\in \Omega\times(0,T)$} \label{burger}\\
 u(x,t) &= h(x,t) \ \text{for $(x,t) \in\partial\Omega\times(0,T)$ } \\
 u(x,0) &= g(x) \ \text{for $x \in\Omega$ }
 \end{align} 
+\end{subequations}
 Here $\Omega = (a,b)$. The functional is on the form:
 \begin{align}
 J(u(g),g) = \int_0^T\int_{\Omega} u(x,t)^2 dxdt \label{burger_func}
 \end{align}
-We are actually more interested in the weak formulation of (\ref{burger}). To simplify notation, let $(\cdot,\cdot)$ be $L^2$ inner product over $\Omega$. 
+We are actually more interested in the weak formulation of (\ref{burger}). To simplify notation, let $(\cdot,\cdot)$ be $L^2$ inner product over $\Omega$.
+\begin{subequations}
 \begin{gather}
 \textit{Find $p(t,x) \in L^2((0,T),H_0^1(\Omega))$ such that } \forall \phi \in L^2((0,T),H_0^1(\Omega)) \\
 (\dot{u},\phi) -(uu_x,\phi) +\nu(u_x,\phi_x) = \int_{\partial \Omega} h\phi dx \label{weak burger}
-\end{gather} 
+\end{gather}
+\end{subequations}
 \begin{theorem} If we assume $h(x,t)=0$, the adjoint equation of (\ref{burger_func})-(\ref{weak burger}) is:
 \begin{align*}
 &\textit{Find $p(t,x) \in L^2((0,T),H_0^1(\Omega))$ such that } \forall \psi \in L^2((0,T),H_0^1(\Omega)) \\
@@ -321,7 +325,7 @@ If now insert the expressions above into $L_u[v,w]$, we get:
 L_u[v,w] &= \int_0^T(v_t,w) -(uv,w_x) +\nu(v_x,w_x)dt +(v(0),w(0)) \\
 &=L_u^*[w,v]
 \end{align*}
-The adjoint equation will be $L[p,\psi]=\int_0^T(J_u,\psi)dt$. From (\ref{burger_func}) it is easy to see that $J_u=2u$, which means that the adjoint equation looks as the following:
+The adjoint equation will be $L[p,\psi]=\int_0^T(J_u,\psi)dt$. From (\ref{burger_func}) it is easy to see that $J_u=2u$, which means that the adjoint equation looks like this:
 \begin{align*}
 &\textit{Find $p$ such that } \forall \psi \in C^{\infty} \\
 &\int_0^T(p,\psi_t) -(up_x,\psi) +\nu(p_x,\psi_x)dt +(p(0),\psi(0)) = 2\int_0^T(u,\psi)dt
