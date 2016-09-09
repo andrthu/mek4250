@@ -271,10 +271,27 @@ u(x,t) &= h(x,t) \ \text{for $(x,t) \in\partial\Omega\times(0,T)$ } \\
 u(x,0) &= g(x) \ \text{for $x \in\Omega$ }
 \end{align} 
 Here $\Omega = (a,b)$. The functional is on the form:
+\begin{align}
+J(u(g),g) = \int_0^T\int_{\Omega} u(x,t)^2 dxdt \label{burger_func}
+\end{align}
+We are actually more interested in the weak formulation of (\ref{burger}). To simplify notation, let $(\cdot,\cdot)$ be $L^2$ inner product over $\Omega$. 
+\begin{gather}
+\textit{Find $p(t,x) \in L^2((0,T),H_0^1(\Omega))$ such that } \forall \phi \in L^2((0,T),H_0^1(\Omega)) \\
+(\dot{u},\phi) -(uu_x,\phi) +\nu(u_x,\phi_x) = \int_{\partial \Omega} h\phi dx \label{weak burger}
+\end{gather} 
+\begin{theorem} If we assume $h(x,t)=0$, the adjoint equation of (\ref{burger_func})-(\ref{weak burger}) is:
 \begin{align*}
-J(u(g),g) = \int_0^T\int_{\Omega} u(x,t)^2 dxdt
+&\textit{Find $p(t,x) \in L^2((0,T),H_0^1(\Omega))$ such that } \forall \psi \in L^2((0,T),H_0^1(\Omega)) \\
+&-(\dot{p},\psi) -(up_x,\psi) +\nu(p_x,\psi_x) = 2(u,\psi) \\
+&p(T)=0
 \end{align*}
-Here we want to minimize $J$ with respect to the initial condition $g$. If we differentiate $J$ with respect to $g$, we get:
+The gradient of the reduced functional (\ref{burger_func}) with respect to $g$ is:
+\begin{align*}
+\hat{J}'(g) = p(0)
+\end{align*}
+\end{theorem}
+\begin{proof}
+We want to minimize $J$ with respect to the initial condition $g$. If we differentiate $J$ with respect to $g$, we get:
 \begin{align*}
 \hat{J}'(g)(s) &= \langle u'(g)^*J_u,s \rangle \\
 &= \langle -E_gp,s \rangle
@@ -283,27 +300,46 @@ where $p$ is the solution of the adjoint equation:
 \begin{align*}
 E_u^*p = J_u
 \end{align*}
-As always, $E$ refers to the state equation, which in our case is Burgers equation (\ref{burger}). I will now write up the weak formulation of (\ref{burger}), so that I can use it to derive the adjoint. Let $(\cdot,\cdot)$ be $L^2$ inner product over $\Omega$.
-\begin{align*}
+As always, $E$ refers to the state equation, which in our case is Burgers equation (\ref{weak burger}). To derive the adjoint it is useful to change the formulation of (\ref{weak burger}), to also be an integral over time. We then get the following representation of Burgers equation E: 
+\begin{align}
 &\text{Find u s.t $\forall \phi \in C^{\infty}$} \\
-&(\dot{u},\phi) + (uu_x,\phi) + \nu( \nabla u, \nabla\phi) =0
-\end{align*}
+&L[u,\phi]=\int_0^T-(u,\phi_t) + (uu_x,\phi) + \nu( \nabla u, \nabla\phi)dt + (u(T),\phi(T))-(g,\phi(0)) =0 \label{int_burger}
+\end{align}
+If we differentiate the $L$ form with respect to $u$, we get:
 \begin{align*}
-E_u &= \frac{\partial}{\partial t} + u_x + u\frac{\partial}{\partial x} - \nu\Delta + \delta_{t=0} + \delta_{\partial \Omega} \\
-E_g &= -\delta_{t=0} \\
-E_u^* &= -\frac{\partial}{\partial t}  -u\frac{\partial}{\partial x}- \nu\Delta + \delta_{t=T} + (1+h)\delta_{\partial \Omega} \\
-J_u &= 2u
+L_u[\cdot,\phi] = \int_0^T-(\cdot,\phi_t) + +(u\frac{\partial}{\partial x}\cdot,\phi)+(u_x\cdot,\phi) + \nu( \nabla \cdot, \nabla\phi)dt+ (\delta_{t=T}\cdot,\phi(T))
 \end{align*}
-The adjoint equation would then look like:
+We want to derive the adjoint, and we do this in the usual way, by inserting $v$, $w$ into the equation, and trying to move the derivative from $v$ to $w$. The only terms that change, are $(v,w_t)$ and $(uv_x,w)$, so i will do these separately:
 \begin{align*}
--p_t -up_x - \nu p_{xx} &= 2u \ \text{for $(x,t)\in \Omega\times(0,\infty)$}\\
-p(x,t) &= 0 \ \text{for $(x,t) \in\partial\Omega\times(0,\infty)$ } \\
-p(x,T) &= 0 \ \text{for $x \in\Omega$ }
+-\int_0^T(v,w_t)dt &= \int_0^T (v_t,w)dt + (v(0),w(0))-(v(T),w(T))\\
+\int_0^T(uv_x,w) &= \int_0^T\int_{\Omega} u(x,t)v_x(x,t)w(x,t)dxdt \\
+&=-\int_0^T\int_{\Omega} v(x,t)(u_x(x,t)w(x,t) + u(x,t)w_x(x,t))dxdt + \int_0^T \int_{\partial\Omega}\frac{\partial v}{\partial n}uwdSdt \\
+&=-\int_0^T(u_xv,w)+(uv,w_x)dt
 \end{align*}
-This would mean that the gradient of $\hat{J}$ is:
+If now insert the expressions above into $L_u[v,w]$, we get:
 \begin{align*}
-\hat{J}'(g)(s) = \langle p(\cdot,0), s\rangle
+L_u[v,w] &= \int_0^T(v_t,w) -(uv,w_x) +\nu(v_x,w_x)dt +(v(0),w(0)) \\
+&=L_u^*[w,v]
 \end{align*}
+The adjoint equation will be $L[p,\psi]=\int_0^T(J_u,\psi)dt$. From (\ref{burger_func}) it is easy to see that $J_u=2u$, which means that the adjoint equation looks as the following:
+\begin{align*}
+&\textit{Find $p$ such that } \forall \psi \in C^{\infty} \\
+&\int_0^T(p,\psi_t) -(up_x,\psi) +\nu(p_x,\psi_x)dt +(p(0),\psi(0)) = 2\int_0^T(u,\psi)dt
+\end{align*}
+If we move the time derivative from $\psi$ to $p$, we instead get:
+\begin{align*}
+&\textit{Find $p$ such that } \forall \psi \in C^{\infty} \\
+&\int_0^T-(p_t,\psi) -(up_x,\psi) +\nu(p_x,\psi_x)dt +(p(T),\psi(T)) = 2\int_0^T(u,\psi)dt
+\end{align*}
+The only thing we need to do to find the gradient, is to find $E_g$. From (\ref{int_burger}), we see that:
+\begin{align*}
+L_g[\cdot,\phi] = -(\delta_{t=0}\cdot,\phi(0))
+\end{align*} 
+This means that applying $E_g$ to the solution of the adjoint equation $p$ is the same as evaluating $p$ at zero and multiplying with $-1$. This means that:
+\begin{align*}
+\hat{J}'(g) = -E_gp= p(0)
+\end{align*}
+\end{proof}
 \textbf{m time intervals}
 \\
 Divide $[0,T]$ into $m$ intervals $[T_{i-1},T_i]$, where $0=T_0<T_1<\cdots<T_m=T$. We then solve burgers equation for $\{u^i(x)\}_{i=1}^m$ on each interval with initial conditions $\{\lambda_i(x)\}_{i=0}^{m-1}$, where $\lambda_0(x)=g(x)$. As for the two interval case, we need to add penalty terms to the functional, to solve the optimization problem. The penalized functional looks like this:
