@@ -28,6 +28,36 @@ def partition_func(n,m):
 
     return partition
 
+def v_comm_numbers(n,m):
+
+    N = n/m
+    r = n%m
+
+    scatter_s = [0]
+    scatter_l = []
+    gather_s = [0]
+    gather_l = []
+
+    if r>0:
+        scatter_l.append(n + 1)
+        gather_l.append(n + 1)
+    else:
+        scatter_l.append(n)
+        gather_l.append(n)
+    
+    for  i in range(1,m):
+        if r -i >0:
+            scatter_l.append(n+2)
+            gather_l.append(n+1)
+        else:
+            scatter_l.append(n+1)
+            gather_l.append(n)
+
+        scatter_s.append(scatter_s[i-1] + scatter_l[i-1]-1)
+        gather_s.append(scatter_s[i])
+        
+    return tuple(scatter_s),tuple(scatter_l),tuple(gather_s),tuple(gather_l)
+
 def u_part(n,m,i):
 
     
@@ -66,6 +96,14 @@ def interval_partition(n,m,i):
     return state
 
 class POCP(OptimalControlProblem):
+
+    def __init__(self,y0,yT,T,J,grad_J,parallel_J=None,
+                 Lbfgs_options=None,options=None):
+        
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
+
+        self.parallel_J=parallel_J
+    
 
 
     def parallel_ODE_penalty_solver(self,u,N,m,comm):
@@ -110,17 +148,29 @@ class POCP(OptimalControlProblem):
         if rank==0:
             print y
             print len(y)
-        if rank==0:               
-            return y
+                     
+        return y
+
+
+    def parallel_penalty_functional(self,u,N,my):
+
+        comm = MPI.COMM_WORLD
+
+        m = comm.Get_size()
+        y = self.parallel_ODE_penalty_solver(u,N,m,comm)
+
+        J_val = self.parallel_J(u,y,self.yT,self.T,mu,comm)
+
+        return J_val
 
 class PProblem1(POCP):
     """
     optimal control with ODE y=ay'+u
     """
 
-    def __init__(self,y0,yT,T,a,J,grad_J,options=None):
+    def __init__(self,y0,yT,T,a,J,grad_J,parallel_J,options=None):
 
-        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
+        POCP.__init__(self,y0,yT,T,J,parallel_J,grad_J,options)
 
         self.a = a
 
@@ -150,8 +200,24 @@ if __name__ == "__main__":
     def grad_J(u,p,dt):
         return dt*(u+p)
 
+    def parallel_J(u,y,yT,T,mu,comm):
+        m = comm.Get_size()
+        rank = comm.Get_rank()
+        n = len(u) -m+1
 
-    problem = PProblem1(y0,yT,T,a,J,grad_J)
+        t = np.linspace(0,T,n)
+
+        start = u_part(n,m,rank)
+        end = u_part(n,m,rank+1)
+        s = 0
+        if rank == m-1:
+            s = 0.5*(mu*(y[-1]-yT)**2 + trapz(u[start:end+1]**2,t[start:end+1]))
+        else:
+            s = 0.5*trapz(u[start:end+1]**2,t[start:end+1])
+
+        
+
+    problem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J)
 
     comm = MPI.COMM_WORLD
 
