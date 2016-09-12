@@ -39,22 +39,22 @@ def v_comm_numbers(n,m):
     gather_l = []
 
     if r>0:
-        scatter_l.append(n + 1)
-        gather_l.append(n + 1)
+        scatter_l.append(N + 1)
+        gather_l.append(N + 1)
     else:
-        scatter_l.append(n)
-        gather_l.append(n)
+        scatter_l.append(N)
+        gather_l.append(N)
     
     for  i in range(1,m):
         if r -i >0:
-            scatter_l.append(n+2)
-            gather_l.append(n+1)
+            scatter_l.append(N+2)
+            gather_l.append(N+1)
         else:
-            scatter_l.append(n+1)
-            gather_l.append(n)
+            scatter_l.append(N+1)
+            gather_l.append(N)
 
         scatter_s.append(scatter_s[i-1] + scatter_l[i-1]-1)
-        gather_s.append(scatter_s[i])
+        gather_s.append(scatter_s[i]+1)
         
     return tuple(scatter_s),tuple(scatter_l),tuple(gather_s),tuple(gather_l)
 
@@ -103,10 +103,12 @@ class POCP(OptimalControlProblem):
         OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
 
         self.parallel_J=parallel_J
+
+        self.comm = MPI.COMM_WORLD
     
 
 
-    def parallel_ODE_penalty_solver(self,u,N,m,comm):
+    def parallel_ODE_penalty_solver(self,u,N,m):
         """
         Solving the state equation with partitioning
 
@@ -115,16 +117,18 @@ class POCP(OptimalControlProblem):
         * N: Number of discritization points
         """
         
-
+        comm = self.comm
         
         rank = comm.Get_rank()
         
         T = self.T
         
+        ss,sl,gs,gl = v_comm_numbers(N+1,m)
+        print gs,gl
         dt = float(T)/N
         y = interval_partition(N+1,m,rank)
-        print len(y), rank,len(u)
-
+        #print len(y), rank,len(u)
+        
         if rank == 0:
             y[0]=self.y0
             Y = np.zeros(N+1)
@@ -140,21 +144,23 @@ class POCP(OptimalControlProblem):
             
             y[j+1] = self.ODE_update(y,u,j,start+j,dt)
         if rank ==0:
-            y_send = y
+            y_send = y.copy()
         else:
-            y_send = y[1:]
+            y_send = y[1:].copy()
+        comm.Barrier()
         y=comm.gather(y,root=0)
-        #comm.Gather(y_send,Y,root=0)
+        comm.Gatherv(y_send,[Y,gl,gs,MPI.DOUBLE])
+        
         if rank==0:
-            print y
+            #print y
             print len(y)
                      
-        return y
+        return y,Y
 
 
     def parallel_penalty_functional(self,u,N,my):
 
-        comm = MPI.COMM_WORLD
+        comm = self.comm
 
         m = comm.Get_size()
         y = self.parallel_ODE_penalty_solver(u,N,m,comm)
@@ -219,21 +225,22 @@ if __name__ == "__main__":
 
     problem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J)
 
-    comm = MPI.COMM_WORLD
+    comm = problem.comm
 
     m = comm.Get_size()
     rank = comm.Get_rank()
-    N = 1000
+    N = 100
     u = np.zeros(N+m)
     
-    y=problem.parallel_ODE_penalty_solver(u,N,m,comm)
-    print y
+    y,Y=problem.parallel_ODE_penalty_solver(u,N,m)
+    print Y
 
+    """
     t = np.linspace(1,2,100)
     l=[]
     for i in range(3):
         l.append(u_part(100,3,i))
     print trapz(t**2,t)
     print trapz(t[:l[1]+1]**2,t[:l[1]+1]) + trapz(t[l[1]:l[2]+1]**2,t[l[1]:l[2]+1]) +trapz(t[l[2]:]**2,t[l[2]:])
-    
+    """
 
