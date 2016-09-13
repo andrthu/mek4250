@@ -148,22 +148,22 @@ class POCP(OptimalControlProblem):
         else:
             y_send = y[1:].copy()
         comm.Barrier()
-        y=comm.gather(y,root=0)
+        y_list=comm.gather(y,root=0)
         comm.Gatherv(y_send,[Y,gl,gs,MPI.DOUBLE])
         
         if rank==0:
             #print y
             print len(y)
                      
-        return y,Y
+        return y,Y,y_list
 
 
-    def parallel_penalty_functional(self,u,N,my):
+    def parallel_penalty_functional(self,u,N,mu):
 
         comm = self.comm
 
         m = comm.Get_size()
-        y = self.parallel_ODE_penalty_solver(u,N,m,comm)
+        y ,_,_= self.parallel_ODE_penalty_solver(u,N,m)
 
         J_val = self.parallel_J(u,y,self.yT,self.T,mu,comm)
 
@@ -176,7 +176,7 @@ class PProblem1(POCP):
 
     def __init__(self,y0,yT,T,a,J,grad_J,parallel_J,options=None):
 
-        POCP.__init__(self,y0,yT,T,J,parallel_J,grad_J,options)
+        POCP.__init__(self,y0,yT,T,J,grad_J,parallel_J,options)
 
         self.a = a
 
@@ -215,15 +215,25 @@ if __name__ == "__main__":
 
         start = u_part(n,m,rank)
         end = u_part(n,m,rank+1)
-        s = 0
+        s = np.zeros(1)
         if rank == m-1:
-            s = 0.5*(mu*(y[-1]-yT)**2 + trapz(u[start:end+1]**2,t[start:end+1]))
+            s[0] = 0.5*((y[-1]-yT)**2 + trapz(u[start:end+1]**2,t[start:end+1]))
         else:
-            s = 0.5*trapz(u[start:end+1]**2,t[start:end+1])
+            s[0] = 0.5*trapz(u[start:end+1]**2,t[start:end+1])
+            s[0] += 0.5*mu*(y[-1]-u[n+rank])**2
+        if rank==0:
+            S=np.zeros(1)
+        else:
+            S =None
+        comm.Barrier()
+        comm.Reduce(s,S,op=MPI.SUM,root=0)
 
+        return S
+
+                        
         
 
-    problem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J)
+    problem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J=parallel_J)
 
     comm = problem.comm
 
@@ -232,9 +242,10 @@ if __name__ == "__main__":
     N = 100
     u = np.zeros(N+m)
     
-    y,Y=problem.parallel_ODE_penalty_solver(u,N,m)
+    y,Y,y_list=problem.parallel_ODE_penalty_solver(u,N,m)
     print Y
-
+    
+    print problem.parallel_penalty_functional(u,N,1)
     """
     t = np.linspace(1,2,100)
     l=[]
