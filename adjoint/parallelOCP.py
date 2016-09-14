@@ -6,7 +6,7 @@ from scipy.optimize import minimize
 import numpy as np
 
 from mpi4py import MPI
-from optimalContolProblem import OptimalControlProblem
+from optimalContolProblem import OptimalControlProblem, Problem1
 
 
 def partition_func(n,m):
@@ -124,7 +124,7 @@ class POCP(OptimalControlProblem):
         T = self.T
         
         ss,sl,gs,gl = v_comm_numbers(N+1,m)
-        print gs,gl
+        #print gs,gl
         dt = float(T)/N
         y = interval_partition(N+1,m,rank)
         #print len(y), rank,len(u)
@@ -151,9 +151,7 @@ class POCP(OptimalControlProblem):
         y_list=comm.gather(y,root=0)
         comm.Gatherv(y_send,[Y,gl,gs,MPI.DOUBLE])
         
-        if rank==0:
-            #print y
-            print len(y)
+
                      
         return y,Y,y_list
 
@@ -168,6 +166,62 @@ class POCP(OptimalControlProblem):
         J_val = self.parallel_J(u,y,self.yT,self.T,mu,comm)
 
         return J_val
+
+    def parallel_adjoint_penalty_solver(self,u,N,m,mu,init=initial_penalty):
+        """
+        Solving the adjoint equation using finite difference, and partitioning
+        the time interval.
+
+        Arguments:
+        * u: the control
+        * N: Number of discritization points
+        * m: Number of intervals we partition time in
+        """
+        comm = self.comm
+        T = self.T
+        y0 = self.y0
+        dt = float(T)/N
+        yT = self.yT
+        
+        rank = comm.Get_rank()
+        
+        l = interval_partition(N+1,m,rank)#partition_func(N+1,m)
+        y,Y,y_list = self.ODE_penalty_solver(u,N,m)
+
+        if rank == m-1:
+            l[-1] = self.initial_adjoint(y[-1])
+        else:
+            l[-1]=init(self,y,u,mu,N,rank) #my*(y[i][-1]-u[N+1+i])
+            
+        
+        for j in range(len(l)-1):
+            l[-(j+2)] = self.adjoint_update(l,y,j,dt)
+
+
+        if rank == 0:
+            
+            L = np.zeros(N+1)
+            l_list = []
+            
+        else:
+            
+            L = None
+            l_list =None
+            
+            
+        if rank == m-1:
+            l_send = l.copy()
+        else:
+            l_send = l[:-1].copy()
+
+
+        ss,sl,gs,gl = v_comm_numbers(N+1,m)
+        comm.Barrier()
+        l_list=comm.gather(l,root=0)
+        comm.Gatherv(y_send,[Y,gl,gs,MPI.DOUBLE])
+        
+        return l,L
+        
 
 class PProblem1(POCP):
     """
@@ -189,6 +243,7 @@ class PProblem1(POCP):
     def adjoint_update(self,l,y,i,dt):
         a = self.a
         return (1+dt*a)*l[-(i+1)] 
+
 if __name__ == "__main__":
 
     y0 = 1
@@ -231,7 +286,9 @@ if __name__ == "__main__":
         return S
 
                         
-        
+    non_parallel = Problem1(y0,yT,T,a,J,grad_J)
+    
+    print non_parallel.Penalty_Functional(np.zeros(103),100,3,1)
 
     problem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J=parallel_J)
 
@@ -243,7 +300,7 @@ if __name__ == "__main__":
     u = np.zeros(N+m)
     
     y,Y,y_list=problem.parallel_ODE_penalty_solver(u,N,m)
-    print Y
+    #print Y
     
     print problem.parallel_penalty_functional(u,N,1)
     """
