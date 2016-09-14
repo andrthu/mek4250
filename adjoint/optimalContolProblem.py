@@ -701,6 +701,69 @@ class OptimalControlProblem():
             axs[x1,x2].set_ylabel("control")
         plt.show()
 
+
+    def scipy_simple_test(self,N,make_plot=False):
+
+        if make_plot:
+            teller=0
+            import matplotlib.pyplot as plt
+            t = np.linspace(0,self.T,N+1)
+
+        M = [2,4,8,16,32]
+        L=[]
+        mul=[1,3]
+        for i in range(len(M)):
+
+            L.append(self.scipy_lbfgs_memory_solve(N,M[i],[0.5*N],mul=mul))
+        try:
+            res1 = self.scipy_solver(N)
+        except Warning:
+            res1 = {'iteration' : -1}
+
+
+        print "--------------m=1--------------" 
+        print "|lbfgs memory=10| #iterations=%d| #iterations/m=%.2f"%(res1.nit,res1.nit) 
+        if make_plot:
+            if res1['iteration']!=-1:
+                plt.plot(t,res1['control'].array(),'r--')
+        for i in range(len(M)):
+            print "--------------m=%d--------------" %(M[i])
+            for j in range(len(mul)):
+                print "|lbfgs memory=%d| #iterations=%d| #iterations/m=%.2f"%(mul[j]*max(M[i],10),L[i][j].nit,L[i][j].nit/float(M[i]))
+
+                if make_plot:
+                    
+                    if j == len(mul)-1:
+                        if L[i][j].nit!=-1:
+                            plt.plot(t,L[i][j]['control'].array()[:N+1])
+                            teller =teller+1
+        if make_plot:
+            
+            if teller==len(M):
+                plt.legend(['m=1','m=2','m=4','m=8','m=16','m=32'],loc=4)
+            plt.title('Controlls for non linear in y term problem')
+            plt.xlabel('time')
+            plt.ylabel('controls')
+            plt.show()
+
+
+
+    def scipy_lbfgs_memory_solve(self,N,m,my_list,mul=[1,2]):
+        """
+        Method used in testing
+        """
+        
+        results = []
+        for i in range(len(mul)):
+            opt = {'gtol': 1e-4,'maxcor' : mul[i]*max(m,10)}
+            try:
+                res = self.scipy_penalty_solve(N,m,my_list,options=opt)
+            except Warning:
+                res = {'iteration' : -1}
+            results.append(res)
+        return results
+
+
         
 class Problem1(OptimalControlProblem):
     """
