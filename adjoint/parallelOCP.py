@@ -167,7 +167,11 @@ class POCP(OptimalControlProblem):
 
         return J_val
 
-    def parallel_adjoint_penalty_solver(self,u,N,m,mu,init=initial_penalty):
+    def initial_penalty(self,y,u,mu,N,i):
+        print mu*(y[-1]-u[N+rank+1]),i
+        return mu*(y[-1]-u[N+rank+1])
+
+    def parallel_adjoint_penalty_solver(self,u,N,m,mu):
         """
         Solving the adjoint equation using finite difference, and partitioning
         the time interval.
@@ -186,12 +190,12 @@ class POCP(OptimalControlProblem):
         rank = comm.Get_rank()
         
         l = interval_partition(N+1,m,rank)#partition_func(N+1,m)
-        y,Y,y_list = self.ODE_penalty_solver(u,N,m)
+        y,Y,y_list = self.parallel_ODE_penalty_solver(u,N,m)
 
         if rank == m-1:
             l[-1] = self.initial_adjoint(y[-1])
         else:
-            l[-1]=init(self,y,u,mu,N,rank) #my*(y[i][-1]-u[N+1+i])
+            l[-1]=self.initial_penalty(y,u,mu,N,rank) #my*(y[i][-1]-u[N+1+i])
             
         
         for j in range(len(l)-1):
@@ -216,12 +220,51 @@ class POCP(OptimalControlProblem):
 
 
         ss,sl,gs,gl = v_comm_numbers(N+1,m)
+        new_gl = [i for i in gl]
+        new_gl[0] = gl[0]-1
+        new_gl[-1] = gl[-1]+1
+        new_gl = tuple(new_gl)
         comm.Barrier()
         l_list=comm.gather(l,root=0)
-        comm.Gatherv(y_send,[Y,gl,gs,MPI.DOUBLE])
+        comm.Gatherv(l_send,[L,new_gl,ss,MPI.DOUBLE])
         
-        return l,L
+        return l,L,l_list
+    def penalty_grad(self,u,N,m,mu):
+
+        comm = self.comm
+        rank = comm.Get_rank()
+        p,P,p_list = self.parallel_adjoint_penalty_solver(u,N,m,mu)
         
+
+        if rank!=0:
+            P = np.zeros(N+1)
+        comm.bcast(P,root=0)
+
+        grad = np.zeros(N+m)
+
+        grad[:N+1] = self.grad_J(u[:N+1],P,float(self.T)/N)
+        if rank==0:
+            print grad
+        lam = np.zeros(m)
+        
+        
+        if rank == m-1:
+            my_lam = np.array([0])
+        else:
+            print N+rank
+            my_lam = np.array([p[0]-u[N+1+rank]])
+        
+        start = tuple(np.linspace(0,m-1,m))
+        length = tuple(np.zeros(m) +1)
+        comm.Barrier()
+        comm.Allgatherv(my_lam,[lam,length,start,MPI.DOUBLE])
+        #comm.bcast(lam,root=0)
+        grad[N+1:] = lam[:-1]
+        
+        return grad
+
+        
+
 
 class PProblem1(POCP):
     """
@@ -301,8 +344,13 @@ if __name__ == "__main__":
     
     y,Y,y_list=problem.parallel_ODE_penalty_solver(u,N,m)
     #print Y
-    
-    print problem.parallel_penalty_functional(u,N,1)
+    l,L,l_list = problem.parallel_adjoint_penalty_solver(u,N,m,1)
+    #print L
+    #print problem.parallel_penalty_functional(u,N,1)
+
+    g = problem.penalty_grad(u,N,m,1)
+    if rank==0:
+        print g
     """
     t = np.linspace(1,2,100)
     l=[]
