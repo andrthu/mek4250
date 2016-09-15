@@ -124,10 +124,10 @@ class POCP(OptimalControlProblem):
         T = self.T
         
         ss,sl,gs,gl = v_comm_numbers(N+1,m)
-        #print gs,gl
+        
         dt = float(T)/N
         y = interval_partition(N+1,m,rank)
-        #print len(y), rank,len(u)
+        
         
         if rank == 0:
             y[0]=self.y0
@@ -168,7 +168,7 @@ class POCP(OptimalControlProblem):
         return J_val
 
     def initial_penalty(self,y,u,mu,N,i):
-        print mu*(y[-1]-u[N+rank+1]),i
+        
         return mu*(y[-1]-u[N+rank+1])
 
     def parallel_adjoint_penalty_solver(self,u,N,m,mu):
@@ -243,15 +243,15 @@ class POCP(OptimalControlProblem):
         grad = np.zeros(N+m)
 
         grad[:N+1] = self.grad_J(u[:N+1],P,float(self.T)/N)
-        if rank==0:
-            print grad
+        
+            
         lam = np.zeros(m)
         
         
         if rank == m-1:
             my_lam = np.array([0])
         else:
-            print N+rank
+            
             my_lam = np.array([p[0]-u[N+1+rank]])
         
         start = tuple(np.linspace(0,m-1,m))
@@ -328,10 +328,7 @@ if __name__ == "__main__":
 
         return S
 
-                        
-    non_parallel = Problem1(y0,yT,T,a,J,grad_J)
     
-    print non_parallel.Penalty_Functional(np.zeros(103),100,3,1)
 
     problem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J=parallel_J)
 
@@ -340,17 +337,24 @@ if __name__ == "__main__":
     m = comm.Get_size()
     rank = comm.Get_rank()
     N = 100
-    u = np.zeros(N+m)
     
+    u = np.zeros(N+m)
+    u[:N+1] = 100*np.linspace(0,T,N+1)                    
+    non_parallel = Problem1(y0,yT,T,a,J,grad_J)
+    
+    print non_parallel.Penalty_Functional(u,N,m,1)
+
     y,Y,y_list=problem.parallel_ODE_penalty_solver(u,N,m)
-    #print Y
+
+    
     l,L,l_list = problem.parallel_adjoint_penalty_solver(u,N,m,1)
     #print L
-    #print problem.parallel_penalty_functional(u,N,1)
+    print problem.parallel_penalty_functional(u,N,1)
 
     g = problem.penalty_grad(u,N,m,1)
     if rank==0:
-        print g
+        #print g
+        print Y[-1]
     """
     t = np.linspace(1,2,100)
     l=[]
