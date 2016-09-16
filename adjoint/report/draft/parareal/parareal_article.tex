@@ -1,0 +1,50 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+ 
+\usepackage{cite}
+
+
+\newtheorem{theorem}{Theorem}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+\title{Parareal explanation}
+
+
+\begin{document}
+\maketitle
+\section{Introduction}
+Want to summarize the paper \cite{lions2001resolution}, and explain the parareal scheme. The parareal scheme is used to parallelize differential equations in temporal direction, by decomposing the time interval $I=[0,T]$. The equation looks like the following:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial u}{\partial t} + Au = f \ 				\textit{For $t \in I$} \\
+		u(0)=u_0
+	\end{array}
+   \right.			
+\end{align} 
+Decomposing the interval $I$, means dividing the interval into $N$ subintervals $\{I_n = [T^{n},T^{n+1}]\}_{n=0}^{N-1}$, with length $\Delta T = T/N$. We also define new equations equations for each interval:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial u^n}{\partial t} + Au^n = f \ 				\textit{For $t \in I^n$} \\
+		u^n(T^n)=\lambda^n
+	\end{array}
+   \right.			
+\end{align}
+\bibliography{ppaper}
+\bibliographystyle{plain}
+\end{document}
