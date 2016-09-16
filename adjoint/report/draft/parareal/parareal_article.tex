@@ -43,8 +43,35 @@ Decomposing the interval $I$, means dividing the interval into $N$ subintervals 
 		\frac{\partial u^n}{\partial t} + Au^n = f \ 				\textit{For $t \in I^n$} \\
 		u^n(T^n)=\lambda^n
 	\end{array}
-   \right.			
+\right.	
 \end{align}
+Here $\lambda^0=u_0$. If the $\lambda$s are known, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the previous intervals, and need to be calculated by solving the equation. The parareal scheme is a way of dealing with this.
+\section{The parareal scheme} 
+The parareal scheme finds the $\lambda$s, by solving the equation on the entire interval using an implicit euler scheme on a very course resolution, and then using this numerical solution $Y$ at the decomposed interval boundaries $\{T^n\}_{n=1}^{N-1}$ as $\lambda$s, for the real solver $y$. We can then repeat this process, by propagating the jumps $S^n=y^{n-1}(T^n)-Y^n$ using the course solver. This creates an iteration, that looks like this:
+\begin{align*}
+HER \ MANGLER \ DET \ NOE
+\end{align*} 
+\\
+\\
+To illustrate how it works, I will set up the parareal scheme for a simple ODE:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial y}{\partial t}(t)=-ay(t) \ 				\textit{on $[0,T]$} \\
+		y(0)=y_0
+	\end{array}
+\right.	\label{ODE_eks}
+\end{align}
+If we discretize \ref{ODE_eks} using implicit euler, we get:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{Y^{n+1}-Y^{n}}{\Delta T}+aY^{n+1}=0  \\
+		Y^0=y_0
+	\end{array}
+\right.	
+\end{align}
+Notice that the interval $I$, is discretized using the same time difference as the time decomposition.
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
