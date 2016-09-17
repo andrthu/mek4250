@@ -47,9 +47,11 @@ Decomposing the interval $I$, means dividing the interval into $N$ subintervals 
 \end{align}
 Here $\lambda^0=u_0$. If the $\lambda$s are known, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the previous intervals, and need to be calculated by solving the equation. The parareal scheme is a way of dealing with this.
 \section{The parareal scheme} 
-The parareal scheme finds the $\lambda$s, by solving the equation on the entire interval using an implicit euler scheme on a very course resolution, and then using this numerical solution $Y$ at the decomposed interval boundaries $\{T^n\}_{n=1}^{N-1}$ as $\lambda$s, for the real solver $y$. We can then repeat this process, by propagating the jumps $S^n=y^{n-1}(T^n)-Y^n$ using the course solver. This creates an iteration, that looks like this:
+The parareal scheme finds the $\lambda$s, by solving the equation on the entire interval using an implicit euler scheme on a very course resolution, and then using this numerical solution $Y$ at the decomposed interval boundaries $\{T^n\}_{n=1}^{N-1}$ as $\lambda$s, for the real solver $y$. We can then repeat this process, by propagating the jumps $S^n=y^{n-1}(T^n)-Y^n$ using the course scheme. This creates an iteration, that looks like this:
 \begin{align*}
-HER \ MANGLER \ DET \ NOE
+&(i) \ \textit{Set $S^n_k = y_k^{n-1}(T^n)-Y_k^n$} \\
+&(ii) \ \textit{Propogate the jumps with the couarse scheme $\delta_k$ using (\ref{propagator})} \\
+&(iii) \ \textit{Update $Y_{k+1}^n=y_k^{n-1} + \delta_k^n$}
 \end{align*} 
 \\
 \\
@@ -62,16 +64,33 @@ To illustrate how it works, I will set up the parareal scheme for a simple ODE:
 	\end{array}
 \right.	\label{ODE_eks}
 \end{align}
-If we discretize \ref{ODE_eks} using implicit euler, we get:
+If we discretize (\ref{ODE_eks}) using implicit euler, we get:
 \begin{align}
 \left\{
      \begin{array}{lr}
 		\frac{Y^{n+1}-Y^{n}}{\Delta T}+aY^{n+1}=0  \\
 		Y^0=y_0
 	\end{array}
-\right.	
+\right.	\label{couarse_euler}
 \end{align}
-Notice that the interval $I$, is discretized using the same time difference as the time decomposition.
+Notice that the interval $I$, is discretized using the same time difference as the time decomposition. Then we introduce $N$ new equations on each interval, i.e.
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial y^n}{\partial t}(t)=-ay^n(t) \ 				\textit{on $[T_n,T_{n+1}]$} \\
+		y(T_n)=Y^n
+	\end{array}
+\right. \label{interval_eqs}
+\end{align}
+We can now solve (\ref{interval_eqs}) independently either exactly or using some numerical scheme. So if we first solve (\ref{couarse_euler}) and then (\ref{interval_eqs}), and define $Y_1^n=Y^n$, $y_1^n(t)=y^n(t)$, we can set an initial jump $S_1^n=y_1^{n-1}(T^n)-Y_1^n$ and start the iterative jump propagation process. Lets now specify, whet is meant by \textit{propogate the jumps with the couarse scheme}:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\delta_k^{n+1}-Y^{n}}{\Delta T}+a\delta_k^{n+1}=\frac{S_k ^n}{\Delta T}  \\
+		\delta_k^0=0
+	\end{array}
+\right. \label{propagator}
+\end{align}  
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
