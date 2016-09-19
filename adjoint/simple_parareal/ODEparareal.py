@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import trapz
 
 def implicit_solver(y0,a,dt,N,f=None):
     
@@ -11,7 +12,7 @@ def implicit_solver(y0,a,dt,N,f=None):
         f = np.zeros(N+1)
 
     for i in range(N):
-        y[i+1] = (y[i] +dt*f[i+1])/(dt*a+1)
+        y[i+1] = (y[i] +dt*f[i])/(dt*a+1)
 
     return y
 
@@ -32,19 +33,21 @@ def int_par_len(n,m,i):
             state = N+1
     return state
 
-def parareal_solver(y0,a,T,M,N,order=3):
+def parareal_solver(y0,a,T,M,N,order=3,show_plot=False):
 
     
     
     dt = float(T)/N
     dT =  float(T)/M
     
-    t = np.linspace(0,T,N+1)
-    coarse_t = np.linspace(0,T,M+1)
+    
+    
 
     coarse_y = implicit_solver(y0,a,dT,M)
-    plt.plot(coarse_t,coarse_y)
-    plt.show()
+    if show_plot:
+        coarse_t = np.linspace(0,T,M+1)
+        plt.plot(coarse_t,coarse_y)
+        plt.show()
     y=[]
     for i in range(M):
         y.append(implicit_solver(coarse_y[i],a,dt,int_par_len(N+1,M,i)-1))
@@ -60,13 +63,15 @@ def parareal_solver(y0,a,T,M,N,order=3):
         
         Y[start:end] = y[i+1][1:]
         start = end
-    plt.plot(t,Y)
-    plt.show()
+    if show_plot:
+        t = np.linspace(0,T,N+1)
+        plt.plot(t,Y)
+        plt.show()
     
     for k in range(order-1):
         S = np.zeros(M+1)
         for i in range(M):
-            S[i+1] = y[i][-1] - coarse_y[i+1]
+            S[i+1] = (y[i][-1] - coarse_y[i+1])/dT
 
         delta = implicit_solver(0,a,dT,M,f=S)
         for i in range(M):
@@ -84,8 +89,43 @@ def parareal_solver(y0,a,T,M,N,order=3):
         
             Y[start:end] = y[i+1][1:]
             start = end
-        plt.plot(t,Y)
-        plt.show()
+        if show_plot:
+            plt.plot(t,Y)
+            plt.show()
+
+    return Y
+
+
+def test_order():
+
+    a = 1.3
+    T = 1
+    y0 = 3.52
+
+    N = 10000
+    M = 15
+
+    t = np.linspace(0,T,N+1)
+    ye = y0*np.exp(-a*t)
+    yn = implicit_solver(y0,a,float(T)/N,N)
+    plt.plot(t,ye,'r--')
+    plt.plot(t,yn,'b--')
+    leg = ['exact','euler']
+    error = [np.max(abs(ye-yn))]
+    stop = int(np.ceil(np.log(1./N)/np.log(1./M))+1)
+    
+    for k in range(1,stop):
+        y = parareal_solver(y0,a,T,M,N,order=k)
+        plt.plot(t,y)
+        leg.append('k='+str(k))
+        error.append(np.max(abs(ye-y)))
+    plt.legend(leg)
+    plt.show()
+    print error
+    print
+    #print np.log(1./N)/np.log(1./M)
+
+    
         
 if __name__ == "__main__":
     a = 1
@@ -94,4 +134,5 @@ if __name__ == "__main__":
 
     N = 100000
     M = 2
-    parareal_solver(y0,a,T,M,N,order=5)
+    test_order()
+    #parareal_solver(y0,a,T,M,N,order=1,show_plot=True)

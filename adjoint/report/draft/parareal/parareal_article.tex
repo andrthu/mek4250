@@ -90,7 +90,25 @@ We can now solve (\ref{interval_eqs}) independently either exactly or using some
 		\delta_k^0=0
 	\end{array}
 \right. \label{propagator}
-\end{align}  
+\end{align} 
+\section{Error estimate}
+According to \cite{lions2001resolution} we have the following error estimate for the parareal scheme of (\ref{ODE_eks}):
+\begin{gather*}
+\forall \ n,0\leq n\leq N-1 \\ |Y_k^n-y(T^n)| + \max_{t\in[T^N,T^{n+1}]}|y_k^n(t)-y(t)| \leq c_k\Delta T^k
+\end{gather*} 
+This suggest that the max norm difference between exact and parareal solution looks like this:
+\begin{align*}
+\max_{t\in[0,T]}|y_k(t)-y(t)| \leq C_k\Delta T^k
+\end{align*}
+The error estimate for a first order scheme, like implicit euler, we know looks like this:
+\begin{align*}
+\max_{t\in[0,T]}|y_{\Delta t}(t)-y(t)| \leq C\Delta t
+\end{align*}
+It would then be reasonable that the number of iterations for the parareal scheme needed to reach the same error as the fine first order solver, would be:
+\begin{align*}
+k\approx\frac{\log(\Delta t)}{\log(\Delta T)}
+\end{align*}
+This assumes that the constants $C_k$ and $C$ are similar. This is a reasonable assumption, since these constants depend on the parameters of the equation (\ref{ODE_eks}).
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
