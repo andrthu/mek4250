@@ -36,7 +36,7 @@ Want to summarize the paper \cite{lions2001resolution}, and explain the parareal
 	\end{array}
    \right.			
 \end{align} 
-Decomposing the interval $I$, means dividing the interval into $N$ subintervals $\{I_n = [T^{n},T^{n+1}]\}_{n=0}^{N-1}$, with length $\Delta T = T/N$. We also define new equations equations for each interval:
+Decomposing the interval $I$, means dividing the interval into $N$ subintervals $\{I_n = [T^{n},T^{n+1}]\}_{n=0}^{N-1}$, with length $\Delta T = T/N$. We also define new equations for each interval:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -124,6 +124,7 @@ To illustrate this lets try to solve a version of (\ref{ODE_eks}) using an impli
     $N=100$ &2&2&	6.302522e-5\\ \hline
     \end{tabular}
 \end{center}
+Notice that for two intervals, the excpected number of iterations is $13$, however with $N=2$, we get the same error as the one iterval solution in only two iterations. The rason for this, is that doing $N$ iterations of the parareal scheme when using $N$ time decompositions, is the same as solving the equation withoutr any decompositions. 
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
