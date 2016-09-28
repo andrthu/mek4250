@@ -125,6 +125,20 @@ To illustrate this lets try to solve a version of (\ref{ODE_eks}) using an impli
     \end{tabular}
 \end{center}
 Notice that for two intervals, the excpected number of iterations is $13$, however with $N=2$, we get the same error as the one iterval solution in only two iterations. The rason for this, is that doing $N$ iterations of the parareal scheme when using $N$ time decompositions, is the same as solving the equation withoutr any decompositions. 
+\section{Optimal control}
+In \cite{maday2002parareal} the authours try to build a bridge between pararel and optimal control with time dependent PDE constraints. The problem PDE they look at is:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial y}{\partial t}(t)+Ay=Bv  \ \textit{For $t \in [0,T]$}\\
+		y(0)=y^0
+	\end{array}
+\right. \label{OC_PDE}
+\end{align}
+The functional they use is on the following form:
+\begin{align}
+J(v) = \frac{1}{2}\int_0^T ||v(t)||^2 dt + \frac{\alpha}{2}||y(T)-t^T||^2
+\end{align} \label{functional}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
