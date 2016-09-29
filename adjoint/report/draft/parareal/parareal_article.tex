@@ -51,7 +51,7 @@ The parareal scheme finds the $\lambda$s, by solving the equation on the entire 
 \begin{align*}
 &(i) \ \textit{Set $S^n_k = y_k^{n-1}(T^n)-Y_k^n$} \\
 &(ii) \ \textit{Propogate the jumps with the couarse scheme $\delta_k$ using (\ref{propagator})} \\
-&(iii) \ \textit{Update $Y_{k+1}^n=y_k^{n-1} + \delta_k^n$}
+&(iii) \ \textit{Update $Y_{k+1}^n=y_k^{n-1}(T^n) + \delta_k^n$}
 \end{align*} 
 \\
 \\
@@ -86,7 +86,7 @@ We can now solve (\ref{interval_eqs}) independently either exactly or using some
 \begin{align}
 \left\{
      \begin{array}{lr}
-		\frac{\delta_k^{n+1}-Y^{n}}{\Delta T}+a\delta_k^{n+1}=\frac{S_k ^n}{\Delta T}  \\
+		\frac{\delta_k^{n+1}-\delta_k^{n}}{\Delta T}+a\delta_k^{n+1}=\frac{S_k ^n}{\Delta T}  \\
 		\delta_k^0=0
 	\end{array}
 \right. \label{propagator}
@@ -222,6 +222,10 @@ We then define the following iterative process to find the $\lambda$s:
 \begin{align}
 \lambda_{n+1}^{k+1} = G_{\Delta T}(\lambda_{n}^{k+1}) + \bold{F}_{\Delta T}(\lambda_{n}^{k})-G_{\Delta T}(\lambda_{n}^{k})
 \end{align} 
+On matrix form this looks like:
+\begin{align}
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)
+\end{align}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
