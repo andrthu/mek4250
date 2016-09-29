@@ -137,8 +137,91 @@ In \cite{maday2002parareal} the authours try to build a bridge between pararel a
 \end{align}
 The functional they use is on the following form:
 \begin{align}
-J(v) = \frac{1}{2}\int_0^T ||v(t)||^2 dt + \frac{\alpha}{2}||y(T)-t^T||^2
-\end{align} \label{functional}
+J(v) = \frac{1}{2}\int_0^T ||v(t)||^2 dt + \frac{\alpha}{2}||y(T)-y^T||^2 \label{functional}
+\end{align} 
+We want to decompose this problem in time, and therefore split the interval $[0,T]$ into $N$ smaller parts. We then split the equation (\ref{OC_PDE}) into $N$ independent equations with initial condition $\{\lambda_n\}_{n=0}^{N-1}$:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial y_n}{\partial t}(t)+Ay_n=Bv_n  \ \textit{For $t \in [T_n,T_{n+1}]$}\\
+		y_{n}(T_n)=\lambda_i
+	\end{array}
+\right. \label{OC_PPDE}
+\end{align} 
+Here $\lambda_0=y^0$. In order to be able to solve the optimisation problem we need to introduce penalty terms in the functional (\ref{functional}). The new functional looks like this:
+\begin{align}
+\hat{J}(v,\lambda) = \frac{1}{2}\int_0^T ||v(t)||^2 dt + \frac{\alpha}{2}||y_{N-1}(T)-y^T||^2 + \frac{\mu}{2}\sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n}) \label{penalty_func}
+\end{align} 
+What we now are interested in, is the gradient of (\ref{penalty_func}) and the so called adjoint equation. One can show that the directional derivative of (\ref{penalty_func}) is:
+\begin{align}
+\langle\hat{J}'(v,\lambda),(s,l) \rangle = \int_0^T (B^*p+v)sdt + \sum_{n=1}^{N-1}(p_n(T_n) - p_{n-1}(T_n))l_n
+\end{align} \label{penalty grad}
+The $p$ function in (\ref{penalty grad}), is the adjoint equations :
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		-\frac{\partial p_n}{\partial t}(t)+A^*p_n=0  \ \textit{For $t \in [T_n,T_{n+1}]$}\\
+		p_{n}(T_{n+1}) = \mu(y_n(T_{n+1})) -\lambda_{n+1}) \ \textit{for $N\neq N-1$} \\
+		p_{N-1}(T_N)=\alpha(y_{N-1}(T_{N}))-y^T) 
+	\end{array}
+\right. 
+\end{align}\label{adjoints}
+\section{Virtual problem}
+To find the connection between the optimal control problem and parareal, \cite{maday2002parareal} looks at the virtual problem, i.e (\ref{OC_PDE}) with $B=0$ and (\ref{functional}) with $\alpha=0$. This yields the equation:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial y}{\partial t}(t)+Ay=0  \ \textit{For $t \in [0,T]$}\\
+		y(0)=y^0
+	\end{array}
+\right. \label{viritual}
+\end{align}
+The functional of the problem is simply:
+\begin{align}
+\hat{J}(\lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n})
+\end{align}
+The solution to this problem is simply $\lambda_n=y_{n-1}(T_n)$. If we assume $A$ is time independent, we can define $\bold{F}_{\Delta T}(\omega)$ to be the evaluation at $\Delta T$ of the equation:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial y}{\partial t}(t)+Ay=0  \\
+		y(0)=\omega
+	\end{array}
+\right. 
+\end{align}
+The solution of the problem can then be stated as $\lambda_n = \bold{F}_{\Delta T}(\lambda_{n-1})$. This problem then becomes a system on the following form:
+\begin{align}
+  \left[ \begin{array}{cccc}
+   I & 0 & \cdots & 0 \\  
+   -F_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-F_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-F_{\Delta T} & I   \\
+   \end{array}  \right] 
+   \left[ \begin{array}{c}
+   \lambda_0 \\
+   \lambda_1 \\
+   \cdots \\
+   \lambda_{N-1} \\
+   \end{array}  \right] =
+   \left[ \begin{array}{c}
+   y^0 \\
+   0 \\
+   \cdots \\
+   0 \\
+   \end{array}  \right]
+\end{align}
+Or just simply:
+\begin{align}
+M \ \Lambda \ = \ H
+\end{align}
+We now introduce a coarse solver $G_{\Delta T}(\omega)$, that is inspired by (\ref{couarse_euler}), i.e. we use implicit euler to calculate $G_{\Delta T}(\omega)$:
+\begin{align}
+\frac{G_{\Delta T}(\omega) -\omega }{\Delta T } + A G_{\Delta T}(\omega) = 0
+\end{align}  
+We then define the following iterative process to find the $\lambda$s:
+\begin{align}
+\lambda_{n+1}^{k+1} = G_{\Delta T}(\lambda_{n}^{k+1}) + \bold{F}_{\Delta T}(\lambda_{n}^{k})-G_{\Delta T}(\lambda_{n}^{k})
+\end{align} 
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
