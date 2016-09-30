@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import trapz
 
+
 def implicit_solver(y0,a,dt,N,f=None):
     """
     Solves the equation y'-ay = f y(0)=y0 using implicit euler

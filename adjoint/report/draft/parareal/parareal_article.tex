@@ -82,7 +82,7 @@ Notice that the interval $I$, is discretized using the same time difference as t
 	\end{array}
 \right. \label{interval_eqs}
 \end{align}
-We can now solve (\ref{interval_eqs}) independently either exactly or using some numerical scheme. So if we first solve (\ref{couarse_euler}) and then (\ref{interval_eqs}), and define $Y_1^n=Y^n$, $y_1^n(t)=y^n(t)$, we can set an initial jump $S_1^n=y_1^{n-1}(T^n)-Y_1^n$ and start the iterative jump propagation process. Lets now specify, whet is meant by \textit{propogate the jumps with the couarse scheme}:
+We can now solve (\ref{interval_eqs}) independently either exactly or using some numerical scheme. So if we first solve (\ref{couarse_euler}) and then (\ref{interval_eqs}), and define $Y_1^n=Y^n$, $y_1^n(t)=y^n(t)$, we can set an initial jump $S_1^n=y_1^{n-1}(T^n)-Y_1^n$ and start the iterative jump propagation process. Lets now specify, whet is meant by \textit{propagate the jumps with the course scheme}:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -124,9 +124,9 @@ To illustrate this lets try to solve a version of (\ref{ODE_eks}) using an impli
     $N=100$ &2&2&	6.302522e-5\\ \hline
     \end{tabular}
 \end{center}
-Notice that for two intervals, the excpected number of iterations is $13$, however with $N=2$, we get the same error as the one iterval solution in only two iterations. The reason for this, is that doing $N$ iterations of the parareal scheme when using $N$ time decompositions, is the same as solving the equation without any decompositions. 
+Notice that for two intervals, the expected number of iterations is $13$, however with $N=2$, we get the same error as the one interval solution in only two iterations. The reason for this, is that doing $N$ iterations of the parareal scheme when using $N$ time decompositions, is the same as solving the equation without any decompositions. 
 \section{Optimal control}
-In \cite{maday2002parareal} the authours try to build a bridge between pararel and optimal control with time dependent PDE constraints. The problem PDE they look at is:
+In \cite{maday2002parareal} the authors try to build a bridge between parareal and optimal control with time dependent PDE constraints. The problem PDE they look at is:
 \begin{align}
 \left\{
      \begin{array}{lr}
