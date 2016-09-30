@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 from scipy.integrate import trapz
 
 def implicit_solver(y0,a,dt,N,f=None):
-    
+    """
+    Solves the equation y'-ay = f y(0)=y0 using implicit euler
+    and N steps of timestep dt 
+    """
     
     y = np.zeros(N+1)
     y[0] = y0
@@ -17,7 +20,10 @@ def implicit_solver(y0,a,dt,N,f=None):
     return y
 
 def int_par_len(n,m,i):
-    
+    """
+    With fine resolution n and m time decomposition intervals,
+    functions find number of points in interval i
+    """
     N=n/m
     rest=n%m
 
@@ -34,7 +40,10 @@ def int_par_len(n,m,i):
     return state
 
 def propagator_iteration(y,c_y,a,y0,N,M,dt,dT):
-     
+    """
+    updates the interval initialvalues and the fine solution using
+    the new initial values. 
+    """
     S = np.zeros(M+1)
     for i in range(M):
         S[i+1] = (y[i][-1] - c_y[i+1])/dT
@@ -51,6 +60,9 @@ def propagator_iteration(y,c_y,a,y0,N,M,dt,dT):
     return y,c_y
 
 def gather_y(y,N):
+    """
+    Gathers tje y arrays into one array Y
+    """
     Y = np.zeros(N+1)
     
     start = len(y[0])
@@ -65,6 +77,11 @@ def gather_y(y,N):
     return Y
 
 def parareal_solver(y0,a,T,M,N,order=3):
+    """
+    implementation of the parareal scheme for our simple ODE
+    using N+1 as fine resolution and M time decompositions, and
+    doing k=order iterations
+    """
     
     dt = float(T)/N
     dT =  float(T)/M
@@ -81,7 +98,10 @@ def parareal_solver(y0,a,T,M,N,order=3):
     return Y
 
 def parareal_tol_solver(y0,a,T,M,N,ye,tol):
-
+    """
+    Does parareal iteration until error between numerical and exact
+    solution ye is under tolerance tol
+    """
     dt = float(T)/N
     dT =  float(T)/M
     coarse_y = implicit_solver(y0,a,dT,M)
@@ -106,7 +126,7 @@ def test_order():
     y0 = 3.52
 
     N = 10000
-    M = 15
+    M = 10
 
     t = np.linspace(0,T,N+1)
     ye = y0*np.exp(-a*t)
@@ -164,6 +184,6 @@ if __name__ == "__main__":
 
     N = 100000
     M = 2
-    #test_order()
-    test_convergence()
+    test_order()
+    #test_convergence()
     #parareal_solver(y0,a,T,M,N,order=1,show_plot=True)

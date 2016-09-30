@@ -124,7 +124,7 @@ To illustrate this lets try to solve a version of (\ref{ODE_eks}) using an impli
     $N=100$ &2&2&	6.302522e-5\\ \hline
     \end{tabular}
 \end{center}
-Notice that for two intervals, the excpected number of iterations is $13$, however with $N=2$, we get the same error as the one iterval solution in only two iterations. The rason for this, is that doing $N$ iterations of the parareal scheme when using $N$ time decompositions, is the same as solving the equation withoutr any decompositions. 
+Notice that for two intervals, the excpected number of iterations is $13$, however with $N=2$, we get the same error as the one iterval solution in only two iterations. The reason for this, is that doing $N$ iterations of the parareal scheme when using $N$ time decompositions, is the same as solving the equation without any decompositions. 
 \section{Optimal control}
 In \cite{maday2002parareal} the authours try to build a bridge between pararel and optimal control with time dependent PDE constraints. The problem PDE they look at is:
 \begin{align}
@@ -154,8 +154,8 @@ Here $\lambda_0=y^0$. In order to be able to solve the optimisation problem we n
 \end{align} 
 What we now are interested in, is the gradient of (\ref{penalty_func}) and the so called adjoint equation. One can show that the directional derivative of (\ref{penalty_func}) is:
 \begin{align}
-\langle\hat{J}'(v,\lambda),(s,l) \rangle = \int_0^T (B^*p+v)sdt + \sum_{n=1}^{N-1}(p_n(T_n) - p_{n-1}(T_n))l_n
-\end{align} \label{penalty grad}
+\langle\hat{J}'(v,\lambda),(s,l) \rangle = \int_0^T (B^*p+v)sdt + \sum_{n=1}^{N-1}(p_n(T_n) - p_{n-1}(T_n))l_n \label{penalty grad}
+\end{align} 
 The $p$ function in (\ref{penalty grad}), is the adjoint equations :
 \begin{align}
 \left\{
@@ -186,16 +186,16 @@ The solution to this problem is simply $\lambda_n=y_{n-1}(T_n)$. If we assume $A
      \begin{array}{lr}
 		\frac{\partial y}{\partial t}(t)+Ay=0  \\
 		y(0)=\omega
-	\end{array}
-\right. 
+	\end{array} 
+\right. \label{F_operator}
 \end{align}
 The solution of the problem can then be stated as $\lambda_n = \bold{F}_{\Delta T}(\lambda_{n-1})$. This problem then becomes a system on the following form:
 \begin{align}
   \left[ \begin{array}{cccc}
    I & 0 & \cdots & 0 \\  
-   -F_{\Delta T} & I & 0 & \cdots \\ 
-   0 &-F_{\Delta T} & I  & \cdots \\
-   0 &\cdots &-F_{\Delta T} & I   \\
+   -\bold{F}_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T} & I   \\
    \end{array}  \right] 
    \left[ \begin{array}{c}
    \lambda_0 \\
@@ -212,7 +212,7 @@ The solution of the problem can then be stated as $\lambda_n = \bold{F}_{\Delta 
 \end{align}
 Or just simply:
 \begin{align}
-M \ \Lambda \ = \ H
+M \ \Lambda \ = \ H \label{vir_mat_sys}
 \end{align}
 We now introduce a coarse solver $G_{\Delta T}(\omega)$, that is inspired by (\ref{couarse_euler}), i.e. we use implicit euler to calculate $G_{\Delta T}(\omega)$:
 \begin{align}
@@ -224,8 +224,31 @@ We then define the following iterative process to find the $\lambda$s:
 \end{align} 
 On matrix form this looks like:
 \begin{align}
-\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k) \label{matrix_iter1}
 \end{align}
+The matrix $\bar{M}$ is the $G_{\Delta T}$ version of $M$, i.e:
+\begin{align}
+\bar{M} = \left[ \begin{array}{cccc}
+   I & 0 & \cdots & 0 \\  
+   -G_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-G_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-G_{\Delta T} & I   \\
+   \end{array}  \right]
+\end{align}
+Solving the system (\ref{vir_mat_sys}), solves the the problem $\hat{J}(\Lambda)=0$. What we are usually interested in, is solving $\hat{J}'(\Lambda)=0$. From (\ref{penalty grad}), we know that: $$\hat{J}'(\Lambda) = \{p_n(T_n)-p_{n-1}(T_n)\}_{n=1}^{N-1}$$ We also see that the adjoint equations (\ref{adjoints}) can be used to define $\bold{F}_{\Delta T}^*(\omega)$ as we did in (\ref{F_operator}). It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
+\begin{align}
+M^* \ M \ \Lambda \ = \ M^* \ H \label{vir_grad_sys}
+\end{align}
+where 
+\begin{align}
+M^*= \left[ \begin{array}{cccc}
+   I & -\bold{F}_{\Delta T}^* & 0 & 0 \\  
+   0 & I & -\bold{F}_{\Delta T}^* & \cdots \\ 
+   \cdots &0 & I  & -\bold{F}_{\Delta T}^* \\
+   0 &\cdots &\cdots & I   \\
+   \end{array}  \right]
+\end{align}
+One could then solve the system (\ref{vir_grad_sys}), using an iteration as in (\ref{matrix_iter1}), but with $\bar{M}^{-1}\bar{M}^{-*}$ instead of $\bar{M}^{-1}$. \cite{maday2002parareal} then they propose $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for solving the original penalized control problem (\ref{OC_PPDE}-\ref{penalty_func}) using the gradient method. 
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
