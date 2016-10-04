@@ -319,21 +319,40 @@ class FenicsOptimalControlProblem():
     
 
 class Burger1(FenicsOptimalControlProblem):
-    
+    """
+    u_t  +uu_x -u_xx =0
+    """
     #opt = {nu : ...}
     def adjoint_ic(self,opt):
+        """
+        Initial condition of the adjoint
+        """
         return project(Constant(0.0),self.V)
 
     def Dt(self,u,u_,timestep):
         return (u-u_)/timestep
 
     def PDE_form(self,ic,opt,u,u_,v,timestep):
+        """
+        The PDE written on wariational form
+
+        return
+        -F: the form
+        -bc: the boundery conditions
+        """
         nu = Constant(opt['nu'])
         F = (self.Dt(u,u_,timestep)*v + u*u.dx(0)*v + nu*u.dx(0)*v.dx(0))*dx
         bc = DirichletBC(self.V,0.0,"on_boundary")
         return F,bc
 
     def adjoint_form(self,opt,u,p,p_,v,timestep):
+        """
+        The adjoint PDE written on wariational form
+
+        return
+        -F: the form
+        -bc: the boundery conditions
+        """
         nu = Constant(opt['nu'])
 
         F = -(-self.Dt(p,p_,timestep)*v + u*p.dx(0)*v -nu*p.dx(0)*v.dx(0) +2*u*v)*dx
@@ -341,6 +360,9 @@ class Burger1(FenicsOptimalControlProblem):
         return F,bc
 
     def get_control(self,opt,ic,m):
+        """
+        Function that returns the control
+        """
         if m==1:
             return ic.copy().vector().array()
         
@@ -351,7 +373,11 @@ class Burger1(FenicsOptimalControlProblem):
         return x
         
     def get_opt(self,control,opt,ic,m):
-
+        """
+        Given control overall options and ic, returns
+        options and initial conitions, that might depend
+        on control and ic.
+        """
         g = Function(self.V)
 
         g.vector()[:] = control[:]
@@ -359,9 +385,15 @@ class Burger1(FenicsOptimalControlProblem):
         return opt,g
 
     def grad_J(self,P,opt,ic,h):
+        """
+        what the gradient with respect to control looks like
+        """
         return h*P[-1].vector().array()
     
     def J(self,opt,ic,U,start,end):
+        """
+        The functional we want to minimize
+        """
         n = len(U)
         timestep = (end-start)/float(n)
         s = 0
@@ -372,6 +404,9 @@ class Burger1(FenicsOptimalControlProblem):
         s += 0.5*assemble(U[-1]**2*dx)
         return timestep*s
     def penalty_grad_J(self,P,loc,ic,m,h):
+        """
+        Gradient when we have penalty
+        """
         xN = len(ic.vector().array())
         
         grad = np.zeros(m*xN)
