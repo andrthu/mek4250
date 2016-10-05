@@ -6,6 +6,7 @@ from scipy.integrate import trapz
 from scipy.optimize import minimize as Mini
 import numpy as np
 from my_bfgs.my_vector import SimpleVector
+import time
 
 def time_partition(start,end,Tn,m):
 
@@ -56,11 +57,13 @@ class FenicsOptimalControlProblem():
                    "return_data"            : True,}
 
         return default
+        
+    
 
-    def adjoint_ic(self,opt):
+    def adjoint_ic(self,opt,U):
         raise NotImplementedError, 'adjoint_ic not implemented'
 
-    def PDE_form(self,ic,opt,u,u_,v,timestep):
+    def PDE_form(self,ic,opt,u,u_,v,rhs,timestep):
         raise NotImplementedError, 'PDE_form not implemented'
 
     def adjoint_form(self,opt,u,p,p_,v,timestep):
@@ -80,6 +83,9 @@ class FenicsOptimalControlProblem():
 
     def penalty_grad_J(self,P,opt,ic,m,h):
         raise NotImplementedError, 'penalty_grad_J not implemented'
+
+    def rhs_finder(self,Rhs,rhs,i):
+        return None
 
     def penalty_J(self,opt,ic,U,start,end,tn,m,mu):
 
@@ -104,28 +110,37 @@ class FenicsOptimalControlProblem():
         u_ = ic.copy()
         if show_plot:
             plot(u_)
+            time.sleep(0.1)
         U.append(u_.copy())
 
         u = Function(self.V)
         v = TestFunction(self.V)
         
         timestep = Constant((end-start)/float(Tn))
+        Rhs = opt['rhs'] 
+        rhs = Function(self.V)
+        
+        t_step = 0
+        self.rhs_finder(Rhs,rhs,t_step)
 
-        F,bc = self.PDE_form(ic,opt,u,u_,v,timestep)
+        F,bc = self.PDE_form(ic,opt,u,u_,v,rhs,timestep)
 
 
         t  = start
 
         while (t<end - DOLFIN_EPS):
+            t_step+=1
+            self.rhs_finder(Rhs,rhs,t_step)
+            
             solve(F==0,u,bc)
             u_.assign(u)
             U.append(u_.copy())
 
             t += float(timestep)
-
+            
             if show_plot:
                 plot(u_)
-
+                time.sleep(0.11)
         return U
 
     def adjoint_interval_solver(self,opt,p_ic,U,start,end,Tn):
@@ -161,10 +176,10 @@ class FenicsOptimalControlProblem():
         
     def adjoint_solver(self,ic,opti,start,end,Tn):
 
-        U = self.PDE_solver(ic,opt,start,end,Tn)
-        p_ic = self.adjoint_ic(opt)
+        U = self.PDE_solver(ic,opti,start,end,Tn)
+        p_ic = self.adjoint_ic(opti,U)
         
-        return self.adjoint_interval_solver(opt,p_ic,U,start,end,Tn)
+        return self.adjoint_interval_solver(opti,p_ic,U,start,end,Tn)
 
 
     def penalty_PDE_solver(self,opt,ic,lam_ic,start,end,Tn,m):
@@ -195,7 +210,7 @@ class FenicsOptimalControlProblem():
             en = T[i+1]
             P.append(self.adjoint_interval_solver(opti,P_ic,U[i],sta,en,N[i]))
 
-        P_ic = self.adjoint_ic(opt)
+        P_ic = self.adjoint_ic(opt,U[-1])
         #adjoint_interval_solver(self,opt,p_ic,U,start,end,Tn):
         P.append(self.adjoint_interval_solver(opti,P_ic,U[-1],T[-2],T[-1],N[-1]))
 
@@ -323,7 +338,7 @@ class Burger1(FenicsOptimalControlProblem):
     u_t  +uu_x -u_xx =0
     """
     #opt = {nu : ...}
-    def adjoint_ic(self,opt):
+    def adjoint_ic(self,opt,U):
         """
         Initial condition of the adjoint
         """
@@ -332,7 +347,7 @@ class Burger1(FenicsOptimalControlProblem):
     def Dt(self,u,u_,timestep):
         return (u-u_)/timestep
 
-    def PDE_form(self,ic,opt,u,u_,v,timestep):
+    def PDE_form(self,ic,opt,u,u_,v,rhs,timestep):
         """
         The PDE written on wariational form
 
@@ -425,16 +440,16 @@ if __name__ == "__main__":
 
     test1 = Burger1(V,mesh)
 
-    opt = {'nu' : 0.1}
+    opt = {'nu' : 0.1,'rhs':None}
     ic = project(Expression("x[0]*(1-x[0])"),V)
     start = 0
     end = 0.5
     Tn = 30
     
-    #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
+    test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
 
-    test1.adjoint_solver(ic,opt,start,end,Tn)
-
+    #test1.adjoint_solver(ic,opt,start,end,Tn)
+    
     res = test1.solver(opt,ic,start,end,Tn)
 
     
