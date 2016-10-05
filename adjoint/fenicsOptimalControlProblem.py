@@ -23,15 +23,29 @@ def time_partition(start,end,Tn,m):
 
     for i in range(0,m):
         if rest-i >0:
-            N[i] = fraq + 1
+            N[i] = fraq +1
         else:
-            N[i] = fraq
+            N[i] = fraq 
 
         t = t + timestep*N[i]
         T[i+1] = t
 
     return N,T
+def partition_start(Tn,m):
+    
+    start = np.zeros(m)
+    fraq = Tn/m
+    rest = Tn%m
 
+    start[0] = 0
+    
+    for i in range(m-1):
+        if rest - i >0:
+            start[i+1] = start[i] + fraq + 1
+        else:
+            start[i+1] = start[i] + fraq 
+    return start
+    
 
 class FenicsOptimalControlProblem():
 
@@ -103,7 +117,7 @@ class FenicsOptimalControlProblem():
 
                 
         
-    def PDE_solver(self,ic,opt,start,end,Tn,show_plot=False):
+    def PDE_solver(self,ic,opt,start,end,Tn,show_plot=False,first_step=0):
 
         U = []
 
@@ -120,7 +134,7 @@ class FenicsOptimalControlProblem():
         Rhs = opt['rhs'] 
         rhs = Function(self.V)
         
-        t_step = 0
+        t_step = first_step
         self.rhs_finder(Rhs,rhs,t_step)
 
         F,bc = self.PDE_form(ic,opt,u,u_,v,rhs,timestep)
@@ -174,33 +188,34 @@ class FenicsOptimalControlProblem():
         return P
 
         
-    def adjoint_solver(self,ic,opti,start,end,Tn):
+    def adjoint_solver(self,ic,opt,start,end,Tn):
 
-        U = self.PDE_solver(ic,opti,start,end,Tn)
-        p_ic = self.adjoint_ic(opti,U)
+        U = self.PDE_solver(ic,opt,start,end,Tn)
+        p_ic = self.adjoint_ic(opt,U)
         
-        return self.adjoint_interval_solver(opti,p_ic,U,start,end,Tn)
+        return self.adjoint_interval_solver(opt,p_ic,U,start,end,Tn)
 
 
     def penalty_PDE_solver(self,opt,ic,lam_ic,start,end,Tn,m):
 
         N,T = time_partition(start,end,Tn,m)
-
+        s = partition_start(Tn,m)
 
         U = []
         V = self.V
         #PDE_solver(self,ic,opt,start,end,Tn,show_plot=False)
-        U.append(self.PDE_solver(ic,opt,T[0],T[1],N[0]))
+        U.append(self.PDE_solver(ic,opt,T[0],T[1],N[0],first_step=0))
         for i in range(1,m):
-            U.append(self.PDE_solver(lam_ic[i-1],opt,T[i],T[i+1],N[i]))
+            U.append(self.PDE_solver(lam_ic[i-1],opt,T[i],T[i+1],N[i],
+                                     first_step=s[i]))
 
         return U
 
-    def penalty_adjoint_solver(self,ic,lam_ic,opti,start,end,Tn,m,mu):
+    def penalty_adjoint_solver(self,ic,lam_ic,opt,start,end,Tn,m,mu):
 
         N,T = time_partition(start,end,Tn,m)
     
-        U =  self.penalty_PDE_solver(opti,ic,lam_ic,start,end,Tn,m)
+        U =  self.penalty_PDE_solver(opt,ic,lam_ic,start,end,Tn,m)
         
         P = []
     
@@ -208,11 +223,11 @@ class FenicsOptimalControlProblem():
             P_ic = project((U[i][-1]-lam_ic[i])*Constant(mu),V)
             sta = T[i]
             en = T[i+1]
-            P.append(self.adjoint_interval_solver(opti,P_ic,U[i],sta,en,N[i]))
+            P.append(self.adjoint_interval_solver(opt,P_ic,U[i],sta,en,N[i]))
 
         P_ic = self.adjoint_ic(opt,U[-1])
         #adjoint_interval_solver(self,opt,p_ic,U,start,end,Tn):
-        P.append(self.adjoint_interval_solver(opti,P_ic,U[-1],T[-2],T[-1],N[-1]))
+        P.append(self.adjoint_interval_solver(opt,P_ic,U[-1],T[-2],T[-1],N[-1]))
 
         return P
 

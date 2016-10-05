@@ -104,7 +104,7 @@ class HeatControl(FenicsOptimalControlProblem):
 if __name__== '__main__':
     import time
     set_log_level(ERROR)
-    mesh = UnitIntervalMesh(40)
+    mesh = UnitIntervalMesh(20)
 
     V = FunctionSpace(mesh,"CG",1)
 
@@ -113,20 +113,21 @@ if __name__== '__main__':
     ic = project(Expression("x[0]*(1-x[0])"),V)
     start = 0
     end = 0.5
-    Tn = 10
+    Tn = 100
     RHS = []
     for i in range(Tn+1):
         RHS.append(project(Constant(1.0),V))
 
     opt = {'c' : 0.1,'rhs':RHS,'uT':project(Constant(0.0),V)}
 
-    #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
+    test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
     
-    res = test1.solver(opt,ic,start,end,Tn)
+    #res = test1.solver(opt,ic,start,end,Tn)
 
     N = len(ic.vector().array())
     #print res
     i =0
+    """
     while i <Tn:
         f = Function(V)
         
@@ -135,3 +136,4 @@ if __name__== '__main__':
         time.sleep(1)
         i+=1
     
+    """
