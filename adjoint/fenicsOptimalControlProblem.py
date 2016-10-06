@@ -33,7 +33,7 @@ def time_partition(start,end,Tn,m):
     return N,T
 def partition_start(Tn,m):
     
-    start = np.zeros(m)
+    
     fraq = Tn/m
     rest = Tn%m
     

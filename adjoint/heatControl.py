@@ -72,10 +72,10 @@ class HeatControl(FenicsOptimalControlProblem):
         N = len(ic.vector().array())
         Nt = len(f)
         x = np.zeros(N*Nt)
-        
+        timestep = opt['T']/float(len(f))
         #x[0:N] = f[0].copy().vector().array()[:]
         for i in range(0,Nt):
-            x[i*N:(i+1)*N]=P[-(i+1)].copy().vector().array()[:] + f[i].copy().vector().array()[:]
+            x[i*N:(i+1)*N]=timestep*(P[-(i+1)].copy().vector().array()[:] + f[i].copy().vector().array()[:])
 
         return h*x
         
@@ -99,11 +99,11 @@ class HeatControl(FenicsOptimalControlProblem):
         N = len(ic.vector().array())
         Nt = len(f)
         x = np.zeros(N*Nt +(m-1)*N )
-        
+        timestep = opt['T']/float(len(f))
         #x[0:N] = f[0].copy().vector().array()[:]
         p = self.gather_penalty_funcs(P)
         for i in range(0,Nt):
-            x[i*N:(i+1)*N]=p[-(i+1)].copy().vector().array()[:] + f[i].copy().vector().array()[:]
+            x[i*N:(i+1)*N]=timestep*(p[-(i+1)].copy().vector().array()[:] + f[i].copy().vector().array()[:])
         
         for i in range(m-1):
             x[Nt*N+ i*N:Nt*N+ (i+1)*N] =project((P[i+1][-1]-P[i][0]),
@@ -122,22 +122,25 @@ if __name__== '__main__':
     V = FunctionSpace(mesh,"CG",1)
 
     test1 = HeatControl(V,mesh)
-
-    ic = project(Expression("x[0]*(1-x[0])"),V)
+    
+    ic = project(Constant(0.0),V)
     start = 0
     end = 0.5
-    Tn = 10
+    Tn = 30
     RHS = []
-    m = 2
+    m = 3
+    r = Expression('sin(pi*x[0])')
     for i in range(Tn+1):
-        RHS.append(project(Constant(1.0),V))
+        RHS.append(project(r,V))
 
-    opt = {'c' : 0.1,'rhs':RHS,'uT':project(Constant(0.0),V)}
+    ut = Constant(0.0)
+    
+    opt = {'c' : 0.1,'rhs':RHS,'uT':project(ut,V),'T':end-start}
 
     #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
     
     #res = test1.solver(opt,ic,start,end,Tn)
-    res = test1.penalty_solver(opt,ic,start,end,Tn,m,[10])
+    res = test1.penalty_solver(opt,ic,start,end,Tn,m,[1])
     N = len(ic.vector().array())
     #print res
     i = 0
