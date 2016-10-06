@@ -36,17 +36,18 @@ def partition_start(Tn,m):
     start = np.zeros(m)
     fraq = Tn/m
     rest = Tn%m
-
-    start[0] = 0
+    
+    start = []
+    start.append(0)
     
     for i in range(m-1):
         if rest - i >0:
-            start[i+1] = start[i] + fraq + 1
+            start.append(start[i] + fraq + 1)
         else:
-            start[i+1] = start[i] + fraq 
+            start.append( start[i] + fraq) 
     return start
     
-
+    
 class FenicsOptimalControlProblem():
 
     def __init__(self,V,mesh):
@@ -101,7 +102,7 @@ class FenicsOptimalControlProblem():
     def rhs_finder(self,Rhs,rhs,i):
         return None
 
-    def penalty_J(self,opt,ic,U,start,end,tn,m,mu):
+    def penalty_J(self,opt,ic,U,start,end,Tn,m,mu):
 
         
         N,T=time_partition(start,end,Tn,m)
@@ -220,7 +221,7 @@ class FenicsOptimalControlProblem():
         P = []
     
         for i in range(m-1):
-            P_ic = project((U[i][-1]-lam_ic[i])*Constant(mu),V)
+            P_ic = project((U[i][-1]-lam_ic[i])*Constant(mu),self.V)
             sta = T[i]
             en = T[i+1]
             P.append(self.adjoint_interval_solver(opt,P_ic,U[i],sta,en,N[i]))
@@ -346,6 +347,20 @@ class FenicsOptimalControlProblem():
         return res
 
 
+    def gather_penalty_funcs(self,L):
+        l = []
+        m = len(L)
+        for i in range(len(L[0])):
+            l.append(L[0][i])
+
+        for i in range(1,m):
+            for j in range(1,len(L[i])):
+                l.append(L[i][j])
+
+        return l
+
+
+
     
 
 class Burger1(FenicsOptimalControlProblem):
@@ -442,7 +457,8 @@ class Burger1(FenicsOptimalControlProblem):
         grad = np.zeros(m*xN)
         grad[:xN] = P[0][-1].vector().array().copy()[:]
         for i in range(m-1):
-            grad[(i+1)*xN:(i+2)*xN] = project((P[i+1][-1]-P[i][0]),V).vector().array().copy()[:]
+            grad[(i+1)*xN:(i+2)*xN] = project((P[i+1][-1]-P[i][0]),
+                                              self.V).vector().array().copy()[:]
         
         return h*grad
         

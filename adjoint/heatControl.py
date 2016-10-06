@@ -95,7 +95,20 @@ class HeatControl(FenicsOptimalControlProblem):
         return timestep*s +s2
 
     def penalty_grad_J(self,P,opt,ic,m,h):
-        raise NotImplementedError, 'penalty_grad_J not implemented'
+        f = opt['rhs']
+        N = len(ic.vector().array())
+        Nt = len(f)
+        x = np.zeros(N*Nt +(m-1)*N )
+        
+        #x[0:N] = f[0].copy().vector().array()[:]
+        p = self.gather_penalty_funcs(P)
+        for i in range(0,Nt):
+            x[i*N:(i+1)*N]=p[-(i+1)].copy().vector().array()[:] + f[i].copy().vector().array()[:]
+        
+        for i in range(m-1):
+            x[Nt*N+ i*N:Nt*N+ (i+1)*N] =project((P[i+1][-1]-P[i][0]),
+                                              self.V).vector().array().copy()[:]
+        return h*x
         
     def rhs_finder(self,Rhs,rhs,i):
         rhs.assign(Rhs[i])
@@ -113,20 +126,21 @@ if __name__== '__main__':
     ic = project(Expression("x[0]*(1-x[0])"),V)
     start = 0
     end = 0.5
-    Tn = 100
+    Tn = 10
     RHS = []
+    m = 2
     for i in range(Tn+1):
         RHS.append(project(Constant(1.0),V))
 
     opt = {'c' : 0.1,'rhs':RHS,'uT':project(Constant(0.0),V)}
 
-    test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
+    #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
     
     #res = test1.solver(opt,ic,start,end,Tn)
-
+    res = test1.penalty_solver(opt,ic,start,end,Tn,m,[10])
     N = len(ic.vector().array())
     #print res
-    i =0
+    i = 0
     """
     while i <Tn:
         f = Function(V)
