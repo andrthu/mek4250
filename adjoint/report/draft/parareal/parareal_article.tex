@@ -178,7 +178,7 @@ To find the connection between the optimal control problem and parareal, \cite{m
 \end{align}
 The functional of the problem is simply:
 \begin{align}
-\hat{J}(\lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n})
+\hat{J}(\lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n}) \label{virtual_func}
 \end{align}
 The solution to this problem is simply $\lambda_n=y_{n-1}(T_n)$. If we assume $A$ is time independent, we can define $\bold{F}_{\Delta T}(\omega)$ to be the evaluation at $\Delta T$ of the equation:
 \begin{align}
@@ -249,6 +249,98 @@ M^*= \left[ \begin{array}{cccc}
    \end{array}  \right]
 \end{align}
 One could then solve the system (\ref{vir_grad_sys}), using an iteration as in (\ref{matrix_iter1}), but with $\bar{M}^{-1}\bar{M}^{-*}$ instead of $\bar{M}^{-1}$. \cite{maday2002parareal} then they propose $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for solving the original penalized control problem (\ref{OC_PPDE}-\ref{penalty_func}) using the gradient method. 
+\section{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian}
+If you define the vectors x and b:
+\begin{align}
+x= \left( \begin{array}{c}
+   \lambda_0 \\  
+   \lambda_1 - y_0(T_1) \\ 
+   \cdots  \\
+   \lambda_N -y_{N-1}(T_N)  \\
+   \end{array}  \right),
+b = \left( \begin{array}{c}
+   y_0 \\  
+   0\\ 
+   \cdots  \\
+   0  \\
+   \end{array}  \right)
+\end{align} 
+We can then formulate the problem (\ref{viritual} - \ref{virtual_func}) as 
+\begin{align}
+\min_{y,\lambda} J(y,\lambda) &= (x-b)^*(x-b) \label{vector_J}\\ 
+\textit{Subject to:} \ y_{n-1}(T_n) &= \bold{F}_{\Delta T}(\lambda_{n-1}) \ n =1,...,N-1 
+\end{align}
+We can reduce $J$ to only depend on $\Lambda$ by inserting an expression for $y_{n-1}(T_n)$ into (\ref{vector_J}). Firstly we see that:
+\begin{align}
+\left( \begin{array}{c}
+   y_0(T_1) \\  
+   y_1(T_2) \\ 
+   \cdots  \\
+   y_{N-1}(T_N)  \\
+   \end{array}  \right)= 
+   \left[ \begin{array}{cccc}  
+   \bold{F}_{\Delta T} & 0 & 0 & 0 \\ 
+   0 &\bold{F}_{\Delta T} & 0  & \cdots \\
+   \cdots & \cdots & \cdots & \cdots \\
+   0 &\cdots &0 & \bold{F}_{\Delta T}   \\
+   \end{array}  \right]
+   \left( \begin{array}{c}
+   \lambda_0 \\  
+   \lambda_1 \\ 
+   \cdots  \\
+   \lambda_{N-1}  \\
+   \end{array}  \right)
+\end{align}
+and when we insert this into $x$, we get:
+\begin{align}
+\hat{x} = \left[ \begin{array}{cccc}
+   I & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T} & I   \\
+   \end{array}  \right]
+   \left( \begin{array}{c}
+   \lambda_0 \\  
+   \lambda_1 \\ 
+   \cdots  \\
+   \lambda_{N-1}  \\
+   \end{array}  \right)
+\end{align}
+or:
+\begin{align}
+\hat{x} = M \ \Lambda
+\end{align}
+This allows us to write up the reduced functional $\hat{J}$, that only depends on $\Lambda$:
+\begin{align*}
+\hat{J}(\Lambda)&= (\hat{x}-b)^*(\hat{x}-b) =
+(M  \Lambda -b)^*(M  \Lambda -b) \\
+&= (M  \Lambda)^*(M  \Lambda) - (M  \Lambda)^*b-b^*(M  \Lambda) + b^*b \\
+&=\Lambda^*M^*M  \Lambda - 2\Lambda^*M^*b + b^*b
+\end{align*}
+We can now easily find the gradient of $\hat{J}$, and it simply looks like this:
+\begin{align*}
+\nabla\hat{J}(\Lambda) = 2 M^*M\Lambda - 2M^*b
+\end{align*}
+Notice that setting $\nabla\hat{J}(\Lambda)=0$ gives us the system (\ref{vir_grad_sys}). Moreover, we see that the Hessian $\nabla^2 \hat{J}$ of $\hat{J}$, is
+\begin{align}
+\nabla^2 \hat{J}(\Lambda) = 2 M^*M
+\end{align}
+This means that the matrix $\bar{M}^{-1}\bar{M}^{-*}$ is an approximation of the inverse Hessian $\nabla^2 \hat{J}$. As mentioned above, \cite{maday2002parareal} solves the problem (\ref{OC_PPDE}-\ref{penalty_func}), using the gradient method:
+\begin{align}
+(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho\nabla\hat{J}(v^{k},\Lambda^{k}) \label{gradient_method}
+\end{align}
+They then propose a preconditioner $Q$ for (\ref{gradient_method}), i.e:
+\begin{align}
+(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho Q\nabla\hat{J}(v^{k},\Lambda^{k}) 
+\end{align}
+where Q is:
+\begin{align}
+Q = \left[ \begin{array}{cc}
+	I & 0 \\
+	0 & \bar{M}^{-1}\bar{M}^{-*} \\
+	\end{array} \right]
+\end{align}
+One could then imagine, that $Q$ is an approximation of the inverse Hessian of $\hat{J}$, atleast for the $\Lambda$ part of the control.
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
