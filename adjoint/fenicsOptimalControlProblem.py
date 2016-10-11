@@ -1,6 +1,7 @@
 from dolfin import *
 from my_bfgs.lbfgs import Lbfgs
 from my_bfgs.my_vector import SimpleVector
+from my_bfgs.steepest_decent import SteepestDecent
 from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize as Mini
@@ -50,14 +51,14 @@ def partition_start(Tn,m):
     
 class FenicsOptimalControlProblem():
 
-    def __init__(self,V,mesh):
+    def __init__(self,V,mesh,options={}):
 
         self.V = V
         self.mesh = mesh
         
-
-        self.Lbfgs_options = self.default_Lbfgs_options()
         
+        self.Lbfgs_options = self.default_Lbfgs_options()
+        self.SD_options = self.default_SD_options()
 
     def default_Lbfgs_options(self):
         """
@@ -72,7 +73,12 @@ class FenicsOptimalControlProblem():
                    "return_data"            : True,}
 
         return default
-        
+
+    def dfault_SD_options(self):
+        default = {}
+        default.update({"jtol"                   : 1e-4,
+                        "maxiter"                :  200,})
+        return default
     
 
     def adjoint_ic(self,opt,U):
@@ -232,7 +238,8 @@ class FenicsOptimalControlProblem():
 
         return P
 
-    def solver(self,opt,ic,start,end,Tn,my_lbfgs=False,Lbfgs_options=None):
+    def solver(self,opt,ic,start,end,Tn,algorithm='scipy_lbfgs',
+               options=None):
         h = self.mesh.hmax()
         
         def J(x):
@@ -251,35 +258,48 @@ class FenicsOptimalControlProblem():
 
 
         control0 = self.get_control(opt,ic,1)
-        if my_lbfgs:
+        if algorithm=='my_lbfgs':
             control0 = SimpleVector(control0)
 
-            if Lbfgs_options==None:
+            if options==None:
                 Loptions = self.Lbfgs_options
             else:
                 Loptions = self.Lbfgs_options
-                for key, val in Lbfgs_options.iteritems():
+                for key, val in options.iteritems():
                     Loptions[key]=val
 
 
             solver = Lbfgs(J,grad_J,control0,options=Loptions)
         
             res = solver.solve()
-        else:
+        elif algorithm==scipy_lbfgs:
             res = Mini(J,control0.copy(),method='L-BFGS-B', 
                        jac=grad_J,options={'gtol': 1e-6, 'disp': True})
-            
+
+        elif algorithm=='my_steepest_decent':
+
+            if options==None:
+                opt = self.SD_options
+            else:
+                opt = self.SD_options
+                for key, val in options.iteritems():
+                    opt[key]=val
+
+
+
+            Solver = SteepestDecent(J,grad_J,control0.copy(),opt)
+            res = Solver.solve()
         return res
 
 
     def penalty_solver(self,opt,ic,start,end,Tn,m,mu_list,
-                       my_lbfgs=False,Lbfgs_options=None):
+                       algorithm='scipy_lbfgs',options=None):
 
         h = self.mesh.hmax()
         X = Function(self.V)
         xN = len(ic.vector().array())
         control0 = self.get_control(opt,ic,m)
-        if my_lbfgs:
+        if algorithm=='my_lbfgs':
             control0 = SimpleVector(control0)
         
         res =[]
@@ -320,23 +340,38 @@ class FenicsOptimalControlProblem():
 
 
             
+            if algorithm == 'my_steepest_decent':
+                if options==None:
+                    opt = self.SD_options
+                else:
+                    opt = self.SD_options
+                    for key, val in options.iteritems():
+                        opt[key]=val
 
-            if Lbfgs_options==None:
-                Loptions = self.Lbfgs_options
-            else:
-                Loptions = self.Lbfgs_options
-                for key, val in Lbfgs_options.iteritems():
-                    Loptions[key]=val
 
-            if my_lbfgs:
-                solver = Lbfgs(J,grad_J,control0,options=Loptions)
 
-                res1 = solver.solve()
-                control0 = res1['control'].copy()
-            else:
-                res1 = Mini(J,control0.copy(),method='L-BFGS-B',jac=grad_J,
-                            options={'gtol': 1e-6, 'disp': True,'maxcor':10})
+                Solver = SteepestDecent(J,grad_J,control0.copy(),opt)
+                res1 = Solver.solve()
+
                 control0 = res1.x.copy()
+            else:
+                
+                if options==None:
+                    Loptions = self.Lbfgs_options
+                else:
+                    Loptions = self.Lbfgs_options
+                    for key, val in options.iteritems():
+                        Loptions[key]=val
+
+                if algorithm=='my_lbfgs':
+                    solver = Lbfgs(J,grad_J,control0,options=Loptions)
+
+                    res1 = solver.solve()
+                    control0 = res1['control'].copy()
+                elif algorithm=='scipy_lbfgs':
+                    res1 = Mini(J,control0.copy(),method='L-BFGS-B',jac=grad_J,
+                                options={'gtol':1e-6, 'disp':True,'maxcor':10})
+                    control0 = res1.x.copy()
 
 
             res.append(res1)
