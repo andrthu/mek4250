@@ -17,7 +17,7 @@ class OptimizationControl():
     def update(self,x):
         self.x = x.copy()
         self.dJ = self.grad_J(x)
-        self.niter + = 1
+        self.niter += 1
 
     def val(self):
         return self.J_func(self.x)
@@ -32,7 +32,7 @@ class SteepestDecent():
 
         self.set_options(options)
 
-        self.data = OptimizationControl(x0,J_f,grad_J)
+        self.data = OptimizationControl(x0,J,grad_J)
 
         
 
@@ -55,7 +55,7 @@ class SteepestDecent():
              "line_search_options"    : ls,})
         return default
 
-    def do_linesearch(self,J,d_J,x0,p):
+    def do_linesearch(self,J,d_J,x,p):
 
         x_new = x.copy()
     
@@ -88,16 +88,16 @@ class SteepestDecent():
         phi_dphi0 = J(x),float(p.dot(d_J(x)))
         
         
-        if self.options["line_search"]=="strong_wolfe":
-            ls_parm = self.options["line_search_options"]
+        
+        ls_parm = self.options["line_search_options"]
             
-            ftol      = ls_parm["ftol"]
-            gtol      = ls_parm["gtol"]
-            xtol      = ls_parm["xtol"]
-            start_stp = ls_parm["start_stp"]
+        ftol      = ls_parm["ftol"]
+        gtol      = ls_parm["gtol"]
+        xtol      = ls_parm["xtol"]
+        start_stp = ls_parm["start_stp"]
             
-            ls = StrongWolfeLineSearch(ftol,gtol,xtol,start_stp,
-                                        ignore_warnings=False)
+        ls = StrongWolfeLineSearch(ftol,gtol,xtol,start_stp,
+                                   ignore_warnings=False)
 
         alpha = ls.search(phi, phi_dphi, phi_dphi0)
 
@@ -134,4 +134,23 @@ class SteepestDecent():
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)
 
-    return self.data
+        return self.data
+
+
+if __name__ == "__main__":
+
+
+    def J(x):
+
+        return x.dot(x) + 1
+
+    def grad_J(x):
+        return 2*x
+
+    x0 = np.zeros(30) + 1
+
+    SD=SteepestDecent(J,grad_J,x0)
+
+    res = SD.solve()
+
+    print res.x
