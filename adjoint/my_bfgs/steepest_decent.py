@@ -7,7 +7,7 @@ class OptimizationControl():
     def __init__(self,x0,J_f,grad_J):
 
         self.x = x0.copy()
-        self.J_func = J
+        self.J_func = J_f
         self.grad_J = grad_J
 
         self.dJ = grad_J(x0)

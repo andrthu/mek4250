@@ -248,7 +248,46 @@ M^*= \left[ \begin{array}{cccc}
    0 &\cdots &\cdots & I   \\
    \end{array}  \right]
 \end{align}
-One could then solve the system (\ref{vir_grad_sys}), using an iteration as in (\ref{matrix_iter1}), but with $\bar{M}^{-1}\bar{M}^{-*}$ instead of $\bar{M}^{-1}$. \cite{maday2002parareal} then they propose $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for solving the original penalized control problem (\ref{OC_PPDE}-\ref{penalty_func}) using the gradient method. 
+The reason we see by moving $M^*H$ to the left hand side of (\ref{vir_grad_sys}) and writing out what $M^*( \ M \ \Lambda-H)$ yields. Firstly:
+\begin{align}
+M \ \Lambda - H = \left( \begin{array}{c}
+	\lambda_0 -y_0 \\
+	\lambda_1 - \bold{F}_{\Delta T}(\lambda_0)\\
+	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) \\
+	\cdots \\
+	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
+	\end{array} \right)
+\end{align}
+Then:
+\begin{align}
+M^*\left( \begin{array}{c}
+	\lambda_0-y_0 \\
+	\lambda_1 - \bold{F}_{\Delta T}(\lambda_0)\\
+	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) \\
+	\cdots \\
+	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
+	\end{array} \right) &=
+	\left( \begin{array}{c}
+	\lambda_0-y_0 -\bold{F}_{\Delta T}^*(\lambda_1 -\bold{F}_{\Delta T}(\lambda_0))\\
+	\lambda_1 -\bold{F}_{\Delta T}(\lambda_0) -\bold{F}_{\Delta T}^*(\lambda_2 - \bold{F}_{\Delta T}(\lambda_1))\\
+	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) -\bold{F}_{\Delta T}^*(\lambda_3 - \bold{F}_{\Delta T}(\lambda_2))\\
+	\cdots \\
+	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
+	\end{array} \right)
+	\\
+	&=\left( \begin{array}{c}
+	\lambda_0-y_0 - p_0(T_0)\\
+	p_0(T_1)-p_1(T_1)\\
+	p_1(T_2)-p_2(T_2)\\
+	\cdots \\
+	p_{N-2}(T_{N-1})-p_{N-1}(T_{N-1}) \\
+	p_{N-1}(T_n)
+	\end{array} \right)
+\end{align}
+When you look at the last vector, you recognise the gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices.
+\\
+\\ 
+One could then solve the system (\ref{vir_grad_sys}), using an iteration as in (\ref{matrix_iter1}), but with $\bar{M}^{-1}\bar{M}^{-*}$ instead of $\bar{M}^{-1}$. \cite{maday2002parareal} then propose $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for solving the original penalized control problem (\ref{OC_PPDE}-\ref{penalty_func}) when using the gradient method. 
 \section{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian}
 If you define the vectors x and b:
 \begin{align}

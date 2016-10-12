@@ -74,7 +74,7 @@ class FenicsOptimalControlProblem():
 
         return default
 
-    def dfault_SD_options(self):
+    def default_SD_options(self):
         default = {}
         default.update({"jtol"                   : 1e-4,
                         "maxiter"                :  200,})
@@ -272,18 +272,18 @@ class FenicsOptimalControlProblem():
             solver = Lbfgs(J,grad_J,control0,options=Loptions)
         
             res = solver.solve()
-        elif algorithm==scipy_lbfgs:
+        elif algorithm=='scipy_lbfgs':
             res = Mini(J,control0.copy(),method='L-BFGS-B', 
                        jac=grad_J,options={'gtol': 1e-6, 'disp': True})
 
         elif algorithm=='my_steepest_decent':
 
             if options==None:
-                opt = self.SD_options
+                SDopt = self.SD_options
             else:
-                opt = self.SD_options
+                SDopt = self.SD_options
                 for key, val in options.iteritems():
-                    opt[key]=val
+                    SDopt[key]=val
 
 
 
@@ -342,11 +342,11 @@ class FenicsOptimalControlProblem():
             
             if algorithm == 'my_steepest_decent':
                 if options==None:
-                    opt = self.SD_options
+                    SDopt = self.SD_options
                 else:
-                    opt = self.SD_options
+                    SDopt = self.SD_options
                     for key, val in options.iteritems():
-                        opt[key]=val
+                        SDopt[key]=val
 
 
 
@@ -520,9 +520,9 @@ if __name__ == "__main__":
 
     
     
-    m=10
-    my_l=False 
-    res2 = test1.penalty_solver(opt,ic,start,end,Tn,m,[10],my_lbfgs=my_l)
+    m=2
+    my_l='my_steepest_decent'
+    res2 = test1.penalty_solver(opt,ic,start,end,Tn,m,[10],algorithm=my_l)
     
     l = Function(V)
     
