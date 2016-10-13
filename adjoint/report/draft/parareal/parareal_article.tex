@@ -380,6 +380,50 @@ Q = \left[ \begin{array}{cc}
 	\end{array} \right]
 \end{align}
 One could then imagine, that $Q$ is an approximation of the inverse Hessian of $\hat{J}$, atleast for the $\Lambda$ part of the control.
+\section{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
+Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
+\begin{align}
+\left[ \begin{array}{cccc}
+   I & 0 & 0 & 0 \\  
+   -G_{\Delta T} & I & 0 & 0 \\ 
+   0 &-G_{\Delta T} & I  & 0 \\
+   0 &0 &-G_{\Delta T} & I   \\
+   \end{array}  \right]
+   \left( \begin{array}{c}
+   x_0 \\
+   x_1 \\
+   x_2 \\
+   x_3 \\
+   \end{array} \right) =
+   \left( \begin{array}{c}
+   y_0 \\
+   y_1 \\
+   y_2 \\
+   y_3 \\
+   \end{array} \right)	
+\end{align}  
+If we apply $\bar{M}$ to $x$, we get:
+\begin{align}
+\left( \begin{array}{c}
+   x_0 \\
+   x_1 -G_{\Delta T}(x_0) \\
+   x_2 -G_{\Delta T}(x_1)\\
+   x_3 -G_{\Delta T}(x_2)\\
+   \end{array} \right) =
+   \left( \begin{array}{c}
+   y_0 \\
+   y_1 \\
+   y_2 \\
+   y_3 \\
+   \end{array} \right)
+\end{align}
+This yields the following solution:
+\begin{align}
+x_0 &= y_0 \\
+x_1 &=y_1 + G_{\Delta T}(y_0) \\
+x_2 &=y_2 + G_{\Delta T}(y_1 + G_{\Delta T}(y_0)) \\
+x_3 &=y_3 + G_{\Delta T}(y_2 + G_{\Delta T}(y_1 + G_{\Delta T}(y_0))) 
+\end{align}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
