@@ -1,5 +1,6 @@
 from dolfin import *
 from my_bfgs.lbfgs import Lbfgs
+from my_bfgs.steepest_decent import SteepestDecent,PPCSteepestDecent
 from my_bfgs.my_vector import SimpleVector
 from penalty import partition_func
 from scipy.integrate import trapz
@@ -114,6 +115,117 @@ class HeatControl(FenicsOptimalControlProblem):
         rhs.assign(Rhs[i])
 
 
+    def pde_propogator(self,opt,S,bc,dT,N):
+
+        delta = []
+
+        u_ = project(Constant(0.0),self.V)
+
+        delta.append(u_.copy())
+
+        u = Function(self.V)
+        v = TestFunction(self.V)
+        r = Constant(1./dT)*S[0]
+
+        F = self.PDE_form(ic,opt,u,u_,v,r,dT)
+        
+        for i in range(N):
+            r.assign(Constant(1./dT)*S[i])
+            
+            solve(F==0,u,bc)
+            u_.assign(u)
+            delta.append(u_.copy())
+            
+        
+        return delta
+
+        
+
+    def adjoint_propogator(self,opt,S,bc,dT,N):
+
+        delta = []
+
+        p_ = project(Constant(0.0),self.V)
+
+        delta.append(u_.copy())
+
+        p = Function(self.V)
+        v = TestFunction(self.V)
+        r = Constant(1./dT)*S[-1]
+        u = S[-1]
+        
+        F = self.adjoint_form(opt,u,p,p_,v,timestep)
+        
+        for i in range(N):
+            r.assign(Constant(1./dT)*S[-(i+1)])
+            u.assign(S[(1+i)])
+            solve(F==0,p,bc)
+            p_.assign(p)
+            delta.append(p_.copy())
+            
+        
+        return delta
+        
+        
+
+    def PC_maker(self,opt,ic,start,end,Tn,m):
+
+        xN = self.xN
+        bc = DirichletBC(self.V,0.0,"on_boundary")
+        dT = 1./m
+        def pc(x):
+            start = len(x) - (m-1)*xN
+            S = []
+            for i in range(m-1):
+                f = Function(self.V)
+                f.vector[:] = x[start +i*xN:start+(i+1)*xN]
+                S.append(f.copy())
+            
+            adj_prop=list(reversed(self.adjoint_propogator(opt,S,bc,dT,m)[1:]))
+            for i in range(len(S)):
+                S[i] = project(S[i] + adj_prop[i],self.V)
+
+            pde_prop = self.pde_propogator(opt,S,bc,dT,m)[1:]
+
+            for i in range(len(S)):
+                S[i] = project(S[i] + pde_prop[i],self.V)
+                
+            
+            for i in range(m-1):
+                x[start +i*xN:start+(i+1)*xN] = S[i].vector().array()[:]
+
+            return x
+
+    def PPCSD_solver(self,opt,ic,start,end,Tn,m,mu_list,options=None):
+
+        h = self.mesh.hmax()
+        X = Function(self.V)
+        xN = len(ic.vector().array())
+        control0 = self.get_control(opt,ic,m)
+        
+        self.update_SD_options(options)
+        
+        res =[]
+        PPC = self.PC_maker()
+        for k in range(len(mu_list)):
+            mu = mu_list[k]
+            J,grad_J=self.create_reduced_penalty_j(opt,ic,start,end,Tn,m,mu)
+            
+
+            solver = PPCSteepestDecent(J,grad_J,control0.copy(),PPC,
+                                       options=self.SD_options)
+            
+            result = solver.solve()
+            res.append(result)
+            control0 = result.x.copy()
+        if len(res)==1:
+            return res[0]
+        else:
+            return res
+
+        
+
+
 if __name__== '__main__':
     import time
     set_log_level(ERROR)
@@ -139,8 +251,14 @@ if __name__== '__main__':
 
     #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
     
-    #res = test1.solver(opt,ic,start,end,Tn)
-    res = test1.penalty_solver(opt,ic,start,end,Tn,m,[1])
+    solver_type = 'my_steepest_decent'
+    res = test1.solver(opt,ic,start,end,Tn,algorithm=solver_type,
+                       options={'jtol':1e-6})
+    try:
+        print np.max(res.x), np.sqrt(np.sum(res.dJ**2)/len(res.x)),res.val()
+    except:
+        print res['control'].array(),np.max(res['control'].array())
+    #res = test1.penalty_solver(opt,ic,start,end,Tn,m,[1])
     N = len(ic.vector().array())
     #print res
     i = 0

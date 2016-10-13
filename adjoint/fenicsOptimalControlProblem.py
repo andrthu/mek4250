@@ -1,7 +1,7 @@
 from dolfin import *
 from my_bfgs.lbfgs import Lbfgs
 from my_bfgs.my_vector import SimpleVector
-from my_bfgs.steepest_decent import SteepestDecent
+from my_bfgs.steepest_decent import SteepestDecent,PPCSteepestDecent
 from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize as Mini
@@ -55,7 +55,8 @@ class FenicsOptimalControlProblem():
 
         self.V = V
         self.mesh = mesh
-        
+        self.h = self.mesh.hmax()
+        self.xN = self.V.dim()
         
         self.Lbfgs_options = self.default_Lbfgs_options()
         self.SD_options = self.default_SD_options()
@@ -79,6 +80,12 @@ class FenicsOptimalControlProblem():
         default.update({"jtol"                   : 1e-4,
                         "maxiter"                :  200,})
         return default
+
+    def update_SD_options(self,options):
+        if options!=None
+            for key, val in options.iteritems():
+                self.SD_options[key]=val
+        
     
 
     def adjoint_ic(self,opt,U):
@@ -274,7 +281,7 @@ class FenicsOptimalControlProblem():
             res = solver.solve()
         elif algorithm=='scipy_lbfgs':
             res = Mini(J,control0.copy(),method='L-BFGS-B', 
-                       jac=grad_J,options={'gtol': 1e-6, 'disp': True})
+                       jac=grad_J,options={'gtol': 1e-5, 'disp': True})
 
         elif algorithm=='my_steepest_decent':
 
@@ -284,20 +291,61 @@ class FenicsOptimalControlProblem():
                 SDopt = self.SD_options
                 for key, val in options.iteritems():
                     SDopt[key]=val
+                
 
 
 
-            Solver = SteepestDecent(J,grad_J,control0.copy(),opt)
+            Solver = SteepestDecent(J,grad_J,control0.copy(),options =SDopt)
             res = Solver.solve()
         return res
+
+
+    def create_reduced_penalty_j(self,opt,ic,start,end,Tn,m,mu):        
+        
+        def J(x):
+            xN = self.xN
+            cont_e = len(x)-(m-1)*xN 
+            loc_opt,loc_ic = self.get_opt(x[:cont_e],opt,ic,m)
+
+            lam = []
+                
+            for i in range(m-1):
+                l = Function(self.V)
+                l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
+                lam.append(l.copy())
+            
+            
+
+            U = self.penalty_PDE_solver(loc_opt,loc_ic,lam,start,end,Tn,m)      
+            return self.penalty_J(loc_opt,loc_ic,U,start,end,Tn,m,mu)
+        
+        def grad_J(x):
+            h = self.h
+            xN = self.xN
+            cont_e = len(x)-(m-1)*xN 
+            lopt,lic = self.get_opt(x[:cont_e],opt,ic,m)
+            
+            lam = []
+                
+            for i in range(m-1):
+                l = Function(self.V)
+                l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
+                lam.append(l.copy())
+                
+            P=self.penalty_adjoint_solver(lic,lam,lopt,start,end,Tn,m,mu)
+
+            return self.penalty_grad_J(P,lopt,lic,m,self.h)
+
+            
+        return J,grad_J
 
 
     def penalty_solver(self,opt,ic,start,end,Tn,m,mu_list,
                        algorithm='scipy_lbfgs',options=None):
 
-        h = self.mesh.hmax()
+        h = self.h
         X = Function(self.V)
-        xN = len(ic.vector().array())
+        xN = self.xN
         control0 = self.get_control(opt,ic,m)
         if algorithm=='my_lbfgs':
             control0 = SimpleVector(control0)
@@ -350,7 +398,8 @@ class FenicsOptimalControlProblem():
 
 
 
-                Solver = SteepestDecent(J,grad_J,control0.copy(),opt)
+                Solver = SteepestDecent(J,grad_J,control0.copy(),
+                                        options=SDopt)
                 res1 = Solver.solve()
 
                 control0 = res1.x.copy()

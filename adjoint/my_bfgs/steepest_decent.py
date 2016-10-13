@@ -33,7 +33,8 @@ class SteepestDecent():
         self.set_options(options)
 
         self.data = OptimizationControl(x0,J,grad_J)
-
+        
+        
         
 
     def set_options(self,user_options):
