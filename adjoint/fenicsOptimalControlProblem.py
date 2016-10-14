@@ -343,42 +343,8 @@ class FenicsOptimalControlProblem():
         
         res =[]
         for k in range(len(mu_list)):
-            def J(x):
             
-                cont_e = len(x)-(m-1)*xN 
-                loc_opt,loc_ic = self.get_opt(x[:cont_e],opt,ic,m)
-
-                lam = []
-                
-                for i in range(m-1):
-                    l = Function(self.V)
-                    l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
-                    lam.append(l.copy())
-            
-            
-
-                U = self.penalty_PDE_solver(loc_opt,loc_ic,lam,start,end,Tn,m)
-                mu = mu_list[k]
-                return self.penalty_J(loc_opt,loc_ic,U,start,end,Tn,m,mu)
-        
-            def grad_J(x):
-
-                cont_e = len(x)-(m-1)*xN 
-                lopt,lic = self.get_opt(x[:cont_e],opt,ic,m)
-            
-                lam = []
-                
-                for i in range(m-1):
-                    l = Function(self.V)
-                    l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
-                    lam.append(l.copy())
-                mu = mu_list[k]
-                P=self.penalty_adjoint_solver(lic,lam,lopt,start,end,Tn,m,mu)
-
-                return self.penalty_grad_J(P,lopt,lic,m,h)
-
-
-            
+            J,grad_J = self.create_reduced_penalty_j(opt,ic,start,end,Tn,m,mu_list[k])
             if algorithm == 'my_steepest_decent':
 
                 self.update_SD_options(options)
@@ -551,7 +517,7 @@ if __name__ == "__main__":
     
     
     m=2
-    my_l='my_steepest_decent'
+    my_l='scipy_lbfgs'
     res2 = test1.penalty_solver(opt,ic,start,end,Tn,m,[10],algorithm=my_l)
     
     l = Function(V)
@@ -588,4 +554,40 @@ class focp(FenicsOptimalControlProblem):
 
     def penalty_grad_J(self,P,opt,ic,m,h):
         raise NotImplementedError, 'penalty_grad_J not implemented'
+"""
+"""
+            def J(x):
+            
+                cont_e = len(x)-(m-1)*xN 
+                loc_opt,loc_ic = self.get_opt(x[:cont_e],opt,ic,m)
+
+                lam = []
+                
+                for i in range(m-1):
+                    l = Function(self.V)
+                    l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
+                    lam.append(l.copy())
+            
+            
+
+                U = self.penalty_PDE_solver(loc_opt,loc_ic,lam,start,end,Tn,m)
+                mu = mu_list[k]
+                return self.penalty_J(loc_opt,loc_ic,U,start,end,Tn,m,mu)
+        
+            def grad_J(x):
+
+                cont_e = len(x)-(m-1)*xN 
+                lopt,lic = self.get_opt(x[:cont_e],opt,ic,m)
+            
+                lam = []
+                
+                for i in range(m-1):
+                    l = Function(self.V)
+                    l.vector()[:] = x.copy()[cont_e+i*xN:cont_e+(i+1)*xN]
+                    lam.append(l.copy())
+                mu = mu_list[k]
+                P=self.penalty_adjoint_solver(lic,lam,lopt,start,end,Tn,m,mu)
+
+                return self.penalty_grad_J(P,lopt,lic,m,h)
+
 """
