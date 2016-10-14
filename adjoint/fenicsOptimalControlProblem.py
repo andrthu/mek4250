@@ -345,6 +345,8 @@ class FenicsOptimalControlProblem():
         for k in range(len(mu_list)):
             
             J,grad_J = self.create_reduced_penalty_j(opt,ic,start,end,Tn,m,mu_list[k])
+
+            
             if algorithm == 'my_steepest_decent':
 
                 self.update_SD_options(options)
@@ -353,11 +355,9 @@ class FenicsOptimalControlProblem():
                 Solver = SteepestDecent(J,grad_J,control0.copy(),
                                         options=SDopt)
                 res1 = Solver.solve()
-
                 control0 = res1.x.copy()
             else:
-                self.update_lbfgs_options(options)
-                
+                self.update_lbfgs_options(options)                
 
                 if algorithm=='my_lbfgs':
                     solver = Lbfgs(J,grad_J,control0,options=self.Lbfgs_options)
