@@ -107,7 +107,7 @@ class HeatControl(FenicsOptimalControlProblem):
             x[i*N:(i+1)*N]=timestep*(p[-(i+1)].copy().vector().array()[:] + f[i].copy().vector().array()[:])
         
         for i in range(m-1):
-            x[Nt*N+ i*N:Nt*N+ (i+1)*N] =project((P[i+1][-1]-P[i][0]),
+            x[Nt*N+ i*N:Nt*N+ (i+1)*N] = project((P[i+1][-1]-P[i][0]),
                                               self.V).vector().array().copy()[:]
         return h*x
         
@@ -125,12 +125,12 @@ class HeatControl(FenicsOptimalControlProblem):
 
         u = Function(self.V)
         v = TestFunction(self.V)
-        r = Constant(1./dT)*S[0]
+        r = project(Constant(1./dT)*S[0],self.V)
 
-        F = self.PDE_form(ic,opt,u,u_,v,r,dT)
+        F,_ = self.PDE_form(ic,opt,u,u_,v,r,dT)
         
-        for i in range(N):
-            r.assign(Constant(1./dT)*S[i])
+        for i in range(N-1):
+            r.assign(project(Constant(1./dT)*S[i],self.V))
             
             solve(F==0,u,bc)
             u_.assign(u)
@@ -147,19 +147,19 @@ class HeatControl(FenicsOptimalControlProblem):
 
         p_ = project(Constant(0.0),self.V)
 
-        delta.append(u_.copy())
+        delta.append(p_.copy())
 
         p = Function(self.V)
         v = TestFunction(self.V)
-        r = Constant(1./dT)*S[-1]
+        r = project(Constant(1./dT)*S[-1],self.V)
         u = S[-1]
         
-        F = self.adjoint_form(opt,u,p,p_,v,timestep)
+        L,_ = self.adjoint_form(opt,u,p,p_,v,dT)
         
-        for i in range(N):
-            r.assign(Constant(1./dT)*S[-(i+1)])
-            u.assign(S[(1+i)])
-            solve(F==0,p,bc)
+        for i in range(N-1):
+            r.assign(project(Constant(1./dT)*S[-(i+1)],self.V))
+            u.assign(S[-(1+i)])
+            solve(L==r,p,bc)
             p_.assign(p)
             delta.append(p_.copy())
             
@@ -176,16 +176,20 @@ class HeatControl(FenicsOptimalControlProblem):
         def pc(x):
             start = len(x) - (m-1)*xN
             S = []
+            
             for i in range(m-1):
                 f = Function(self.V)
-                f.vector[:] = x[start +i*xN:start+(i+1)*xN]
+                f.vector()[:] = x[start +i*xN:start+(i+1)*xN]
                 S.append(f.copy())
-            
-            adj_prop=list(reversed(self.adjoint_propogator(opt,S,bc,dT,m)[1:]))
+
+            #S.append(project(Constant(0.0),self.V))
+            adj_prop=list(reversed(self.adjoint_propogator(opt,S,bc,dT,m)[:-1]))
             for i in range(len(S)):
                 S[i] = project(S[i] + adj_prop[i],self.V)
+            
+            #S = [project(Constant(0.0),self.V)] + S[:-1] 
 
-            pde_prop = self.pde_propogator(opt,S,bc,dT,m)[1:]
+            pde_prop = self.pde_propogator(opt,S,bc,dT,m)
 
             for i in range(len(S)):
                 S[i] = project(S[i] + pde_prop[i],self.V)
@@ -195,6 +199,8 @@ class HeatControl(FenicsOptimalControlProblem):
                 x[start +i*xN:start+(i+1)*xN] = S[i].vector().array()[:]
 
             return x
+
+        return pc
 
     def PPCSD_solver(self,opt,ic,start,end,Tn,m,mu_list,options=None):
 
@@ -206,7 +212,7 @@ class HeatControl(FenicsOptimalControlProblem):
         self.update_SD_options(options)
         
         res =[]
-        PPC = self.PC_maker()
+        PPC = self.PC_maker(opt,ic,start,end,Tn,m)
         for k in range(len(mu_list)):
             mu = mu_list[k]
             J,grad_J=self.create_reduced_penalty_j(opt,ic,start,end,Tn,m,mu)
@@ -229,7 +235,7 @@ class HeatControl(FenicsOptimalControlProblem):
 if __name__== '__main__':
     import time
     set_log_level(ERROR)
-    mesh = UnitIntervalMesh(20)
+    mesh = UnitIntervalMesh(10)
 
     V = FunctionSpace(mesh,"CG",1)
 
@@ -238,7 +244,7 @@ if __name__== '__main__':
     ic = project(Constant(0.0),V)
     start = 0
     end = 0.5
-    Tn = 30
+    Tn = 20
     RHS = []
     m = 3
     r = Expression('sin(pi*x[0])')
@@ -248,9 +254,13 @@ if __name__== '__main__':
     ut = Constant(0.0)
     
     opt = {'c' : 0.1,'rhs':RHS,'uT':project(ut,V),'T':end-start}
+    res = test1.solver(opt,ic,start,end,Tn,algorithm='my_steepest_decent')
+    #res = test1.penalty_solver(opt,ic,start,end,Tn,m,[1],algorithm = 'my_steepest_decent')
+    res=test1.PPCSD_solver(opt,ic,start,end,Tn,m,[10])
+    print res.val(),res.niter
 
     #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
-    
+    """
     solver_type = 'my_steepest_decent'
     res = test1.solver(opt,ic,start,end,Tn,algorithm=solver_type,
                        options={'jtol':1e-6})
@@ -262,6 +272,7 @@ if __name__== '__main__':
     N = len(ic.vector().array())
     #print res
     i = 0
+    """
     """
     while i <Tn:
         f = Function(V)

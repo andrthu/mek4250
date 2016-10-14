@@ -15,6 +15,7 @@ class OptimizationControl():
         self.niter = 0
 
     def update(self,x):
+        
         self.x = x.copy()
         self.dJ = self.grad_J(x)
         self.niter += 1
@@ -127,21 +128,21 @@ class SteepestDecent():
         J = self.J
         grad_J = self.grad_J
         opt = self.options
-        
+        k=1
         while self.check_convergence()==0:
-
+            
             p = -self.data.dJ
 
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)
-
+            
         return self.data
 
 
 class PPCSteepestDecent(SteepestDecent):
     
     def __init__(self,J,grad_J,x0,PC,options={}):
-        SteepestDecent.__init__(J,grad_J,x0,options)
+        SteepestDecent.__init__(self,J,grad_J,x0,options)
 
     
         self.PC = PC
