@@ -214,25 +214,25 @@ Or just simply:
 \begin{align}
 M \ \Lambda \ = \ H \label{vir_mat_sys}
 \end{align}
-We now introduce a coarse solver $G_{\Delta T}(\omega)$, that is inspired by (\ref{couarse_euler}), i.e. we use implicit euler to calculate $G_{\Delta T}(\omega)$:
+We now introduce a coarse solver $\bold{G}_{\Delta T}(\omega)$, that is inspired by (\ref{couarse_euler}), i.e. we use implicit euler to calculate $\bold{G}_{\Delta T}(\omega)$:
 \begin{align}
-\frac{G_{\Delta T}(\omega) -\omega }{\Delta T } + A G_{\Delta T}(\omega) = 0
+\frac{\bold{G}_{\Delta T}(\omega) -\omega }{\Delta T } + A \bold{G}_{\Delta T}(\omega) = 0
 \end{align}  
 We then define the following iterative process to find the $\lambda$s:
 \begin{align}
-\lambda_{n+1}^{k+1} = G_{\Delta T}(\lambda_{n}^{k+1}) + \bold{F}_{\Delta T}(\lambda_{n}^{k})-G_{\Delta T}(\lambda_{n}^{k})
+\lambda_{n+1}^{k+1} = \bold{G}_{\Delta T}(\lambda_{n}^{k+1}) + \bold{F}_{\Delta T}(\lambda_{n}^{k})-\bold{G}_{\Delta T}(\lambda_{n}^{k})
 \end{align} 
 On matrix form this looks like:
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k) \label{matrix_iter1}
 \end{align}
-The matrix $\bar{M}$ is the $G_{\Delta T}$ version of $M$, i.e:
+The matrix $\bar{M}$ is the $\bold{G}_{\Delta T}$ version of $M$, i.e:
 \begin{align}
 \bar{M} = \left[ \begin{array}{cccc}
    I & 0 & \cdots & 0 \\  
-   -G_{\Delta T} & I & 0 & \cdots \\ 
-   0 &-G_{\Delta T} & I  & \cdots \\
-   0 &\cdots &-G_{\Delta T} & I   \\
+   -\bold{G}_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-\bold{G}_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-\bold{G}_{\Delta T} & I   \\
    \end{array}  \right]
 \end{align}
 Solving the system (\ref{vir_mat_sys}), solves the the problem $\hat{J}(\Lambda)=0$. What we are usually interested in, is solving $\hat{J}'(\Lambda)=0$. From (\ref{penalty grad}), we know that: $$\hat{J}'(\Lambda) = \{p_n(T_n)-p_{n-1}(T_n)\}_{n=1}^{N-1}$$ We also see that the adjoint equations (\ref{adjoints}) can be used to define $\bold{F}_{\Delta T}^*(\omega)$ as we did in (\ref{F_operator}). It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
@@ -385,9 +385,9 @@ Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart
 \begin{align}
 \left[ \begin{array}{cccc}
    I & 0 & 0 & 0 \\  
-   -G_{\Delta T} & I & 0 & 0 \\ 
-   0 &-G_{\Delta T} & I  & 0 \\
-   0 &0 &-G_{\Delta T} & I   \\
+   -\bold{G}_{\Delta T} & I & 0 & 0 \\ 
+   0 &-\bold{G}_{\Delta T} & I  & 0 \\
+   0 &0 &-\bold{G}_{\Delta T} & I   \\
    \end{array}  \right]
    \left( \begin{array}{c}
    x_0 \\
@@ -406,9 +406,9 @@ If we apply $\bar{M}$ to $x$, we get:
 \begin{align}
 \left( \begin{array}{c}
    x_0 \\
-   x_1 -G_{\Delta T}(x_0) \\
-   x_2 -G_{\Delta T}(x_1)\\
-   x_3 -G_{\Delta T}(x_2)\\
+   x_1 -\bold{G}_{\Delta T}(x_0) \\
+   x_2 -\bold{G}_{\Delta T}(x_1)\\
+   x_3 -\bold{G}_{\Delta T}(x_2)\\
    \end{array} \right) =
    \left( \begin{array}{c}
    y_0 \\
@@ -418,12 +418,12 @@ If we apply $\bar{M}$ to $x$, we get:
    \end{array} \right)
 \end{align}
 This yields the following solution:
-\begin{align}
+\begin{align*}
 x_0 &=y_0 \\
-x_1 &=y_1 + G_{\Delta T}(y_0) \\
-x_2 &=y_2 + G_{\Delta T}(y_1 + G_{\Delta T}(y_0)) \\
-x_3 &=y_3 + G_{\Delta T}(y_2 + G_{\Delta T}(y_1 + G_{\Delta T}(y_0))) 
-\end{align}
+x_1 &=y_1 + \bold{G}_{\Delta T}(y_0) \\
+x_2 &=y_2 + \bold{G}_{\Delta T}(y_1 + \bold{G}_{\Delta T}(y_0)) \\
+x_3 &=y_3 + \bold{G}_{\Delta T}(y_2 + \bold{G}_{\Delta T}(y_1 + \bold{G}_{\Delta T}(y_0))) 
+\end{align*}
 To better see the connection with \cite{lions2001resolution}, note that we can solve the above system with the propagation technique, i.e. define a $\delta$ and solve:
 \begin{align}
 \left\{
@@ -433,19 +433,34 @@ To better see the connection with \cite{lions2001resolution}, note that we can s
 	\end{array} \right.
 \end{align} 
 Then the solution of the system would be 
-\begin{align}
+\begin{align*}
 x_0 &=y_0 +\delta^0\\
 x_1 &=y_1 + \delta^1 \\
 x_2 &=y_2 +\delta^2\\
 x_3 &=y_3 + \delta^3 
-\end{align}
+\end{align*}
 For $\bar{M}^{*}$, the system $\bar{M}^{*}x=y$, has a solution that looks similar:
-\begin{align}
-x_0 &=y_0 +G_{\Delta T}^*(y_1 + G_{\Delta T}^*(y_2 + G_{\Delta T}^*(y_ 3)))\\
-x_1 &=y_1 + G_{\Delta T}^*(y_2 + G_{\Delta T}^*(y_ 3))\\
-x_2 &=y_2 + G_{\Delta T}^*(y_ 3) \\
+\begin{align*}
+x_0 &=y_0 +\bold{G}_{\Delta T}^*(y_1 + \bold{G}_{\Delta T}^*(y_2 + \bold{G}_{\Delta T}^*(y_ 3)))\\
+x_1 &=y_1 + \bold{G}_{\Delta T}^*(y_2 + \bold{G}_{\Delta T}^*(y_ 3))\\
+x_2 &=y_2 + \bold{G}_{\Delta T}^*(y_ 3) \\
 x_3 &=y_3 
-\end{align}
+\end{align*}
+The propagator for the adjoint system would look like this:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\delta^{n-1} -\delta^n }{\Delta T } + A^*\delta^{n-1} = \frac{y^n}{\Delta T} \\
+		\delta^{N-1} = 0
+	\end{array} \right.
+\end{align} 
+The solution would then again be:
+\begin{align*}
+x_0 &=y_0 +\delta^0\\
+x_1 &=y_1 + \delta^1 \\
+x_2 &=y_2 +\delta^2\\
+x_3 &=y_3 + \delta^3 
+\end{align*}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
