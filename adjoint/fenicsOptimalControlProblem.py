@@ -50,20 +50,30 @@ def partition_start(Tn,m):
     
     
 class FenicsOptimalControlProblem():
+    """
+    Class for optimal control with time dependent PDE constraints.
 
+    Made in a very general way, so that the equation functional and
+    control can bvary a lot.
+    """
     def __init__(self,V,mesh,options={}):
+        """
+        Give in mesh and functionSpace
+        """
 
         self.V = V
         self.mesh = mesh
-        self.h = self.mesh.hmax()
-        self.xN = self.V.dim()
+        self.h = self.mesh.hmax()     #resolution in spacial direction
+        self.xN = self.V.dim()        #degrees of freedom in space
         
-        self.Lbfgs_options = self.default_Lbfgs_options()
+
+        #set default options for SD and lbfgs solvers
+        self.Lbfgs_options = self.default_Lbfgs_options() 
         self.SD_options = self.default_SD_options()
 
     def default_Lbfgs_options(self):
         """
-        default options for LGFGS
+        default options for LBFGS
         """
         default = {"jtol"                   : 1e-4,
                    "maxiter"                : 500,
@@ -76,17 +86,32 @@ class FenicsOptimalControlProblem():
         return default
 
     def default_SD_options(self):
+        """
+        defaalt options for steepest decent
+        """
         default = {}
         default.update({"jtol"                   : 1e-4,
                         "maxiter"                :  200,})
         return default
 
     def update_SD_options(self,options):
+        """
+        Method for updating steepest decent options
+        
+        Arguments:
+        -options: Dictionary withe options
+        """
         if options!=None:
             for key, val in options.iteritems():
                 self.SD_options[key]=val
 
-    def update_lbfgs_options(self,options):        
+    def update_lbfgs_options(self,options):
+        """
+        Method for updating lbfgs options
+
+        Arguments:
+        -options: Dictionary with options
+        """
         if options!=None:            
             for key, val in options.iteritems():
                 self.Lbfgs_options[key]=val
@@ -94,18 +119,72 @@ class FenicsOptimalControlProblem():
     
 
     def adjoint_ic(self,opt,U):
+        """
+        The "initial condition" of the adjoint at time t=T
+
+        Arguments:
+        -opt: Dictionary with: functions, constants, etc needed for 
+         this spesific problem
+        -U:Solution of the state equation
+
+        Return:
+        -a function in self.V
+        """
         raise NotImplementedError, 'adjoint_ic not implemented'
 
     def PDE_form(self,ic,opt,u,u_,v,rhs,timestep):
+        """
+        The state equation 
+
+        Arguments:
+        -ic: Initial condition, a function in V
+        -opt: Dictionary with: functions, constants, etc needed for 
+         this spesific problem
+        -u: Function(self.V), solution at current time       
+        -u_: Function(self.V), solution at previous time
+        -v: TestFunction(self.V)
+        -rhs: List of  Function(self.V). right hand side of the equation
+        -timestep: float: T/Nt
+
+        Return:
+        -F: bilineal form a(u,v)
+        -bc: boundary conditions.
+        """
         raise NotImplementedError, 'PDE_form not implemented'
 
     def adjoint_form(self,opt,u,p,p_,v,timestep):
+        """
+        The adjoint equation 
+
+        Arguments:
+      
+        -opt: Dictionary with: functions, constants, etc needed for 
+         this spesific problem
+        -u: Function(self.V), solution of state equation at current time
+        -p: Function(self.V), solution of adjoint equation at current time
+        -p_: Function(self.V), solution of adjoint equationat previous time
+        -v: TestFunction(self.V)        
+        -timestep: float: T/Nt
+
+        Return:
+        -F: bilineal form a(p,v)
+        -bc: boundary conditions.
+        """
         raise NotImplementedError, 'adjoint_form not implemented'
 
     def get_control(self,opt,ic,m):
+        """
+        Given the parameters, the initial condition and the number of
+        time decompositions, this method returns a numpy array of the
+        right dimension for the control of the prolem
+        """
         raise NotImplementedError, 'get_control not implemented'
 
     def get_opt(self,control,opt,ic,m):
+        """
+        Transelates the numpy array control into parameters or dolfin
+        functions used in solving state and adjoint equations.
+        """
         raise NotImplementedError, 'get_opt not implemented'
 
     def grad_J(self,P,opt,ic,h):
