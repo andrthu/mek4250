@@ -419,10 +419,32 @@ If we apply $\bar{M}$ to $x$, we get:
 \end{align}
 This yields the following solution:
 \begin{align}
-x_0 &= y_0 \\
+x_0 &=y_0 \\
 x_1 &=y_1 + G_{\Delta T}(y_0) \\
 x_2 &=y_2 + G_{\Delta T}(y_1 + G_{\Delta T}(y_0)) \\
 x_3 &=y_3 + G_{\Delta T}(y_2 + G_{\Delta T}(y_1 + G_{\Delta T}(y_0))) 
+\end{align}
+To better see the connection with \cite{lions2001resolution}, note that we can solve the above system with the propagation technique, i.e. define a $\delta$ and solve:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\delta^{n+1} -\delta^n }{\Delta T } + A\delta^{n+1} = \frac{y^n}{\Delta T} \\
+		\delta^0 = 0
+	\end{array} \right.
+\end{align} 
+Then the solution of the system would be 
+\begin{align}
+x_0 &=y_0 +\delta^0\\
+x_1 &=y_1 + \delta^1 \\
+x_2 &=y_2 +\delta^2\\
+x_3 &=y_3 + \delta^3 
+\end{align}
+For $\bar{M}^{*}$, the system $\bar{M}^{*}x=y$, has a solution that looks similar:
+\begin{align}
+x_0 &=y_0 +G_{\Delta T}^*(y_1 + G_{\Delta T}^*(y_2 + G_{\Delta T}^*(y_ 3)))\\
+x_1 &=y_1 + G_{\Delta T}^*(y_2 + G_{\Delta T}^*(y_ 3))\\
+x_2 &=y_2 + G_{\Delta T}^*(y_ 3) \\
+x_3 &=y_3 
 \end{align}
 \bibliography{ppaper}
 \bibliographystyle{plain}
