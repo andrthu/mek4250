@@ -82,9 +82,14 @@ class FenicsOptimalControlProblem():
         return default
 
     def update_SD_options(self,options):
-        if options!=None
+        if options!=None:
             for key, val in options.iteritems():
                 self.SD_options[key]=val
+
+    def update_lbfgs_options(self,options):        
+        if options!=None:            
+            for key, val in options.iteritems():
+                self.Lbfgs_options[key]=val
         
     
 
@@ -268,15 +273,8 @@ class FenicsOptimalControlProblem():
         if algorithm=='my_lbfgs':
             control0 = SimpleVector(control0)
 
-            if options==None:
-                Loptions = self.Lbfgs_options
-            else:
-                Loptions = self.Lbfgs_options
-                for key, val in options.iteritems():
-                    Loptions[key]=val
-
-
-            solver = Lbfgs(J,grad_J,control0,options=Loptions)
+            self.update_lbfgs_options(options)
+            solver = Lbfgs(J,grad_J,control0,options=self.Lbfgs_options)
         
             res = solver.solve()
         elif algorithm=='scipy_lbfgs':
@@ -285,17 +283,10 @@ class FenicsOptimalControlProblem():
 
         elif algorithm=='my_steepest_decent':
 
-            if options==None:
-                SDopt = self.SD_options
-            else:
-                SDopt = self.SD_options
-                for key, val in options.iteritems():
-                    SDopt[key]=val
-                
+            self.update_SD_options(options)
+            SDopt = self.SD_options
 
-
-
-            Solver = SteepestDecent(J,grad_J,control0.copy(),options =SDopt)
+            Solver = SteepestDecent(J,grad_J,control0.copy(),options=SDopt)
             res = Solver.solve()
         return res
 
@@ -389,14 +380,9 @@ class FenicsOptimalControlProblem():
 
             
             if algorithm == 'my_steepest_decent':
-                if options==None:
-                    SDopt = self.SD_options
-                else:
-                    SDopt = self.SD_options
-                    for key, val in options.iteritems():
-                        SDopt[key]=val
 
-
+                self.update_SD_options(options)
+                SDopt = self.SD_options
 
                 Solver = SteepestDecent(J,grad_J,control0.copy(),
                                         options=SDopt)
@@ -404,16 +390,11 @@ class FenicsOptimalControlProblem():
 
                 control0 = res1.x.copy()
             else:
+                self.update_lbfgs_options(options)
                 
-                if options==None:
-                    Loptions = self.Lbfgs_options
-                else:
-                    Loptions = self.Lbfgs_options
-                    for key, val in options.iteritems():
-                        Loptions[key]=val
 
                 if algorithm=='my_lbfgs':
-                    solver = Lbfgs(J,grad_J,control0,options=Loptions)
+                    solver = Lbfgs(J,grad_J,control0,options=self.Lbfgs_options)
 
                     res1 = solver.solve()
                     control0 = res1['control'].copy()
