@@ -184,6 +184,18 @@ class FenicsOptimalControlProblem():
         """
         Transelates the numpy array control into parameters or dolfin
         functions used in solving state and adjoint equations.
+
+        Arguments:
+        -control: a numpy array
+        -opt: Dictionary with: functions, constants, etc needed for 
+         this spesific problem
+        -ic: initial condition
+        -m: number of temporal decompositions
+
+        Return:
+        -opt: Udated dictionary with: functions, constants, etc needed for 
+         this spesific problem
+        -ic: initial condition, incase ic is control
         """
         raise NotImplementedError, 'get_opt not implemented'
 
