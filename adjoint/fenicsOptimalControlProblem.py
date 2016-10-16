@@ -200,6 +200,16 @@ class FenicsOptimalControlProblem():
         raise NotImplementedError, 'get_opt not implemented'
 
     def grad_J(self,P,opt,ic,h):
+        """
+        Method for spesifying gradient of OCP. 
+
+        Argumeents:
+        -The solution of the adjoint
+        -opt:Dictionary with: functions, constants, etc needed for 
+         this spesific problem
+        -ic: initial condition
+        -h: resolotion in temporal direction
+        """
         raise NotImplementedError, 'grad_J not implemented'
     
     def J(self,opt,ic,U,start,end):
