@@ -240,24 +240,26 @@ if __name__== '__main__':
     V = FunctionSpace(mesh,"CG",1)
 
     test1 = HeatControl(V,mesh)
-    
+    test2 = HeatControl(V,mesh)
     ic = project(Constant(0.0),V)
     start = 0
     end = 0.5
-    Tn = 20
+    Tn = 10
     RHS = []
+    RHS2=[]
     m = 3
     r = Expression('sin(pi*x[0])')
     for i in range(Tn+1):
         RHS.append(project(r,V))
-
+        RHS2.append(project(r,V))
     ut = Constant(0.0)
     
-    opt = {'c' : 0.1,'rhs':RHS,'uT':project(ut,V),'T':end-start}
-    res = test1.solver(opt,ic,start,end,Tn,algorithm='my_steepest_decent')
+    opt1 = {'c' : 0.1,'rhs':RHS,'uT':project(ut,V),'T':end-start}
+    opt2 ={'c' : 0.1,'rhs':RHS2,'uT':project(ut,V),'T':end-start}
+    res1 = test1.solver(opt1,ic,start,end,Tn,algorithm='my_steepest_decent')
     #res = test1.penalty_solver(opt,ic,start,end,Tn,m,[1],algorithm = 'my_steepest_decent')
-    res=test1.PPCSD_solver(opt,ic,start,end,Tn,m,[10])
-    print res.val(),res.niter
+    res=test2.PPCSD_solver(opt2,ic,start,end,Tn,m,[1])
+    print res.val(),res.niter,res1.niter,res1.val()
 
     #test1.PDE_solver(ic,opt,start,end,Tn,show_plot=True)
     """
