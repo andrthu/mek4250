@@ -115,7 +115,7 @@ class HeatControl(FenicsOptimalControlProblem):
         rhs.assign(Rhs[i])
 
 
-    def pde_propogator(self,opt,S,bc,dT,N):
+    def pde_propogator(self,ic,opt,S,bc,dT,N):
 
         delta = []
 
@@ -189,7 +189,7 @@ class HeatControl(FenicsOptimalControlProblem):
             
             #S = [project(Constant(0.0),self.V)] + S[:-1] 
 
-            pde_prop = self.pde_propogator(opt,S,bc,dT,m)
+            pde_prop = self.pde_propogator(ic,opt,S,bc,dT,m)
 
             for i in range(len(S)):
                 S[i] = project(S[i] + pde_prop[i],self.V)
