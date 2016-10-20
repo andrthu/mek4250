@@ -135,6 +135,8 @@ class SteepestDecent():
 
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)
+
+            print 'val: ',self.data.val()
             
         return self.data
 
@@ -159,6 +161,8 @@ class PPCSteepestDecent(SteepestDecent):
 
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)
+
+            print 'val: ',self.data.val()
 
         return self.data
 

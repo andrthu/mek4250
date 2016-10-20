@@ -12,8 +12,14 @@ from fenicsOptimalControlProblem import FenicsOptimalControlProblem
 class HeatControl(FenicsOptimalControlProblem):
     
     #opt = {'rhs':f, 'c':c.'uT':uT}
-    
+
+    def __self__(self,V,mesh,options={}):
+        super.__init__(self,V,mesh,options={})
+
+        self.end_state_diff = None
+
     def adjoint_ic(self,opt,U):
+        self.end_state_diff = project((U[-1]-opt['uT']),self.V)
         return project((U[-1]-opt['uT']),self.V)
 
     def Dt(self,u,u_,timestep):
@@ -133,6 +139,7 @@ class HeatControl(FenicsOptimalControlProblem):
             r.assign(project(Constant(1./dT)*S[i],self.V))
             
             solve(F==0,u,bc)
+            #plot(u)
             u_.assign(u)
             delta.append(u_.copy())
             
@@ -181,9 +188,11 @@ class HeatControl(FenicsOptimalControlProblem):
                 f = Function(self.V)
                 f.vector()[:] = x[start +i*xN:start+(i+1)*xN]
                 S.append(f.copy())
+                plot(f)
 
             #S.append(project(Constant(0.0),self.V))
             adj_prop=list(reversed(self.adjoint_propogator(opt,S,bc,dT,m)[:-1]))
+            
             for i in range(len(S)):
                 S[i] = project(S[i] + adj_prop[i],self.V)
             
@@ -192,7 +201,7 @@ class HeatControl(FenicsOptimalControlProblem):
             pde_prop = self.pde_propogator(ic,opt,S,bc,dT,m)
 
             for i in range(len(S)):
-                S[i] = project(S[i] + pde_prop[i],self.V)
+                S[i] = project(S[i] + pde_prop[i+1],self.V)
                 
             
             for i in range(m-1):
