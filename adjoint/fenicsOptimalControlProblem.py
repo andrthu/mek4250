@@ -54,7 +54,7 @@ class FenicsOptimalControlProblem():
     Class for optimal control with time dependent PDE constraints.
 
     Made in a very general way, so that the equation functional and
-    control can bvary a lot.
+    control can vary a lot.
     """
     def __init__(self,V,mesh,options={}):
         """

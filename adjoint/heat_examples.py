@@ -26,8 +26,8 @@ def test_problem(N,Tn,T,m):
 
     ut = project(r,V)
     
-    opt1 = {'c' : 0.1,'rhs':RHS1,'uT':ut,'T':T}
-    opt2 ={'c' : 0.1,'rhs':RHS2,'uT':ut,'T':T}
+    opt1 = {'c' : 1,'rhs':RHS1,'uT':ut,'T':T}
+    opt2 ={'c' : 1,'rhs':RHS2,'uT':ut,'T':T}
 
 
     start = 0
@@ -45,4 +45,4 @@ def test_problem(N,Tn,T,m):
 
 if __name__ == '__main__':
     set_log_level(ERROR)
-    test_problem(N=10,Tn=30,T=0.5,m=5)
+    test_problem(N=10,Tn=20,T=0.5,m=5)
