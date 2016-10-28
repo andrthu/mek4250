@@ -147,7 +147,7 @@ class FenicsOptimalControlProblem():
         -timestep: float: T/Nt
 
         Return:
-        -F: bilineal form a(u,v)
+        -F: bilinear form a(u,v)
         -bc: boundary conditions.
         """
         raise NotImplementedError, 'PDE_form not implemented'
@@ -167,7 +167,7 @@ class FenicsOptimalControlProblem():
         -timestep: float: T/Nt
 
         Return:
-        -F: bilineal form a(p,v)
+        -F: bilinear form a(p,v)
         -bc: boundary conditions.
         """
         raise NotImplementedError, 'adjoint_form not implemented'
@@ -277,7 +277,7 @@ class FenicsOptimalControlProblem():
                 time.sleep(0.11)
         return U
 
-    def adjoint_interval_solver(self,opt,p_ic,U,start,end,Tn):
+    def adjoint_interval_solver(self,opt,p_ic,U,start,end,Tn,show_plot=False):
         
         P = []
 
@@ -286,7 +286,11 @@ class FenicsOptimalControlProblem():
         
         p_ = p_ic.copy()
         P.append(p_.copy())
-
+        
+        if show_plot:
+            plot(p_)
+            time.sleep(0.1)
+            
         p = Function(self.V)
         v = TestFunction(self.V)
         u = U[-1]
@@ -304,16 +308,20 @@ class FenicsOptimalControlProblem():
             P.append(p_.copy())
             count = count -1
             t = t - float(timestep)
+            if show_plot:
+                plot(p_)
+                time.sleep(0.11)
     
         return P
 
         
-    def adjoint_solver(self,ic,opt,start,end,Tn):
+    def adjoint_solver(self,ic,opt,start,end,Tn,show_plot=False):
 
-        U = self.PDE_solver(ic,opt,start,end,Tn)
+        U = self.PDE_solver(ic,opt,start,end,Tn,show_plot=show_plot)
         p_ic = self.adjoint_ic(opt,U)
         
-        return self.adjoint_interval_solver(opt,p_ic,U,start,end,Tn)
+        return self.adjoint_interval_solver(opt,p_ic,U,start,
+                                            end,Tn,show_plot=show_plot)
 
 
     def penalty_PDE_solver(self,opt,ic,lam_ic,start,end,Tn,m):

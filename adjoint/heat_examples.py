@@ -43,6 +43,34 @@ def test_problem(N,Tn,T,m):
     print res1.x
     test1.PDE_solver(ic,opt1,start,end,Tn,show_plot=True)
 
+def test_equation_solvers():
+    
+
+    N = 20
+    Tn = 40
+    T = 1
+
+    mesh = UnitIntervalMesh(N)
+    V = FunctionSpace(mesh,"CG",1)
+
+    test1 = HeatControl(V,mesh)
+    
+    r = Expression('10*sin(2*pi*x[0])')
+
+    ic = project(r,V)
+
+    RHS = []
+
+    for i in range(Tn+1):
+        RHS.append(project(Constant(0.0),V))
+
+
+    ut = project(Constant(0.0),V)
+    opt = {'c' : 0.001,'rhs':RHS,'uT':ut,'T':T}
+
+    #test1.PDE_solver(ic,opt,0,T,Tn,show_plot=True)
+    test1.adjoint_solver(ic,opt,0,T,Tn,show_plot=True)
 if __name__ == '__main__':
-    set_log_level(ERROR)
-    test_problem(N=10,Tn=20,T=0.5,m=5)
+    #set_log_level(ERROR)
+    #test_problem(N=10,Tn=20,T=0.5,m=5)
+    test_equation_solvers()

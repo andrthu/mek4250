@@ -42,7 +42,7 @@ class HeatControl(FenicsOptimalControlProblem):
     def adjoint_form(self,opt,u,p,p_,v,timestep):
         c = Constant(opt['c'])
 
-        F = -(-self.Dt(p,p_,timestep)*v - c*p.dx(0)*v.dx(0))*dx
+        F = -(-self.Dt(p,p_,timestep)*v + c*p.dx(0)*v.dx(0))*dx
 
         bc = DirichletBC(self.V,0.0,"on_boundary")
 
