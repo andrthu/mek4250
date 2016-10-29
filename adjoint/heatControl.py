@@ -135,7 +135,7 @@ class HeatControl(FenicsOptimalControlProblem):
 
         F,_ = self.PDE_form(ic,opt,u,u_,v,r,dT)
         
-        for i in range(N-1):
+        for i in range(N):
             r.assign(project(Constant(1./dT)*S[i],self.V))
             
             solve(F==0,u,bc)
@@ -163,7 +163,7 @@ class HeatControl(FenicsOptimalControlProblem):
         
         L,_ = self.adjoint_form(opt,u,p,p_,v,dT)
         
-        for i in range(N-1):
+        for i in range(N):
             r.assign(project(Constant(1./dT)*S[-(i+1)],self.V))
             u.assign(S[-(1+i)])
             solve(L==r,p,bc)
@@ -190,13 +190,13 @@ class HeatControl(FenicsOptimalControlProblem):
                 S.append(f.copy())
                 plot(f)
 
-            #S.append(project(Constant(0.0),self.V))
-            adj_prop=list(reversed(self.adjoint_propogator(opt,S,bc,dT,m)[:-1]))
+            S.append(project(Constant(0.0),self.V))
+            adj_prop=list(reversed(self.adjoint_propogator(opt,S,bc,dT,m)))
             
             for i in range(len(S)):
                 S[i] = project(S[i] + adj_prop[i],self.V)
             
-            #S = [project(Constant(0.0),self.V)] + S[:-1] 
+            S = [project(Constant(0.0),self.V)] + S[:-1] 
 
             pde_prop = self.pde_propogator(ic,opt,S,bc,dT,m)
 
