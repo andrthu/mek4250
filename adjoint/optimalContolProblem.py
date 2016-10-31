@@ -4,6 +4,7 @@ from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
 import numpy as np
+from my_bfgs.steepest_decent import SteepestDecent,PPCSteepestDecent
 
 class OptimalControlProblem():
     """
@@ -65,6 +66,9 @@ class OptimalControlProblem():
         
         self.options = options
         self.Lbfgs_options = Lbfgs_options
+        self.SD_options = self.default_SD_options()
+
+        
 
     def default_Lbfgs_options(self):
         """
@@ -80,6 +84,11 @@ class OptimalControlProblem():
 
         return default
 
+    def update_Lbfgs_options(self,options):
+        if options!=None:            
+            for key, val in options.iteritems():
+                self.Lbfgs_options[key]=val
+
     def default_options(self):
         """
         Default options
@@ -88,6 +97,26 @@ class OptimalControlProblem():
         default = {"Vector" : SimpleVector,
                    "Lbfgs"  : Lbfgs,}
         return default
+
+    def default_SD_options(self):
+        """
+        defaalt options for steepest decent
+        """
+        default = {}
+        default.update({"jtol"                   : 1e-4,
+                        "maxiter"                :  1000,})
+        return default
+
+    def update_SD_options(self,options):
+        """
+        Method for updating steepest decent options
+        
+        Arguments:
+        -options: Dictionary withe options
+        """
+        if options!=None:
+            for key, val in options.iteritems():
+                self.SD_options[key]=val
         
         
     def ODE_update(self,y,u,i,j,dt):
@@ -295,9 +324,27 @@ class OptimalControlProblem():
         return J_val + 0.5*penalty
 
 
+    def generate_reduced_penalty(self,dt,N,m,my):
+
+        def J(u):                
+            return self.Penalty_Functional(u,N,m,my)
+
+        def grad_J(u):
+
+            l,L = self.adjoint_penalty_solver(u,N,m,my)
+            
+            g = np.zeros(len(u))
+            
+            g[:N+1]=self.grad_J(u[:N+1],L,dt)
+
+            for j in range(m-1):
+                g[N+1+j]= l[j+1][0] - l[j][-1]
+                    
+            return g
+
+        return J,grad_J
     
-    
-    def solve(self,N,x0=None,Lbfgs_options=None):
+    def solve(self,N,x0=None,Lbfgs_options=None,algorithm='my_lbfgs'):
         """
         Solve the optimazation problem without penalty
 
@@ -309,8 +356,8 @@ class OptimalControlProblem():
         
         dt=float(self.T)/N
         if x0==None:
-            x0 = self.Vec(np.zeros(N+1))
-        else:
+            x0 = np.zeros(N+1)
+        if algorithm=='my_lbfgs':
             x0 = self.Vec(x0)
             
         def J(u):
@@ -319,23 +366,24 @@ class OptimalControlProblem():
         def grad_J(u):
             l = self.adjoint_solver(u,N)
             return self.grad_J(u,l,dt)
+       
+        if algorithm=='my_lbfgs':
+            self.update_Lbfgs_options(Lbfgs_options)
+            solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
 
-        if Lbfgs_options==None:
-            Loptions = self.Lbfgs_options
-        else:
-            Loptions = self.Lbfgs_options
-            for key, val in Lbfgs_options.iteritems():
-                Loptions[key]=val
-            
-        
-        solver = Lbfgs(J,grad_J,x0,options=Loptions)
+            res = solver.solve()
+        elif algorithm=='my_steepest_decent':
+            self.update_SD_options(Lbfgs_options)
+            SDopt = self.SD_options
 
-        res = solver.solve()
+            Solver = SteepestDecent(J,grad_J,x0.copy(),
+                                    options=SDopt)
+            res = Solver.solve()
 
         return res
 
 
-    def penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None):
+    def penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None,algorithm='my_lbfgs'):
         """
         Solve the optimazation problem with penalty
 
@@ -345,16 +393,19 @@ class OptimalControlProblem():
         * my_list: list of penalty variables, that we want to solve the problem
                    for.
         * x0: initial guess for control
-        * Lbfgs_options: same as for class initialisation
+        * options: same as for class initialisation
         """
 
         dt=float(self.T)/N
         if x0==None:
-            x0 = self.Vec(np.zeros(N+m))
+            x0 = np.zeros(N+m)
         x = None
+        if algorithm=='my_lbfgs':
+            x0 = self.Vec(x0)
         Result = []
+
         for i in range(len(my_list)):
-        
+            """
             def J(u):                
                 return self.Penalty_Functional(u,N,m,my_list[i])
 
@@ -370,20 +421,26 @@ class OptimalControlProblem():
                     g[N+1+j]= l[j+1][0] - l[j][-1]
                     
                 return g
+            """
+            J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
+            if algorithm=='my_lbfgs':
+                self.update_Lbfgs_options(Lbfgs_options)
+                solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
             
-            if Lbfgs_options==None:
-                Loptions = self.Lbfgs_options
-            else:
-                Loptions = self.Lbfgs_options
-                for key, val in Lbfgs_options.iteritems():
-                    Loptions[key]=val
+                res = solver.solve()
+                Result.append(res)
+                x0 = res['control']
+                print J(x0.array())
+            elif algorithm=='my_steepest_decent':
 
-            
-            solver = Lbfgs(J,grad_J,x0,options=Loptions)
-            
-            res = solver.solve()
-            Result.append(res)
-            x0 = res['control']
+                self.update_SD_options(Lbfgs_options)
+                SDopt = self.SD_options
+
+                Solver = SteepestDecent(J,grad_J,x0.copy(),
+                                        options=SDopt)
+                res = Solver.solve()
+                x0 = res.x.copy()
+                Result.append(res)
             
         if len(Result)==1:
             return res
@@ -868,21 +925,26 @@ if __name__ == "__main__":
     N = 1000
     m = 10
     
-    res1 = problem.solve(N)
+    res1 = problem.solve(N,algorithm='my_lbfgs')
 
     t=np.linspace(0,T,N+1)
-    u1 = res1['control'].array()[:N+1]
+    try:
+        u1 = res1['control'].array()[:N+1]
+    except:
+        u1 = res1.x[:N+1]
     figure()
     plot(t,u1)
     #show()
 
 
-    opt = {"mem_lim":20}
-    res2 = problem.penalty_solve(N,m,[500],Lbfgs_options=opt)
+    opt =None# {"mem_lim":20}
+    res2 = problem.penalty_solve(N,m,[100],Lbfgs_options=opt,algorithm='my_lbfgs')
+    try:
+        u2 = res2['control'].array()[:N+1]
+    except:
+        u2 = res2.x[:N+1]
 
-    u2 = res2['control'].array()[:N+1]
-
-    plot(t,u2)
+    plot(t,u2,'r--')
     show()
     
 
