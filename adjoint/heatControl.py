@@ -11,16 +11,21 @@ from fenicsOptimalControlProblem import FenicsOptimalControlProblem
 
 class HeatControl(FenicsOptimalControlProblem):
     
-    #opt = {'rhs':f, 'c':c.'uT':uT}
+    #opt = {'rhs':f, 'c':c.'uT':uT,alpha:1}
 
     def __self__(self,V,mesh,options={}):
-        super.__init__(self,V,mesh,options={})
+        super.__init__(self,V,mesh,options)
 
         self.end_state_diff = None
 
     def adjoint_ic(self,opt,U):
+        try:
+            alpha = Constant(opt[alpha])
+        except:
+            alpha = Constant(1.0)
+        
         self.end_state_diff = project((U[-1]-opt['uT']),self.V)
-        return project((U[-1]-opt['uT']),self.V)
+        return project(alpha*((U[-1]-opt['uT'])),self.V)
 
     def Dt(self,u,u_,timestep):
         return (u-u_)/timestep
@@ -92,13 +97,18 @@ class HeatControl(FenicsOptimalControlProblem):
         timestep = (end-start)/float(n)
         s = 0
         
+        try:
+            alpha = opt['alpha']
+        except:
+            alpha = 1
+
         f = opt['rhs']
         s += 0.5*assemble(f[0]**2*dx)
         for i in range(n-2):
             s += assemble(f[i+1]**2*dx)
         s += 0.5*assemble(f[-1]**2*dx)
 
-        s2 = 0.5*assemble((U[-1]-opt['uT'])**2*dx)
+        s2 = alpha*0.5*assemble((U[-1]-opt['uT'])**2*dx)
         return timestep*s +s2
 
     def penalty_grad_J(self,P,opt,ic,m,h):
@@ -135,7 +145,7 @@ class HeatControl(FenicsOptimalControlProblem):
 
         F,_ = self.PDE_form(ic,opt,u,u_,v,r,dT)
         
-        for i in range(N):
+        for i in range(N-1):
             r.assign(project(Constant(1./dT)*S[i],self.V))
             
             solve(F==0,u,bc)
@@ -163,7 +173,7 @@ class HeatControl(FenicsOptimalControlProblem):
         
         L,_ = self.adjoint_form(opt,u,p,p_,v,dT)
         
-        for i in range(N):
+        for i in range(N-1):
             r.assign(project(Constant(1./dT)*S[-(i+1)],self.V))
             u.assign(S[-(1+i)])
             solve(L==r,p,bc)
@@ -188,19 +198,20 @@ class HeatControl(FenicsOptimalControlProblem):
                 f = Function(self.V)
                 f.vector()[:] = x[start +i*xN:start+(i+1)*xN]
                 S.append(f.copy())
-                plot(f)
-
-            S.append(project(Constant(0.0),self.V))
+                #plot(f)
+            
+            trivial = project(Constant(0.0),self.V)
+            #S.append(trivial.copy())
             adj_prop=list(reversed(self.adjoint_propogator(opt,S,bc,dT,m)))
             
             for i in range(len(S)):
                 S[i] = project(S[i] + adj_prop[i],self.V)
-            
-            S = [project(Constant(0.0),self.V)] + S[:-1] 
+            #+adj_prop[-1]
+            #S = [project(trivial+adj_prop[-1],self.V)] + S[:-1] 
 
             pde_prop = self.pde_propogator(ic,opt,S,bc,dT,m)
 
-            for i in range(len(S)):
+            for i in range(len(S)-1):
                 S[i] = project(S[i] + pde_prop[i],self.V)
                 
             
