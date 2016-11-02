@@ -647,7 +647,7 @@ class OptimalControlProblem():
             return self.grad_J(u,l,dt)
 
 
-        opt={'gtol': 1e-6, 'disp': False,'maxcor':10}
+        opt={'gtol': 1e-6, 'disp': disp,'maxcor':10}
         
         if options!=None:
             for key, val in options.iteritems():
@@ -829,7 +829,7 @@ class OptimalControlProblem():
         
 class Problem1(OptimalControlProblem):
     """
-    optimal control with ODE y=ay'+u
+    optimal control with ODE y'=ay+u
     """
 
     def __init__(self,y0,yT,T,a,J,grad_J,options=None):
@@ -846,11 +846,12 @@ class Problem1(OptimalControlProblem):
 
     def adjoint_update(self,l,y,i,dt):
         a = self.a
-        return (1+dt*a)*l[-(i+1)] 
+        #return l[-(i+1)]*(1.+dt*a)
+        return l[-(i+1)]/(1.-dt*a) 
 
 class Problem2(OptimalControlProblem):
     """
-    optimal control with ODE y=a(t)y' + u
+    optimal control with ODE y'=a(t)y + u
     """
 
     def __init__(self,y0,yT,T,a,J,grad_J,options=None):
