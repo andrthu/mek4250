@@ -10,10 +10,30 @@ from optimalContolProblem import OptimalControlProblem
 
 class PararealOCP(OptimalControlProblem):
 
+    def adjoint_propogator(self,N,delta0,S):
+
+        T = self.T
+        dT = T/N
+
+        delta = np.zeros(N+1)
+
+        delta[0] = delta0
+
+        for i in range(N):
+
+            delta[i+1]=adjoint_propogator_update(delta,S,i,i,dT)
+
+        return delta
+
     def PC_maker(self,N,m):
 
 
         def pc(x):
+            S = zeros(m-1)
+            S = x[N+1:]
+
+            
+
             
             return x
 

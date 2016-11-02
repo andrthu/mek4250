@@ -149,16 +149,18 @@ class OptimalControlProblem():
         """
         return self.initial_penalty(y,u,my,N,i) + G[i]
     
-    def ODE_solver(self,u,N):
+    def ODE_solver(self,u,N,y0=None):
         """
         Solving the state equation without partitoning
 
         Arguments:
         * u: the control
         * N: Number of discritization points
+        * y0: initial condition
         """
         T = self.T
-        y0 = self.y0
+        if y0==None:
+            y0 = self.y0
         dt = float(T)/N
         
         
@@ -206,7 +208,7 @@ class OptimalControlProblem():
             
         return y,Y
 
-    def adjoint_solver(self,u,N):
+    def adjoint_solver(self,u,N,l0=None):
         """
         Solving the adjoint equation using finite difference
 
@@ -224,8 +226,11 @@ class OptimalControlProblem():
         y = self.ODE_solver(u,N)
 
         l=np.zeros(N+1)
+        if l0==None:
+            l[-1] = self.initial_adjoint(y[-1])
+        else:
+            l[-1]=l0
         
-        l[-1] = self.initial_adjoint(y[-1])
         for i in range(N):
             l[-(i+2)] = self.adjoint_update(l,y,i,dt)
              

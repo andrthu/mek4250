@@ -189,7 +189,7 @@ class HeatControl(FenicsOptimalControlProblem):
 
         xN = self.xN
         bc = DirichletBC(self.V,0.0,"on_boundary")
-        dT = 1./m
+        dT = float(end-start)/m
         def pc(x):
             start = len(x) - (m-1)*xN
             S = []
