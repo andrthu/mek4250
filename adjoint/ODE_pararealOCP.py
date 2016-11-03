@@ -15,7 +15,14 @@ class PararealOCP(OptimalControlProblem):
         
         OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options=options)
         
-
+        self.end_diff = None
+        
+    def initial_adjoint(self,y):
+        """
+        Initial condition for adjoint equation. Depends on the Functional
+        """
+        self.end_diff = y - self.yT
+        return y - self.yT
 
     def adjoint_propogator(self,m,delta0,S):
 
@@ -47,11 +54,11 @@ class PararealOCP(OptimalControlProblem):
 
     def PC_maker(self,N,m):
 
-        """
+        
         def pc(x):
             S = np.zeros(m+1)
             S[1:-1] = x[N+1:].copy()
-
+            #S[-1] = self.end_diff
             delta =self.adjoint_propogator(m,0,S)
 
             for i in range(len(S)-1):
@@ -68,9 +75,9 @@ class PararealOCP(OptimalControlProblem):
             x[N+1:]=S[1:-1]
             
             return x
-        """
-        def pc(x):
-            return x
+        
+        #def pc(x):
+            #return x
         return pc
 
     def PPCSDsolve(self,N,m,my_list,x0=None,options=None):
@@ -91,7 +98,7 @@ class PararealOCP(OptimalControlProblem):
             Solver = PPCSteepestDecent(J,grad_J,x0.copy(),PPC,
                                        decomp=m,options=SDopt)
             res = Solver.solve()
-
+            x0=res.x
             result.append(res)
         if len(result)==1:
             return res
@@ -201,7 +208,7 @@ if __name__ == "__main__":
     from matplotlib.pyplot import *
 
     y0 = 1
-    yT = 3
+    yT = 10
     T  = 1
     a  = 1
 
@@ -215,20 +222,20 @@ if __name__ == "__main__":
         return 0.5*(I + (y-yT)**2)
 
     def grad_J(u,p,dt):
-        grad =np.zeros(len(u))
+        """grad =np.zeros(len(u))
         grad[0] = 0.5*u[0]
         grad[1:-1] = u[1:-1]+p[1:-1]
         grad[-1] = 0.5*u[-1]+p[-1]
-        return dt*grad
-        #return dt*(u+p)
+        return dt*grad"""
+        return dt*(u+p)
 
 
     problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
     
     N = 1000
-    m = 10
+    m = 2
 
-    #res = problem.PPCSDsolve(N,m,[100])
+    res = problem.PPCSDsolve(N,m,[100])
 
     res2 = problem.scipy_solver(N,disp=True)
     
@@ -236,7 +243,13 @@ if __name__ == "__main__":
     res4 = problem.penalty_solve(N,m,[500],algorithm='my_lbfgs')
 
     res5 = problem.scipy_penalty_solve(N,m,[500],disp=True)
-
+    plot(np.linspace(0,T,N+1),res3.x,'--r')
+    plot(np.linspace(0,T,N+1),res.x[:N+1],'--b')
+    plot(np.linspace(0,T,N+1),res5.x[:N+1])
+    plot(np.linspace(0,T,N+1),res4['control'].array()[:N+1])
+    plot(np.linspace(0,T,N+1),res2.x)
+    show()
+    """
     x = res4['control'].array()
     lam = np.zeros(m+1)
     lam[1:-1] = x[N+1:]
@@ -244,12 +257,12 @@ if __name__ == "__main__":
     lam[0] = y0
     plot(np.linspace(0,T,m+1),lam)
     
-
+    
     y,Y =problem.ODE_penalty_solver(x,N,m)
     print len(Y)
     plot(np.linspace(0,T,N+1),Y)
     show()
-    """
+    
     S = np.zeros(m+1)
     S[1:-1]=1
 

@@ -129,7 +129,7 @@ class SteepestDecent():
 
 
     def solve(self):
-
+        import matplotlib.pyplot as plt
         J = self.J
         grad_J = self.grad_J
         opt = self.options
@@ -140,9 +140,10 @@ class SteepestDecent():
 
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)
-
-            print 'val: ',self.data.val()
+            plt.plot(x)
             
+            print 'val: ',self.data.val()
+        plt.show()
         return self.data
 
 
@@ -160,7 +161,8 @@ class PPCSteepestDecent(SteepestDecent):
         J = self.J
         grad_J = self.grad_J
         opt = self.options
-        
+        import matplotlib.pyplot as plt
+
         while self.check_convergence()==0:
 
             p = -self.PC(self.data.dJ)
@@ -168,8 +170,10 @@ class PPCSteepestDecent(SteepestDecent):
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)
 
+            plt.plot(x[:len(x)-self.decomp+1])
+            #plt.show()
             print 'val: ',self.data.val()
-
+        plt.show()
         return self.data
 
 if __name__ == "__main__":
