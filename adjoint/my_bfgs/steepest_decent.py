@@ -4,7 +4,7 @@ from linesearch.strong_wolfe import *
 
 class OptimizationControl():
 
-    def __init__(self,x0,J_f,grad_J):
+    def __init__(self,x0,J_f,grad_J,decomp=1):
 
         self.x = x0.copy()
         self.J_func = J_f
@@ -25,12 +25,12 @@ class OptimizationControl():
 
 class SteepestDecent():
 
-    def __init__(self,J,grad_J,x0,options={}):
+    def __init__(self,J,grad_J,x0,decomp=1,options={}):
 
         self.J = J
         self.grad_J=grad_J
         self.x0 = x0
-
+        self.decomp=decomp
         self.set_options(options)
 
         self.data = OptimizationControl(x0,J,grad_J)
@@ -114,8 +114,13 @@ class SteepestDecent():
         
         y = self.data.dJ
         k = self.data.niter
+        
+        if self.decomp!=1:
+            N = len(y)-self.decomp
+            y = y[:N+1]
 
         if np.sqrt(np.sum(y**2)/len(y))<self.options['jtol']:
+            print 'Success'
             return 1
             
         if k>self.options['maxiter']:
@@ -143,8 +148,9 @@ class SteepestDecent():
 
 class PPCSteepestDecent(SteepestDecent):
     
-    def __init__(self,J,grad_J,x0,PC,options={}):
-        SteepestDecent.__init__(self,J,grad_J,x0,options)
+    def __init__(self,J,grad_J,x0,PC,options={},decomp=1):
+        SteepestDecent.__init__(self,J,grad_J,x0,
+                                decomp=decomp,options=options)
 
     
         self.PC = PC

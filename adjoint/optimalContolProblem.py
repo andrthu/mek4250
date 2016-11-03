@@ -410,7 +410,7 @@ class OptimalControlProblem():
         Result = []
 
         for i in range(len(my_list)):
-            """
+            
             def J(u):                
                 return self.Penalty_Functional(u,N,m,my_list[i])
 
@@ -426,8 +426,8 @@ class OptimalControlProblem():
                     g[N+1+j]= l[j+1][0] - l[j][-1]
                     
                 return g
-            """
-            J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
+            
+            #J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
             if algorithm=='my_lbfgs':
                 self.update_Lbfgs_options(Lbfgs_options)
                 solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
@@ -659,7 +659,7 @@ class OptimalControlProblem():
         
         return res
 
-    def scipy_penalty_solve(self,N,m,my_list,x0=None,options=None):
+    def scipy_penalty_solve(self,N,m,my_list,disp=False,x0=None,options=None):
         
         dt=float(self.T)/N
         if x0==None:
@@ -685,7 +685,7 @@ class OptimalControlProblem():
                     g[N+1+j]= l[j+1][0] - l[j][-1]
                     
                 return g
-            opt={'gtol': 1e-6, 'disp': False,'maxcor':10}
+            opt={'jtol':1e-4,'gtol': 1e-4, 'disp': disp,'maxcor':10}
         
             if options!=None:
                 for key, val in options.iteritems():

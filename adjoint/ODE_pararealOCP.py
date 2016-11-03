@@ -47,28 +47,30 @@ class PararealOCP(OptimalControlProblem):
 
     def PC_maker(self,N,m):
 
-
+        """
         def pc(x):
-            S = np.zeros(m)
-            S[:-1] = x[N+1:].copy()
+            S = np.zeros(m+1)
+            S[1:-1] = x[N+1:].copy()
 
             delta =self.adjoint_propogator(m,0,S)
 
-            for i in range(len(S)):
-                S[i] = S[i]+delta[i+1]
+            for i in range(len(S)-1):
+                S[i] = S[i]+delta[i]
 
-            S2 = np.zeros(m)
-            S2[1:]=S[:-1].copy()
+            #S2 = np.zeros(m)
+            #S2[1:]=S[:-1].copy()
 
-            delta2 = self.ODE_propogator(m,delta[0],S2)
+            delta2 = self.ODE_propogator(m,0,S)
 
-            for i in range(len(S)):
-                S2[i] = S2[i]+delta2[i]
+            for i in range(1,len(S)-1):
+                S[i+1] = S[i+1]+delta2[i+1]
 
-            x[N+1:]=S2[1:]
+            x[N+1:]=S[1:-1]
             
             return x
-
+        """
+        def pc(x):
+            return x
         return pc
 
     def PPCSDsolve(self,N,m,my_list,x0=None,options=None):
@@ -87,7 +89,7 @@ class PararealOCP(OptimalControlProblem):
             SDopt = self.SD_options
 
             Solver = PPCSteepestDecent(J,grad_J,x0.copy(),PPC,
-                                       options=SDopt)
+                                       decomp=m,options=SDopt)
             res = Solver.solve()
 
             result.append(res)
@@ -127,13 +129,17 @@ class SimplePpcProblem(PararealOCP):
         return (l[-(i+1)]+rhs[-(i+1)])/(1-dt*a)
 
 
-if __name__ == "__main__":
-    from matplotlib.pyplot import *
 
+def find_gradient():
+
+    import matplotlib.pyplot as plt
     y0 = 1
     yT = 1
     T  = 1
     a  = 1
+    N = 1000
+    m = 10
+    dt =float(T)/N
 
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
@@ -143,7 +149,78 @@ if __name__ == "__main__":
         return 0.5*(I + (y-yT)**2)
 
     def grad_J(u,p,dt):
-        return dt*(u+p)
+        grad =np.zeros(len(u))
+        grad[0] = 0.5*u[0]
+        grad[1:-1] = u[1:-1]+p[1:-1]
+        grad[-1] = 0.5*u[-1]+p[-1]
+        return dt*grad
+
+    Problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
+
+    red_J,red_grad_J = Problem.generate_reduced_penalty(dt,N,m,10)
+
+    x = np.zeros(N+m)
+
+    grad = red_grad_J(x)
+
+    print grad
+
+    lam = np.zeros(m+1)
+    
+
+    lam[1:-1] = grad[N+1:]
+    plt.plot(np.linspace(0,T,m+1),lam)
+    plt.show()
+
+    delta = problem.adjoint_propogator(m,0,lam)
+
+    for i in range(1,len(lam)-1):
+        lam[i] = lam[i]+delta[i]
+
+    plot(np.linspace(0,T,m+1),lam,'r-')
+    plot(np.linspace(0,T,m+1),delta,'b--')
+    show()
+
+
+    delta = problem.ODE_propogator(m,0,lam)
+    
+    for i in range(len(lam)-1):
+        lam[i+1] = lam[i+1]+delta[i+1]
+
+    
+    plot(np.linspace(0,T,m+1),lam,'r-')
+    plot(np.linspace(0,T,m+1),delta,'b--')
+    show()
+
+
+
+    
+    
+
+if __name__ == "__main__":
+    from matplotlib.pyplot import *
+
+    y0 = 1
+    yT = 3
+    T  = 1
+    a  = 1
+
+    
+
+    def J(u,y,yT,T):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + (y-yT)**2)
+
+    def grad_J(u,p,dt):
+        grad =np.zeros(len(u))
+        grad[0] = 0.5*u[0]
+        grad[1:-1] = u[1:-1]+p[1:-1]
+        grad[-1] = 0.5*u[-1]+p[-1]
+        return dt*grad
+        #return dt*(u+p)
 
 
     problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
@@ -151,17 +228,53 @@ if __name__ == "__main__":
     N = 1000
     m = 10
 
-    #res = problem.PPCSDsolve(N,m,[1])
+    #res = problem.PPCSDsolve(N,m,[100])
 
     res2 = problem.scipy_solver(N,disp=True)
     
     res3 = problem.solve(N,algorithm='my_steepest_decent')
+    res4 = problem.penalty_solve(N,m,[500],algorithm='my_lbfgs')
+
+    res5 = problem.scipy_penalty_solve(N,m,[500],disp=True)
+
+    x = res4['control'].array()
+    lam = np.zeros(m+1)
+    lam[1:-1] = x[N+1:]
+
+    lam[0] = y0
+    plot(np.linspace(0,T,m+1),lam)
     
 
+    y,Y =problem.ODE_penalty_solver(x,N,m)
+    print len(Y)
+    plot(np.linspace(0,T,N+1),Y)
+    show()
+    """
+    S = np.zeros(m+1)
+    S[1:-1]=1
+
+    delta = problem.adjoint_propogator(m,0,S)
+
+    for i in range(len(S)-1):
+        S[i] = S[i]+delta[i+1]
+
+    plot(np.linspace(0,T,m+1),S,'r-')
+    plot(np.linspace(0,T,m+1),delta,'b--')
+    show()
 
 
+    delta = problem.ODE_propogator(m,0,S)
+    
+    for i in range(len(S)-1):
+        S[i+1] = S[i+1]+delta[i+1]
 
+    
+    plot(np.linspace(0,T,m+1),S,'r-')
+    plot(np.linspace(0,T,m+1),delta,'b--')
+    show()
 
+    find_gradient()
+    """
 """
 -(l[-(i+1)]-l[(i+2)])/dT = a*l[-(i+2)] + S[-(i+1)]/dT
 
