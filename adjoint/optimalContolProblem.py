@@ -385,6 +385,11 @@ class OptimalControlProblem():
                                     options=SDopt)
             res = Solver.solve()
 
+            import matplotlib.pyplot as plt
+            Y = self.ODE_solver(res.x,N)
+            plt.plot(Y)
+            plt.show()
+
         return res
 
 

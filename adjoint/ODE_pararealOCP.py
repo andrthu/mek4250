@@ -6,6 +6,7 @@ from scipy.optimize import minimize
 import numpy as np
 from my_bfgs.steepest_decent import SteepestDecent,PPCSteepestDecent
 from optimalContolProblem import OptimalControlProblem
+import time
 
 
 class PararealOCP(OptimalControlProblem):
@@ -24,6 +25,48 @@ class PararealOCP(OptimalControlProblem):
         self.end_diff = y - self.yT
         return y - self.yT
 
+    def adjoint_step(self,omega,dT,step=1):
+        
+        step_dt = dT/float(step)
+
+        v = np.zeros(step+1)
+        v[-1] = omega
+        for i in range(step):
+            v[-(i+2)] = self.adjoint_update(v,None,i,step_dt)
+
+        return v[0]
+
+    def ODE_step(self,omega,dT,step=1):
+        step_dt = dT/float(step)
+
+        v = np.zeros(step+1)
+        v[0] = omega
+        for i in range(step):
+            v[i+1] = self.ODE_update(v,np.zeros(step+1),i,0,step_dt)
+        return v[-1]
+
+    def PC_maker2(self,N,m,step=1):
+
+        def pc(x):
+            S = np.zeros(m+1)
+            S[1:-1] = x.copy()[N+1:]
+            
+            dT = self.T/m
+            #S[-1] = self.end_diff
+            #S[0] = self.y0
+
+            for i in range(0,m):
+                S[-(i+1)] = S[-(i+1)] + self.adjoint_step(S[-(i+1)],dT,step=step)
+
+            #print S
+            #time.sleep(1)
+            for i in range(1,m+1):
+                S[i] = S[i] + self.ODE_step(S[i-1],dT,step=step)
+
+            x[N+1:]=S.copy()[1:-1]
+            return x
+        return pc
+
     def adjoint_propogator(self,m,delta0,S):
 
         T = self.T
@@ -38,6 +81,8 @@ class PararealOCP(OptimalControlProblem):
             delta[-(i+2)]=self.adjoint_propogator_update(delta,S,i,dT)
 
         return delta
+
+    
 
     def ODE_propogator(self,m,delta0,S):
         T = self.T
@@ -61,7 +106,7 @@ class PararealOCP(OptimalControlProblem):
             #S[-1] = self.end_diff
             delta =self.adjoint_propogator(m,0,S)
 
-            for i in range(len(S)-1):
+            for i in range(1,len(S)-1):
                 S[i] = S[i]+delta[i]
 
             #S2 = np.zeros(m)
@@ -69,9 +114,9 @@ class PararealOCP(OptimalControlProblem):
 
             delta2 = self.ODE_propogator(m,0,S)
 
-            for i in range(1,len(S)-1):
+            for i in range(len(S)-1):
                 S[i+1] = S[i+1]+delta2[i+1]
-
+            
             x[N+1:]=S[1:-1]
             
             return x
@@ -87,7 +132,7 @@ class PararealOCP(OptimalControlProblem):
             x0 = np.zeros(N+m)
         
         result = []
-        PPC = self.PC_maker(N,m)
+        PPC = self.PC_maker2(N,m,step=10)
         for i in range(len(my_list)):
         
             J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
@@ -101,6 +146,10 @@ class PararealOCP(OptimalControlProblem):
             x0=res.x
             result.append(res)
         if len(result)==1:
+            y,Y = self.ODE_penalty_solver(x0,N,m)
+            import matplotlib.pyplot as plt
+            plt.plot(Y)
+            plt.show()
             return res
         else:
             return result
@@ -156,11 +205,12 @@ def find_gradient():
         return 0.5*(I + (y-yT)**2)
 
     def grad_J(u,p,dt):
-        grad =np.zeros(len(u))
-        grad[0] = 0.5*u[0]
-        grad[1:-1] = u[1:-1]+p[1:-1]
-        grad[-1] = 0.5*u[-1]+p[-1]
-        return dt*grad
+        #grad =np.zeros(len(u))
+        #grad[0] = 0.5*u[0]
+        #grad[1:-1] = u[1:-1]+p[1:-1]
+        #grad[-1] = 0.5*u[-1]+p[-1]
+        #return dt*grad
+        return dt*(u+p)
 
     Problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
 
@@ -179,7 +229,7 @@ def find_gradient():
     plt.plot(np.linspace(0,T,m+1),lam)
     plt.show()
 
-    delta = problem.adjoint_propogator(m,0,lam)
+    delta = Problem.adjoint_propogator(m,0,lam)
 
     for i in range(1,len(lam)-1):
         lam[i] = lam[i]+delta[i]
@@ -189,7 +239,7 @@ def find_gradient():
     show()
 
 
-    delta = problem.ODE_propogator(m,0,lam)
+    delta = Problem.ODE_propogator(m,0,lam)
     
     for i in range(len(lam)-1):
         lam[i+1] = lam[i+1]+delta[i+1]
@@ -206,7 +256,8 @@ def find_gradient():
 
 if __name__ == "__main__":
     from matplotlib.pyplot import *
-
+    find_gradient()
+    
     y0 = 1
     yT = 10
     T  = 1
@@ -222,20 +273,22 @@ if __name__ == "__main__":
         return 0.5*(I + (y-yT)**2)
 
     def grad_J(u,p,dt):
-        """grad =np.zeros(len(u))
+        """
+        grad =np.zeros(len(u))
         grad[0] = 0.5*u[0]
         grad[1:-1] = u[1:-1]+p[1:-1]
         grad[-1] = 0.5*u[-1]+p[-1]
-        return dt*grad"""
+        return dt*grad
+        """
         return dt*(u+p)
 
 
     problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
     
     N = 1000
-    m = 2
+    m = 10
 
-    res = problem.PPCSDsolve(N,m,[100])
+    res = problem.PPCSDsolve(N,m,[1])
 
     res2 = problem.scipy_solver(N,disp=True)
     
