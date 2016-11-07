@@ -5,6 +5,7 @@ from scipy.integrate import trapz
 from scipy.optimize import minimize
 import numpy as np
 from my_bfgs.steepest_decent import SteepestDecent,PPCSteepestDecent
+import time
 
 class OptimalControlProblem():
     """

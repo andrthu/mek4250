@@ -22,12 +22,18 @@ class OptimizationControl():
         self.niter += 1
         
     def v_update(self,N,v):
-        self.x[:N+1] = v[:].copy()
-        self.dJ = self.grad_J(x)
+        self.x[:N+1] = v.copy()
+        self.dJ = self.grad_J(self.x)
         
     def lamda_update(self,N,lamda):
         self.x[N+1:]=lamda[:]
-        self.dJ = self.grad_J(x)
+        self.dJ = self.grad_J(self.x)
+        self.niter += 1
+        
+    def split_update(self,N,v,lamda):
+        self.x[:N+1] = v.copy()
+        self.x[N+1:]=lamda[:]
+        self.dJ = self.grad_J(self.x)
         self.niter += 1
         
     def val(self):
@@ -186,70 +192,79 @@ class PPCSteepestDecent(SteepestDecent):
         plt.show()
         return self.data
     
-    def split_control(self,x,m):
-        N = len(x)-m
+    def split_control(self,x,N,m):
+        #N = len(x)-m
         X = x.copy()
         v = X[:N+1]
         lamda = X[N+1:]
         return v,lamda
 
-    def get_v_grad(N,m,lamda):
+    def get_v_grad(self,N,m,v,lamda):
         
-        p_v = self.data.dJ[:N+1]
+        p_v = -self.data.dJ[:N+1]
 
         def v_J(x_v):
             x = np.zeros(N+m)
+            
             x[:N+1] = x_v[:]
-            x[N+1] = lamda[:]
+            x[N+1:] = lamda[:]
             return self.J(x)
             
         def v_grad(x_v):
             x = np.zeros(N+m)
             x[:N+1] = x_v[:]
-            x[N+1] = lamda[:]
+            x[N+1:] = lamda[:]
 
             return self.grad_J(x)[:N+1]
-        
+        p_v = -v_grad(v)  
         return p_v,v_J,v_grad
 
-    def get_lamda_grad(N,m,v):
+    def get_lamda_grad(self,N,m,v,lamda):
 
-        p_lamda = self.data.dJ[N+1:]
+        #p_lamda = -self.PC(self.data.dJ[N+1:])
 
         def lamda_J(x_lamda):
             x = np.zeros(N+m)
             x[:N+1] = v[:]
-            x[N+1] = x_lamda[:]
+            x[N+1:] = x_lamda[:]
             return self.J(x)
             
         def lamda_grad(x_lamda):
             x = np.zeros(N+m)
             x[:N+1] = v[:]
-            x[N+1] = x_lamda[:]
+            x[N+1:] = x_lamda[:]
 
             return self.grad_J(x)[N+1:]
+        p_lamda = -self.PC(lamda_grad(lamda))
 
         return p_lamda,lamda_J,lamda_grad
 
     def split_solve(self,m):
 
         
-        N = self.data.length
+        N = self.data.length-m
         opt = self.options
-
+        import matplotlib.pyplot as plt
         while self.check_convergence()==0:
 
-            v,lamda = self.split_control(self.data.x,m)
+            v,lamda = self.split_control(self.data.x,N,m)
 
-            p_v,v_J,v_grad = self.get_v_grad()
-            v,alfa = self.do_linesearch(v_J,v_grad,v,p_v)
-            self.data.v_update(v)
-            
-            p_lamda,lamda_J,lamda_grad = self.get_lamda_grad()
+            p_lamda,lamda_J,lamda_grad = self.get_lamda_grad(N,m,v,lamda)
             
             lamda,alfa =  self.do_linesearch(lamda_J,lamda_grad,lamda,p_lamda)
             
-            self.data.lamda_update(lamda)
+            self.data.lamda_update(N,lamda)
+
+            p_v,v_J,v_grad = self.get_v_grad(N,m,v,lamda)
+            v,alfa = self.do_linesearch(v_J,v_grad,v,p_v)
+            self.data.v_update(N,v)
+            
+            
+            #self.data.split_update(N,v,lamda)
+
+            plt.plot(v)
+        plt.show()
+        print self.data.val(),self.data.niter
         return self.data
         
 

@@ -49,21 +49,21 @@ class PararealOCP(OptimalControlProblem):
 
         def pc(x):
             S = np.zeros(m+1)
-            S[1:-1] = x.copy()[N+1:]
+            S[1:-1] = x.copy()[:]
             
-            dT = self.T/m
+            dT = float(self.T)/m
             #S[-1] = self.end_diff
             #S[0] = self.y0
-
-            for i in range(0,m):
-                S[-(i+1)] = S[-(i+1)] + self.adjoint_step(S[-(i+1)],dT,step=step)
+            
+            for i in range(1,m):
+                S[-(i+1)] = S[-(i+1)] + self.adjoint_step(S[-i],dT,step=step)
 
             #print S
             #time.sleep(1)
-            for i in range(1,m+1):
+            for i in range(1,m):
                 S[i] = S[i] + self.ODE_step(S[i-1],dT,step=step)
-
-            x[N+1:]=S.copy()[1:-1]
+            
+            x[:]=S.copy()[1:-1]
             return x
         return pc
 
@@ -125,14 +125,14 @@ class PararealOCP(OptimalControlProblem):
             #return x
         return pc
 
-    def PPCSDsolve(self,N,m,my_list,x0=None,options=None):
+    def PPCSDsolve(self,N,m,my_list,x0=None,options=None,split=True):
 
         dt=float(self.T)/N
         if x0==None:
             x0 = np.zeros(N+m)
         
         result = []
-        PPC = self.PC_maker2(N,m,step=10)
+        PPC = self.PC_maker2(N,m,step=1)
         for i in range(len(my_list)):
         
             J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
@@ -142,7 +142,10 @@ class PararealOCP(OptimalControlProblem):
 
             Solver = PPCSteepestDecent(J,grad_J,x0.copy(),PPC,
                                        decomp=m,options=SDopt)
-            res = Solver.solve()
+            if split:
+                res = Solver.split_solve(m)
+            else:
+                res = Solver.solve()
             x0=res.x
             result.append(res)
         if len(result)==1:
@@ -154,7 +157,7 @@ class PararealOCP(OptimalControlProblem):
         else:
             return result
 
-
+    
     def adjoint_propogator_update(self,l,rhs,i,dt):
         raise NotImplementedError,'not implemented'
 
@@ -256,7 +259,7 @@ def find_gradient():
 
 if __name__ == "__main__":
     from matplotlib.pyplot import *
-    find_gradient()
+    #find_gradient()
     
     y0 = 1
     yT = 10
@@ -288,7 +291,7 @@ if __name__ == "__main__":
     N = 1000
     m = 10
 
-    res = problem.PPCSDsolve(N,m,[1])
+    res = problem.PPCSDsolve(N,m,[10])
 
     res2 = problem.scipy_solver(N,disp=True)
     
