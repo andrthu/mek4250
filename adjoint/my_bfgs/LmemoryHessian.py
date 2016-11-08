@@ -185,4 +185,56 @@ class LimMemoryHessian(InvertedHessian):
         t = t + float(rhok * x.dot(sk)) * sk
         return t
 
+class NumpyLimMemoryHessian(InvertedHessian):
+    """
+    Normal Inverted Hessian
+    """
+    def __init__(self,Hint,mem_lim=10,beta=1):
+        """
+        Initialazing the LimMemoryHessian
 
+        Valid options are:
+        
+        * Hint : Initial approximation of inverted hessian, typically 1
+        * mem_lim : number of iterations the hessian remembers
+        * beta : scaling for Hinit
+        """
+
+
+        self.Hint=Hint
+        self.mem_lim=mem_lim
+        self.y = []
+        self.s = []
+        self.rho = []
+        self.beta = beta
+
+    
+    def make_rho(self,yk,sk):
+
+        return 1./(yk.dot(sk))
+    
+    def matvec(self,x,k = -1):
+        """
+        Recursive method for multiplying a vector with the inverted hessian
+
+        Method is based on formula
+        H(k+1) = [1-r(k)*y(k)*s(k)]H(k)[1-r(k)*y(k)*s(k)] + r(k)*s(k)*s(k)
+
+        Arguments:
+        * x : the vector you want to multiply the hessian with
+        * k : counting variable that decides level of recurion
+        """
+        
+        if k == -1:
+            k = len(self)
+        if k==0:
+            return self.beta * (x.matDot(self.Hint))
+        rhok, yk, sk = self[k]
+        
+        
+        
+        t = x - float(rhok * x.dot(sk)) * yk
+        t = self.matvec(t,k-1)
+        t = t - float(rhok * yk.dot(t)) * sk
+        t = t + float(rhok * x.dot(sk)) * sk
+        return t

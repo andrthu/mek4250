@@ -33,7 +33,8 @@ class LbfgsParent():
         self.set_options(options)        
         
         if Hinit==None:
-            self.Hinit = np.identity(x0.size())
+            self.Hinit = np.identity(len(x0))
+            
             
 
 
@@ -178,7 +179,7 @@ class Lbfgs(LbfgsParent):
           - return_data : boolean return the data instance or control
         """
 
-        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,options=options)
+        LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options)
         
         mem_lim = self.options['mem_lim']
         
@@ -309,7 +310,7 @@ class MuLbfgs(LbfgsParent):
           - return_data : boolean return the data instance or control
         """
 
-        LbfgsParent.__init__(self,J,d_J,x0,Hinit=None,options=options)
+        LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options)
 
         self.Mud_J = Mud_J
         

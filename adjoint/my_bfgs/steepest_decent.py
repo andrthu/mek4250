@@ -216,12 +216,12 @@ class PPCSteepestDecent(SteepestDecent):
             x[N+1:] = lamda[:]
 
             return self.grad_J(x)[:N+1]
-        p_v = -v_grad(v)  
+        #p_v = -v_grad(v)  
         return p_v,v_J,v_grad
 
     def get_lamda_grad(self,N,m,v,lamda):
 
-        #p_lamda = -self.PC(self.data.dJ[N+1:])
+        p_lamda = -self.PC(self.data.dJ[N+1:])
 
         def lamda_J(x_lamda):
             x = np.zeros(N+m)
@@ -235,7 +235,7 @@ class PPCSteepestDecent(SteepestDecent):
             x[N+1:] = x_lamda[:]
 
             return self.grad_J(x)[N+1:]
-        p_lamda = -self.PC(lamda_grad(lamda))
+        #p_lamda = -self.PC(lamda_grad(lamda))
 
         return p_lamda,lamda_J,lamda_grad
 
