@@ -58,7 +58,14 @@ class SplitLbfgs(LbfgsParent):
     
 
     def solve(self):
+        
+        n = self.data.length
+        m = self.m
+        x0 = self.data.x
 
+        H = self.data.H
+        
+        
         return self.data
 
 
