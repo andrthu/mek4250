@@ -1,4 +1,5 @@
 from my_bfgs.lbfgs import Lbfgs
+from my_bfgs.splitLbfgs import SplitLbfgs
 from my_bfgs.my_vector import SimpleVector
 from penalty import partition_func
 from scipy.integrate import trapz
@@ -452,7 +453,14 @@ class OptimalControlProblem():
                 res = Solver.solve()
                 x0 = res.x.copy()
                 Result.append(res)
-            
+
+            elif algorithm == 'split_lbfgs':
+                self.update_Lbfgs_options(Lbfgs_options)
+                Solver = SplitLbfgs(J,grad_J,x0,m,options=self.Lbfgs_options)
+
+                res = Solver.solve()
+                x0 = res.x.copy()
+                Result.append(res)
         if len(Result)==1:
             return res
         else:

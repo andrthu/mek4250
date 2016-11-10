@@ -228,7 +228,7 @@ class NumpyLimMemoryHessian(InvertedHessian):
         if k == -1:
             k = len(self)
         if k==0:
-            return self.beta * (x.matDot(self.Hint))
+            return self.beta * (x.dot(self.Hint))
         rhok, yk, sk = self[k]
         
         

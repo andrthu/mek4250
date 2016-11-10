@@ -14,7 +14,7 @@ class LbfgsOptimizationControl():
 
         self.dJ = grad_J(x0)
         self.H = H
-        self.vec = vec
+        #self.vec = vec
 
         self.niter = 0
         
@@ -35,7 +35,7 @@ class LbfgsOptimizationControl():
     def update(self,x):
 
         self.x = x.copy()
-        self.dJ = selfgrad_j(self.x)
+        self.dJ = self.grad_J(self.x)
 
         self.niter +=1
 
