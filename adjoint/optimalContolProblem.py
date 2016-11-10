@@ -106,7 +106,7 @@ class OptimalControlProblem():
         """
         default = {}
         default.update({"jtol"                   : 1e-4,
-                        "maxiter"                :  200,})
+                        "maxiter"                :  500,})
         return default
 
     def update_SD_options(self,options):

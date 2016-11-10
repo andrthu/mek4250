@@ -5,7 +5,7 @@ from LmemoryHessian import LimMemoryHessian,NumpyLimMemoryHessian
 
 class LbfgsOptimizationControl():
 
-    def __init__(self,x0,J_f,grad_J,H):
+    def __init__(self,x0,J_f,grad_J,H,H2=None):
 
         self.x = x0.copy()
         self.J_func = J_f
@@ -14,6 +14,7 @@ class LbfgsOptimizationControl():
 
         self.dJ = grad_J(x0)
         self.H = H
+        self.H2 = H2
         #self.vec = vec
 
         self.niter = 0

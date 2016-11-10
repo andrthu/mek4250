@@ -197,7 +197,7 @@ def find_gradient2():
     T  = 1
     a  = 1
     N = 1000
-    m = 10
+    m = 100
     dt =float(T)/N
 
     def J(u,y,yT,T):
@@ -305,8 +305,8 @@ if __name__ == "__main__":
     #find_gradient2()
     
     y0 = 0.5
-    yT = 20
-    T  = 2
+    yT = 200
+    T  = 1
     a  = 0.1
 
     
@@ -332,13 +332,14 @@ if __name__ == "__main__":
     problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
     
     N = 1000
-    m = 3
+    m = 100
 
-    res = problem.PPCSDsolve(N,m,[10])
+    res = problem.PPCSDsolve(N,m,[1,10,20,50,70,100])[-1]
 
     res2 = problem.scipy_solver(N,disp=True)
     
     res3 = problem.solve(N,algorithm='my_steepest_decent')
+    print 'normal: ',res3.niter
     res4 = problem.penalty_solve(N,m,[500],algorithm='my_lbfgs')
 
     res5 = problem.scipy_penalty_solve(N,m,[500],disp=True)

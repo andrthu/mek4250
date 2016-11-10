@@ -18,9 +18,10 @@ class SplitLbfgs(LbfgsParent):
         
         beta = self.options["beta"]
         
-            
+        
         Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta)
-
+        
+        
         self.data = LbfgsOptimizationControl(x0,J,d_J,Hessian)
 
     def do_linesearch(self,J,d_J,x,p):
@@ -138,7 +139,7 @@ class SplitLbfgs(LbfgsParent):
         while self.check_convergence()==0:
             
             p = H.matvec(-df0)
-            #"""
+            
             v,lamda =self.split_control(self.data.x,N,m)
 
             p_lamda,lamda_J,lamda_grad = self.get_lamda_grad(p,N,m,v,lamda)
@@ -163,6 +164,58 @@ class SplitLbfgs(LbfgsParent):
             H.update(y,s)
             x0[:]=self.data.x[:]
             df0[:]=df1[:]
+            
+        
+        return self.data
+
+    def solve2(self):
+        
+        n = self.data.length
+        m = self.m
+        N = n-m
+        x0 = self.data.x.copy()
+
+        mem_lim = self.options['mem_lim']
+        H1 = NumpyLimMemoryHessian(np.identity(N+1),mem_lim,beta=1)
+        H2 = NumpyLimMemoryHessian(np.identity(m-1),mem_lim,beta=1)
+
+        dl0 = self.data.dJ.copy()[N+1:]
+        dl1 = np.zeros(m-1)
+
+        dv0 = self.data.dJ.copy()[:N+1]
+        dv1 = np.zeros(N+1)
+
+        while self.check_convergence()==0:
+
+            v,lamda =self.split_control(self.data.x,N,m)
+
+            p1 = H2.matvec(-dl0)           
+
+            p_lamda,lamda_J,lamda_grad = self.get_lamda_grad(x0,N,m,v,lamda)
+            
+            lamda1,alpha = self.do_linesearch(lamda_J,lamda_grad,lamda,p1)
+
+            sl = lamda1-lamda
+
+            p_v,v_J,v_grad = self.get_v_grad(x0,N,m,v,lamda)
+            p2 = H1.matvec(-dv0)
+            v1,alpha = self.do_linesearch(v_J,v_grad,v,p2)
+            
+            sv = v1-v
+            
+            
+            self.data.split_update(N,v1,lamda1)
+            df1 = self.data.dJ.copy()
+            dl1[:] = df1[N+1:]
+            dv1[:] = df1[:N+1]
+
+            H2.update(dl1-dl0,sl)
+            H1.update(dv1-dv0,sv)
+            
+            
+            x0[:]  = self.data.x[:]
+            dl0[:] = dl1[:]
+            dv0[:] = dv1[:]
             
         
         return self.data
