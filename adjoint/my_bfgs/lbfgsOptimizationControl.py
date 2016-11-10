@@ -39,6 +39,12 @@ class LbfgsOptimizationControl():
 
         self.niter +=1
 
+    def split_update(self,N,v,lamda):
+        self.x[:N+1] = v.copy()
+        self.x[N+1:]=lamda[:]
+        self.dJ = self.grad_J(self.x)
+        self.niter += 1
+
 
 
 
