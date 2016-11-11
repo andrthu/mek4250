@@ -39,6 +39,46 @@ One problem with the steepest descent method, is that it is sensitive to bad sca
 v^{k+1} &= v^k - \alpha\nabla J(v^k)\\
 \lambda^{k+1} &= \lambda^k - \alpha\nabla J(\lambda^k)
 \end{align*}
+To illustrate that we have scaling issues, lets look at the DE constrained optimal control problem that we have looked at previously:
+\begin{align}
+	\left\{
+     \begin{array}{lr}
+		\frac{\partial y}{\partial t}(t)+Ay=Bv  \ \textit{For $t \in [0,T]$}\\
+		y(0)=y^0
+	\end{array}
+	\right. \label{OC_PDE}
+\end{align}
+The functional they use is on the following form:
+\begin{align}
+J(v) = \frac{1}{2}\int_0^T ||v(t)||^2 dt + \frac{\alpha}{2}||y(T)-y^T||^2
+\end{align}
+This problem yields the following gradient:
+\begin{align}
+\langle\hat{J}'(v,\lambda),(s,l) \rangle = \int_0^T (B^*p+v)sdt + \sum_{n=1}^{N-1}(p_n(T_n) - p_{n-1}(T_n))l_n \label{penalty grad}
+\end{align}
+In a numerical setting, where we have discretized the equation, we will get the following gradient:
+\begin{align*}
+\nabla J(\bar{v},\Lambda) = (\Delta t (v_0-B^*p_0),...,\Delta t (v_{M}-B^*p_M),\{p_n(T_n) - p_{n-1}(T_n)\})
+\end{align*}
+One sees that the adjoint appears in both parts of the gradient, but in the $v$ part there is a factor of $\Delta t$ multiplied with it. It therefore makes sense, that the there is a factor of $\Delta t$ order of magnitude difference between the size of $v$ and $\Lambda$ part of the gradient. This means that for small $\Delta t$ the steepest descent method will converge very slowly.
+\section{Scaling}
+An alternative way of handling an unbalanced gradient is to rescale the problem. Lets explain with a simple example, where we try to minimize a function with only two variables $J(x,y)$. We then pick some initial point $(m_1,m_2)$, and notice that gradient $\nabla J(m_1,m_2)$ is very unbalance. Ideally, we would want $J_x(m_1)=J_y(m_2)$, and to achive this we introduce a new functional $\hat{J}(x,\xi)=J(x,\alpha\xi)$, with 
+\begin{align*}
+\alpha = \frac{\frac{\partial J(m_1,m_2)}{\partial x}}{\frac{\partial J(m_1,m_2)}{\partial y}}
+\end{align*} 
+Now choose a new initial point $(m_1,\frac{m_2}{\alpha})$, and we see that 
+\begin{align*}
+\frac{\partial \hat{J}(m_1,\frac{m_2}{\alpha})}{\partial x}=\frac{\partial\hat{J}(m_1,\frac{m_2}{\alpha})}{\partial y}
+\end{align*}
+because
+\begin{align*}
+\frac{\partial \hat{J}(m_1,\frac{m_2}{\alpha})}{\partial x} = \frac{\partial J(m_1,m_2)}{\partial x}
+\end{align*}
+and
+\begin{align*}
+\frac{\partial\hat{J}(m_1,\frac{m_2}{\alpha})}{\partial y} & = \frac{\partial J(m_1,m_2)}{\partial y}\alpha \\
+&=\frac{\partial J(m_1,m_2)}{\partial x}
+\end{align*}
 \section{L-BFGS}
 
 \end{document}

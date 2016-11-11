@@ -53,8 +53,7 @@ class PararealOCP(OptimalControlProblem):
             
             dT = float(self.T)/m
             dt = float(self.T)/N
-            #S[-1] = self.end_diff
-            #S[0] = self.y0
+            
             
             for i in range(1,m):
                 S[-(i+1)] = S[-(i+1)] + self.adjoint_step(S[-i],dT,step=step)
@@ -336,16 +335,32 @@ if __name__ == "__main__":
     
     N = 1000
     m = 100
-    
+    solver_time =[]
+
+    t2 = time.time()
     res = problem.PPCSDsolve(N,m,[1,10,50,100])[-1]
-
-    res2 = problem.scipy_solver(N,disp=True)
+    t1 = time.time()
+    solver_time.append((t1-t2)/m)
     
-    res3 = problem.solve(N,algorithm='my_steepest_decent')
-    print 'normal: ',res3.niter
-    res4 = problem.penalty_solve(N,m,[500],algorithm='my_lbfgs')
+    t2 = time.time()
+    res2 = problem.scipy_solver(N,disp=True)
+    t1 = time.time()
+    solver_time.append((t1-t2))
 
+    t2 = time.time()
+    res3 = problem.solve(N,algorithm='my_steepest_decent')
+    t1 = time.time()
+    solver_time.append((t1-t2))
+
+    print 'normal: ',res3.niter
+    
+    res4 = problem.penalty_solve(N,m,[500],algorithm='my_lbfgs')
+    t2 = time.time()
     res5 = problem.scipy_penalty_solve(N,m,[500],disp=True)
+    t1 = time.time()
+    solver_time.append((t1-t2)/m)
+
+    print solver_time
     plot(np.linspace(0,T,N+1),res3.x,'--r')
     plot(np.linspace(0,T,N+1),res.x[:N+1],'--b')
     plot(np.linspace(0,T,N+1),res5.x[:N+1])
