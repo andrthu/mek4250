@@ -260,7 +260,7 @@ class PPCSteepestDecent(SteepestDecent):
             self.data.v_update(N,v)
             
             
-            #self.data.split_update(N,v,lamda1)
+            #self.data.split_update(N,v,lamda)
 
             plt.plot(v)
         plt.show()

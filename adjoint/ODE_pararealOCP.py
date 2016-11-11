@@ -304,10 +304,10 @@ if __name__ == "__main__":
     from matplotlib.pyplot import *
     #find_gradient2()
     
-    y0 = 0.5
-    yT = 200
+    y0 = 1
+    yT = 3
     T  = 1
-    a  = 0.1
+    a  = 1
 
     
 
@@ -332,9 +332,9 @@ if __name__ == "__main__":
     problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
     
     N = 1000
-    m = 100
-
-    res = problem.PPCSDsolve(N,m,[1,10,20,50,70,100])[-1]
+    m = 10
+    
+    res = problem.PPCSDsolve(N,m,[1,10,50,100])[-1]
 
     res2 = problem.scipy_solver(N,disp=True)
     
@@ -348,6 +348,7 @@ if __name__ == "__main__":
     plot(np.linspace(0,T,N+1),res5.x[:N+1])
     plot(np.linspace(0,T,N+1),res4['control'].array()[:N+1])
     plot(np.linspace(0,T,N+1),res2.x)
+    legend(['sd','sdp','scip','myp','sci'])
     show()
     """
     x = res4['control'].array()

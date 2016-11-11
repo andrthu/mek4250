@@ -30,5 +30,15 @@ The steepest descent method is a very simple line search method that is defined 
 \begin{align*}
 x^{k+1} = x^k - \alpha\nabla J(x^k)
 \end{align*}
-If we want to use this method to solve 
+If we want to use this method to solve a timedecomposed problem using penalty terms, we would get the following:
+\begin{align*}
+(v^{k+1},\lambda^{k+1})= (v^k,\lambda^k)-\alpha\nabla J(v^k,\lambda^k)
+\end{align*}
+One problem with the steepest descent method, is that it is sensitive to bad scaling, and in many cases the size of the gradient with respect to $v$ and $\lambda$ may have a difference of several orders of magnitude. This would result in extremely slow convergence. One way of handling this is to split up the update:
+\begin{align*}
+v^{k+1} &= v^k - \alpha\nabla J(v^k)\\
+\lambda^{k+1} &= \lambda^k - \alpha\nabla J(\lambda^k)
+\end{align*}
+\section{L-BFGS}
+
 \end{document}
