@@ -159,7 +159,7 @@ class Lbfgs(LbfgsParent):
     """
     Straight foreward L_BFGS implementation
     """
-    def __init__(self,J,d_J,x0,Hinit=None,options=None):
+    def __init__(self,J,d_J,x0,pc=None,Hinit=None,options=None):
         """
         Initials for LbfgsParent
 
@@ -184,8 +184,12 @@ class Lbfgs(LbfgsParent):
         mem_lim = self.options['mem_lim']
         
         beta = self.options["beta"]
-        
+        self.pc = pc
             
+        if pc==None:
+            self.p_direction = self.direction
+        else:
+            self.p_direction = self.pc_direction
         Hessian = LimMemoryHessian(self.Hinit,mem_lim,beta=beta)
         self.data = {'control'   : x0,
                      'iteration' : 0,
@@ -213,7 +217,12 @@ class Lbfgs(LbfgsParent):
                    "return_data"            : False,}
         
         return default
+        
+    def direction(self,grad,H):
+        return H.matvec(-grad)
 
+    def pc_direction(self,grad,H):
+        return H.matvec(-self.Vec(self.pc(grad.array())))
     
     def solve(self):
         """
@@ -248,7 +257,7 @@ class Lbfgs(LbfgsParent):
         #the iterations
         while self.check_convergance(df0,iter_k)==0:
             
-            p = Hk.matvec(-df0)
+            p = self.p_direction(df0,Hk) #Hk.matvec(-df0)
 
             
             x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)

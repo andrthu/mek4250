@@ -52,17 +52,18 @@ class PararealOCP(OptimalControlProblem):
             S[1:-1] = x.copy()[:]
             
             dT = float(self.T)/m
+            dt = float(self.T)/N
             #S[-1] = self.end_diff
             #S[0] = self.y0
             
             for i in range(1,m):
                 S[-(i+1)] = S[-(i+1)] + self.adjoint_step(S[-i],dT,step=step)
 
-            #print S
-            #time.sleep(1)
+            
             for i in range(1,m):
                 S[i] = S[i] + self.ODE_step(S[i-1],dT,step=step)
-            
+            #print S
+            #time.sleep(1)
             x[:]=S.copy()[1:-1]
             return x
 
@@ -173,6 +174,8 @@ class SimplePpcProblem(PararealOCP):
         PararealOCP.__init__(self,y0,yT,T,J,grad_J,options)
 
         self.a = a
+
+        
 
 
     def ODE_update(self,y,u,i,j,dt):
@@ -305,9 +308,9 @@ if __name__ == "__main__":
     #find_gradient2()
     
     y0 = 1
-    yT = 3
+    yT = 30
     T  = 1
-    a  = 1
+    a  = 4
 
     
 
@@ -325,14 +328,14 @@ if __name__ == "__main__":
         grad[1:-1] = u[1:-1]+p[1:-1]
         grad[-1] = 0.5*u[-1]+p[-1]
         return dt*grad
-        """
+        #"""
         return dt*(u+p)
 
 
     problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
     
     N = 1000
-    m = 10
+    m = 100
     
     res = problem.PPCSDsolve(N,m,[1,10,50,100])[-1]
 
@@ -350,45 +353,7 @@ if __name__ == "__main__":
     plot(np.linspace(0,T,N+1),res2.x)
     legend(['sd','sdp','scip','myp','sci'])
     show()
-    """
-    x = res4['control'].array()
-    lam = np.zeros(m+1)
-    lam[1:-1] = x[N+1:]
-
-    lam[0] = y0
-    plot(np.linspace(0,T,m+1),lam)
     
-    
-    y,Y =problem.ODE_penalty_solver(x,N,m)
-    print len(Y)
-    plot(np.linspace(0,T,N+1),Y)
-    show()
-    
-    S = np.zeros(m+1)
-    S[1:-1]=1
-
-    delta = problem.adjoint_propogator(m,0,S)
-
-    for i in range(len(S)-1):
-        S[i] = S[i]+delta[i+1]
-
-    plot(np.linspace(0,T,m+1),S,'r-')
-    plot(np.linspace(0,T,m+1),delta,'b--')
-    show()
-
-
-    delta = problem.ODE_propogator(m,0,S)
-    
-    for i in range(len(S)-1):
-        S[i+1] = S[i+1]+delta[i+1]
-
-    
-    plot(np.linspace(0,T,m+1),S,'r-')
-    plot(np.linspace(0,T,m+1),delta,'b--')
-    show()
-
-    find_gradient()
-    """
 """
 -(l[-(i+1)]-l[(i+2)])/dT = a*l[-(i+2)] + S[-(i+1)]/dT
 
