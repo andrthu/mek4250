@@ -41,17 +41,19 @@ class OptimizationControl():
 
 class SteepestDecent():
 
-    def __init__(self,J,grad_J,x0,decomp=1,options={}):
+    def __init__(self,J,grad_J,x0,decomp=1,scale=None,options={}):
 
         self.J = J
         self.grad_J=grad_J
         self.x0 = x0
         self.decomp=decomp
         self.set_options(options)
+        
+        self.scale_problem(scale,self.x0,self.J,self.grad_J)
 
         self.data = OptimizationControl(x0,J,grad_J)
         
-        
+    
         
 
     def set_options(self,user_options):
@@ -72,6 +74,23 @@ class SteepestDecent():
              "maxiter"                :  200,
              "line_search_options"    : ls,})
         return default
+
+
+    def scale_problem(self,scale,x0,J,grad_J):
+
+        if scale==None:
+            return
+
+        y0 = scale.var(x0)
+
+        J_ = lambda x: J(scale.func(x))
+        grad_J_ = lambda x : scale.grad(grad_J(scale.grad_var(x)))
+
+        self.J = J_
+        self.x0 = y0
+        self.grad_J = grad_J_
+        
+        
 
     def do_linesearch(self,J,d_J,x,p):
 
