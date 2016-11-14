@@ -401,7 +401,7 @@ where Q is:
 Q = \left[ \begin{array}{cc}
 	I & 0 \\
 	0 & \bar{M}^{-1}\bar{M}^{-*} \\
-	\end{array} \right]
+	\end{array} \right] \label{PC}
 \end{align}
 One could then imagine, that $Q$ is an approximation of the inverse Hessian of $\hat{J}$, atleast for the $\Lambda$ part of the control.
 \section{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
@@ -485,6 +485,45 @@ x_1 &=y_1 + \delta^1 \\
 x_2 &=y_2 +\delta^2\\
 x_3 &=y_3 + \delta^3 
 \end{align*}
+\section{Testing preconditioner on steepest descent solver}
+Want to use (\ref{PC}) as preconditioner on a simple optimal control problem with ODE constraints. I define the following simple problem:
+\begin{align}
+J(y(v),v)=\int_0^1 v(t)^2 dt + \frac{1}{4}(y(1)-5)^2  \label{example1_func}
+\end{align} 
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		y'(t) - 0.9y(t) = v(t) \ 	\textit{For $t \in [0,1]$} \\
+		y(0)=1.2
+	\end{array}
+   \right. \label{example1_ODE}
+\end{align}
+I solve the equations using the implicit Euler scheme, with $\Delta t=\frac{1}{500}$, and I then decompose the time interval $I=[0,1]$ into $N=10$ subintervals. To make it simple, I will also chose a sequence of $\mu$-values for my penalty iterations. The results are given in plots and tables below. 
+ \begin{center}
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+     & Functional value &iterations  & $|v-v_{\mu}|_{L^2}$   \\ \hline
+    normal &0.4358 & 34& 0 	\\ \hline
+    $\mu=1$ & 0.0711& 15&0.5828 	\\ \hline
+    $\mu=10$ &0.2879 &13& 0.2277	\\ \hline
+    $\mu=50$ &0.3949&36& 0.0534	\\ \hline
+    $\mu=75$ &0.4075&20&0.0303\\ \hline
+    $\mu=100$ &0.4143&8&	0.0279\\ \hline
+    $\mu=120$ &0.4176&23&0.0206\\ \hline
+    $\mu=175$ &0.4230&41&0.0086\\ \hline
+    $\mu=200$ &0.4245&18&0.0052\\ \hline
+    \end{tabular}
+\end{center}
+\begin{figure}
+  \includegraphics[width=\linewidth]{test1_PC_control.png}
+  \caption{This figure shows the numerical solution of the (\ref{example1_func}-\ref{example1_ODE}) problem both with and without time decomposition. I have plotted the control for every iteration of the penalty method.} 
+  \label{Fig 1}
+\end{figure}
+\begin{figure}
+  \includegraphics[width=\linewidth]{test1_PC_state.png}
+  \caption{The same solution as Figure \ref{Fig 1}, only now I plot the state instead of the control.}
+  \label{Fig 2}
+\end{figure}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}

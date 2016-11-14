@@ -63,11 +63,24 @@ def test1():
 
     def grad_J(u,p,dt,alp):
         return dt*(u+p)
-
+    
     problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+    
+    t0=time.time()
     res = problem.solve(N,algorithm='my_steepest_decent')
+    t1=time.time()
+    normal_time = t1-t0
+
     mu_val = [1,10,50,75,100,120,175,200]
+
+    t0=time.time()
     res2=problem.PPCSDsolve(N,m,mu_val)
+    t1 = time.time()
+    penalty_time = t1-t0
+    
+    
+
+    
 
     print res.val(),res.niter
     t = np.linspace(0,T,N+1)
@@ -78,13 +91,18 @@ def test1():
     sum_iter = 0
     for i in range(len(res2)):
         print mu_val[i],res2[i].val(),res2[i].niter
+        print 'l2 diff:',l2_diff_norm(res.x,res2[i].x[:N+1],t)
         plt.plot(t,res2[i].x[:N+1])
         leg.append('mu='+str(mu_val[i]))
         sum_iter += res2[i].niter
-    print sum_iter
+    print sum_iter, sum_iter/float(m), res.niter
+    print 'l2 diffrence in control:',l2_diff_norm(res.x,res2[-1].x[:N+1],t)
+    print 'normal time:',normal_time,',penalty time:',penalty_time, ',perfect parallel:', penalty_time/m
     plt.legend(leg)
-    plt.title('control')
+    plt.title('Optimal control')
     plt.xlabel('time')
+    plt.ylabel('control')
+    #plt.savefig('test1_PC_control.png')
     plt.show()
 
     plt.figure()
@@ -94,10 +112,35 @@ def test1():
         _,y = problem.ODE_penalty_solver(res2[i].x,N,m)
         plt.plot(t,y)
     plt.legend(leg,loc=2)
-    plt.title('state')
+    plt.title('Solution of state equation')
     plt.xlabel('time')
+    plt.ylabel('state')
+    #plt.savefig('test1_PC_state.png')
     plt.show()
 
+    if False:
+        sd_opt = {'maxiter':1000}
+        t0 = time.time()
+        res3 = problem.penalty_solve(N,m,mu_val,algorithm='my_steepest_decent',
+                                     Lbfgs_options=sd_opt)
+        t1 = time.time()
+        noPC_time = t1-t0
+
+        plt.figure()
+        plt.plot(t,res.x,'r--')
+        sum_iter = 0
+        for i in range(len(res3)):
+            print mu_val[i],res3[i].val(),res3[i].niter
+            plt.plot(t,res3[i].x[:N+1])
+            
+            sum_iter += res3[i].niter
+        print sum_iter, noPC_time,noPC_time/m
+        plt.legend(leg)
+        plt.title('Optimal control without preconditioner')
+        plt.xlabel('time')
+        plt.ylabel('control')
+
+        plt.show()
 def l2_diff_norm(u1,u2,t):
     return np.sqrt(trapz((u1-u2)**2,t))
 
@@ -153,6 +196,6 @@ def test2():
     return
 
 if __name__ == '__main__':
-    #test1()
-    test2()
+    test1()
+    #test2()
 

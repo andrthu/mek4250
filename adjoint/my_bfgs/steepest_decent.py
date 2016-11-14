@@ -155,7 +155,7 @@ class SteepestDecent():
             y = y[:N+1]
         """
         if np.sqrt(np.sum(y**2)/len(y))<self.options['jtol']:
-            print 'Success'
+            #print 'Success'
             return 1
             
         if k>self.options['maxiter']:
@@ -283,7 +283,7 @@ class PPCSteepestDecent(SteepestDecent):
 
             #plt.plot(v)
         #plt.show()
-        print self.data.val(),self.data.niter
+        #print self.data.val(),self.data.niter
         return self.data
         
 
