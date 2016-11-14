@@ -151,10 +151,10 @@ class PararealOCP(OptimalControlProblem):
             x0=res.x
             result.append(res)
         if len(result)==1:
-            y,Y = self.ODE_penalty_solver(x0,N,m)
-            import matplotlib.pyplot as plt
-            plt.plot(Y)
-            plt.show()
+            #y,Y = self.ODE_penalty_solver(x0,N,m)
+            #import matplotlib.pyplot as plt
+            #plt.plot(Y)
+            #plt.show()
             return res
         else:
             return result

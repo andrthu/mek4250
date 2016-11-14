@@ -388,9 +388,9 @@ class OptimalControlProblem():
             res = Solver.solve()
 
             import matplotlib.pyplot as plt
-            Y = self.ODE_solver(res.x,N)
-            plt.plot(Y)
-            plt.show()
+            #Y = self.ODE_solver(res.x,N)
+            #plt.plot(Y)
+            #plt.show()
 
         return res
 

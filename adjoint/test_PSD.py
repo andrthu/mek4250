@@ -8,6 +8,7 @@ import numpy as np
 from my_bfgs.steepest_decent import SteepestDecent,PPCSteepestDecent
 from optimalContolProblem import OptimalControlProblem
 import time
+import matplotlib.pyplot as plt
 
 class Problem3(PararealOCP):
     """
@@ -50,7 +51,7 @@ def test1():
     T = 1.
     yT = 5
     alpha = 0.5
-    N = 1000
+    N = 500
     m = 10
     
     def J(u,y,yT,T,alp):
@@ -64,9 +65,94 @@ def test1():
         return dt*(u+p)
 
     problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+    res = problem.solve(N,algorithm='my_steepest_decent')
+    mu_val = [1,10,50,75,100,120,175,200]
+    res2=problem.PPCSDsolve(N,m,mu_val)
 
-    problem.PPCSDsolve(N,m,[1,10,50,100])[-1]
+    print res.val(),res.niter
+    t = np.linspace(0,T,N+1)
+    plt.figure()
+    plt.plot(t,res.x,'r--')
+    leg = []
+    leg.append('normal')
+    sum_iter = 0
+    for i in range(len(res2)):
+        print mu_val[i],res2[i].val(),res2[i].niter
+        plt.plot(t,res2[i].x[:N+1])
+        leg.append('mu='+str(mu_val[i]))
+        sum_iter += res2[i].niter
+    print sum_iter
+    plt.legend(leg)
+    plt.title('control')
+    plt.xlabel('time')
+    plt.show()
 
+    plt.figure()
+    y1 = problem.ODE_solver(res.x,N)
+    plt.plot(t,y1,'r--')
+    for i in range(len(res2)):
+        _,y = problem.ODE_penalty_solver(res2[i].x,N,m)
+        plt.plot(t,y)
+    plt.legend(leg,loc=2)
+    plt.title('state')
+    plt.xlabel('time')
+    plt.show()
 
-test1()
+def l2_diff_norm(u1,u2,t):
+    return np.sqrt(trapz((u1-u2)**2,t))
+
+def linf_diff_norm(u1,u2,t):
+    return np.max(abs(u1-u2))
+
+def mu_update(mu,num_iter,m,val):
+
+    factor = (1+val*float(m)/num_iter)
+    return factor*mu 
+def test2():
+    
+    y0 = 10
+    a = 1
+    T = 1.
+    yT = 13
+    alpha = 2
+    N = 800
+    m = 20
+    
+    def J(u,y,yT,T,alp):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + alp*(y-yT)**2)
+
+    def grad_J(u,p,dt,alp):
+        return dt*(u+p)
+    
+    problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+    res = problem.solve(N,algorithm='my_steepest_decent')
+    
+    print res.val(),res.niter
+    t = np.linspace(0,T,N+1)
+    plt.plot(t,res.x)
+    plt.show()
+    
+    x = np.zeros(N+m)
+    mu = 1
+    sum_iter = 0
+    while l2_diff_norm(x[:N+1],res.x,t)>1:
+        res2 = problem.PPCSDsolve(N,m,[mu],x0=x)
+        x = res2.x.copy()
+        mu = mu_update(mu,res2.niter,m,20)
+        print mu
+        plt.plot(t,res2.x[:N+1])
+        plt.plot(t,res.x,'r--')
+        sum_iter += res2.niter
+        print l2_diff_norm(x[:N+1],res.x,t)
+        plt.show()
+    print sum_iter,sum_iter/float(m),res.niter
+    return
+
+if __name__ == '__main__':
+    #test1()
+    test2()
 

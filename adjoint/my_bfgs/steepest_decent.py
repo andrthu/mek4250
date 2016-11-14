@@ -164,7 +164,7 @@ class SteepestDecent():
 
 
     def solve(self):
-        import matplotlib.pyplot as plt
+        #import matplotlib.pyplot as plt
         J = self.J
         grad_J = self.grad_J
         opt = self.options
@@ -175,10 +175,10 @@ class SteepestDecent():
 
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)
-            plt.plot(x)
+            #plt.plot(x)
             
-            print 'val: ',self.data.val()
-        plt.show()
+            #print 'val: ',self.data.val()
+        #plt.show()
         return self.data
 
 
@@ -196,7 +196,7 @@ class PPCSteepestDecent(SteepestDecent):
         J = self.J
         grad_J = self.grad_J
         opt = self.options
-        import matplotlib.pyplot as plt
+        #import matplotlib.pyplot as plt
 
         while self.check_convergence()==0:
 
@@ -207,8 +207,8 @@ class PPCSteepestDecent(SteepestDecent):
 
             plt.plot(x[:len(x)-self.decomp+1])
             #plt.show()
-            print 'val: ',self.data.val()
-        plt.show()
+            #print 'val: ',self.data.val()
+        #plt.show()
         return self.data
     
     def split_control(self,x,N,m):
@@ -263,7 +263,7 @@ class PPCSteepestDecent(SteepestDecent):
         
         N = self.data.length-m
         opt = self.options
-        import matplotlib.pyplot as plt
+        #import matplotlib.pyplot as plt
         while self.check_convergence()==0:
 
             v,lamda = self.split_control(self.data.x,N,m)
@@ -281,8 +281,8 @@ class PPCSteepestDecent(SteepestDecent):
             
             #self.data.split_update(N,v,lamda)
 
-            plt.plot(v)
-        plt.show()
+            #plt.plot(v)
+        #plt.show()
         print self.data.val(),self.data.niter
         return self.data
         
