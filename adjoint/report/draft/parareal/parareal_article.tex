@@ -514,6 +514,23 @@ I solve the equations using the implicit Euler scheme, with $\Delta t=\frac{1}{5
     $\mu=200$ &0.4245&18&0.0052\\ \hline
     \end{tabular}
 \end{center}
+Looking at the table we see that each $\mu$-iteration of the penalty method is quite cheep in steepest descent iterations, when you take into consideration, that you are using 10 processes. i.e you assume that you can divide the number of iterations by 10. However to get a good result, you need to update your $\mu$ several times, and in total I have used $174$ steepest descent iterations in the experiment above. When you divide this number by 10, you still get a smaller number than the 34 steepest descent iterations, that was needed for the non-penalty solver. Still, this is not exactly the speedup that we want. However if we try to solve (\ref{example1_func}-\ref{example1_ODE}) with a unpreconditioned penalty method we get results that are a lot worse. To illustrate I have solved the same problem as above with the same $\mu$ values, and this yielded the following:
+ \begin{center}
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+     & Functional value &iterations  & $|v-v_{\mu}|_{L^2}$   \\ \hline
+    normal &0.4358 & 34& 0 	\\ \hline
+    $\mu=1$ & 11.8520& 104&0.5777	\\ \hline
+    $\mu=10$ &2.1525 &230& 0.2208	\\ \hline
+    $\mu=50$ &0.5057&230& 0.0450	\\ \hline
+    $\mu=75$ &0.4512 &158& 0.0243\\ \hline
+    $\mu=100$ &0.4338&64&0.0111	\\ \hline
+    $\mu=120$ &0.4289&117&0.0069\\ \hline
+    $\mu=175$ &0.4247&314&0.0033\\ \hline
+    $\mu=200$ &0.4245&91&0.0050\\ \hline
+    \end{tabular}
+\end{center}
+We see that the penalty method without preconditioning requires too many steepest descent iterations to be competitive with the non-penalty approach timewise. 
 \begin{figure}
   \includegraphics[width=\linewidth]{test1_PC_control.png}
   \caption{This figure shows the numerical solution of the (\ref{example1_func}-\ref{example1_ODE}) problem both with and without time decomposition. I have plotted the control for every iteration of the penalty method.} 

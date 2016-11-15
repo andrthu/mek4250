@@ -118,8 +118,8 @@ def test1():
     #plt.savefig('test1_PC_state.png')
     plt.show()
 
-    if False:
-        sd_opt = {'maxiter':1000}
+    if True:
+        sd_opt = {'maxiter':500}
         t0 = time.time()
         res3 = problem.penalty_solve(N,m,mu_val,algorithm='my_steepest_decent',
                                      Lbfgs_options=sd_opt)
@@ -130,7 +130,9 @@ def test1():
         plt.plot(t,res.x,'r--')
         sum_iter = 0
         for i in range(len(res3)):
-            print mu_val[i],res3[i].val(),res3[i].niter
+            u2 = res3[i].x[:N+1]
+            u1 = res.x
+            print mu_val[i],res3[i].val(),res3[i].niter,l2_diff_norm(u1,u2,t)
             plt.plot(t,res3[i].x[:N+1])
             
             sum_iter += res3[i].niter

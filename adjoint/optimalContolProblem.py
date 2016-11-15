@@ -448,9 +448,9 @@ class OptimalControlProblem():
                 self.update_SD_options(Lbfgs_options)
                 SDopt = self.SD_options
 
-                Solver = SteepestDecent(J,grad_J,x0.copy(),
-                                        options=SDopt)
-                res = Solver.solve()
+                Solver = PPCSteepestDecent(J,grad_J,x0.copy(),
+                                        lambda x: x,options=SDopt)
+                res = Solver.split_solve(m)
                 x0 = res.x.copy()
                 Result.append(res)
 
