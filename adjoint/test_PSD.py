@@ -152,17 +152,21 @@ def linf_diff_norm(u1,u2,t):
 def mu_update(mu,num_iter,m,val):
 
     factor = (1+val*float(m)/num_iter)
+    if factor*mu -mu > 100:
+        return mu + 100
     return factor*mu 
+
+
 def test2():
     
-    y0 = 10
+    y0 = 1
     a = 1
     T = 1.
-    yT = 13
-    alpha = 2
+    yT = 5
+    alpha = 0.2
     N = 800
-    m = 20
-    
+    M = [2,4,8,16,32,64]   
+    #m = 20
     def J(u,y,yT,T,alp):
         t = np.linspace(0,T,len(u))
 
@@ -181,23 +185,25 @@ def test2():
     plt.plot(t,res.x)
     plt.show()
     
-    x = np.zeros(N+m)
-    mu = 1
-    sum_iter = 0
-    while l2_diff_norm(x[:N+1],res.x,t)>1:
-        res2 = problem.PPCSDsolve(N,m,[mu],x0=x)
-        x = res2.x.copy()
-        mu = mu_update(mu,res2.niter,m,20)
-        print mu
-        plt.plot(t,res2.x[:N+1])
-        plt.plot(t,res.x,'r--')
-        sum_iter += res2.niter
-        print l2_diff_norm(x[:N+1],res.x,t)
+    for m in M:
+        x = np.zeros(N+m)
+        mu = 1
+        sum_iter = 0
+        while l2_diff_norm(x[:N+1],res.x,t)>0.05:
+            res2 = problem.PPCSDsolve(N,m,[mu],x0=x)
+            x = res2.x.copy()
+            mu = mu_update(mu,res2.niter,m,20)
+            print mu
+            plt.plot(t,res2.x[:N+1])
+            plt.plot(t,res.x,'r--')
+            sum_iter += res2.niter
+            print l2_diff_norm(x[:N+1],res.x,t)
+            
+        print sum_iter,sum_iter/float(m),res.niter,m
         plt.show()
-    print sum_iter,sum_iter/float(m),res.niter
     return
 
 if __name__ == '__main__':
-    test1()
-    #test2()
+    #test1()
+    test2()
 

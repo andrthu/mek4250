@@ -304,3 +304,11 @@ if __name__ == "__main__":
     res = SD.solve()
 
     print res.x
+
+
+    J2 = lambda x: (x[0]-100)**4+(x[1]-100)**4
+    grad_J2 = lambda x: 4*np.array([(x[0]-100)**3,(x[1]-100)**3])
+
+    SD = SteepestDecent(J2,grad_J2,np.zeros(2))
+    res=SD.solve()
+    print res.x,res.val(),res.niter
