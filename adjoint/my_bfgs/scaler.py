@@ -7,17 +7,35 @@ class PenaltyScaler():
         self.grad_J = grad_J
         self.x0 = x0
         self.m = m
-
+        self.N = len(x0)-m
+        self.gamma = self.find_gamma()
+    def find_gamma(self):
         
+        grad = self.grad_J(self.x0)
+        N = self.N
+        gamma = np.max(abs(grad[N+1:]))/np.max(abs(grad[:N+1]))
+        print gamma
+        return gamma
 
     def var(self,x):
-
+        y = np.zeros(len(x))
         
+        y[:self.N+1] = x[:self.N+1]
+        y[self.N+1:] = x[self.N+1:]/self.gamma
+        return y
     
-        
-    def func(self,x):
-        return
+    def grad(self,g):
 
-    def grad_var(self,x):
+        def new_grad(x):
 
-        return
+            grad = self.grad_J(x)
+            grad[self.N+1:] = self.gamma*grad[self.N+1:]
+            return grad
+        return new_grad
+
+    def func_var(self,x):
+        y = x.copy()
+        y[self.N+1:] = self.gamma*y[self.N+1:]
+        return y
+
+    

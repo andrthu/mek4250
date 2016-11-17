@@ -1,10 +1,10 @@
 import numpy as np
 from linesearch.strong_wolfe import *
-
+from scaler import PenaltyScaler
 
 class OptimizationControl():
 
-    def __init__(self,x0,J_f,grad_J,decomp=1):
+    def __init__(self,x0,J_f,grad_J,decomp=1,scaler=None):
 
         self.x = x0.copy()
         self.J_func = J_f
@@ -14,6 +14,8 @@ class OptimizationControl():
         self.dJ = grad_J(x0)
 
         self.niter = 0
+
+        self.scaler = scaler
 
     def update(self,x):
         
@@ -49,9 +51,9 @@ class SteepestDecent():
         self.decomp=decomp
         self.set_options(options)
         
-        self.scale_problem(scale,self.x0,self.J,self.grad_J)
+        scaler = self.scale_problem(scale,x0,J,grad_J)
 
-        self.data = OptimizationControl(x0,J,grad_J)
+        self.data = OptimizationControl(x0,J,grad_J,scaler=scaler )
         
     
         
@@ -79,17 +81,20 @@ class SteepestDecent():
     def scale_problem(self,scale,x0,J,grad_J):
 
         if scale==None:
-            return
-
-        y0 = scale.var(x0)
-
-        J_ = lambda x: J(scale.func(x))
-        grad_J_ = lambda x : scale.grad(grad_J(scale.grad_var(x)))
+            return None
+        scaler = PenaltyScaler(J,grad_J,x0,scale['m'])
+        N = len(x0)-scale['m']
+        print x0[N+1:]
+        y0 = scaler.var(x0)
+        print y0[N+1:]
+        J_ = lambda x: J(scaler.func_var(x))
+        grad_J_ = lambda x : scaler.grad(grad_J)(scaler.func_var(x))
 
         self.J = J_
         self.x0 = y0
         self.grad_J = grad_J_
         
+        return scaler
         
 
     def do_linesearch(self,J,d_J,x,p):
