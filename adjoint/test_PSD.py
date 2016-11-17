@@ -239,6 +239,9 @@ def test3():
             plt.plot(t,res.x,'g--')
             plt.plot(t,pcres.x[:N+1])
             plt.plot(t,penres.x[:N+1],'*r')
+            plt.ledgend(['non-pen','pc-pen','pen'])
+            plt.xlabel('time')
+            plt.ylabel('Control')
             plt.show()
         except:
             r = (res.niter,pcres.niter,'fail')

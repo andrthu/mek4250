@@ -53,7 +53,8 @@ class SteepestDecent():
         
         scaler = self.scale_problem(scale,x0,J,grad_J)
 
-        self.data = OptimizationControl(x0,J,grad_J,scaler=scaler )
+        self.data = OptimizationControl(self.x0,self.J,
+                                        self.grad_J,scaler=scaler)
         
     
         
@@ -161,9 +162,12 @@ class SteepestDecent():
         """
         if np.sqrt(np.sum(y**2)/len(y))<self.options['jtol']:
             #print 'Success'
+            #print np.sqrt(np.sum(y**2)/len(y))
             return 1
             
         if k>self.options['maxiter']:
+            #print np.sqrt(np.sum(y**2)/len(y))
+            #print np.max(y[:501]),np.max(y[501:])
             return 1
         return 0
 
