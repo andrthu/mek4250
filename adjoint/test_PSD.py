@@ -203,7 +203,53 @@ def test2():
         plt.show()
     return
 
+def test3():
+    y0 = 1
+    a = 1
+    T = 1.
+    yT = 5
+    alpha = 0.2
+    N = 800
+    M = [2,4,8,16,32,64]   
+    
+    def J(u,y,yT,T,alp):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + alp*(y-yT)**2)
+
+    def grad_J(u,p,dt,alp):
+        return dt*(u+p)
+
+    problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+    res = problem.solve(N,algorithm='my_steepest_decent')
+    
+    mu = 10
+    l = []
+    t = np.linspace(0,T,N+1)
+    
+    for m in M:
+        
+        pcres = problem.PPCSDsolve(N,m,[mu])
+        try:
+            penres=problem.penalty_solve(N,m,[mu],algorithm='my_steepest_decent')
+            r=(res.niter,pcres.niter,penres.niter)
+            
+            plt.plot(t,res.x,'g--')
+            plt.plot(t,pcres.x[:N+1])
+            plt.plot(t,penres.x[:N+1],'*r')
+            plt.show()
+        except:
+            r = (res.niter,pcres.niter,'fail')
+        l.append(r)
+        
+
+    for r in l:
+        print r
+        
+
 if __name__ == '__main__':
     #test1()
-    test2()
-
+    #test2()
+    test3()

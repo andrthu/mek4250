@@ -488,17 +488,37 @@ x_3 &=y_3 + \delta^3
 \section{Testing preconditioner on steepest descent solver}
 Want to use (\ref{PC}) as preconditioner on a simple optimal control problem with ODE constraints. I define the following simple problem:
 \begin{align}
-J(y(v),v)=\int_0^1 v(t)^2 dt + \frac{1}{4}(y(1)-5)^2  \label{example1_func}
+J(y(v),v)=\int_0^T v(t)^2 dt + \frac{\alpha}{2}(y(1)-y_T)^2  \label{example1_func}
 \end{align} 
 \begin{align}
 \left\{
      \begin{array}{lr}
-		y'(t) - 0.9y(t) = v(t) \ 	\textit{For $t \in [0,1]$} \\
-		y(0)=1.2
+		y'(t) - ay(t) = v(t) \ 	\textit{For $t \in [0,1]$} \\
+		y(0)=y_0
 	\end{array}
    \right. \label{example1_ODE}
 \end{align}
-I solve the equations using the implicit Euler scheme, with $\Delta t=\frac{1}{500}$, and I then decompose the time interval $I=[0,1]$ into $N=10$ subintervals. To make it simple, I will also chose a sequence of $\mu$-values for my penalty iterations. The results are given in plots and tables below. 
+\textbf{Single $\mu$-iteration}
+\\
+To illustrate how the parareal preconditioner affects the penalty method, I will first solve (\ref{example1_func}-\ref{example1_ODE}) using only one $\mu$-iteration, with and without preconditioning. Let $(T,\alpha,y_T,a,y_0,\Delta t)=(1,0.2,5,1,1,\frac{1}{800})$, and $\mu=10$. Now I solve the problem for different number of timedecompositions, and look at how many steepest descent iterations are needed for convergence. Since I only use a small $\mu$, I do not expect a good result, the point is to show the convergence improvement of the preconditioner. The table below contains the number of steps the steepest descent method needed to reach its tolerance. 
+ \begin{center}
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+     Time decompositions & non-penalty & penalty& preconditioned penalty  \\ \hline
+    	$N=2$& 13& 95&  95\\ \hline
+    	$N=4$ & 13& 151&67\\ \hline
+    	$N=8$ & 13& 206&30\\ \hline
+    	$N=16$ & 13& 379&28\\ \hline
+    	$N=32$ & 13& 501&27\\ \hline
+    	$N=64$ & 13& 501&28\\ \hline
+    \end{tabular}
+\end{center}
+Looking at the table we see that while the unpreconditioned penalty method requires more iterations for increased number of timedecompositions, the preconditioned penalty method requires less.
+\\
+\\
+\textbf{Parareal preconditioned penalty method for $N=10$}
+\\
+In this example, I solve the control problem (\ref{example1_func}-\ref{example1_ODE}) using $(T,\alpha,y_T,a,y_0)=(1,\frac{1}{2},5,0.9,1.2)$, and I use the implicit Euler scheme on the differential equations, with $\Delta t=\frac{1}{500}$. I then decompose the time interval $I=[0,1]$ into $N=10$ subintervals. To make it simple, I will also chose a sequence of $\mu$-values for my penalty iterations. The results are given in plots and tables below. 
  \begin{center}
     \begin{tabular}{| l | l | l | l |}
     \hline
