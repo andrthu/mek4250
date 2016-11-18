@@ -501,7 +501,7 @@ The $\Lambda$ part of the gradient is then updated to be $\bar{\bar{J_{\lambda_1
 \section{Testing preconditioner on steepest descent solver}
 Want to use (\ref{PC}) as preconditioner on a simple optimal control problem with ODE constraints. I define the following simple problem:
 \begin{align}
-J(y(v),v)=\int_0^T v(t)^2 dt + \frac{\alpha}{2}(y(1)-y_T)^2  \label{example1_func}
+J(y(v),v)=\int_0^T v(t)^2 dt + \frac{\alpha}{2}(y(T)-y_T)^2  \label{example1_func}
 \end{align} 
 \begin{align}
 \left\{
@@ -513,7 +513,7 @@ J(y(v),v)=\int_0^T v(t)^2 dt + \frac{\alpha}{2}(y(1)-y_T)^2  \label{example1_fun
 \end{align}
 \textbf{Single $\mu$-iteration}
 \\
-To illustrate how the parareal preconditioner affects the penalty method, I will first solve (\ref{example1_func}-\ref{example1_ODE}) using only one $\mu$-iteration, with and without preconditioning. Let $(T,\alpha,y_T,a,y_0,\Delta t)=(1,0.2,5,1,1,\frac{1}{800})$, and $\mu=10$. Now I solve the problem for different number of timedecompositions, and look at how many steepest descent iterations are needed for convergence. Since I only use a small $\mu$, I do not expect a good result, the point is to show the convergence improvement of the preconditioner. The table below contains the number of steps the steepest descent method needed to reach its tolerance. 
+To illustrate how the parareal preconditioner affects the penalty method, I will first solve (\ref{example1_func}-\ref{example1_ODE}) using only one $\mu$-iteration, with and without preconditioning. Let $(T,\alpha,y_T,a,y_0,\Delta t)=(1,0.2,5,1,1,\frac{1}{800})$, and $\mu=10$. Now I solve the problem for different numbers of time decompositions, and look at how many steepest descent iterations are needed for convergence. Since I only use a small $\mu$, I do not expect a good result, the point is to show the convergence improvement of the preconditioner. The table below contains the number of steps the steepest descent method needed to reach its tolerance. 
  \begin{center}
     \begin{tabular}{| l | l | l | l |}
     \hline
