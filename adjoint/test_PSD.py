@@ -184,23 +184,35 @@ def test2():
     t = np.linspace(0,T,N+1)
     plt.plot(t,res.x)
     plt.show()
+    mu_lists = []
+    error_list = []
+    step_list = []
     
     for m in M:
         x = np.zeros(N+m)
         mu = 1
         sum_iter = 0
-        while l2_diff_norm(x[:N+1],res.x,t)>0.05:
+        mu_list = []
+        while l2_diff_norm(x[:N+1],res.x,t)>0.04:
             res2 = problem.PPCSDsolve(N,m,[mu],x0=x)
             x = res2.x.copy()
+            mu_list.append(mu)
             mu = mu_update(mu,res2.niter,m,20)
             print mu
             plt.plot(t,res2.x[:N+1])
             plt.plot(t,res.x,'r--')
             sum_iter += res2.niter
             print l2_diff_norm(x[:N+1],res.x,t)
-            
+        mu_lists.append(mu_list)
+        error_list.append(l2_diff_norm(x[:N+1],res.x,t))
+        step_list.append(sum_iter)
         print sum_iter,sum_iter/float(m),res.niter,m
-        plt.show()
+        #plt.show()
+
+    for i in range(len(M)):
+        print M[i]
+        print mu_lists[i],error_list[i],step_list[i],step_list[i]/float(M[i])
+        print
     return
 
 def test3():
@@ -254,5 +266,5 @@ def test3():
 
 if __name__ == '__main__':
     #test1()
-    #test2()
-    test3()
+    test2()
+    #test3()

@@ -548,6 +548,16 @@ In this example, I solve the control problem (\ref{example1_func}-\ref{example1_
     \end{tabular}
 \end{center}
 Looking at the table we see that each $\mu$-iteration of the penalty method is quite cheep in steepest descent iterations, when you take into consideration, that you are using 10 processes. i.e you assume that you can divide the number of iterations by 10. However to get a good result, you need to update your $\mu$ several times, and in total I have used $174$ steepest descent iterations in the experiment above. When you divide this number by 10, you still get a smaller number than the 34 steepest descent iterations, that was needed for the non-penalty solver. Still, this is not exactly the speedup that we want. However if we try to solve (\ref{example1_func}-\ref{example1_ODE}) with a unpreconditioned penalty method we get results that are a lot worse. To illustrate I have solved the same problem as above with the same $\mu$ values, and this yielded the following:
+\begin{figure}
+  \includegraphics[width=\linewidth]{test1_PC_control.png}
+  \caption{This figure shows the numerical solution of the (\ref{example1_func}-\ref{example1_ODE}) problem both with and without time decomposition. I have plotted the control for every iteration of the penalty method.} 
+  \label{Fig 1}
+\end{figure}
+\begin{figure}
+  \includegraphics[width=\linewidth]{test1_PC_state.png}
+  \caption{The same solution as Figure \ref{Fig 1}, only now I plot the state instead of the control.}
+  \label{Fig 2}
+\end{figure}
  \begin{center}
     \begin{tabular}{| l | l | l | l |}
     \hline
@@ -564,16 +574,24 @@ Looking at the table we see that each $\mu$-iteration of the penalty method is q
     \end{tabular}
 \end{center}
 We see that the penalty method without preconditioning requires too many steepest descent iterations to be competitive with the non-penalty approach timewise. 
-\begin{figure}
-  \includegraphics[width=\linewidth]{test1_PC_control.png}
-  \caption{This figure shows the numerical solution of the (\ref{example1_func}-\ref{example1_ODE}) problem both with and without time decomposition. I have plotted the control for every iteration of the penalty method.} 
-  \label{Fig 1}
-\end{figure}
-\begin{figure}
-  \includegraphics[width=\linewidth]{test1_PC_state.png}
-  \caption{The same solution as Figure \ref{Fig 1}, only now I plot the state instead of the control.}
-  \label{Fig 2}
-\end{figure}
+\\
+\\
+\textbf{Testing different time decompositions with dynamic $\mu$-update}
+\\
+In this test I want to look at what happens when we increase the number of subintervals we decompose the time interval into. For this i choose to solve the example problem (\ref{example1_func}-\ref{example1_ODE}), with $(T,\alpha,y_T,a,y_0,\Delta t)=(1,0.2,5,1,1,\frac{1}{800})$. I solve this using $N=1,2,4,8,16,32,64$ subintervals, and using an automatic $\mu$-update. I end the $\mu$-iterations, when the $L^2$ difference between the control solutions of the non decomposed and decomposed solver are less than $0.04$(this number is arbitrary). Below follows some key findings.
+ \begin{center}
+    \begin{tabular}{| l | l | l | l | l |}
+    \hline
+     Number of subintervals & $|v-v_{N}|_{L^2}$ & Total iterations & $\mu$-values &  Total iterations/N  \\ \hline
+    $N=1$ & 0 &13 & None	&13\\ \hline
+    $N=2$& 0.0044 &30 &[1, 4.63] 	&15\\ \hline
+    $N=4$ & 0.0323 &32 &[1, 7.15]&8.0\\ \hline
+    $N=8$ & 0.0158 & 115& [1, 21.0, 77.0]	&14.375\\ \hline
+    $N=16$ & 0.0120 &113 & [1, 46.71, 146.71]&7.0625	\\ \hline
+    $N=32$ & 0.0380 &71 & [1, 101]&2.21875\\ \hline
+    $N=64$ & 0.0203 & 52& [1, 101, 201, 301]	&0.8125\\ \hline
+    \end{tabular}
+\end{center}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
