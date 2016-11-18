@@ -485,6 +485,19 @@ x_1 &=y_1 + \delta^1 \\
 x_2 &=y_2 +\delta^2\\
 x_3 &=y_3 + \delta^3 
 \end{align*}
+The above setting is quite general. Lets consider an example where we want to use the parareal preconditioner on an optimal control problem with a time domain $I=[0,T]$ decomposed into four sub-intervals $[T_0,T_1], [T_1,T_2], [T_2,T_3]$ and $[T_3,T_4]$. To enforce continuity at the overlapping boundaries, we need three variables $\lambda_1,\lambda_2$ and $\lambda_3$, that represents the initial condition of the state equation at $T_1,T_2$ and $T_3$. We then add quadratic penalty terms to our functional, and the gradient of our new functional $J(v,\Lambda)$, would then have three components $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$. These are the components of the gradient that we wish to use (\ref{PC}) on. As far as I understand it, applying $\bar{M}^{*}\bar{M}$ to $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$, means first to resolve this system:
+\begin{align*}
+\bar{J_{\lambda_1}} &=J_{\lambda_1} +\bold{G}_{\Delta T}^*(J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3} + \bold{G}_{\Delta T}^*(0)))\\
+\bar{J_{\lambda_2}} &=J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3} + \bold{G}_{\Delta T}^*(0))\\
+\bar{J_{\lambda_3}} &=J_{\lambda_3} + \bold{G}_{\Delta T}^*(0) \\
+\end{align*} 
+Then you apply the forward system:
+\begin{align*}
+\bar{\bar{J_{\lambda_1}}}&=\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0) \\
+\bar{\bar{J_{\lambda_2}}}&=\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)) \\
+\bar{\bar{J_{\lambda_3}}}&=\bar{J_{\lambda_3}} + \bold{G}_{\Delta T}(\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)))
+\end{align*} 
+The $\Lambda$ part of the gradient is then updated to be $\bar{\bar{J_{\lambda_1}}}, \bar{\bar{J_{\lambda_2}}},\bar{\bar{J_{\lambda_3}}}$. Notice that I in the last line of the adjoint system use $\bold{G}_{\Delta T}^*(0)$, and that I in the first line in the forward system use $\bold{G}_{\Delta T}(0)$. The zeros here represent information at time $T_0=0$ and $T_4=T$. At these times, I really have no information relating to the $\Lambda$ part of the gradient of $J$. I am therefore forced to choose zero.
 \section{Testing preconditioner on steepest descent solver}
 Want to use (\ref{PC}) as preconditioner on a simple optimal control problem with ODE constraints. I define the following simple problem:
 \begin{align}
