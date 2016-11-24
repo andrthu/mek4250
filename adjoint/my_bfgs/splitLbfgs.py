@@ -8,7 +8,7 @@ from lbfgsOptimizationControl import LbfgsOptimizationControl
 
 class SplitLbfgs(LbfgsParent):
 
-    def __init__(self,J,d_J,x0,m,Hinit=None,options=None):
+    def __init__(self,J,d_J,x0,m,Hinit=None,options=None,ppc=None):
 
         LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options)
 
@@ -18,9 +18,11 @@ class SplitLbfgs(LbfgsParent):
         
         beta = self.options["beta"]
         
-        
-        Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta)
-        
+        if ppc == None:
+            
+            Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta)
+        else:
+            Hessian = NumpyLimMemoryHessian(ppc,mem_lim,beta=beta,PPCH=True)
         
         self.data = LbfgsOptimizationControl(x0,J,d_J,Hessian)
 
@@ -123,7 +125,32 @@ class SplitLbfgs(LbfgsParent):
         if k>self.options['maxiter']:
             return 1
         return 0
-    
+    def normal_solve(self):
+        x0 = self.data.x.copy()
+
+        H = self.data.H
+        
+        df1 = np.zeros(n)
+        
+        while self.check_convergence()==0:
+
+            df0 = self.data.dJ.copy()
+            p = H.matvec(-df0)
+
+            x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
+
+            df1.set(self.d_J(x))
+            
+            s = x-x0
+            y = df1-df0
+
+            H.update(y,s)
+             
+            self.data.update(x,df1)
+
+
+        return self.data
+
 
     def solve(self):
         

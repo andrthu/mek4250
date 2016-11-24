@@ -33,10 +33,10 @@ class LbfgsOptimizationControl():
         return self.dictonary[key]
         
 
-    def update(self,x):
+    def update(self,x,dJ):
 
         self.x = x.copy()
-        self.dJ = self.grad_J(self.x)
+        self.dJ = dJ.copy()
 
         self.niter +=1
 

@@ -189,7 +189,7 @@ class NumpyLimMemoryHessian(InvertedHessian):
     """
     Normal Inverted Hessian
     """
-    def __init__(self,Hint,mem_lim=10,beta=1):
+    def __init__(self,Hint,mem_lim=10,beta=1,PPCH=False):
         """
         Initialazing the LimMemoryHessian
 
@@ -228,7 +228,10 @@ class NumpyLimMemoryHessian(InvertedHessian):
         if k == -1:
             k = len(self)
         if k==0:
-            return self.beta * (x.dot(self.Hint))
+            if PPCH:
+                return self.beta * self.Hint(x)
+            else:
+                return self.beta * (x.dot(self.Hint))
         rhok, yk, sk = self[k]
         
         
