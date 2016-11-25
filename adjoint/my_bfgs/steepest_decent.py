@@ -51,6 +51,7 @@ class SteepestDecent():
         self.decomp=decomp
         self.set_options(options)
         
+        
         scaler = self.scale_problem(scale,x0,J,grad_J)
 
         self.data = OptimizationControl(self.x0,self.J,
@@ -90,11 +91,12 @@ class SteepestDecent():
         print y0[N+1:]
         J_ = lambda x: J(scaler.func_var(x))
         grad_J_ = lambda x : scaler.grad(grad_J)(scaler.func_var(x))
-
+        print np.max(abs(grad_J(x0)[:N+1])),np.max(abs(grad_J(x0)[N+1:]))
+        print np.max(abs(grad_J_(y0)[:N+1])),np.max(abs(grad_J_(y0)[N+1:]))
         self.J = J_
         self.x0 = y0
         self.grad_J = grad_J_
-        
+        self.scale = True
         return scaler
         
 
@@ -160,7 +162,15 @@ class SteepestDecent():
             N = len(y)-self.decomp
             y = y[:N+1]
         """
-        if np.sqrt(np.sum(y**2)/len(y))<self.options['jtol']:
+        if self.data.scaler==None:
+            grad_norm = np.sqrt(np.sum(y**2)/len(y))
+        else:
+            N = self.data.scaler.N
+            gamma = self.data.scaler.gamma
+            grad_norm = np.sum(y[:N+1]**2)/(len(y))
+            grad_norm += np.sum(y[N+1:]**2)/(len(y)*gamma)
+            grad_norm = np.sqrt(grad_norm)
+        if grad_norm<self.options['jtol']:
             #print 'Success'
             #print np.sqrt(np.sum(y**2)/len(y))
             return 1
