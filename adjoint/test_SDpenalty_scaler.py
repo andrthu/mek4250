@@ -23,7 +23,7 @@ alpha = 0.5
 
 N = 500
 m = 5
-mu = 10
+mu = 1
 
 opt = {'maxiter':500}
 problem = Problem3(y0,yT,T,a,alpha,J,grad_J)

@@ -105,8 +105,9 @@ class OptimalControlProblem():
         defaalt options for steepest decent
         """
         default = {}
-        default.update({"jtol"                   : 1e-4,
-                        "maxiter"                :  500,})
+        default.update({"jtol"     : 1e-4,
+                        "maxiter"  : 500,
+                        "scale"    : False})
         return default
 
     def update_SD_options(self,options):
@@ -395,7 +396,7 @@ class OptimalControlProblem():
         return res
 
 
-    def penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None,algorithm='my_lbfgs'):
+    def penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None,algorithm='my_lbfgs',scale=False):
         """
         Solve the optimazation problem with penalty
 
@@ -447,9 +448,12 @@ class OptimalControlProblem():
 
                 self.update_SD_options(Lbfgs_options)
                 SDopt = self.SD_options
-
-                Solver = PPCSteepestDecent(J,grad_J,x0.copy(),
-                                        lambda x: x,options=SDopt)
+                if scale:
+                    Solver = SteepestDecent((J,grad_J,x0.copy(),
+                                            options=SDopt,scale={'m':m})
+                else:
+                    Solver = PPCSteepestDecent(J,grad_J,x0.copy(),
+                                               lambda x: x,options=SDopt)
                 res = Solver.split_solve(m)
                 x0 = res.x.copy()
                 Result.append(res)
