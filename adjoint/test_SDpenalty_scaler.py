@@ -37,7 +37,9 @@ solver2 = SteepestDecent(JJ,grad_JJ,x0,
 res2 = solver2.solve()
 
 solver3 = SteepestDecent(JJ,grad_JJ,x0,options=opt)
-res3 = solver3.solve()
+#res3 = solver3.solve()
+res3 = problem.penalty_solve(N,m,[mu],algorithm='my_steepest_decent',
+                             scale=True)
 print res1.niter,res2.niter,res3.niter
 plt.figure()
 plt.plot(res1.x[N+1:],'>r')

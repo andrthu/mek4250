@@ -449,12 +449,13 @@ class OptimalControlProblem():
                 self.update_SD_options(Lbfgs_options)
                 SDopt = self.SD_options
                 if scale:
-                    Solver = SteepestDecent((J,grad_J,x0.copy(),
-                                            options=SDopt,scale={'m':m})
+                    Solver = SteepestDecent(J,grad_J,x0.copy(),
+                                             options=SDopt,scale={'m':m})
+                    res = Solver.solve()
                 else:
                     Solver = PPCSteepestDecent(J,grad_J,x0.copy(),
                                                lambda x: x,options=SDopt)
-                res = Solver.split_solve(m)
+                    res = Solver.split_solve(m)
                 x0 = res.x.copy()
                 Result.append(res)
 
