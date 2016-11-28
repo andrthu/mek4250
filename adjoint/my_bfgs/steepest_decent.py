@@ -41,6 +41,14 @@ class OptimizationControl():
     def val(self):
         return self.J_func(self.x)
 
+    def rescale(self):
+        x = self.x
+        N = self.scaler.N
+        x[N+1:] = self.scaler.gamma*x[N+1:].copy()
+        self.x = x
+        self.J_func = self.scaler.old_J
+        self.grad_J = self.scaler.old_grad
+
 class SteepestDecent():
 
     def __init__(self,J,grad_J,x0,decomp=1,scale=None,options={}):
@@ -187,10 +195,29 @@ class SteepestDecent():
         J = self.J
         grad_J = self.grad_J
         opt = self.options
-        k=1
+        
         while self.check_convergence()==0:
             
             p = -self.data.dJ
+
+            x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
+            self.data.update(x)
+            #plt.plot(x)
+            
+            #print 'val: ',self.data.val()
+        #plt.show()
+        return self.data
+
+    def PPC_solve(self,pc):
+        J = self.J
+        grad_J = self.grad_J
+        opt = self.options
+        N = self.data.scaler.N
+        gamma = self.data.scaler.gamma
+        while self.check_convergence()==0:
+            
+            p = -self.data.dJ
+            p[N+1:] = pc(gamma*p[N+1:].copy())/gamma
 
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)

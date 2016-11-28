@@ -452,6 +452,7 @@ class OptimalControlProblem():
                     Solver = SteepestDecent(J,grad_J,x0.copy(),
                                              options=SDopt,scale={'m':m})
                     res = Solver.solve()
+                    res.rescale()
                 else:
                     Solver = PPCSteepestDecent(J,grad_J,x0.copy(),
                                                lambda x: x,options=SDopt)

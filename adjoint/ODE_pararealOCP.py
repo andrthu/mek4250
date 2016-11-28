@@ -159,6 +159,41 @@ class PararealOCP(OptimalControlProblem):
         else:
             return result
 
+    def scaled_PPCSDsolve(self,N,m,my_list,x0=None,options=None):
+
+        dt=float(self.T)/N
+        if x0==None:
+            x0 = np.zeros(N+m)
+        
+        result = []
+        PPC = self.PC_maker2(N,m,step=1)
+        for i in range(len(my_list)):
+        
+            J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
+
+            self.update_SD_options(options)
+            SDopt = self.SD_options
+
+            Solver = SteepestDecent(J,grad_J,x0,scale={'m':m},
+                                    options=SDopt)
+            
+            res = Solver.PPC_solve(PPC)
+            print res.x[N+1:]
+            res.rescale()
+            print res.x[N+1:]
+            
+            
+            x0=res.x
+            result.append(res)
+        if len(result)==1:
+            #y,Y = self.ODE_penalty_solver(x0,N,m)
+            #import matplotlib.pyplot as plt
+            #plt.plot(Y)
+            #plt.show()
+            return res
+        else:
+            return result
+
     
     def adjoint_propogator_update(self,l,rhs,i,dt):
         raise NotImplementedError,'not implemented'
