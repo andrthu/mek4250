@@ -1,5 +1,6 @@
 import numpy as np
 from linesearch.strong_wolfe import *
+from scaler import PenaltyScaler
 
 from matplotlib.pyplot import *
 
@@ -12,7 +13,7 @@ class LbfgsParent():
     Parent class for L-BFGS optimization algorithm.
     """
 
-    def __init__(self,J,d_J,x0,Hinit=None,options=None):
+    def __init__(self,J,d_J,x0,Hinit=None,options=None,scale=None):
         """
         Initials for LbfgsParent
 
@@ -25,19 +26,21 @@ class LbfgsParent():
         * options : Options are spesific to the sunder classes 
         """
         
-        self.J    = J
-        self.d_J  = d_J
-        self.x0   = x0
-        
+        self.J      = J
+        self.d_J    = d_J
+        self.x0     = x0
+         
 
         self.set_options(options)        
-        
+        self.scaler = self.scale_problem(scale)
+
+
         if Hinit==None:
             self.Hinit = np.identity(len(x0))
             
-            
+        
 
-
+    
     def set_options(self,user_options):
         """
         Method for setting options
@@ -56,8 +59,16 @@ class LbfgsParent():
         Stopping criterion for the algorithm based on L2norm of gardient.
         """
 
-        
-        if np.sqrt(np.sum((df0.array())**2)/len(df0))<self.options['jtol']:
+        if self.scaler==None:
+            grad_norm = np.sqrt(np.sum((df0.array())**2)/len(df0))
+        else:
+            N = self.scaler.N
+            gamma = self.scaler.gamma
+            y = df0.array()
+            grad_norm = np.sum((y[:N+1])**2)/len(df0)
+            grad_norm+=np.sum((y[N+1:])**2)/(len(df0)*gamma)
+            grad_norm = np.sqrt(grad_norm)
+        if grad_norm<self.options['jtol']:
             return 1
             
         if k>self.options['maxiter']:
@@ -65,7 +76,28 @@ class LbfgsParent():
         return 0
 
 
+    def scale_problem(self,scale):
         
+        if scale==None:
+            return None
+
+        J      = self.J
+        grad_J = self.grad_J
+        x0     = self.x0.array()
+        
+        scaler = PenaltyScaler(J,grad_J,x0,scale['m'])
+        N = len(x0)-scale['m']
+        
+        y0 = scaler.var(x0)
+        
+        J_ = lambda x: J(scaler.func_var(x))
+        grad_J_ = lambda x : scaler.grad(grad_J)(scaler.func_var(x))
+        
+        self.J = J_
+        self.x0 = self.options['Vector'](y0)
+        self.grad_J = grad_J_
+        self.scale = True
+        return scaler
         
     def default_options(self):
         """

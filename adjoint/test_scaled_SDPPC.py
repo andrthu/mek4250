@@ -152,8 +152,8 @@ def linf_diff_norm(u1,u2,t):
 def mu_update(mu,num_iter,m,val):
 
     factor = (1+val*float(m)/num_iter)
-    if factor*mu -mu > 100:
-        return mu + 100
+    if factor*mu -mu > 200:
+        return mu + 200
     return factor*mu 
 
 
