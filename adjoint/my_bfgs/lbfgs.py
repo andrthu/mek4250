@@ -26,9 +26,9 @@ class LbfgsParent():
         * options : Options are spesific to the sunder classes 
         """
         
-        self.J      = J
-        self.d_J    = d_J
-        self.x0     = x0
+        self.J   = J
+        self.d_J = d_J
+        self.x0  = x0
          
 
         self.set_options(options)        
@@ -82,7 +82,7 @@ class LbfgsParent():
             return None
 
         J      = self.J
-        grad_J = self.grad_J
+        grad_J = self.d_J
         x0     = self.x0.array()
         
         scaler = PenaltyScaler(J,grad_J,x0,scale['m'])
@@ -94,10 +94,20 @@ class LbfgsParent():
         grad_J_ = lambda x : scaler.grad(grad_J)(scaler.func_var(x))
         
         self.J = J_
+        print x0[N+1:],y0[N+1:]
         self.x0 = self.options['Vector'](y0)
-        self.grad_J = grad_J_
+        self.d_J = grad_J_
         self.scale = True
         return scaler
+
+    def rescale(self,x):
+        if self.scaler==None:
+            return x
+        N = self.scaler.N
+        gamma=self.scaler.gamma
+        y = x.array()
+        y[N+1:] = y[N+1:]*gamma
+        return self.options['Vector'](y)
         
     def default_options(self):
         """
@@ -191,7 +201,7 @@ class Lbfgs(LbfgsParent):
     """
     Straight foreward L_BFGS implementation
     """
-    def __init__(self,J,d_J,x0,pc=None,Hinit=None,options=None):
+    def __init__(self,J,d_J,x0,pc=None,Hinit=None,options=None,scale=None):
         """
         Initials for LbfgsParent
 
@@ -211,7 +221,7 @@ class Lbfgs(LbfgsParent):
           - return_data : boolean return the data instance or control
         """
 
-        LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options)
+        LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options,scale=scale)
         
         mem_lim = self.options['mem_lim']
         
@@ -223,7 +233,7 @@ class Lbfgs(LbfgsParent):
         else:
             self.p_direction = self.pc_direction
         Hessian = LimMemoryHessian(self.Hinit,mem_lim,beta=beta)
-        self.data = {'control'   : x0,
+        self.data = {'control'   : self.x0,
                      'iteration' : 0,
                      'lbfgs'     : Hessian }
 
@@ -276,7 +286,7 @@ class Lbfgs(LbfgsParent):
         Hk = self.data['lbfgs']          # get inverted hessian
 
 
-        df0 = Vec( self.d_J(x0.array())) # initial gradient
+        df0 = Vec(self.d_J(x0.array())) # initial gradient
         df1 = Vec(np.zeros(n))           # space for gradient  
 
         iter_k = self.data['iteration']           
@@ -307,8 +317,10 @@ class Lbfgs(LbfgsParent):
             iter_k=iter_k+1
             self.data['iteration'] = iter_k
             self.data['control'] = x
-            
+        x = self.rescale(x)
+        self.data['control'] = x
         if self.options["return_data"] == True:
+
             return self.data
 
         return x

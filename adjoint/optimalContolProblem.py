@@ -438,7 +438,12 @@ class OptimalControlProblem():
             #J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
             if algorithm=='my_lbfgs':
                 self.update_Lbfgs_options(Lbfgs_options)
-                solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
+
+                if scale:
+                    solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options,
+                                   scale={'m':m})
+                else:
+                    solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
             
                 res = solver.solve()
                 Result.append(res)
