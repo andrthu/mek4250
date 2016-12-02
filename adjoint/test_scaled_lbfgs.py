@@ -12,12 +12,12 @@ def test1():
     T=1
     y0=1
     a=1
-    alpha=1
-    yT=1
+    alpha=0.2
+    yT=10
 
     N = 800
-    m = 10
-    mu=100
+    m = 20
+    mu=1
 
     def J(u,y,yT,T,alp):
         t = np.linspace(0,T,len(u))
@@ -35,6 +35,7 @@ def test1():
 
     res1=problem.penalty_solve(N,m,[mu])
     res2=problem.penalty_solve(N,m,[mu],scale=True)
+    print res1['iteration'],res2['iteration']
     t = np.linspace(0,T,N+1)
     plt.plot(t,res1['control'].array()[:N+1])
     plt.plot(t,res2['control'].array()[:N+1],'r--')
@@ -42,5 +43,42 @@ def test1():
     plt.plot(res1['control'].array()[N+1:])
     plt.plot(res2['control'].array()[N+1:])
     plt.show()
-test1()
 
+
+def test2():
+    y0 = 3
+    yT = 0
+    T  = 1.
+    a  = 1.3
+    P  = 4
+    N=700
+    m = 10
+    mu = 10
+    def J(u,y,yT,T,power):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return (0.5*I + (1./power)*(y-yT)**power)
+
+    def J2(u,y,yT,T):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + (y-yT)**2)
+
+    def grad_J(u,p,dt):
+        return dt*(u+p)
+    
+    problem  = GeneralPowerY(y0,yT,T,a,P,J,grad_J)
+    res=problem.penalty_solve(N,m,[mu],scale=True)
+    res2=problem.penalty_solve(N,m,[mu],scale=False)
+    print(res['iteration'],res2['iteration'])
+
+    t = np.linspace(0,T,N+1)
+    plt.plot(t,res['control'].array()[:N+1],'r--')
+    plt.plot(t,res2['control'].array()[:N+1])
+    plt.show()
+#test1()
+test2()
