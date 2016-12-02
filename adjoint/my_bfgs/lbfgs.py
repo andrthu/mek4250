@@ -31,12 +31,13 @@ class LbfgsParent():
         self.x0  = x0
          
 
-        self.set_options(options)        
+        self.set_options(options)   
+        if Hinit==None:
+            self.Hinit = np.identity(len(x0))
         self.scaler = self.scale_problem(scale)
 
 
-        if Hinit==None:
-            self.Hinit = np.identity(len(x0))
+        
             
         
 
@@ -84,9 +85,9 @@ class LbfgsParent():
         J      = self.J
         grad_J = self.d_J
         x0     = self.x0.array()
-        
-        scaler = PenaltyScaler(J,grad_J,x0,scale['m'])
-        N = len(x0)-scale['m']
+        m = scale['m']
+        scaler = PenaltyScaler(J,grad_J,x0,m)
+        N = len(x0)-m
         
         y0 = scaler.var(x0)
         
@@ -98,6 +99,8 @@ class LbfgsParent():
         self.x0 = self.options['Vector'](y0)
         self.d_J = grad_J_
         self.scale = True
+        
+        self.Hinit[range(N+2,N+m),range(N+2,N+m)] = 1./scaler.gamma**2
         return scaler
 
     def rescale(self,x):
@@ -308,7 +311,8 @@ class Lbfgs(LbfgsParent):
             
             s = x-x0
             y = df1-df0
-
+            #s =self.rescale(s)
+            #y = self.rescale(y)
             Hk.update(y,s)
              
             x0=x.copy()
