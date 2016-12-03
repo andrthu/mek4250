@@ -5,6 +5,7 @@ from scipy.integrate import trapz
 from scipy import linalg
 from cubicYfunc import *
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def test1():
@@ -105,7 +106,7 @@ def test3():
     
 
     problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
-    opt = {'mem_lim':5,'maxiter':500}
+    opt = {'mem_lim':5,'maxiter':200,'scale_hessian':False}
 
     res1=problem.penalty_solve(N,m,[mu],Lbfgs_options=opt)
     res2=problem.penalty_solve(N,m,[mu],scale=True,Lbfgs_options=opt)

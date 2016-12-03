@@ -99,8 +99,8 @@ class LbfgsParent():
         self.x0 = self.options['Vector'](y0)
         self.d_J = grad_J_
         self.scale = True
-        
-        self.Hinit[range(N+2,N+m),range(N+2,N+m)] = 1./scaler.gamma**2
+        if self.options['scale_hessian']==True:
+            self.Hinit[range(N+2,N+m),range(N+2,N+m)] = 1./scaler.gamma**2
         return scaler
 
     def rescale(self,x):
@@ -259,7 +259,8 @@ class Lbfgs(LbfgsParent):
                    "Vector"                 : SimpleVector,
                    "Hinit"                  : "default",
                    "beta"                   : 1,
-                   "return_data"            : False,}
+                   "return_data"            : False,
+                   "scale_hessian"          : False,}
         
         return default
         
