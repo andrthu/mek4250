@@ -103,23 +103,40 @@ def test3():
     def grad_J(u,p,dt,alp):
         return dt*(u+p)
     
-    
-
+    mem=[0,1,5]
+    table = {'unscaled'         : [],
+             'scaled'           : [],
+             'scaled hessian'   : [],
+             'steepest descent' : []}
     problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
-    opt = {'mem_lim':5,'maxiter':200,'scale_hessian':False}
-
-    res1=problem.penalty_solve(N,m,[mu],Lbfgs_options=opt)
-    res2=problem.penalty_solve(N,m,[mu],scale=True,Lbfgs_options=opt)
     res3=problem.penalty_solve(N,m,[mu],algorithm='my_steepest_decent',scale=True)
-    print res1['iteration'],res2['iteration'],res3.niter
-    t = np.linspace(0,T,N+1)
-    plt.plot(t,res1['control'].array()[:N+1])
-    plt.plot(t,res2['control'].array()[:N+1],'r--')
-    plt.plot(t,res3.x[:N+1])
-    plt.show()
-    plt.plot(res1['control'].array()[N+1:])
-    plt.plot(res2['control'].array()[N+1:])
-    plt.show()
+    for i in range(len(mem)):
+        problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+        opt1 = {'mem_lim':mem[i],'maxiter':200,'scale_hessian':False}
+        opt2 = {'mem_lim':mem[i],'maxiter':200,'scale_hessian':True}
+        res1=problem.penalty_solve(N,m,[mu],Lbfgs_options=opt1)
+        res2=problem.penalty_solve(N,m,[mu],scale=True,Lbfgs_options=opt2)
+        #res3=problem.penalty_solve(N,m,[mu],algorithm='my_steepest_decent',scale=True)
+        res4=problem.penalty_solve(N,m,[mu],scale=True,Lbfgs_options=opt1)
+        print res1['iteration'],res2['iteration'],res3.niter
+        
+        table['unscaled'] = res1['iteration']
+        table['scaled'] = res4['iteration']
+        table['scaled hessian'] = res2['iteration']
+        table['steepest descent'] = res3.niter
+
+        t = np.linspace(0,T,N+1)
+        plt.plot(t,res1['control'].array()[:N+1])
+        plt.plot(t,res2['control'].array()[:N+1],'r--')
+        plt.plot(t,res3.x[:N+1])
+        #plt.show()
+        plt.plot(res1['control'].array()[N+1:])
+        plt.plot(res2['control'].array()[N+1:])
+        #plt.show()
+        
+    iter_data = pd.DataFrame(table,index=['mem_lim=0','mem_lim=1','mem_lim=5'])
+    print iter_data
+    iter_data.to_latex('iter_data.tex')
 #test1()
 #test2()
 test3()
