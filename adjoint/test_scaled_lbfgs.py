@@ -120,10 +120,10 @@ def test3():
         res4=problem.penalty_solve(N,m,[mu],scale=True,Lbfgs_options=opt1)
         print res1['iteration'],res2['iteration'],res3.niter
         
-        table['unscaled'] = res1['iteration']
-        table['scaled'] = res4['iteration']
-        table['scaled hessian'] = res2['iteration']
-        table['steepest descent'] = res3.niter
+        table['unscaled'].append(res1['iteration'])
+        table['scaled'].append(res4['iteration'])
+        table['scaled hessian'].append(res2['iteration'])
+        table['steepest descent'].append(res3.niter)
 
         t = np.linspace(0,T,N+1)
         plt.plot(t,res1['control'].array()[:N+1])
@@ -136,7 +136,7 @@ def test3():
         
     iter_data = pd.DataFrame(table,index=['mem_lim=0','mem_lim=1','mem_lim=5'])
     print iter_data
-    iter_data.to_latex('iter_data.tex')
+    #iter_data.to_latex('iter_data.tex')
 #test1()
 #test2()
 test3()
