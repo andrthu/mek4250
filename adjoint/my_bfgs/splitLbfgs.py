@@ -8,7 +8,7 @@ from lbfgsOptimizationControl import LbfgsOptimizationControl
 
 class SplitLbfgs(LbfgsParent):
 
-    def __init__(self,J,d_J,x0,m,Hinit=None,options=None,ppc=None):
+    def __init__(self,J,d_J,x0,m=0,Hinit=None,options=None,ppc=None):
 
         LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options)
 
@@ -107,7 +107,8 @@ class SplitLbfgs(LbfgsParent):
                    "mem_lim"                : 10,
                    "Hinit"                  : "default",
                    "beta"                   : 1,
-                   "return_data"            : False,}
+                   "return_data"            : False,
+                   "scale_hessian"          : False, }
         
         return default
 
@@ -129,7 +130,7 @@ class SplitLbfgs(LbfgsParent):
         x0 = self.data.x.copy()
 
         H = self.data.H
-        
+        n = self.data.length
         df1 = np.zeros(n)
         
         while self.check_convergence()==0:
@@ -138,8 +139,8 @@ class SplitLbfgs(LbfgsParent):
             p = H.matvec(-df0)
 
             x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
-
-            df1.set(self.d_J(x))
+            print x
+            df1=self.d_J(x).copy()
             
             s = x-x0
             y = df1-df0
@@ -147,7 +148,7 @@ class SplitLbfgs(LbfgsParent):
             H.update(y,s)
              
             self.data.update(x,df1)
-
+            x0=x.copy()
 
         return self.data
 
@@ -297,6 +298,25 @@ class SplitLbfgs(LbfgsParent):
     
     
 
+if __name__ == '__main__':
+    
+    def J(x):
 
+        s=0
+        for i in range(len(x)):
+            s = s + (x[i]-1)**2
+        return s
+
+
+    def d_J(x):
+
+        return 2*(x-1)
+
+    x0=np.linspace(1,30,30)
+    
+
+    solver = SplitLbfgs(J,d_J,x0)
+    
+    print solver.normal_solve().x
 
     
