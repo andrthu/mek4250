@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
+def l2_diff_norm(u1,u2,t):
+    return np.sqrt(trapz((u1-u2)**2,t))
+
 def test1():
     
     T=1
@@ -137,6 +140,75 @@ def test3():
     iter_data = pd.DataFrame(table,index=['mem_lim=0','mem_lim=1','mem_lim=5'])
     print iter_data
     #iter_data.to_latex('iter_data.tex')
-#test1()
-#test2()
-test3()
+
+def scaled_and_memory_lim():
+    
+    y0 = 1.2
+    a = 0.9
+    T = 1.
+    yT = 5
+    alpha = 0.5
+    N = 500
+    m = 5
+    mu = 10
+    def J(u,y,yT,T,alp):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + alp*(y-yT)**2)
+
+    def grad_J(u,p,dt,alp):
+        return dt*(u+p)
+
+    
+    problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+    res = problem.penalty_solve(N,m,[mu],algorithm='my_steepest_decent',
+                                scale=True)
+
+    non_penalty_res = problem.solve(N)
+    cont0 = non_penalty_res['control'].array()
+    table = {'scaled itr'          : [],
+             'unscaled itr'        : [],
+             'scaled err'       : [],
+             'unscaled err'     : [],
+             'steepest descent': [res.niter,'--','--','--']}
+
+    mem = [0,1,5,10]
+    
+    t = np.linspace(0,T,N+1)
+
+
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+    
+    plot_list=[ax1,ax2,ax3,ax4]
+    for i in range(len(mem)):
+        opt1 = {'mem_lim':mem[i],'maxiter':500,}
+
+        unscaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt1)
+        scaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt1,scale=True)
+
+        cont1=unscaled_res['control'].array()[:N+1]
+        cont2=scaled_res['control'].array()[:N+1]
+
+        err1 = l2_diff_norm(cont0,cont1,t)
+        err2 = l2_diff_norm(cont0,cont2,t)
+        
+        plot_list[i].plot(t,cont0)
+        plot_list[i].plot(t,cont1)
+        plot_list[i].plot(t,cont2,'r--')
+        
+        table['scaled itr'].append(scaled_res['iteration'])
+        table['unscaled itr'].append(unscaled_res['iteration'])
+        table['scaled err'].append(err2)
+        table['unscaled err'].append(err1)
+
+    data = pd.DataFrame(table,index=mem)
+    print data
+    plt.show()
+    
+if __name__ == '__main__':
+    #test1()
+    #test2()
+    #test3()
+    scaled_and_memory_lim()
