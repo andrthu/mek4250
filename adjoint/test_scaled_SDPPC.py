@@ -388,9 +388,100 @@ def diffrent_gammas():
     print data
     #data.to_latex('report/draft/optimization/gamma_data.tex')
 
+
+def mesh_resolution_and_scaling():
+
+    y0 = 1.2
+    a = 0.9
+    T = 1.
+    yT = 5
+    alpha = 0.5
+    N = [100,200,800,1000,2000]
+    m = 4
+    mu = 1
+    def J(u,y,yT,T,alp):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + alp*(y-yT)**2)
+
+    def grad_J(u,p,dt,alp):
+        return dt*(u+p)
+
+    problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+
+    gamma = ['no scale',1,10,15,20,50,100]
+    
+    table = {'N=100 (iter,gamma,err)'  : [],
+             'N=200 (iter,gamma,err)'  : [],
+             'N=800 (iter,gamma,err)'  : [],
+             'N=1000 (iter,gamma,err)' : [],
+             'N=2000 (iter,gamma,err)' : [],}
+
+
+    res11 = problem.solve(N[0],algorithm='my_steepest_decent')
+    res22 = problem.solve(N[1],algorithm='my_steepest_decent')
+    res33 = problem.solve(N[2],algorithm='my_steepest_decent')
+    res44 = problem.solve(N[3],algorithm='my_steepest_decent')
+    res55 = problem.solve(N[4],algorithm='my_steepest_decent')
+
+    t1 = np.linspace(0,T,N[0]+1)
+    t2 = np.linspace(0,T,N[1]+1)
+    t3 = np.linspace(0,T,N[2]+1)
+    t4 = np.linspace(0,T,N[3]+1)
+    t5 = np.linspace(0,T,N[4]+1)
+
+    table['N=100 (iter,gamma,err)'].append((res11.niter,'--'))
+    table['N=200 (iter,gamma,err)'].append((res22.niter,'--'))
+    table['N=800 (iter,gamma,err)'].append((res33.niter,'--'))
+    table['N=1000 (iter,gamma,err)'].append((res44.niter,'--'))
+    table['N=2000 (iter,gamma,err)'].append((res55.niter,'--'))
+
+    for i in range(1,len(gamma)):
+        opt = opt={'maxiter':100,'scale_factor':gamma[i]}
+
+        res1 = problem.penalty_solve(N[0],m,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+        res2 = problem.penalty_solve(N[1],m,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+        res3 = problem.penalty_solve(N[2],m,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+        res4 = problem.penalty_solve(N[3],m,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+        res5 = problem.penalty_solve(N[4],m,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+
+        err1 = l2_diff_norm(res11.x,res1.x[:N[0]+1],t1)
+        err2 = l2_diff_norm(res22.x,res2.x[:N[1]+1],t2)
+        err3 = l2_diff_norm(res33.x,res3.x[:N[2]+1],t3)
+        err4 = l2_diff_norm(res44.x,res4.x[:N[3]+1],t4)
+        err5 = l2_diff_norm(res55.x,res5.x[:N[4]+1],t5)
+
+        table['N=100 (iter,gamma,err)'].append((res1.niter,res1.scaler.gamma,round(err1,1)))
+        table['N=200 (iter,gamma,err)'].append((res2.niter,res2.scaler.gamma,round(err2,1)))
+        table['N=800 (iter,gamma,err)'].append((res3.niter,res3.scaler.gamma,round(err3,1)))
+        table['N=1000 (iter,gamma,err)'].append((res4.niter,res4.scaler.gamma,round(err4,1)))
+        table['N=2000 (iter,gamma,err)'].append((res5.niter,res5.scaler.gamma,round(err5,1)))
+
+
+    data = pd.DataFrame(table,index=gamma)
+    print data
+    data.to_latex('report/draft/optimization/mesh_res_and_scale_data.tex')
 if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
     #scaled_unscaled()
-    diffrent_gammas()
+    #diffrent_gammas()
+    mesh_resolution_and_scaling()
