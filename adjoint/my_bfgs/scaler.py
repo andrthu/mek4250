@@ -1,21 +1,24 @@
 import numpy as np
 class PenaltyScaler():
 
-    def __init__(self,J,grad_J,x0,m):
+    def __init__(self,J,grad_J,x0,m,factor=20):
 
         self.J = J
         self.grad_J = grad_J
         self.x0 = x0
         self.m = m
         self.N = len(x0)-m
+        self.factor = factor
         self.gamma = self.find_gamma()
         self.old_J = J
         self.old_grad = grad_J
+        
+        
     def find_gamma(self):
         
         grad = self.grad_J(self.x0)
         N = self.N
-        gamma = 10*np.max(abs(grad[:N+1]))/np.max(abs(grad[N+1:]))
+        gamma = self.factor*np.max(abs(grad[:N+1]))/np.max(abs(grad[N+1:]))
         #gamma = ((self.m-1)/(N+1.))*np.sum(abs(grad[:N+1]))/np.sum(abs(grad[N+1:]))
         #gamma = np.sqrt(gamma)
         print gamma,np.max(abs(grad[N+1:])),np.min(abs(grad[N+1:]))

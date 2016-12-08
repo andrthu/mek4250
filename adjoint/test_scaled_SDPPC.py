@@ -9,6 +9,7 @@ from optimalContolProblem import OptimalControlProblem,Problem3
 from scipy.integrate import trapz
 import matplotlib.pyplot as plt
 import time
+import pandas as pd
 
 class Problem3(PararealOCP):
     """
@@ -263,8 +264,133 @@ def test3():
     for r in l:
         print r
         
+def scaled_unscaled():
+    y0 = 1.2
+    a = 0.9
+    T = 1.
+    yT = 5
+    alpha = 0.5
+    N = 500
+    m = [0,2,4,8,16,32]
+    mu = 1
+    def J(u,y,yT,T,alp):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + alp*(y-yT)**2)
+
+    def grad_J(u,p,dt,alp):
+        return dt*(u+p)
+
+    
+    problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+    res = problem.solve(N,algorithm='my_steepest_decent')
+
+    table = {'unscaled error':[],
+             'unscaled iterations': [],
+             'scaled error': [],
+             'scaled iterations': [],
+             'gamma':[]}
+
+    table['unscaled error'].append(0)
+    table['unscaled iterations'].append(res.niter)
+    table['scaled error'].append('--')
+    table['scaled iterations'].append('--')
+    table['gamma'].append('--')
+
+
+    t = np.linspace(0,T,N+1)
+    opt={'maxiter':600}
+    for i in range(1,len(m)):
+        res_scaled = problem.penalty_solve(N,m[i],[mu],
+                                           algorithm='my_steepest_decent',
+                                           scale = True,
+                                           Lbfgs_options=opt)
+
+        res_unscaled=problem.penalty_solve(N,m[i],[mu],
+                                           algorithm='slow_steepest_decent',
+                                           Lbfgs_options=opt)
+
+        
+        e_unscaled=l2_diff_norm(res.x,res_unscaled.x[:N+1],t)
+        e_scaled = l2_diff_norm(res.x,res_scaled.x[:N+1],t)
+        table['unscaled error'].append(e_unscaled)
+        table['unscaled iterations'].append(res_unscaled.niter)
+        table['scaled error'].append(e_scaled)
+        table['scaled iterations'].append(res_scaled.niter)
+        table['gamma'].append(res_scaled.scaler.gamma)
+
+    data = pd.DataFrame(table,index=m)
+    print data
+    #data.to_latex('SD_scaled_data.tex')
+
+
+
+def diffrent_gammas():
+
+    y0 = 1.2
+    a = 0.9
+    T = 1.
+    yT = 5
+    alpha = 0.5
+    N = 500
+    m = [2,4,8,16]
+    mu = 1
+    def J(u,y,yT,T,alp):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + alp*(y-yT)**2)
+
+    def grad_J(u,p,dt,alp):
+        return dt*(u+p)
+
+    
+    problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+    
+    gamma = [1,5,10,15,20,30,50,100]
+
+    table = {'m=2 (iter,gamma)':[],
+             'm=4 (iter,gamma)':[],
+             'm=8 (iter,gamma)':[],
+             'm=16 (iter,gamma)':[],}
+
+    for i in range(len(gamma)):
+        opt = opt={'maxiter':500,'scale_factor':gamma[i]}
+
+        res1 = problem.penalty_solve(N,2,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+        res2 = problem.penalty_solve(N,4,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+        res3 = problem.penalty_solve(N,8,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+        res4 = problem.penalty_solve(N,16,[mu],
+                                     algorithm='my_steepest_decent',
+                                     scale = True,
+                                     Lbfgs_options=opt)
+
+        table['m=2 (iter,gamma)'].append((res1.niter,res1.scaler.gamma))
+        table['m=4 (iter,gamma)'].append((res2.niter,res2.scaler.gamma))
+        table['m=8 (iter,gamma)'].append((res3.niter,res3.scaler.gamma))
+        table['m=16 (iter,gamma)'].append((res4.niter,res4.scaler.gamma))
+
+
+    data = pd.DataFrame(table,index=gamma)
+
+    print data
+    #data.to_latex('report/draft/optimization/gamma_data.tex')
 
 if __name__ == '__main__':
     #test1()
-    test2()
+    #test2()
     #test3()
+    #scaled_unscaled()
+    diffrent_gammas()

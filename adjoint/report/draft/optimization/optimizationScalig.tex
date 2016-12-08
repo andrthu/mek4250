@@ -7,7 +7,7 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
- 
+\usepackage{booktabs}
 \usepackage{cite}
 
 
@@ -50,7 +50,7 @@ To illustrate that we have scaling issues, lets look at the DE constrained optim
 \end{align}
 The functional they use is on the following form:
 \begin{align}
-J(v) = \frac{1}{2}\int_0^T ||v(t)||^2 dt + \frac{\alpha}{2}||y(T)-y^T||^2
+J(v) = \frac{1}{2}\int_0^T ||v(t)||^2 dt + \frac{\alpha}{2}||y(T)-y^T||^2 \label{OC_func}
 \end{align}
 This problem yields the following gradient:
 \begin{align}
@@ -62,23 +62,58 @@ In a numerical setting, where we have discretized the equation, we will get the 
 \end{align*}
 One sees that the adjoint appears in both parts of the gradient, but in the $v$ part there is a factor of $\Delta t$ multiplied with it. It therefore makes sense, that the there is a factor of $\Delta t$ order of magnitude difference between the size of $v$ and $\Lambda$ part of the gradient. This means that for small $\Delta t$ the steepest descent method will converge very slowly.
 \section{Scaling}
-An alternative way of handling an unbalanced gradient is to rescale the problem. Lets explain with a simple example, where we try to minimize a function with only two variables $J(x,y)$. We then pick some initial point $(m_1,m_2)$, and notice that gradient $\nabla J(m_1,m_2)$ is very unbalance. Ideally, we would want $J_x(m_1)=J_y(m_2)$, and to achive this we introduce a new functional $\hat{J}(x,\xi)=J(x,\alpha\xi)$, with 
+An alternative way of handling an unbalanced gradient is to rescale the problem. Lets explain with a simple example, where we try to minimize a function with only two variables $J(x,y)$. We then pick some initial point $(m_1,m_2)$, and notice that the gradient $\nabla J(m_1,m_2)$ is very unbalanced. Ideally, we would want $J_x(m_1)=J_y(m_2)$, and to achieve this we introduce a new functional $\hat{J}(x,\xi)=J(x,\gamma\xi)$, with 
 \begin{align*}
-\alpha = \frac{\frac{\partial J(m_1,m_2)}{\partial x}}{\frac{\partial J(m_1,m_2)}{\partial y}}
+\gamma = \frac{\frac{\partial J(m_1,m_2)}{\partial x}}{\frac{\partial J(m_1,m_2)}{\partial y}}
 \end{align*} 
-Now choose a new initial point $(m_1,\frac{m_2}{\alpha})$, and we see that 
+Now choose a new initial point $(m_1,\frac{m_2}{\gamma})$, and we see that 
 \begin{align*}
-\frac{\partial \hat{J}(m_1,\frac{m_2}{\alpha})}{\partial x}=\frac{\partial\hat{J}(m_1,\frac{m_2}{\alpha})}{\partial y}
+\frac{\partial \hat{J}(m_1,\frac{m_2}{\gamma})}{\partial x}=\frac{\partial\hat{J}(m_1,\frac{m_2}{\gamma})}{\partial y}
 \end{align*}
 because
 \begin{align*}
-\frac{\partial \hat{J}(m_1,\frac{m_2}{\alpha})}{\partial x} = \frac{\partial J(m_1,m_2)}{\partial x}
+\frac{\partial \hat{J}(m_1,\frac{m_2}{\gamma})}{\partial x} = \frac{\partial J(m_1,m_2)}{\partial x}
 \end{align*}
 and
 \begin{align*}
-\frac{\partial\hat{J}(m_1,\frac{m_2}{\alpha})}{\partial y} & = \frac{\partial J(m_1,m_2)}{\partial y}\alpha \\
+\frac{\partial\hat{J}(m_1,\frac{m_2}{\gamma})}{\partial y} & = \frac{\partial J(m_1,m_2)}{\partial y}\gamma \\
 &=\frac{\partial J(m_1,m_2)}{\partial x}
 \end{align*}
+\section{Scaling for Steepest descent}
+To illustrate how scaling of the time-decomposed problem affects the performance of the steepest descent method, lets look at a simple ODE example of problem (\ref{OC_PDE}-\ref{OC_func}), with parameters $(A,B,T,\alpha,y_0,y_T,\Delta t)=(0.9,1,1,0.5,1.2,5,\frac{1}{500})$. Solving this problem using penalty term $\mu=1$ and different time-decompositions yielded the following:
+\\
+\begin{tabular}{llllrr}
+\toprule
+{}decompositions &     $\gamma$ & scaled error & scaled iterations &  error &  iterations \\
+\midrule
+0  &        -- &           -- &                -- &        0.000000 &                   34 \\
+2  &  0.027027 &     0.224357 &                21 &        0.275448 &                  601 \\
+4  &      0.04 &     0.425371 &                32 &        0.553890 &                  601 \\
+8  &      0.04 &     0.551151 &                79 &        0.609155 &                  601 \\
+16 &      0.04 &     0.620472 &               219 &        0.659912 &                  460 \\
+32 &      0.04 &     0.657101 &               555 &        0.674689 &                  601 \\
+\bottomrule
+\end{tabular}
+From the table above it is clear that scaling has a huge impact on the performance of the steepest descent algorithm for the time-decomposed problem. Another thing of note is the value of the scaling factor $\gamma$. Since the functional have more than two arguments, we need to choose a way to determine $\gamma$. For the example above, I have used the following:
+\begin{align*}
+\gamma = 20\frac{||\nabla J(v,)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}
+\end{align*} 
+One can choose a different factor than twenty to multiply with the fraction, what factor to choose is not obvious. Below I have tested the same problem for different time-decompositions $m$, using different factors to calculate $\gamma$. The resulyts were the following:
+\\
+\begin{tabular}{lllll}
+\toprule
+{} & m=16 (iter,gamma) &         m=2 (iter,gamma) & m=4 (iter,gamma) & m=8 (iter,gamma) \\
+\midrule
+1   &      (501, 0.002) &  (501, 0.00135135135135) &     (501, 0.002) &     (501, 0.002) \\
+5   &       (501, 0.01) &   (99, 0.00675675675676) &       (83, 0.01) &      (241, 0.01) \\
+10  &       (196, 0.02) &    (30, 0.0135135135135) &       (32, 0.02) &       (80, 0.02) \\
+15  &       (188, 0.03) &    (32, 0.0202702702703) &       (40, 0.03) &       (67, 0.03) \\
+20  &       (219, 0.04) &     (21, 0.027027027027) &       (32, 0.04) &       (79, 0.04) \\
+30  &       (174, 0.06) &    (42, 0.0405405405405) &       (45, 0.06) &       (73, 0.06) \\
+50  &        (155, 0.1) &    (28, 0.0675675675676) &        (32, 0.1) &        (65, 0.1) \\
+100 &        (155, 0.2) &     (29, 0.135135135135) &        (47, 0.2) &        (84, 0.2) \\
+\bottomrule
+\end{tabular}
 \section{L-BFGS}
 
 \end{document}

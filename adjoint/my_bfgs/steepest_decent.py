@@ -92,7 +92,12 @@ class SteepestDecent():
 
         if scale==None:
             return None
-        scaler = PenaltyScaler(J,grad_J,x0,scale['m'])
+
+        if scale.has_key('factor'):
+            scaler = PenaltyScaler(J,grad_J,x0,scale['m'],
+                                   factor=scale['factor'])
+        else:
+            scaler = PenaltyScaler(J,grad_J,x0,scale['m'])
         N = len(x0)-scale['m']
         print x0[N+1:]
         y0 = scaler.var(x0)

@@ -105,9 +105,10 @@ class OptimalControlProblem():
         defaalt options for steepest decent
         """
         default = {}
-        default.update({"jtol"     : 1e-4,
-                        "maxiter"  : 500,
-                        "scale"    : False})
+        default.update({"jtol"         : 1e-4,
+                        "maxiter"      : 500,
+                        "scale"        : False,
+                        "scale_factor" : 20})
         return default
 
     def update_SD_options(self,options):
@@ -454,8 +455,10 @@ class OptimalControlProblem():
                 self.update_SD_options(Lbfgs_options)
                 SDopt = self.SD_options
                 if scale:
+                    
+                    scale = {'m':m,'factor':SDopt['scale_factor']}
                     Solver = SteepestDecent(J,grad_J,x0.copy(),
-                                             options=SDopt,scale={'m':m})
+                                             options=SDopt,scale=scale)
                     res = Solver.solve()
                     res.rescale()
                 else:
@@ -464,7 +467,15 @@ class OptimalControlProblem():
                     res = Solver.split_solve(m)
                 x0 = res.x.copy()
                 Result.append(res)
-
+            elif algorithm=='slow_steepest_decent':
+                self.update_SD_options(Lbfgs_options)
+                SDopt = self.SD_options
+                Solver = SteepestDecent(J,grad_J,x0.copy(),
+                                        options=SDopt)
+                res = Solver.solve()
+                x0 = res.x.copy()
+                Result.append(res)
+                
             elif algorithm == 'split_lbfgs':
                 self.update_Lbfgs_options(Lbfgs_options)
                 Solver = SplitLbfgs(J,grad_J,x0,m,options=self.Lbfgs_options)
