@@ -76,13 +76,14 @@ class OptimalControlProblem():
         """
         default options for LGFGS
         """
-        default = {"jtol"                   : 1e-4,
-                   "maxiter"                : 500,
-                   "mem_lim"                : 10,
-                   "Vector"                 : SimpleVector,
-                   "Hinit"                  : "default",
-                   "beta"                   : 1,
-                   "return_data"            : True,}
+        default = {"jtol"         : 1e-4,
+                   "maxiter"      : 500,
+                   "mem_lim"      : 10,
+                   "Vector"       : SimpleVector,
+                   "Hinit"        : "default",
+                   "beta"         : 1,
+                   "return_data"  : True,
+                   "scale_factor" : 20,}
 
         return default
 
@@ -441,8 +442,10 @@ class OptimalControlProblem():
                 self.update_Lbfgs_options(Lbfgs_options)
 
                 if scale:
+                    scaler={'m':m,'factor':self.Lbfgs_options['scale_factor']}
+                    
                     solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options,
-                                   scale={'m':m})
+                                   scale=scaler)
                 else:
                     solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
             

@@ -130,5 +130,49 @@ It could also be interesting to look at what happens when we decrease $\Delta t$
 \bottomrule
 \end{tabular}
 \section{L-BFGS}
-
+As with steepest descent the L-BFGS should also be sensitive to scaling. Solving the same optimal control problem as I did for steepest descent, i.e. problem (\ref{OC_PDE}-\ref{OC_func}), with parameters $(A,B,T,\alpha,y_0,y_T,\mu,\Delta t)=(0.9,1,1,0.5,1.2,5,1,\frac{1}{500})$, I tried the scaling technique on L-BFGS for different memory-size using five decomposed time intervals. This yielded the following:
+\\
+\begin{tabular}{lrrlrr}
+\toprule
+{} memory length &  scaled err &  scaled itr & steepest descent &  unscaled err &  unscaled itr \\
+\midrule
+0  &    0.492563 &          41 &               41 &      0.591079 &           501 \\
+1  &    0.753307 &         501 &               -- &      0.495369 &            39 \\
+5  &    0.492315 &         278 &               -- &      0.491279 &            16 \\
+10 &    0.487367 &          95 &               -- &      0.491595 &            17 \\
+\bottomrule
+\end{tabular} 
+ \begin{figure}
+  \includegraphics[width=\linewidth]{scale_mem_lim.png}
+  \caption{The resulting controls of the scaled and unscaled L-BFGS solution of problem (\ref{OC_PDE}-\ref{OC_func}) using different memory size.} 
+  \label{Fig 1}
+\end{figure}
+The most important note to this result, is that the scaling factor $\gamma$ was set to be 
+\begin{align*}
+\gamma = 20\frac{||\nabla J(v,)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}=0.04
+\end{align*}
+This choice worked fine for steepest decent, but as we see from the table, the performance of the L-BFGS worsened when scaled. Also, by error I mean the $L^2$ difference between the control of the penalty solutions, and the control of the non-penalty solution. We notice that the scaled and unscaled methods results in approximately the same error, however by looking at the plots, we see that the controls from the scaled method have more noticeable jumps.
+\\
+\\
+I Then look at what happens when you try to change your scaling parameter $\gamma$. I solve the same problem as before, but now only for memory of length 1. This resulted in the following:
+\\
+\begin{tabular}{lrrr}
+\toprule
+{} &  scaled gamma &  scaled iter &  unscaled iter \\
+\midrule
+1      &         0.002 &          101 &             39 \\
+10     &         0.020 &          101 &             39 \\
+20     &         0.040 &          101 &             39 \\
+100    &         0.200 &          101 &             39 \\
+200    &         0.400 &           63 &             39 \\
+500    &         1.000 &           39 &             39 \\
+1000   &         2.000 &           39 &             39 \\
+2000   &         4.000 &           17 &             39 \\
+4000   &         8.000 &           21 &             39 \\
+10000  &        20.000 &           24 &             39 \\
+20000  &        40.000 &           26 &             39 \\
+50000  &       100.000 &           28 &             39 \\
+100000 &       200.000 &           29 &             39 \\
+\bottomrule
+\end{tabular}
 \end{document}

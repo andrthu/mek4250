@@ -22,6 +22,8 @@ class PenaltyScaler():
         #gamma = ((self.m-1)/(N+1.))*np.sum(abs(grad[:N+1]))/np.sum(abs(grad[N+1:]))
         #gamma = np.sqrt(gamma)
         print gamma,np.max(abs(grad[N+1:])),np.min(abs(grad[N+1:]))
+        print np.max(abs(grad[:N+1])),np.max(abs(grad[N+1:]))
+        print  ((self.m-1)/(N+1.))*np.sum(abs(grad[:N+1]))/np.sum(abs(grad[N+1:]))
         return gamma
 
     def var(self,x):

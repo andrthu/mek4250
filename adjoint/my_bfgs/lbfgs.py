@@ -86,7 +86,13 @@ class LbfgsParent():
         grad_J = self.d_J
         x0     = self.x0.array()
         m = scale['m']
-        scaler = PenaltyScaler(J,grad_J,x0,m)
+        if scale.has_key('factor'):
+            scaler = PenaltyScaler(J,grad_J,x0,m,
+                                   factor=scale['factor'])
+        else:
+            scaler = PenaltyScaler(J,grad_J,x0,m)
+
+        
         N = len(x0)-m
         
         y0 = scaler.var(x0)
@@ -95,7 +101,7 @@ class LbfgsParent():
         grad_J_ = lambda x : scaler.grad(grad_J)(scaler.func_var(x))
         
         self.J = J_
-        print x0[N+1:],y0[N+1:]
+        
         self.x0 = self.options['Vector'](y0)
         self.d_J = grad_J_
         self.scale = True
@@ -238,7 +244,8 @@ class Lbfgs(LbfgsParent):
         Hessian = LimMemoryHessian(self.Hinit,mem_lim,beta=beta)
         self.data = {'control'   : self.x0,
                      'iteration' : 0,
-                     'lbfgs'     : Hessian }
+                     'lbfgs'     : Hessian ,
+                     'scaler'    : self.scaler,}
 
     def default_options(self):
         """
