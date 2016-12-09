@@ -96,13 +96,13 @@ To illustrate how scaling of the time-decomposed problem affects the performance
 \end{tabular}
 From the table above it is clear that scaling has a huge impact on the performance of the steepest descent algorithm for the time-decomposed problem. Another thing of note is the value of the scaling factor $\gamma$. Since the functional have more than two arguments, we need to choose a way to determine $\gamma$. For the example above, I have used the following:
 \begin{align*}
-\gamma = 20\frac{||\nabla J(v,)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}
+\gamma = 20\frac{||\nabla J(v)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}
 \end{align*} 
 One can choose a different factor than twenty to multiply with the fraction, what factor to choose is not obvious. Below I have tested the same problem for different time-decompositions $m$, using different factors to calculate $\gamma$. The resulyts were the following:
 \\
 \begin{tabular}{lllll}
 \toprule
-{} & m=16 (iter,gamma) &         m=2 (iter,gamma) & m=4 (iter,gamma) & m=8 (iter,gamma) \\
+{} & m=16 (iter,$\gamma$) &         m=2 (iter,$\gamma$) & m=4 (iter,$\gamma$) & m=8 (iter,$\gamma$) \\
 \midrule
 1   &      (501, 0.002) &  (501, 0.00135135135135) &     (501, 0.002) &     (501, 0.002) \\
 5   &       (501, 0.01) &   (99, 0.00675675675676) &       (83, 0.01) &      (241, 0.01) \\
@@ -149,7 +149,7 @@ As with steepest descent the L-BFGS should also be sensitive to scaling. Solving
 \end{figure}
 The most important note to this result, is that the scaling factor $\gamma$ was set to be 
 \begin{align*}
-\gamma = 20\frac{||\nabla J(v,)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}=0.04
+\gamma = 20\frac{||\nabla J(v)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}=0.04
 \end{align*}
 This choice worked fine for steepest decent, but as we see from the table, the performance of the L-BFGS worsened when scaled. Also, by error I mean the $L^2$ difference between the control of the penalty solutions, and the control of the non-penalty solution. We notice that the scaled and unscaled methods results in approximately the same error, however by looking at the plots, we see that the controls from the scaled method have more noticeable jumps.
 \\
