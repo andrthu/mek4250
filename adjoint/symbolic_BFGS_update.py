@@ -18,6 +18,18 @@ print H[0,1]
 print H[1,0]
 print H[1,1]
 
+H2 = (I - r*Y*S.T)*(I-r*S*Y.T) + r*Y*Y.T
+
+print
+H2=sp.simplify(H2)
+print H2[0,0]
+print H2[0,1]
+print H2[1,0]
+print H2[1,1]
+
+print sp.simplify(H*H2)
+
+
 
 
 
