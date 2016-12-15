@@ -175,4 +175,46 @@ I Then look at what happens when you try to change your scaling parameter $\gamm
 100000 &       200.000 &           29 &             39 \\
 \bottomrule
 \end{tabular}
+\section{Scaling the inverse Hessian}
+The results of scaling the gradient and using L-BFGS yielded unexpected results. It might therefore be a good idea, to investigate if we also have to change the approximation to the inverse Hessian, and not only the gradient. Lets again return to our simple two-variable example functional $J(x,y)$, and our scaled version of it $\hat{J}(x,\xi)=J(x,\gamma\xi)$. We found the gradient of $\hat{J}$ to be:
+\begin{align*}
+\nabla \hat{J}(x,\gamma\xi) = (J_x(x,\gamma\xi),\gamma J_y(x,\gamma\xi))
+\end{align*}
+Finding the Hessian of $\hat{J}$ is also quite simple, and it looks like this:
+\begin{align}
+  \nabla^2 \hat{J}=\left[ \begin{array}{cc}
+   J_{xx} & \gamma J_{xy}\\
+    \gamma J_{xy}& \gamma^2J_{yy}\\
+   \end{array}  \right]  \label{scaled_hessian}  
+\end{align}
+Now look at the L-BFGS iteration, which looks like the following:
+\begin{align*}
+(x^{k+1},y^{k+1}) = (x^k,y^k) - \alpha H_k \nabla J(x^k,y^k)
+\end{align*}
+Here H is an approximation of the inverse Hessian $ \nabla^2 J^{-1}$. If we scale the problem, we would instead get the update:
+\begin{align*}
+(x^{k+1},\xi^{k+1}) = (x^k,\xi^k) - \alpha \hat{H_k} \nabla \hat{J}(x^k,\xi^k)
+\end{align*}
+One would now expect a similar relation between $H_k$ and $\hat{H_k}$ as the one in (\ref{scaled_hessian}) between $\nabla^2 J$ and $\nabla^2 \hat{J}$, only inverted, i.e if $H^k$ was given by
+\begin{align*}
+	H^k=\left[ \begin{array}{cc}
+   	c_1 & c_2\\
+    	c_3& c_4\\
+   \end{array}  \right]
+\end{align*}
+We want  $\hat{H_k}$ to be:
+\begin{align*}
+	\hat{H_k}=\left[ \begin{array}{cc}
+   	c_1 & \frac{c_2}{\gamma}\\
+    	\frac{c_3}{\gamma}& \frac{c_4}{\gamma^2}\\
+   \end{array}  \right]
+\end{align*}
+With this observation in mind, lets now take a closer look at the L-BFGS inverse Hessian approximation, to see if the above statement actually holds. To make it simple I will only consider the case where we use L-BFGS with memory length 1. First lets remember how the L-BFGS inverse Hessian approximation update looks like:
+\begin{align*}
+H^{k+1} &= (I-\rho_kS_kY_k^T)H^k(I-\rho_kY_kS_k^T) + S_kS_k^T\\
+S_k &= x^{k+1}-x^{k} \\
+Y_k &= \nabla J(x^{k+1})-\nabla J(x^{k})\\
+\rho_k &= \frac{1}{Y_k^TS_k} \\
+H^0 &= \beta I
+\end{align*}
 \end{document}

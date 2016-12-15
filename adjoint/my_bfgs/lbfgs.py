@@ -106,7 +106,7 @@ class LbfgsParent():
         self.d_J = grad_J_
         self.scale = True
         if self.options['scale_hessian']==True:
-            self.Hinit[range(N+2,N+m),range(N+2,N+m)] = 1./scaler.gamma**2
+            self.Hinit[range(N+1,N+m),range(N+1,N+m)] = 1./scaler.gamma**2
         return scaler
 
     def rescale(self,x):
@@ -297,7 +297,7 @@ class Lbfgs(LbfgsParent):
         Hk = self.data['lbfgs']          # get inverted hessian
 
 
-        df0 = Vec(self.d_J(x0.array())) # initial gradient
+        df0 = Vec(self.d_J(x0.array()))  # initial gradient
         df1 = Vec(np.zeros(n))           # space for gradient  
 
         iter_k = self.data['iteration']           
@@ -318,6 +318,10 @@ class Lbfgs(LbfgsParent):
             df1.set(self.d_J(x.array()))
             
             s = x-x0
+            """
+            if self.scaler!=None:
+                s = self.rescale(s)
+            """
             y = df1-df0
             #s =self.rescale(s)
             #y = self.rescale(y)

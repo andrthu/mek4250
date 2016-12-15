@@ -185,10 +185,12 @@ def scaled_and_memory_lim():
     for i in range(len(mem)):
         if mem[i]==0:
             opt1 = {'mem_lim':mem[i],'maxiter':500,}
+            opt2 = {'mem_lim':mem[i],'maxiter':500,}#'scale_hessian':True}
         else:
             opt1 = {'mem_lim':mem[i],'maxiter':500,}#'scale_factor':2000}
+            opt2 = {'mem_lim':mem[i],'maxiter':500,}#'scale_hessian':True}
         unscaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt1)
-        scaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt1,scale=True)
+        scaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt2,scale=True)
 
         cont1=unscaled_res['control'].array()[:N+1]
         cont2=scaled_res['control'].array()[:N+1]
@@ -275,9 +277,123 @@ def change_gamma():
     plt.show()
 
 
+def scaled_initial_hessian():
+
+
+    y0 = 1.2
+    a = 0.9
+    T = 1.
+    yT = 5
+    alpha = 0.5
+    N = 500
+    m = 5
+    mu = 10
+    def J(u,y,yT,T,alp):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz(u**2,t)
+
+        return 0.5*(I + alp*(y-yT)**2)
+
+    def grad_J(u,p,dt,alp):
+        return dt*(u+p)
+
+    
+    problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
+    non_penalty_res = problem.solve(N)
+
+    print 'reeeeeeeeeeeeeeeeeeeeeee',non_penalty_res['iteration']
+    cont0 = non_penalty_res['control'].array()
+    table1 = {'scaled itr'          : [],
+             'unscaled itr'        : [],
+             'scaled err'       : [],
+             'unscaled err'     : [],}
+
+    mem = [1,2,5,10]
+    
+    t = np.linspace(0,T,N+1)
+
+    
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+    
+    plot_list=[ax1,ax2,ax3,ax4]
+    for i in range(len(mem)):
+        if mem[i]==0:
+            opt1 = {'mem_lim':mem[i],'maxiter':500,}
+            opt2 = {'mem_lim':mem[i],'maxiter':500,}#'scale_hessian':True}
+        else:
+            opt1 = {'mem_lim':mem[i],'maxiter':500,}#'scale_factor':2000}
+            opt2 = {'mem_lim':mem[i],'maxiter':500,'scale_hessian':True}
+        unscaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt1)
+        scaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt2,scale=True)
+
+        cont1=unscaled_res['control'].array()[:N+1]
+        cont2=scaled_res['control'].array()[:N+1]
+
+        err1 = l2_diff_norm(cont0,cont1,t)
+        err2 = l2_diff_norm(cont0,cont2,t)
+        
+        #plot_list[i].plot(t,cont0)
+        plot_list[i].plot(t,cont1)
+        plot_list[i].plot(t,cont2,'r--')
+        plot_list[i].legend(['unscaled','scaled'])
+        
+        table1['scaled itr'].append(scaled_res['iteration'])
+        table1['unscaled itr'].append(unscaled_res['iteration'])
+        table1['scaled err'].append(err2)
+        table1['unscaled err'].append(err1)
+
+    data1 = pd.DataFrame(table1,index=mem)
+    print data1
+    #data1.to_latex('report/draft/optimization/hessian_scaled_and_memory_lim.tex')
+    
+    plt.show()
+
+    gamma = [0.25,0.5,0.75,1,10,20,100,200,500,1000,2000,20000,50000]
+    #gamma = [100,200,500,1000,2000,4000]
+    table2 = {'scaled iter':[],
+             'unscaled iter':[],
+             'scaled gamma':[],}
+    mu = 10
+    unscaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options={'maxiter':500,'mem_lim':1})
+    t = np.linspace(0,T,N+1)
+    for i in range(len(gamma)):
+        opt = {'maxiter':100,'scale_factor':gamma[i],'mem_lim':1,'scale_hessian':True}
+
+
+        #unscaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt)
+        try:
+            scaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt,scale=True)
+
+            iter1 = scaled_res['iteration']
+            iter2 = unscaled_res['iteration']
+        except:
+            iter1 = 'fail'
+            iter2 = unscaled_res['iteration']
+
+        table2['scaled iter'].append(iter1)
+        table2['unscaled iter'].append(iter2)
+        table2['scaled gamma'].append(scaled_res['scaler'].gamma)
+
+    
+
+
+    data2 = pd.DataFrame(table2,index=gamma)
+    print data2
+    #plt.show()
+    #data2.to_latex('report/draft/optimization/hessian_change_gamma.tex')
+    plt.plot(t,scaled_res['control'].array()[:N+1],'r--')
+    plt.plot(t,unscaled_res['control'].array()[:N+1])
+    plt.show()
+    
+    plt.plot(scaled_res['control'].array()[N+1:],'r--')
+    plt.plot(unscaled_res['control'].array()[N+1:])
+    plt.show()
+
 if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
     #scaled_and_memory_lim()
-    change_gamma()
+    #change_gamma()
+    scaled_initial_hessian()
