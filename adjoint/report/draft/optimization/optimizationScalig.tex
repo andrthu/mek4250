@@ -176,7 +176,7 @@ I Then look at what happens when you try to change your scaling parameter $\gamm
 \bottomrule
 \end{tabular}
 \section{Scaling the inverse Hessian}
-The results of scaling the gradient and using L-BFGS yielded unexpected results. It might therefore be a good idea, to investigate if we also have to change the approximation to the inverse Hessian, and not only the gradient. Lets again return to our simple two-variable example functional $J(x,y)$, and our scaled version of it $\hat{J}(x,\xi)=J(x,\gamma\xi)$. We found the gradient of $\hat{J}$ to be:
+The results of scaling the gradient and using L-BFGS yielded unexpected results. It might therefore be a good idea, to investigate if we also have to change the approximation of the inverse Hessian, and not only the gradient. Lets again return to our simple two-variable example functional $J(x,y)$, and our scaled version of it $\hat{J}(x,\xi)=J(x,\gamma\xi)$. We found the gradient of $\hat{J}$ to be:
 \begin{align*}
 \nabla \hat{J}(x,\gamma\xi) = (J_x(x,\gamma\xi),\gamma J_y(x,\gamma\xi))
 \end{align*}
@@ -217,7 +217,7 @@ Y_k &= \nabla J(x^{k+1})-\nabla J(x^{k})\\
 \rho_k &= \frac{1}{Y_k^TS_k} \\
 H^0 &= \beta I
 \end{align*}
-Lets find the $H_k$ in the case where we use only use information of the last iteration in the update, and where we solve a two variable problem. Define $S_k=[a,b]^T$ and $Y_k=[x,y]^T$. The algebra now becomes quite ugly, so its best to split up the derivation:
+Lets find the $H_k$ in the case where we only use information of the last iteration in the update, and where we solve a two variable problem. Define $S_k=[a,b]^T$ and $Y_k=[x,y]^T$. The algebra now becomes quite ugly, so its best to split up the derivation:
 \begin{align*}
 A &= (I-\rho_kS_kY_k^T) \\
 &=\left[ \begin{array}{cc}
@@ -240,7 +240,7 @@ C&= \rho S_kS_k^T \\
    \end{array}  \right] \\
 H^{k+1}&=B+C
 \end{align*}
-Now lets find the scaled inverted Hessian. The first thing to notice, is that both the $S$ and $Y$ changes, since you multiply the the second part of the gradient with $\gamma$, while you divide the second variable with $\gamma$. this results in $\hat{S}_k=[a,\frac{b}{\gamma}]^T$ and $\hat{Y}_k=[x,\gamma Y]^T$. Notice that that means that $\rho$ stays unchanged. Now lets derive $\hat{H}^{k+1}$:
+Now lets find the scaled inverted Hessian. The first thing to notice, is that both the $S_k$ and $Y_k$ changes, since you multiply the the second part of the gradient with $\gamma$, while you divide the second variable with $\gamma$. this results in $\hat{S}_k=[a,\frac{b}{\gamma}]^T$ and $\hat{Y}_k=[x,\gamma Y]^T$. Notice that that means that $\rho$ stays unchanged. Now lets derive $\hat{H}^{k+1}$:
 \begin{align*}
 \hat{A} &= (I-\rho_k\hat{S}_k\hat{Y}_k^T) \\
 &=\left[ \begin{array}{cc}
@@ -278,5 +278,46 @@ This would then give us
     	-\frac{d_3}{\gamma}(1-c1)-\frac{d_2}{\gamma}(1-d_4)& (\frac{1-d_4}{\gamma})^2 +(\frac{d_3}{\gamma})^2\\
    \end{array}  \right] \\
 \end{align*}
-Now $\hat{H}^{k+1}=\hat{B}+\hat{C}$ will satisfy (\ref{Ihessian_property}). It would now be interesting to check if the changed initial inverted Hessian would have any impact on the performance of the scaled L-BFGS method. I have therefore, with this goal in mind redone the experiments for the scaled L-BFGS, with the changes proposed above. This yielded the following:
+Now $\hat{H}^{k+1}=\hat{B}+\hat{C}$ will satisfy (\ref{Ihessian_property}). The next step to check if the changed initial inverted Hessian have any impact on the performance of the scaled L-BFGS method. I have therefore, with this goal in mind redone the experiments for the scaled L-BFGS, using the same equations and parameters, with the changes proposed above. This yielded the following:
+\\
+\begin{tabular}{lrrrr}
+\toprule
+{} memory length &  scaled err &  scaled itr &  unscaled err &  unscaled itr \\
+\midrule
+1  &    0.146630 &          62 &      0.131932 &            82 \\
+2  &    0.126179 &          17 &      0.129110 &            24 \\
+5  &    0.127947 &          11 &      0.127947 &            11 \\
+10 &    0.128153 &           8 &      0.129299 &             9 \\
+\bottomrule
+\end{tabular}
+While L-BFGS without a scaled $H^0$ required a lot more iterations, to reach its tolerance, the L-BFGS with scaled $H^0$ performs either better or as good as the unscaled version. For this example we used the same $\gamma$ as before, namely:
+\begin{align*}
+\gamma = 20\frac{||\nabla J(v)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}
+\end{align*}
+It might therefore be interesting to see what value of $\gamma$ that is optimal for L-BFGS with scaled $H^0$. The result for a repetition of the changing $\gamma$ experiment for L-BFGS using memory length 1 follows below:
+\\
+\begin{tabular}{lrrr}
+\toprule
+{} &  scaled gamma &  scaled iter &  unscaled iter \\
+\midrule
+0.25     &        0.0005 &           30 &             39 \\
+0.50     &        0.0010 &           30 &             39 \\
+0.75     &        0.0015 &           30 &             39 \\
+1.00     &        0.0020 &           30 &             39 \\
+10.00    &        0.0200 &           34 &             39 \\
+20.00    &        0.0400 &           34 &             39 \\
+100.00   &        0.2000 &           38 &             39 \\
+200.00   &        0.4000 &           38 &             39 \\
+500.00   &        1.0000 &           39 &             39 \\
+1000.00  &        2.0000 &           39 &             39 \\
+2000.00  &        4.0000 &           39 &             39 \\
+20000.00 &       40.0000 &           39 &             39 \\
+50000.00 &      100.0000 &           51 &             39 \\
+\bottomrule
+\end{tabular}
+The important findings in the previous experiment, is that choosing $\gamma$ to be 
+\begin{align*}
+\gamma = \frac{||\nabla J(v)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}
+\end{align*}
+actually works best. This is also what one would intuitively expect.  
 \end{document}
