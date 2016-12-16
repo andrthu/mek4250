@@ -203,12 +203,12 @@ One would now expect a similar relation between $H_k$ and $\hat{H_k}$ as the one
    \end{array}  \right]
 \end{align*}
 We want  $\hat{H_k}$ to be:
-\begin{align*}
+\begin{align}
 	\hat{H_k}=\left[ \begin{array}{cc}
    	c_1 & \frac{c_2}{\gamma}\\
     	\frac{c_3}{\gamma}& \frac{c_4}{\gamma^2}\\
-   \end{array}  \right]
-\end{align*}
+   \end{array}  \right] \label{Ihessian_property}
+\end{align}
 With this observation in mind, lets now take a closer look at the L-BFGS inverse Hessian approximation, to see if the above statement actually holds. To make it simple I will only consider the case where we use L-BFGS with memory length 1. First lets remember how the L-BFGS inverse Hessian approximation update looks like:
 \begin{align*}
 H^{k+1} &= (I-\rho_kS_kY_k^T)H^k(I-\rho_kY_kS_k^T) + S_kS_k^T\\
@@ -217,4 +217,66 @@ Y_k &= \nabla J(x^{k+1})-\nabla J(x^{k})\\
 \rho_k &= \frac{1}{Y_k^TS_k} \\
 H^0 &= \beta I
 \end{align*}
+Lets find the $H_k$ in the case where we use only use information of the last iteration in the update, and where we solve a two variable problem. Define $S_k=[a,b]^T$ and $Y_k=[x,y]^T$. The algebra now becomes quite ugly, so its best to split up the derivation:
+\begin{align*}
+A &= (I-\rho_kS_kY_k^T) \\
+&=\left[ \begin{array}{cc}
+   	1-\rho ax & -\rho ay\\
+    	-\rho bx& 1-\rho by\\
+   \end{array}  \right] \\
+&=\left[ \begin{array}{cc}
+   	1-d_1 & -d_2\\
+    	-d_3& 1-d_4\\
+   \end{array}  \right] \\
+B &= (I-\rho_kS_kY_k^T)I(I-\rho_kY_kS_k^T) = AA^T \\
+&=\left[ \begin{array}{cc}
+   	(1-d_1)^2 + d_2^2& -d_3(1-d_1) -d_2(1-d_4)\\
+    	-d_3(1-c1)-d_2(1-d_4)& (1-d_4)^2 +d_3^2\\
+   \end{array}  \right] \\
+C&= \rho S_kS_k^T \\
+&=\rho\left[ \begin{array}{cc}
+   	a^2  & ab\\
+    	ab& b^2\\
+   \end{array}  \right] \\
+H^{k+1}&=B+C
+\end{align*}
+Now lets find the scaled inverted Hessian. The first thing to notice, is that both the $S$ and $Y$ changes, since you multiply the the second part of the gradient with $\gamma$, while you divide the second variable with $\gamma$. this results in $\hat{S}_k=[a,\frac{b}{\gamma}]^T$ and $\hat{Y}_k=[x,\gamma Y]^T$. Notice that that means that $\rho$ stays unchanged. Now lets derive $\hat{H}^{k+1}$:
+\begin{align*}
+\hat{A} &= (I-\rho_k\hat{S}_k\hat{Y}_k^T) \\
+&=\left[ \begin{array}{cc}
+   	1-\rho ax & -\rho ay\gamma\\
+    	-\rho \frac{bx}{\gamma}& 1-\rho by\\
+   \end{array}  \right] \\
+&=\left[ \begin{array}{cc}
+   	1-d_1 & -d_2\gamma\\
+    	-\frac{d_3}{\gamma}& 1-d_4\\
+   \end{array}  \right] \\
+\hat{B} &= (I-\rho_k\hat{S}_k\hat{Y}_k^T)I(I-\rho_k\hat{Y}_k\hat{S}_k^T) = \hat{A}\hat{A}^T \\
+&=\left[ \begin{array}{cc}
+   	(1-d_1)^2 + (d_2\gamma)^2& -\frac{d_3}{\gamma}(1-d_1) -d_2\gamma(1-d_4)\\
+    	-\frac{d_3}{\gamma}(1-c1)-d_2\gamma(1-d_4)& (1-d_4)^2 +(\frac{d_3}{\gamma})^2\\
+   \end{array}  \right] \\
+\hat{C}&= \rho \hat{S}_k\hat{S}_k^T \\
+&=\rho\left[ \begin{array}{cc}
+   	a^2  & \frac{ab}{\gamma}\\
+    	\frac{ab}{\gamma}& (\frac{b}{\gamma})^2\\
+   \end{array}  \right] \\
+\hat{H}^{k+1}&=\hat{B}+\hat{C}
+\end{align*}
+The impotent thing to note about the above derivation, is that we almost, but not quite get the property (\ref{Ihessian_property}). The problem arises in $\hat{B}$, where multiple terms have the wrong factor of $\gamma$ multiplied with them. However, it turns out that this can be fixed by a slight change to to the formula, namely changing $H^0=I$, to:
+\begin{align*}
+	H^0 = \left[ \begin{array}{cc}
+   	1 & 0\\
+    	0& \frac{1}{\gamma^2}\\
+   \end{array}  \right]
+\end{align*}
+This would then give us 
+\begin{align*}
+\hat{B} &= (I-\rho_k\hat{S}_k\hat{Y}_k^T)H^0(I-\rho_k\hat{Y}_k\hat{S}_k^T)  \\
+&=\left[ \begin{array}{cc}
+   	(1-d_1)^2 + d_2^2& -\frac{d_3}{\gamma}(1-d_1) -\frac{d_2}{\gamma}(1-d_4)\\
+    	-\frac{d_3}{\gamma}(1-c1)-\frac{d_2}{\gamma}(1-d_4)& (\frac{1-d_4}{\gamma})^2 +(\frac{d_3}{\gamma})^2\\
+   \end{array}  \right] \\
+\end{align*}
+Now $\hat{H}^{k+1}=\hat{B}+\hat{C}$ will satisfy (\ref{Ihessian_property}). It would now be interesting to check if the changed initial inverted Hessian would have any impact on the performance of the scaled L-BFGS method. I have therefore, with this goal in mind redone the experiments for the scaled L-BFGS, with the changes proposed above. This yielded the following:
 \end{document}
