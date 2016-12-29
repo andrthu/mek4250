@@ -1,5 +1,6 @@
 from my_bfgs.lbfgs import Lbfgs
 from my_bfgs.my_vector import SimpleVector
+from my_bfgs.splitLbfgs import SplitLbfgs
 from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
@@ -126,6 +127,31 @@ class PararealOCP(OptimalControlProblem):
         #def pc(x):
             #return x
         return pc
+
+    def PPCLBFGSsolve(self,N,m,my_list,x0=None,options=None,split=True):
+        dt=float(self.T)/N
+        if x0==None:
+            x0 = np.zeros(N+m)
+        
+        result = []
+        PPC = self.PC_maker2(N,m,step=1)
+        for i in range(len(my_list)):
+        
+            J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
+
+            self.update_Lbfgs_options(options)
+            Lbfgsopt = self.Lbfgs_options
+
+            Solver = SplitLbfgs(J,d_J,x0,m=m,Hinit=None,
+                                options=Lbfgsopt,ppc=PPC)
+            res = Solver.normal_solve()
+            x0=res.x
+            result.append(res)
+        if len(result)==1:
+            return res
+        else:
+            return result
+        
 
     def PPCSDsolve(self,N,m,my_list,x0=None,options=None,split=True):
 

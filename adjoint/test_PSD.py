@@ -1,6 +1,7 @@
 from ODE_pararealOCP import PararealOCP
 from my_bfgs.lbfgs import Lbfgs
 from my_bfgs.my_vector import SimpleVector
+from my_bfgs.splitLbfgs import SplitLbfgs
 from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
