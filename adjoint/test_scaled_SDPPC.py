@@ -477,7 +477,7 @@ def mesh_resolution_and_scaling():
 
     data = pd.DataFrame(table,index=gamma)
     print data
-    data.to_latex('report/draft/optimization/mesh_res_and_scale_data.tex')
+    #data.to_latex('report/draft/optimization/mesh_res_and_scale_data.tex')
 if __name__ == '__main__':
     #test1()
     #test2()
