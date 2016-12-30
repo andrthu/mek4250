@@ -9,6 +9,7 @@ from optimalContolProblem import OptimalControlProblem,Problem3
 from scipy.integrate import trapz
 import matplotlib.pyplot as plt
 import time
+from panda_sort import NequalNum_sort
 import pandas as pd
 
 class Problem3(PararealOCP):
@@ -476,8 +477,9 @@ def mesh_resolution_and_scaling():
 
 
     data = pd.DataFrame(table,index=gamma)
-    print data
-    #data.to_latex('report/draft/optimization/mesh_res_and_scale_data.tex')
+    data2 = data.reindex_axis(NequalNum_sort(data.columns), axis=1)
+    print data2
+    data2.to_latex('report/draft/optimization/mesh_res_and_scale_data.tex')
 if __name__ == '__main__':
     #test1()
     #test2()

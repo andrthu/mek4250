@@ -118,15 +118,15 @@ It could also be interesting to look at what happens when we decrease $\Delta t$
 \\
 \begin{tabular}{llllll}
 \toprule
-{} & N=100(itr,$\gamma$,err) & N=1000(itr,$\gamma$,err) & N=200(itr,$\gamma$,err) & N=2000(itr,$\gamma$,err) & N=800(itr,$\gamma$,err) \\
+{} & N=100(itr,$\gamma$,err) & N=200(itr,$\gamma$,err) & N=800(itr,$\gamma$,err) & N=1000(itr,$\gamma$,err) & N=2000(itr,$\gamma$,err) \\
 \midrule
--- &               (41, --) &                (13, --) &               (16, --) &                (20, --) &               (11, --) \\
-1        &       (101, 0.01, 0.6) &       (101, 0.001, 1.4) &      (101, 0.005, 1.2) &      (101, 0.0005, 1.4) &    (101, 0.00125, 1.4) \\
-10       &         (26, 0.1, 0.4) &         (71, 0.01, 0.4) &        (26, 0.05, 0.4) &        (65, 0.005, 0.4) &      (63, 0.0125, 0.4) \\
-15       &        (48, 0.15, 0.4) &        (43, 0.015, 0.4) &       (39, 0.075, 0.4) &       (41, 0.0075, 0.4) &     (31, 0.01875, 0.4) \\
-20       &         (37, 0.2, 0.4) &         (26, 0.02, 0.4) &         (25, 0.1, 0.4) &         (26, 0.01, 0.4) &       (22, 0.025, 0.4) \\
-50       &         (83, 0.5, 0.4) &         (24, 0.05, 0.4) &        (64, 0.25, 0.4) &        (18, 0.025, 0.4) &      (24, 0.0625, 0.4) \\
-100      &        (101, 1.0, 0.6) &          (29, 0.1, 0.4) &        (101, 0.5, 0.5) &         (26, 0.05, 0.4) &       (39, 0.125, 0.4) \\
+ &               (41, --) &               (16, --) &               (11, --) &                (13, --) &                (20, --) \\
+1        &       (101, 0.01, 0.6) &      (101, 0.005, 1.2) &    (101, 0.00125, 1.4) &       (101, 0.001, 1.4) &      (101, 0.0005, 1.4) \\
+10       &         (26, 0.1, 0.4) &        (26, 0.05, 0.4) &      (63, 0.0125, 0.4) &         (71, 0.01, 0.4) &        (65, 0.005, 0.4) \\
+15       &        (48, 0.15, 0.4) &       (39, 0.075, 0.4) &     (31, 0.01875, 0.4) &        (43, 0.015, 0.4) &       (41, 0.0075, 0.4) \\
+20       &         (37, 0.2, 0.4) &         (25, 0.1, 0.4) &       (22, 0.025, 0.4) &         (26, 0.02, 0.4) &         (26, 0.01, 0.4) \\
+50       &         (83, 0.5, 0.4) &        (64, 0.25, 0.4) &      (24, 0.0625, 0.4) &         (24, 0.05, 0.4) &        (18, 0.025, 0.4) \\
+100      &        (101, 1.0, 0.6) &        (101, 0.5, 0.5) &       (39, 0.125, 0.4) &          (29, 0.1, 0.4) &         (26, 0.05, 0.4) \\
 \bottomrule
 \end{tabular}
 \section{L-BFGS}
@@ -290,6 +290,7 @@ Now $\hat{H}^{k+1}=\hat{B}+\hat{C}$ will satisfy (\ref{Ihessian_property}). The 
 10 &    0.128153 &           8 &      0.129299 &             9 \\
 \bottomrule
 \end{tabular}
+\\
 While L-BFGS without a scaled $H^0$ required a lot more iterations, to reach its tolerance, the L-BFGS with scaled $H^0$ performs either better or as good as the unscaled version. For this example we used the same $\gamma$ as before, namely:
 \begin{align*}
 \gamma = 20\frac{||\nabla J(v)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}
@@ -315,6 +316,7 @@ It might therefore be interesting to see what value of $\gamma$ that is optimal 
 50000.00 &      100.0000 &           51 &             39 \\
 \bottomrule
 \end{tabular}
+\\
 The important findings in the previous experiment, is that choosing $\gamma$ to be 
 \begin{align*}
 \gamma = \frac{||\nabla J(v)||_{\infty}}{||\nabla J(\Lambda)||_{\infty}}
