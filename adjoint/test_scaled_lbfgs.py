@@ -286,7 +286,7 @@ def scaled_initial_hessian():
     yT = 5
     alpha = 0.5
     N = 500
-    m = 5
+    m = 10
     mu = 10
     def J(u,y,yT,T,alp):
         t = np.linspace(0,T,len(u))
@@ -354,11 +354,11 @@ def scaled_initial_hessian():
     table2 = {'scaled iter':[],
              'unscaled iter':[],
              'scaled gamma':[],}
-    mu = 1
-    unscaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options={'maxiter':500,'mem_lim':1})
+    #mu = 100
+    unscaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options={'maxiter':500,'mem_lim':10})
     t = np.linspace(0,T,N+1)
     for i in range(len(gamma)):
-        opt = {'maxiter':100,'scale_factor':gamma[i],'mem_lim':1,'scale_hessian':True}
+        opt = {'maxiter':100,'scale_factor':gamma[i],'mem_lim':10,'scale_hessian':True}
 
 
         #unscaled_res =problem.penalty_solve(N,m,[mu],Lbfgs_options=opt)
@@ -378,10 +378,10 @@ def scaled_initial_hessian():
     
 
 
-    #data2 = pd.DataFrame(table2,index=gamma)
+    data2 = pd.DataFrame(table2,index=gamma)
     print data2
     #plt.show()
-    data2.to_latex('report/draft/optimization/hessian_change_gamma.tex')
+    #data2.to_latex('report/draft/optimization/hessian_change_gamma.tex')
     plt.plot(t,scaled_res['control'].array()[:N+1],'r--')
     plt.plot(t,unscaled_res['control'].array()[:N+1])
     plt.show()
