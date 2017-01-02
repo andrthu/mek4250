@@ -139,7 +139,7 @@ class SplitLbfgs(LbfgsParent):
             p = H.matvec(-df0)
 
             x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
-            print x
+            #print x
             df1=self.d_J(x).copy()
             
             s = x-x0

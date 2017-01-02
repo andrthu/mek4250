@@ -70,6 +70,17 @@ class PararealOCP(OptimalControlProblem):
         #pc = lambda x:x
         return pc
 
+    def PC_maker3(self,N,m,step=1):      
+
+        def pc(x):
+
+            lam_pc = self.PC_maker2(N,m,step)
+            lam = x.copy()[N+1:]
+            lam2 = lam_pc(lam)
+            x[N+1:]= lam2.copy()[:]
+            return x
+        return pc
+
     def adjoint_propogator(self,m,delta0,S):
 
         T = self.T
@@ -134,7 +145,7 @@ class PararealOCP(OptimalControlProblem):
             x0 = np.zeros(N+m)
         
         result = []
-        PPC = self.PC_maker2(N,m,step=1)
+        PPC = self.PC_maker3(N,m,step=1)
         for i in range(len(my_list)):
         
             J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
