@@ -8,9 +8,10 @@ from lbfgsOptimizationControl import LbfgsOptimizationControl
 
 class SplitLbfgs(LbfgsParent):
 
-    def __init__(self,J,d_J,x0,m=0,Hinit=None,options=None,ppc=None):
+    def __init__(self,J,d_J,x0,m=0,Hinit=None,options=None,ppc=None,scale=None):
 
-        LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options)
+        LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options,
+                             scale=scale)
 
         self.m = m
 
@@ -22,9 +23,10 @@ class SplitLbfgs(LbfgsParent):
             
             Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta)
         else:
-            Hessian = NumpyLimMemoryHessian(ppc,mem_lim,beta=beta,PPCH=True)
+            Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta,
+                                            PPCH=ppc)
         
-        self.data = LbfgsOptimizationControl(x0,J,d_J,Hessian)
+        self.data = LbfgsOptimizationControl(self.x0,self.J,self.d_J,Hessian)
 
     def do_linesearch(self,J,d_J,x,p):
         """

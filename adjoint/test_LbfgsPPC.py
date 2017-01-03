@@ -157,7 +157,7 @@ def compare_pc_and_nonpc_for_different_m():
     opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     for m in M[1:]:
 
-        pc_res = problem.PPCLBFGSsolve(N,m,[m*mu])
+        pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
 
         res2.append(pc_res)
@@ -197,3 +197,14 @@ if __name__ == '__main__':
     #test1()
     #test2()
     compare_pc_and_nonpc_for_different_m()
+"""
+  non-pc err non-pc itr non_penalty itr    pc err pc itr
+1          --         --               9        --     --
+2    0.233828         11              --  0.239326     14
+4    0.355793         15              --  0.354494     24
+8    0.421876         21              --  0.414708     29
+16   0.446987         60              --  0.444635     34
+32   0.448353        241              --  0.461264     32
+64   0.476104        452              --  0.456551     39
+
+"""

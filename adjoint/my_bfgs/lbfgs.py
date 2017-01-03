@@ -84,7 +84,14 @@ class LbfgsParent():
 
         J      = self.J
         grad_J = self.d_J
-        x0     = self.x0.array()
+
+        try:
+            x0 = self.x0.array()
+            my_vec = True
+        except AttributeError:
+            my_vec = False
+            x0 = self.x0
+
         m = scale['m']
         if scale.has_key('factor'):
             scaler = PenaltyScaler(J,grad_J,x0,m,
@@ -101,8 +108,10 @@ class LbfgsParent():
         grad_J_ = lambda x : scaler.grad(grad_J)(scaler.func_var(x))
         
         self.J = J_
-        
-        self.x0 = self.options['Vector'](y0)
+        if my_vec:
+            self.x0 = self.options['Vector'](y0)
+        else:
+            self.x0 = y0
         self.d_J = grad_J_
         self.scale = True
         if self.options['scale_hessian']==True:

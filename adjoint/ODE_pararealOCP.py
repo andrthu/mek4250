@@ -47,7 +47,7 @@ class PararealOCP(OptimalControlProblem):
         return v[-1]
 
     def PC_maker2(self,N,m,step=1):
-
+        #"""
         def pc(x):
             S = np.zeros(m+1)
             S[1:-1] = x.copy()[:]
@@ -66,7 +66,7 @@ class PararealOCP(OptimalControlProblem):
             #time.sleep(1)
             x[:]=S.copy()[1:-1]
             return x
-
+        #"""
         #pc = lambda x:x
         return pc
 
@@ -139,13 +139,17 @@ class PararealOCP(OptimalControlProblem):
             #return x
         return pc
 
-    def PPCLBFGSsolve(self,N,m,my_list,x0=None,options=None,split=True):
+    def PPCLBFGSsolve(self,N,m,my_list,x0=None,options=None,scale=False):
         dt=float(self.T)/N
         if x0==None:
             x0 = np.zeros(N+m)
         
         result = []
         PPC = self.PC_maker3(N,m,step=1)
+        if scale:
+            scaler = {'m':m,'factor':1}
+        else:
+            scaler = None
         for i in range(len(my_list)):
         
             J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
@@ -154,7 +158,7 @@ class PararealOCP(OptimalControlProblem):
             Lbfgsopt = self.Lbfgs_options
 
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
-                                options=Lbfgsopt,ppc=PPC)
+                                options=Lbfgsopt,ppc=PPC,scale=scaler)
             res = Solver.normal_solve()
             x0=res.x
             result.append(res)
