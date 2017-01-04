@@ -165,25 +165,25 @@ def compare_pc_and_nonpc_for_different_m():
              'non-pc itr'      : ['--'],
              'pc err'          : ['--'],
              'non-pc err'      : ['--'],
-             'non_penalty itr' : [res1['iteration']],}
+             'non-penalty itr' : [res1['iteration']],}
 
     table2 = {'pc itr'           : ['--'],
              'non-pc itr'        : ['--'],
              'scaled pc itr'     : ['--'],
              'scaled non-pc itr' : ['--'],
-             'non_penalty itr'   : [res1['iteration']],}
+             'non-penalty itr'   : [res1['iteration']],}
 
     t = np.linspace(0,T,N+1)
 
     res2 = []
     res3 = []
-    opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    opt = {'maxiter':500,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     for m in M[1:]:
 
         scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
         pc_res = problem.PPCLBFGSsolve(N,m,[m*mu])
-        nonpc_res = problem.penalty_solve(N,m,[m*mu])
+        nonpc_res = problem.penalty_solve(N,m,[m*mu])#,Lbfgs_options={'maxiter':200})
 
 
         res2.append(pc_res)
@@ -196,17 +196,26 @@ def compare_pc_and_nonpc_for_different_m():
         table['non-pc itr'].append(nonpc_res['iteration'])
         table['pc err'].append(err1)
         table['non-pc err'].append(err2)
-        table['non_penalty itr'].append('--')
+        table['non-penalty itr'].append('--')
         
         table2['pc itr'].append(pc_res.niter)
         table2['non-pc itr'].append(nonpc_res['iteration'])
         table2['scaled pc itr'].append(scaled_pc_res.niter)
         table2['scaled non-pc itr'].append(scaled_nonpc_res['iteration'])
-        table2['non_penalty itr'].append('--')
+        table2['non-penalty itr'].append('--')
     data = pd.DataFrame(table,index=M)
-    #print data
+    Order1 = ['non-penalty itr','non-pc itr','non-pc err','pc itr','pc err']
+    data11 = data.reindex_axis(Order1, axis=1)
+    print data11
+    data11.to_latex('report/draft/parareal/pc_itr_err.tex')
+    
     data2 = pd.DataFrame(table2,index=M)
-    print data2
+    Order = ['non-penalty itr','non-pc itr','scaled non-pc itr','pc itr','scaled pc itr']
+    data3 = data2.reindex_axis(Order, axis=1)
+    print data3
+    data3.to_latex('report/draft/parareal/scaled_nonScaled_iterations.tex')
+
+
     plt.figure()
     plt.plot(t,res1['control'].array(),'r--')
     for i in range(len(res2)):
@@ -223,12 +232,12 @@ def compare_pc_and_nonpc_for_different_m():
     plt.title('non-pc control')
     plt.show()
                 
-
+    
     
 
 if __name__ == '__main__':
     #test1()
     #test2()
-    test3()
-    #compare_pc_and_nonpc_for_different_m()
+    #test3()
+    compare_pc_and_nonpc_for_different_m()
 

@@ -7,7 +7,8 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
- 
+\usepackage{booktabs}
+
 \usepackage{cite}
 
 
@@ -602,6 +603,53 @@ We want to introduce the preconditioner (\ref{PC}) into the above update as we d
 H^{k+1} &= (I-\rho_kS_kY_k^T)H^k(I-\rho_kY_kS_k^T) + S_kS_k^T
 \end{align*}
 With some initial approximation $H^0$, typically set to identity. To incorporate (\ref{PC}), we simply set $H_Q=QH^0$ to be our initial approximation of the inverse Hessian.
+\section{Testing preconditioner on steepest descent solver}
+For steepest descent we used the problem (\ref{example1_func}-\ref{example1_ODE}) to test the preconditioner. Since this problem is very easily solved when using LBFGS, I will complicate things slightly to make the LBFGS example more interesting. The change I do, is simply just to increase the exponent on the end state difference from 2 to 4. The problem then reads:
+\begin{align}
+J(y(v),v)=\int_0^T v(t)^2 dt + \frac{1}{4}(y(T)-y_T)^4 \label{example2_func}
+\end{align} 
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		y'(t) - ay(t) = v(t) \ 	\textit{For $t \in [0,1]$} \\
+		y(0)=y_0
+	\end{array}
+   \right. \label{example2_ODE}
+\end{align}
+I want to solve (\ref{example2_func}-\ref{example2_ODE}) using LBFGS with and without the parareal preconditioner, for different numbers of time-decompositions, and memory 10. I choose the following parameters $(y_0,y_T,a,T,\Delta t)=(3.2,1.5,1,0.9,\frac{1}{800})$ for problem (\ref{example2_func}-\ref{example2_ODE}). Since the point of this example is to compare LBFGS with and without parareal preconditioner, I only solve the penalty problem for one $\mu$ value. I do however choose the $\mu$ values in relation to the number of time intervals $N$ ($\mu=5N$), so that the solution stays roughly the same. The table below shows the number of iterations required to solve the problem for the different solvers and time-decompositions, and the $L^2$ difference between the control solution of the non-penalty and the penalty control solutions:
+\\
+\\
+\begin{tabular}{llllll}
+\toprule
+{} N & non-penalty itr & non-pc itr & non-pc err & pc itr &    pc err \\
+\midrule
+1  &               9 &         -- &         -- &     -- &        -- \\
+2  &              -- &         12 &   0.230342 &     12 &  0.230342 \\
+4  &              -- &         17 &   0.352607 &     18 &  0.350905 \\
+8  &              -- &         25 &   0.415344 &     22 &  0.415356 \\
+16 &              -- &         67 &   0.447252 &     26 &   0.44685 \\
+32 &              -- &        501 &   0.462781 &     18 &  0.462638 \\
+64 &              -- &        501 &   0.477298 &     31 &  0.464469 \\
+\bottomrule
+\end{tabular}
+\\
+\\
+We can improve the performance of the LBFGS by scaling, and I think it is interesting to see what the iteration counts for the above problem are when we scale both the preconditioned and unpreconditioned penalty methods. The scaled solvers yielded the following iterations:
+\\
+\\
+\begin{tabular}{llllll}
+\toprule
+{} N & non-penalty itr & non-pc itr & scaled non-pc itr & pc itr & scaled pc itr \\
+\midrule
+1  &               9 &         -- &                -- &     -- &            -- \\
+2  &              -- &         12 &                11 &     12 &            11 \\
+4  &              -- &         17 &                15 &     18 &            17 \\
+8  &              -- &         25 &                21 &     22 &            19 \\
+16 &              -- &         67 &                60 &     26 &            18 \\
+32 &              -- &        501 &               241 &     18 &            13 \\
+64 &              -- &        501 &               452 &     31 &            22 \\
+\bottomrule
+\end{tabular}  
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
