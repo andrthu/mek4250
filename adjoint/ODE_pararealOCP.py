@@ -167,6 +167,33 @@ class PararealOCP(OptimalControlProblem):
         else:
             return result
         
+    def PPCLBFGSsolve2(self,N,m,my_list,x0=None,options=None,scale=False):
+        dt=float(self.T)/N
+        if x0==None:
+            x0 = SimpleVector(np.zeros(N+m))
+        
+        result = []
+        PPC = self.PC_maker3(N,m,step=1)
+        if scale:
+            scaler = {'m':m,'factor':1}
+        else:
+            scaler = None
+        for i in range(len(my_list)):
+        
+            J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
+
+            self.update_Lbfgs_options(options)
+            Lbfgsopt = self.Lbfgs_options
+
+            Solver = Lbfgs(J,grad_J,x0,Hinit=None,
+                           options=Lbfgsopt,pc=PPC,scale=scaler)
+            res = Solver.solve()
+            x0=res['control']
+            result.append(res)
+        if len(result)==1:
+            return res
+        else:
+            return result
 
     def PPCSDsolve(self,N,m,my_list,x0=None,options=None,split=True):
 

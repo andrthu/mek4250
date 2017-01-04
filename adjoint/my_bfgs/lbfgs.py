@@ -284,7 +284,8 @@ class Lbfgs(LbfgsParent):
         return H.matvec(-grad)
 
     def pc_direction(self,grad,H):
-        return H.matvec(-self.Vec(self.pc(grad.array())))
+        Vec = self.options['Vector']
+        return -Vec(self.pc(H.matvec(grad).array()))
     
     def solve(self):
         """

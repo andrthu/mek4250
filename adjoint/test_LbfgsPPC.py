@@ -124,6 +124,24 @@ def non_lin_problem(y0,yT,T,a,p):
 
     return problem
 
+def test3():
+
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 4
+
+
+    
+    problem = non_lin_problem(y0,yT,T,a,p)
+    N = 800
+    m = 3
+    res1 = problem.solve(N)
+    
+    res3 = problem.penalty_solve(N,m,[100])
+    res2 = problem.PPCLBFGSsolve2(N,m,[100])
+    print res1['iteration'],res2['iteration'],res3['iteration']
 
 def compare_pc_and_nonpc_for_different_m():
 
@@ -149,6 +167,11 @@ def compare_pc_and_nonpc_for_different_m():
              'non-pc err'      : ['--'],
              'non_penalty itr' : [res1['iteration']],}
 
+    table2 = {'pc itr'           : ['--'],
+             'non-pc itr'        : ['--'],
+             'scaled pc itr'     : ['--'],
+             'scaled non-pc itr' : ['--'],
+             'non_penalty itr'   : [res1['iteration']],}
 
     t = np.linspace(0,T,N+1)
 
@@ -157,8 +180,11 @@ def compare_pc_and_nonpc_for_different_m():
     opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     for m in M[1:]:
 
-        pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
-        nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
+        scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
+        scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
+        pc_res = problem.PPCLBFGSsolve(N,m,[m*mu])
+        nonpc_res = problem.penalty_solve(N,m,[m*mu])
+
 
         res2.append(pc_res)
         res3.append(nonpc_res)
@@ -171,16 +197,22 @@ def compare_pc_and_nonpc_for_different_m():
         table['pc err'].append(err1)
         table['non-pc err'].append(err2)
         table['non_penalty itr'].append('--')
-
-
+        
+        table2['pc itr'].append(pc_res.niter)
+        table2['non-pc itr'].append(nonpc_res['iteration'])
+        table2['scaled pc itr'].append(scaled_pc_res.niter)
+        table2['scaled non-pc itr'].append(scaled_nonpc_res['iteration'])
+        table2['non_penalty itr'].append('--')
     data = pd.DataFrame(table,index=M)
-    print data
-
+    #print data
+    data2 = pd.DataFrame(table2,index=M)
+    print data2
     plt.figure()
     plt.plot(t,res1['control'].array(),'r--')
     for i in range(len(res2)):
         plt.plot(t,res2[i].x[:N+1])
     plt.legend(M,loc=4)
+    plt.title('pc control')
     plt.show()
     
     plt.figure()
@@ -188,6 +220,7 @@ def compare_pc_and_nonpc_for_different_m():
     for i in range(len(res2)):
         plt.plot(t,res3[i]['control'].array()[:N+1])
     plt.legend(M,loc=4)
+    plt.title('non-pc control')
     plt.show()
                 
 
@@ -196,15 +229,6 @@ def compare_pc_and_nonpc_for_different_m():
 if __name__ == '__main__':
     #test1()
     #test2()
-    compare_pc_and_nonpc_for_different_m()
-"""
-  non-pc err non-pc itr non_penalty itr    pc err pc itr
-1          --         --               9        --     --
-2    0.233828         11              --  0.239326     14
-4    0.355793         15              --  0.354494     24
-8    0.421876         21              --  0.414708     29
-16   0.446987         60              --  0.444635     34
-32   0.448353        241              --  0.461264     32
-64   0.476104        452              --  0.456551     39
+    test3()
+    #compare_pc_and_nonpc_for_different_m()
 
-"""

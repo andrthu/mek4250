@@ -592,6 +592,16 @@ In this test I want to look at what happens when we increase the number of subin
     $N=64$ & 0.0203 & 52& [1, 101, 201, 301]	&0.8125\\ \hline
     \end{tabular}
 \end{center}
+\section{Preconditioning the LBFGS-solver}
+The LBFGS iteration for our time-partitioned control problem is given by:
+\begin{align}
+(v^{k+1},\Lambda^{k+1})= (v^{k},\Lambda^{k}) - \rho H^k\nabla\hat{J}(v^{k},\Lambda^{k}) \label{lbfgs_itr}
+\end{align}
+We want to introduce the preconditioner (\ref{PC}) into the above update as we did for steepest descent. I do this by incorporating (\ref{PC}) into the approximation of the inverted Hessian $H^k$. Remember that $H^k$ is defined using the the following update formula: 
+\begin{align*}
+H^{k+1} &= (I-\rho_kS_kY_k^T)H^k(I-\rho_kY_kS_k^T) + S_kS_k^T
+\end{align*}
+With some initial approximation $H^0$, typically set to identity. To incorporate (\ref{PC}), we simply set $H_Q=QH^0$ to be our initial approximation of the inverse Hessian.
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}
