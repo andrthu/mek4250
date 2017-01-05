@@ -124,7 +124,7 @@ class LbfgsParent():
         N = self.scaler.N
         gamma=self.scaler.gamma
         y = x.array()
-        y[N+1:] = y[N+1:]*gamma
+        y[N+1:] = y[N+1:].copy()*gamma
         return self.options['Vector'](y)
         
     def default_options(self):

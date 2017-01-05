@@ -160,7 +160,12 @@ class PararealOCP(OptimalControlProblem):
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
                                 options=Lbfgsopt,ppc=PPC,scale=scaler)
             res = Solver.normal_solve()
+            
+            if scale:
+                res.rescale()
             x0=res.x
+            
+                
             result.append(res)
         if len(result)==1:
             return res

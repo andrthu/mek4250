@@ -106,18 +106,31 @@ def test2():
     plt.plot(t,res2.x[:N+1])
     plt.show()
 
-def non_lin_problem(y0,yT,T,a,p):
+def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
+    
+    if func==None:
+        def J(u,y,yT,T,power):
+            t = np.linspace(0,T,len(u))
 
-    def J(u,y,yT,T,power):
-        t = np.linspace(0,T,len(u))
+            I = trapz((u-c)**2,t)
 
-        I = trapz(u**2,t)
+            return 0.5*I + (1./power)*(y-yT)**power
 
-        return 0.5*I + (1./power)*(y-yT)**power
-
-    def grad_J(u,p,dt):
+        def grad_J(u,p,dt):
         
-        return dt*(u+p)
+            return dt*(u-c+p)
+    else:
+        def J(u,y,yT,T,power):
+            t = np.linspace(0,T,len(u))
+
+            I = trapz((u-func(t))**2,t)
+
+            return 0.5*I + (1./power)*(y-yT)**power
+
+        def grad_J(u,p,dt):
+            t = np.linspace(0,T,len(u))
+            return dt*(u-func(t)+p)
+
 
 
     problem = GeneralPowerEndTermPCP(y0,yT,T,a,p,J,grad_J)
@@ -207,13 +220,13 @@ def compare_pc_and_nonpc_for_different_m():
     Order1 = ['non-penalty itr','non-pc itr','non-pc err','pc itr','pc err']
     data11 = data.reindex_axis(Order1, axis=1)
     print data11
-    data11.to_latex('report/draft/parareal/pc_itr_err.tex')
+    #data11.to_latex('report/draft/parareal/pc_itr_err.tex')
     
     data2 = pd.DataFrame(table2,index=M)
     Order = ['non-penalty itr','non-pc itr','scaled non-pc itr','pc itr','scaled pc itr']
     data3 = data2.reindex_axis(Order, axis=1)
     print data3
-    data3.to_latex('report/draft/parareal/scaled_nonScaled_iterations.tex')
+    #data3.to_latex('report/draft/parareal/scaled_nonScaled_iterations.tex')
 
 
     plt.figure()
@@ -233,11 +246,75 @@ def compare_pc_and_nonpc_for_different_m():
     plt.show()
                 
     
+def pre_choosen_mu_test():
+
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 4
+    c = 0.5
+
     
+    problem = non_lin_problem(y0,yT,T,a,p,c=c)
+    N = 800
+    m = 16
+    
+    t = np.linspace(0,T,N+1)
+    opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+
+    """
+    res1=problem.solve(N)
+    
+    
+    
+    res2=problem.PPCLBFGSsolve(N,m,[1,500],options=opt,scale=True)
+    res3=problem.penalty_solve(N,m,[1,500],Lbfgs_options=opt,scale=True)
+    print res1['iteration']
+    plt.figure()
+    plt.plot(t,res1['control'].array(),'r--')
+    try:
+        for i in range(len(res2)):
+            print res2[i].niter,res3[i]['iteration']
+            plt.plot(t,res2[i].x[:N+1])
+            plt.plot(t,res3[i]['control'].array()[:N+1],ls='-.')
+        plt.show()
+    
+        plt.figure()
+        for i in range(len(res2)):
+            plt.plot(res2[i]['control'].array()[N+1:])
+        plt.show()
+    except:
+        print res2.niter,res3['iteration']
+        plt.plot(t,res2.x[:N+1])
+        plt.plot(t,res3['control'].array()[:N+1],ls='-.')
+        plt.show()
+    
+        plt.figure()
+        
+        plt.plot(res2['control'].array()[N+1:])
+        plt.show()
+    """
+
+    problem2 = non_lin_problem(y0,yT,T,a,p,func=lambda x : np.sin(np.pi*4*x))
+
+    res2_1=problem2.solve(N)
+
+    res2_2=problem2.PPCLBFGSsolve(N,m,[1,500],options=opt,scale=True)
+    print res2_1['iteration']
+    plt.figure()
+    plt.plot(t,res2_1['control'].array(),'r--')
+    for i in range(len(res2_2)):
+        print res2_2[i].niter
+        plt.plot(t,res2_2[i].x[:N+1])
+
+    plt.show()
+
+
 
 if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    compare_pc_and_nonpc_for_different_m()
-
+    #compare_pc_and_nonpc_for_different_m()
+    pre_choosen_mu_test()

@@ -26,7 +26,7 @@ class SplitLbfgs(LbfgsParent):
             Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta,
                                             PPCH=ppc)
         
-        self.data = LbfgsOptimizationControl(self.x0,self.J,self.d_J,Hessian)
+        self.data = LbfgsOptimizationControl(self.x0,self.J,self.d_J,Hessian,scaler=self.scaler)
 
     def do_linesearch(self,J,d_J,x,p):
         """
