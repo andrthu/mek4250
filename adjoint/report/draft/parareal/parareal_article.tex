@@ -532,7 +532,7 @@ Looking at the table we see that while the unpreconditioned penalty method requi
 \\
 \textbf{Parareal preconditioned penalty method for $N=10$}
 \\
-In this example, I solve the control problem (\ref{example1_func}-\ref{example1_ODE}) using $(T,\alpha,y_T,a,y_0)=(1,\frac{1}{2},5,0.9,1.2)$, and I use the implicit Euler scheme on the differential equations, with $\Delta t=\frac{1}{500}$. I then decompose the time interval $I=[0,1]$ into $N=10$ subintervals. To make it simple, I will also chose a sequence of $\mu$-values for my penalty iterations. The results are given in plots and tables below. 
+In this example, I solve the control problem (\ref{example1_func}-\ref{example1_ODE}) using $(T,\alpha,y_T,a,y_0)=(1,\frac{1}{2},5,0.9,1.2)$, and I use the implicit Euler scheme on the differential equations, with $\Delta t=\frac{1}{500}$. I then decompose the time interval $I=[0,1]$ into $N=10$ subintervals. To make it simple, I will also choose a sequence of $\mu$-values for my penalty iterations. The results are given in plots and tables below. 
  \begin{center}
     \begin{tabular}{| l | l | l | l |}
     \hline
@@ -650,6 +650,28 @@ We can improve the performance of the LBFGS by scaling, and I think it is intere
 64 &              -- &        501 &               452 &     31 &            22 \\
 \bottomrule
 \end{tabular}  
+\\
+\\
+Looking at the tables above we see that using the LBFGS solver using the parareal preconditioner as initial inverse Hessian approximation generally performs better than or as good the solver that does not, even though we observe a slightly increased iteration count for the $N=4$ case. We also see the same pattern as we did for steepest descent, namely that increasing $N$ yields lower, equal or slightly higher iteration count for parareal solver, while the opposite is true for the unaltered LBFGS solver, i.e increased $N$ results in higher iteration count. The second table shows that scaling improves both solvers, and that the improvement generally is greater for the cases where the unscaled iteration count is high.
+\\
+\\
+In the previous experiments I only did one penalty iteration, and also did not focus on the difference between the penalty and non-penalty solutions. Lets now look at some examples, where we let $N$ be constant and manually chose a sequence of $\mu$s, in an attempt to reach the non-penalty solution using the time-decomposed penalty solver. For this experiment I will solve problem (\ref{example2_func}-\ref{example2_ODE}) using parameters $(y_0,y_T,a,T,\Delta t,N)=(3.2,1.5,1,0.9,\frac{1}{800},16)$, but withe a slightly changed functional (\ref{example2_func}):
+\begin{align*}
+J(y(v),v)=\int_0^T (v(t)-\frac{1}{2})^2 dt + \frac{1}{4}(y(T)-y_T)^4
+\end{align*}  
+The results follows in the table below:
+\\
+\\
+\begin{tabular}{llllll}
+\toprule
+{} $\mu$& non-penalty itr & penalty itr & ppc itr & penalty err &    ppc err \\
+\midrule
+0     &              17 &          -- &      -- &          -- &         -- \\
+1     &              -- &          32 &      13 &     3.22563 &    3.21535 \\
+500   &              -- &         102 &      19 &    0.100999 &   0.104676 \\
+10000 &              -- &          78 &       9 &   0.0297467 &  0.0388207 \\
+\bottomrule
+\end{tabular}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}

@@ -263,13 +263,18 @@ def pre_choosen_mu_test():
     t = np.linspace(0,T,N+1)
     opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
 
-    """
+    #"""
     res1=problem.solve(N)
     
-    
-    
-    res2=problem.PPCLBFGSsolve(N,m,[1,500],options=opt,scale=True)
-    res3=problem.penalty_solve(N,m,[1,500],Lbfgs_options=opt,scale=True)
+    c_table = {'non-penalty itr' : [res1['iteration']],
+               'ppc itr'         : ['--'],
+               'penalty itr'     : ['--'],
+               'penalty err'     : ['--'],
+               'ppc err'         : ['--'],} 
+    order1 = ['non-penalty itr','penalty itr','ppc itr','penalty err','ppc err']
+    c_mu_list = [1,500,10000]
+    res2=problem.PPCLBFGSsolve(N,m,c_mu_list,options=opt,scale=True)
+    res3=problem.penalty_solve(N,m,c_mu_list,Lbfgs_options=opt,scale=True)
     print res1['iteration']
     plt.figure()
     plt.plot(t,res1['control'].array(),'r--')
@@ -278,13 +283,26 @@ def pre_choosen_mu_test():
             print res2[i].niter,res3[i]['iteration']
             plt.plot(t,res2[i].x[:N+1])
             plt.plot(t,res3[i]['control'].array()[:N+1],ls='-.')
-        plt.show()
+            
+            err1 = l2_diff_norm(res1['control'].array(),res3[i]['control'].array()[:N+1],t)
+            err2 = l2_diff_norm(res1['control'].array(),res2[i].x[:N+1],t)
+            
+            c_table['non-penalty itr'].append('--')
+            c_table['penalty itr'].append(res3[i]['iteration'])
+            c_table['ppc itr'].append(res2[i].niter)
+            c_table['penalty err'].append(err1)
+            c_table['ppc err'].append(err2)
+
+        c_data = pd.DataFrame(c_table,index=[0]+c_mu_list)
+        c_data = c_data.reindex_axis(order1, axis=1)
+        #print c_data
+        #plt.show()
     
         plt.figure()
         for i in range(len(res2)):
             plt.plot(res2[i]['control'].array()[N+1:])
-        plt.show()
-    except:
+        #plt.show()
+    except TypeError:
         print res2.niter,res3['iteration']
         plt.plot(t,res2.x[:N+1])
         plt.plot(t,res3['control'].array()[:N+1],ls='-.')
@@ -294,20 +312,46 @@ def pre_choosen_mu_test():
         
         plt.plot(res2['control'].array()[N+1:])
         plt.show()
-    """
+    #"""
 
     problem2 = non_lin_problem(y0,yT,T,a,p,func=lambda x : np.sin(np.pi*4*x))
 
     res2_1=problem2.solve(N)
+    sin_mu_list=[1,500,10000,100000,1000000]
+    m=16
+    res2_2=problem2.PPCLBFGSsolve(N,m,sin_mu_list,options=opt,scale=True)
 
-    res2_2=problem2.PPCLBFGSsolve(N,m,[1,500],options=opt,scale=True)
+    sin_table = {'Penalty iterations'    : ['--'],
+                 '||v_mu-v||_L2'         : ['--'],
+                 'Non-penalty iterations': [res2_1['iteration']],}
     print res2_1['iteration']
     plt.figure()
     plt.plot(t,res2_1['control'].array(),'r--')
-    for i in range(len(res2_2)):
-        print res2_2[i].niter
+    leg = []
+    for i in range(len(res2_2)):        
+        err = l2_diff_norm(res2_1['control'].array(),res2_2[i].x[:N+1],t)
+        print res2_2[i].niter,err
         plt.plot(t,res2_2[i].x[:N+1])
 
+        sin_table['Penalty iterations'].append(res2_2[i].niter)
+        sin_table['||v_mu-v||_L2'].append(err)
+        sin_table['Non-penalty iterations'].append('--')
+        
+        leg.append('mu='+str(sin_mu_list[i]))
+
+    sin_data = pd.DataFrame(sin_table,index=[0]+sin_mu_list)
+    Order = ['Non-penalty iterations','Penalty iterations','||v_mu-v||_L2']
+    sin_data = sin_data.reindex_axis(Order, axis=1)
+    print c_data
+    print sin_data
+    
+    c_data.to_latex('report/draft/parareal/c_self_choise_mu.tex')
+    sin_data.to_latex('report/draft/parareal/sin_self_choise_mu.tex')
+    
+    plt.title('Control solutions of optimization problem')
+    plt.xlabel('t')
+    plt.ylabel('Control')
+    plt.legend(['non-penalty']+leg,loc=2)
     plt.show()
 
 
