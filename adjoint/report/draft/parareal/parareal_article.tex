@@ -598,11 +598,19 @@ The LBFGS iteration for our time-partitioned control problem is given by:
 \begin{align}
 (v^{k+1},\Lambda^{k+1})= (v^{k},\Lambda^{k}) - \rho H^k\nabla\hat{J}(v^{k},\Lambda^{k}) \label{lbfgs_itr}
 \end{align}
-We want to introduce the preconditioner (\ref{PC}) into the above update as we did for steepest descent. I do this by incorporating (\ref{PC}) into the approximation of the inverted Hessian $H^k$. Remember that $H^k$ is defined using the the following update formula: 
+We want to introduce the preconditioner (\ref{PC}) into the above update as we did for steepest descent. The most tempting way of doing this, is to repeat what we did for the steepest descent method, and insert the parareal preconditioner $Q$ into (\ref{lbfgs_itr}) in the following way:
+\begin{align}
+(v^{k+1},\Lambda^{k+1})= (v^{k},\Lambda^{k}) - \rho QH^k\nabla\hat{J}(v^{k},\Lambda^{k}) 
+\end{align}
+However, since both $H^k$ and $Q$ are approximating the Hessian, the above expression is problematic, since we do not want to apply the Hessian twice. What we instead do, is to incorporate (\ref{PC}) into $H^k$. Before we explain how, lets remember that $H^k$ is defined using the the following update formula: 
 \begin{align*}
 H^{k+1} &= (I-\rho_kS_kY_k^T)H^k(I-\rho_kY_kS_k^T) + S_kS_k^T
 \end{align*}
-With some initial approximation $H^0$, typically set to identity. To incorporate (\ref{PC}), we simply set $H_Q=QH^0$ to be our initial approximation of the inverse Hessian.
+With some initial approximation $H^0$, typically set to identity. We can then meld $H^k$ and $Q$ together, by simply setting $H_Q=QH^0$ to be our initial approximation to the inverse Hessian, i.e we replace $H^k$ in (\ref{lbfgs_itr}) with $H_Q^k$ defined as:
+\begin{align*}
+H_Q^1 &=(I-\rho_kS_kY_k^T)H_Q(I-\rho_kY_kS_k^T) + S_kS_k^T \\
+H_Q^{k+1} &= (I-\rho_kS_kY_k^T)H_Q^k(I-\rho_kY_kS_k^T) + S_kS_k^T
+\end{align*}
 \section{Testing preconditioner on steepest descent solver}
 For steepest descent we used the problem (\ref{example1_func}-\ref{example1_ODE}) to test the preconditioner. Since this problem is very easily solved when using LBFGS, I will complicate things slightly to make the LBFGS example more interesting. The change I do, is simply just to increase the exponent on the end state difference from 2 to 4. The problem then reads:
 \begin{align}

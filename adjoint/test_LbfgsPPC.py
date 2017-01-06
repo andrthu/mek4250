@@ -383,10 +383,63 @@ def test4():
 
     
 
+def test_adaptive_ppc():
+
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 4
+    c = 0.5
+
+    
+    problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : np.sin(np.pi*4*x))
+
+    opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    N = 1000
+
+    M = [1,2,4,8,16,32,64]
+
+    res1 = problem.solve(N)
+
+    table = {'mu itr'        : ['--'],
+             'tot lbfgs itr' : [res1['iteration']],
+             'L2 error'      : ['--'],
+             'mu vals'       : ['--'],
+             'itrs'          : ['--'],}
+    
+    t = np.linspace(0,T,N+1)
+    plt.plot(t,res1['control'].array(),'r--')
+    for m in M[1:]:
+        
+        PPCpenalty_res = problem.PPCLBFGSadaptive_solve(N,m,options=opt,scale=True)
+
+        s = 0
+        mu_val = []
+        itrs = []
+        for i in range(len(PPCpenalty_res)):
+            s += PPCpenalty_res[i].niter
+            mu_val.append(PPCpenalty_res[i].mu)
+            itrs.append(PPCpenalty_res[i].niter)
+        err = l2_diff_norm(res1['control'].array(),PPCpenalty_res[-1].x[:N+1],t)
+
+        table['mu itr'].append(len(PPCpenalty_res))
+        table['tot lbfgs itr'].append(s)
+        table['L2 error'].append(err)
+        table['mu vals'].append(tuple(mu_val))
+        table['itrs'].append(tuple(itrs))
+
+        plt.plot(t,PPCpenalty_res[-1].x[:N+1])
+    plt.legend(M,loc=4)
+    
+    data = pd.DataFrame(table,index=M)
+    print data
+    plt.show()
 if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
     #compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
-    test4()
+    #test4()
+    test_adaptive_ppc()

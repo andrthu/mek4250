@@ -156,7 +156,7 @@ class OptimalControlProblem():
 
 
     def adaptive_mu_update(self,mu,dt,m,last_iter):
-        return 10*m*mu
+        return 5*m*mu
 
     def adaptive_stop_condition(self,mu,dt,m):
 

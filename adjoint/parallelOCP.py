@@ -4,6 +4,7 @@ from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
 import numpy as np
+import time
 
 from mpi4py import MPI
 from optimalContolProblem import OptimalControlProblem, Problem1
@@ -329,33 +330,45 @@ if __name__ == "__main__":
         return S
 
     
-
+    
     problem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J=parallel_J)
+    
 
     comm = problem.comm
 
     m = comm.Get_size()
     rank = comm.Get_rank()
-    N = 100
+    N = 100000
     
     u = np.zeros(N+m)
-    u[:N+1] = 100*np.linspace(0,T,N+1)                    
+    u[:N+1] = 100*np.linspace(0,T,N+1) 
+    
     non_parallel = Problem1(y0,yT,T,a,J,grad_J)
     
-    print non_parallel.Penalty_Functional(u,N,m,1)
+    t0 = time.time()
+    a = non_parallel.Penalty_Functional(u,N,m,1)
+    t1 = time.time()
+    #print 'time: ',t1-t0,'val: ',a,rank
 
+    t2 = time.time()
+   
+    #print L
+    b=problem.parallel_penalty_functional(u,N,1)
+    t3 = time.time()
+    #print 'time: ',t3-t2,'val: ', b,rank
+    
+    print (t1-t0)/(t3-t2),rank
+
+    """
     y,Y,y_list=problem.parallel_ODE_penalty_solver(u,N,m)
-
+    
     
     l,L,l_list = problem.parallel_adjoint_penalty_solver(u,N,m,1)
-    #print L
-    print problem.parallel_penalty_functional(u,N,1)
-
     g = problem.penalty_grad(u,N,m,1)
     if rank==0:
         #print g
         print Y[-1]
-    """
+    
     t = np.linspace(1,2,100)
     l=[]
     for i in range(3):
