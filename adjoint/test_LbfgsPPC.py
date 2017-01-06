@@ -355,10 +355,38 @@ def pre_choosen_mu_test():
     plt.show()
 
 
+def test4():
+    
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 4
+    
+    problem = non_lin_problem(y0,yT,T,a,p)
+    N = 1000
+    m = 64
+
+    t = np.linspace(0,T,N+1)
+
+    opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+
+    res1=problem.solve(N)
+    res2=problem.PPCLBFGSadaptive_solve(N,m,mu0=1,options=opt,scale=True)
+    print res1['iteration']
+    plt.plot(t,res1['control'].array(),'r--')
+    for i in range(len(res2)):
+        print res2[i].niter,i,res2[i].mu
+        plt.plot(t,res2[i].x[:N+1])
+
+    plt.show()
+
+    
 
 if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
     #compare_pc_and_nonpc_for_different_m()
-    pre_choosen_mu_test()
+    #pre_choosen_mu_test()
+    test4()

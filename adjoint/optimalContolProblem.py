@@ -153,6 +153,17 @@ class OptimalControlProblem():
         Same as above, when we use augmented Lagrange
         """
         return self.initial_penalty(y,u,my,N,i) + G[i]
+
+
+    def adaptive_mu_update(self,mu,dt,m,last_iter):
+        return 10*m*mu
+
+    def adaptive_stop_condition(self,mu,dt,m):
+
+        return mu<self.adaptive_stop_formula(mu,dt,m)
+
+    def adaptive_stop_formula(self,mu,dt,m):
+        return 1./dt
     
     def ODE_solver(self,u,N,y0=None):
         """

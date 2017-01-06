@@ -17,6 +17,7 @@ class LbfgsOptimizationControl():
         self.H2 = H2
         self.scaler = scaler
         #self.vec = vec
+        self.mu = None
 
         self.niter = 0
         
@@ -57,6 +58,9 @@ class LbfgsOptimizationControl():
         self.J_func = self.scaler.old_J
         self.grad_J = self.scaler.old_grad
         
+
+    def add_mu(self,mu):
+        self.mu = mu
         
 
 

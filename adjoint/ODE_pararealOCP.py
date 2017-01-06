@@ -171,7 +171,43 @@ class PararealOCP(OptimalControlProblem):
             return res
         else:
             return result
+
+    def PPCLBFGSadaptive_solve(self,N,m,mu0=1,x0=None,options=None,scale=False):
+        dt=float(self.T)/N
+        if x0==None:
+            x0 = np.zeros(N+m)
         
+        result = []
+        PPC = self.PC_maker3(N,m,step=1)
+        if scale:
+            scaler = {'m':m,'factor':1}
+        else:
+            scaler = None
+        mu = mu0
+        while self.adaptive_stop_condition(mu0,dt,m): ###### OBS!!! ######
+        
+            J,grad_J = self.generate_reduced_penalty(dt,N,m,mu)
+
+            self.update_Lbfgs_options(options)
+            Lbfgsopt = self.Lbfgs_options
+
+            Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
+                                options=Lbfgsopt,ppc=PPC,scale=scaler)
+            res = Solver.normal_solve()
+            
+            if scale:
+                res.rescale()
+            x0=res.x
+            res.add_mu(mu)
+                
+            result.append(res)
+            mu0=mu
+            mu = self.adaptive_mu_update(mu,dt,m,res.niter) ###### OBS!!! ######
+        
+        return result
+
+
+
     def PPCLBFGSsolve2(self,N,m,my_list,x0=None,options=None,scale=False):
         dt=float(self.T)/N
         if x0==None:
