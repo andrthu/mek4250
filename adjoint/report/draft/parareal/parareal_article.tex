@@ -672,6 +672,32 @@ The results follows in the table below:
 10000 &              -- &          78 &       9 &   0.0297467 &  0.0388207 \\
 \bottomrule
 \end{tabular}
+\\
+\\
+A second example with pre-chosen $\mu$-sequence, and with the same parameters $(y_0,y_T,a,T,\Delta t,N)=(3.2,1.5,1,0.9,\frac{1}{800},16)$, but with functional:
+\begin{align*}
+J(y(v),v)=\int_0^T (v(t)-\sin(4\pi t))^2 dt + \frac{1}{4}(y(T)-y_T)^4
+\end{align*}
+yielded the following results:
+\\
+\\
+\begin{tabular}{llll}
+\toprule
+{} $\mu$& Non-penalty iterations & Penalty iterations & $||v_{\mu}-v||_{L^2}$ \\
+\midrule
+0       &                     18 &                 -- &            -- \\
+1       &                     -- &                 14 &       2.89306 \\
+500     &                     -- &                 20 &     0.0854517 \\
+10000   &                     -- &                  9 &     0.0161623 \\
+100000  &                     -- &                  9 &     0.0123154 \\
+1000000 &                     -- &                  4 &     0.0122789 \\
+\bottomrule
+\end{tabular}
+\begin{figure}
+  \includegraphics[width=\linewidth]{sin_control.png}
+  \caption{Evolution of penalty control for increased $\mu$.}
+  \label{Fig 3}
+\end{figure}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}

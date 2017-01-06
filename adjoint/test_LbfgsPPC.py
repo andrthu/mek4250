@@ -345,8 +345,8 @@ def pre_choosen_mu_test():
     print c_data
     print sin_data
     
-    c_data.to_latex('report/draft/parareal/c_self_choise_mu.tex')
-    sin_data.to_latex('report/draft/parareal/sin_self_choise_mu.tex')
+    #c_data.to_latex('report/draft/parareal/c_self_choise_mu.tex')
+    #sin_data.to_latex('report/draft/parareal/sin_self_choise_mu.tex')
     
     plt.title('Control solutions of optimization problem')
     plt.xlabel('t')
