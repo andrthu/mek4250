@@ -185,7 +185,7 @@ class PararealOCP(OptimalControlProblem):
             scaler = None
         mu = mu0
         
-        while self.adaptive_stop_condition(mu,dt,m): ###### OBS!!! ######
+        while self.adaptive_stop_condition(mu0,dt,m): ###### OBS!!! ######
         
             J,grad_J = self.generate_reduced_penalty(dt,N,m,mu)
 

@@ -402,11 +402,12 @@ def test_adaptive_ppc():
 
     res1 = problem.solve(N)
 
-    table = {'mu itr'        : ['--'],
+    table = {#'mu itr'        : ['--'],
              'tot lbfgs itr' : [res1['iteration']],
-             'L2 error'      : ['--'],
+             #'L2 error'      : ['--'],
              'mu vals'       : ['--'],
-             'itrs'          : ['--'],}
+             'itrs'          : ['--'],
+             'errors'        : ['--'],}
     
     t = np.linspace(0,T,N+1)
     plt.plot(t,res1['control'].array(),'r--')
@@ -417,17 +418,20 @@ def test_adaptive_ppc():
         s = 0
         mu_val = []
         itrs = []
+        errs = []
         for i in range(len(PPCpenalty_res)):
             s += PPCpenalty_res[i].niter
             mu_val.append(PPCpenalty_res[i].mu)
             itrs.append(PPCpenalty_res[i].niter)
+            errs.append(round(l2_diff_norm(res1['control'].array(),PPCpenalty_res[i].x[:N+1],t),4))
         err = l2_diff_norm(res1['control'].array(),PPCpenalty_res[-1].x[:N+1],t)
 
-        table['mu itr'].append(len(PPCpenalty_res))
+        #table['mu itr'].append(len(PPCpenalty_res))
         table['tot lbfgs itr'].append(s)
-        table['L2 error'].append(err)
+        #table['L2 error'].append(err)
         table['mu vals'].append(tuple(mu_val))
         table['itrs'].append(tuple(itrs))
+        table['errors'].append(tuple(errs))
 
         plt.plot(t,PPCpenalty_res[-1].x[:N+1])
     plt.legend(M,loc=4)
