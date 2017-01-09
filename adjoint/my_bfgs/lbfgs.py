@@ -351,6 +351,46 @@ class Lbfgs(LbfgsParent):
 
         return x
 
+
+    def one_iteration(self,comm):
+        """
+        Method that does one iteration of lbfgs.
+
+        The point of this method is to check if parallel actually works.
+        """
+        
+        rank = comm.Get_rank()
+
+        
+            
+        Vec = self.options['Vector']     # Choose vector type
+        x0 = self.x0                     # set initial guess
+        n = x0.size()                    # find number of variables
+        x = Vec(np.zeros(n))             # convert to vector class    
+        Hk = self.data['lbfgs']          # get inverted hessian
+
+
+        df0 = Vec(self.d_J(x0.array()))  # initial gradient
+        df1 = Vec(np.zeros(n))           # space for gradient  
+
+        iter_k = self.data['iteration']          
+
+
+        p = self.p_direction(df0,Hk) #Hk.matvec(-df0)
+        df1.set(self.d_J(x.array()))
+            
+        x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
+        s = x-x0
+        y = df1-df0
+        Hk.update(y,s)
+
+        x0=x.copy()
+        df0=df1.copy()
+    
+        x = None
+
+        return x
+        
 ########################################
 ##########################
 ############################

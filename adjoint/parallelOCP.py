@@ -264,7 +264,9 @@ class POCP(OptimalControlProblem):
         
         return grad
 
-    def parallel_penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None,algorithm='my_lbfgs',scale=False):
+    def parallel_penalty_one_iteration_solve(self,N,m,my_list,x0=None,
+                                             Lbfgs_options=None,
+                                             algorithm='my_lbfgs',scale=False):
 
         dt=float(self.T)/N
         if x0==None:
@@ -273,15 +275,15 @@ class POCP(OptimalControlProblem):
         if algorithm=='my_lbfgs':
             x0 = self.Vec(x0)
         Result = []
-
+        rank = self.comm.Get_rank()
         for i in range(len(my_list)):
-            
+            print 'reeeeeeeeeeeeeeeeeeeeeeeeeeeee'
             def J(u):                
-                return self.parallel_penalty_functional(u,N,m,my_list[i])
+                return self.parallel_penalty_functional(u,N,my_list[i])
 
             def grad_J(u):
 
-                return self.penalty_grad(u,N,m,mu)
+                return self.penalty_grad(u,N,m,my_list[i])
             
             
             if algorithm=='my_lbfgs':
@@ -294,15 +296,19 @@ class POCP(OptimalControlProblem):
                                    scale=scaler)
                 else:
                     solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
-            
-                res = solver.solve()
+                    
+                print 'fuuuuuuuuuuuuuuuuuuuuuuuuu'
+                res = solver.one_iteration(self.comm)
                 Result.append(res)
-                x0 = res['control']
-                print J(x0.array())
-           
-                Result.append(res)
-
-                
+                print 'neiiiiiiiiiiiiiiiiiiiiiiiiiiiiii'
+                #x0 = res['control']
+                #print J(x0.array())
+                if rank ==0:
+                    Result.append(res)
+                else:
+                    Result.append(0)
+            print 'weeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+            return Result
             if len(Result)==1:
                 return res
             else:
@@ -361,12 +367,15 @@ def generate_problem(y0,yT,T,a):
         else:
             s[0] = 0.5*trapz(u[start:end+1]**2,t[start:end+1])
             s[0] += 0.5*mu*(y[-1]-u[n+rank])**2
+        """
         if rank==0:
             S=np.zeros(1)
         else:
             S =None
+        """
+        S =np.zeros(1)
         comm.Barrier()
-        comm.Reduce(s,S,op=MPI.SUM,root=0)
+        comm.Allreduce(s,S,op=MPI.SUM)#,root=0)
 
         return S
 
@@ -403,10 +412,23 @@ def test_parallel_gradient():
     t3=time.time()
 
     print t1-t0,t3-t2, (t1-t0)/(t3-t2),rank
+def test_one_itt_solve():
+    y0 = 1
+    yT = 300
+    T  = 1
+    a  = 1
 
+    non_parallel,problem = generate_problem(y0,yT,T,a)
+
+    comm = problem.comm
+
+    m = comm.Get_size()
+    N =500
+    problem.parallel_penalty_one_iteration_solve(N,m,[1])
+    print 'heeeeeeeeeeeeeeeeeeeeeeee'
 if __name__ == "__main__":
-
-    test_parallel_gradient()
+    test_one_itt_solve()
+    #test_parallel_gradient()
     """
     y0 = 1
     yT = 1
