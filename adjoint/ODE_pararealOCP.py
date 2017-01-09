@@ -186,7 +186,10 @@ class PararealOCP(OptimalControlProblem):
         mu = mu0
         
         while self.adaptive_stop_condition(mu0,dt,m): ###### OBS!!! ######
-        
+            
+
+            if  not self.adaptive_stop_condition(10*mu0,dt,m):
+                mu = 10*mu0
             J,grad_J = self.generate_reduced_penalty(dt,N,m,mu)
 
             self.update_Lbfgs_options(options)
@@ -194,8 +197,14 @@ class PararealOCP(OptimalControlProblem):
 
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
                                 options=Lbfgsopt,ppc=PPC,scale=scaler)
-            res = Solver.normal_solve()
-            
+            try:
+                res = Solver.normal_solve()
+            except Warning:
+                mu = 10*mu0
+                J,grad_J = self.generate_reduced_penalty(dt,N,m,mu)
+                Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
+                                options=Lbfgsopt,ppc=PPC,scale=scaler)
+                res = Solver.normal_solve()
             if scale:
                 res.rescale()
             x0=res.x

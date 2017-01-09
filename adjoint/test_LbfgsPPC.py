@@ -390,10 +390,19 @@ def test_adaptive_ppc():
     T  = 1
     a  = 0.9
     p = 4
-    c = 0.5
+
+    y0_2 = 24.6
+    yT_2 = 170.9
+    T_2 = 0.4
+    a_2 = 2.5
+    
 
     
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : np.sin(np.pi*4*x))
+    
+
+    func2 = lambda x : -200*x*np.cos(6*np.pi*x)
+    problem2 = non_lin_problem(y0_2,yT_2,T_2,a_2,p,func=func2)
 
     opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     N = 1000
@@ -401,19 +410,34 @@ def test_adaptive_ppc():
     M = [1,2,4,8,16,32,64]
 
     res1 = problem.solve(N)
-
+    res2 = problem2.solve(N)
     table = {#'mu itr'        : ['--'],
              'tot lbfgs itr' : [res1['iteration']],
              #'L2 error'      : ['--'],
              'mu vals'       : ['--'],
              'itrs'          : ['--'],
              'errors'        : ['--'],}
+
+    table2 = {#'mu itr'        : ['--'],
+              'tot lbfgs itr' : [res2['iteration']],
+              #'L2 error'      : ['--'],
+              'mu vals'       : ['--'],
+              'itrs'          : ['--'],
+              'errors'        : ['--'],}
+
     
     t = np.linspace(0,T,N+1)
-    plt.plot(t,res1['control'].array(),'r--')
+    plt.plot(t,res2['control'].array(),'r--')
+    #y = problem2.ODE_solver(res2['control'].array(),N)
+    #plt.plot(t,y)
+    #plt.show()
+    #plt.plot(t,res1['control'].array(),'r--')
     for m in M[1:]:
-        
+        print 'jndabkjkbjacbkjcbkjc',m
         PPCpenalty_res = problem.PPCLBFGSadaptive_solve(N,m,options=opt,scale=True)
+        
+
+        PPCpenalty_res2 = problem2.PPCLBFGSadaptive_solve(N,m,options=opt,scale=True)
 
         s = 0
         mu_val = []
@@ -426,6 +450,18 @@ def test_adaptive_ppc():
             errs.append(round(l2_diff_norm(res1['control'].array(),PPCpenalty_res[i].x[:N+1],t),4))
         err = l2_diff_norm(res1['control'].array(),PPCpenalty_res[-1].x[:N+1],t)
 
+        s2 = 0
+        mu_val2 = []
+        itrs2 = []
+        errs2 = []
+        for i in range(len(PPCpenalty_res2)):
+            s2 += PPCpenalty_res2[i].niter
+            mu_val2.append(PPCpenalty_res2[i].mu)
+            itrs2.append(PPCpenalty_res2[i].niter)
+            errs2.append(round(l2_diff_norm(res2['control'].array(),PPCpenalty_res2[i].x[:N+1],t),4))
+
+        err = l2_diff_norm(res2['control'].array(),PPCpenalty_res2[-1].x[:N+1],t)
+
         #table['mu itr'].append(len(PPCpenalty_res))
         table['tot lbfgs itr'].append(s)
         #table['L2 error'].append(err)
@@ -433,11 +469,22 @@ def test_adaptive_ppc():
         table['itrs'].append(tuple(itrs))
         table['errors'].append(tuple(errs))
 
-        plt.plot(t,PPCpenalty_res[-1].x[:N+1])
+
+        #table2['mu itr'].append(len(PPCpenalty_res))
+        table2['tot lbfgs itr'].append(s2)
+        #table2['L2 error'].append(err2)
+        table2['mu vals'].append(tuple(mu_val2))
+        table2['itrs'].append(tuple(itrs2))
+        table2['errors'].append(tuple(errs2))
+
+        plt.plot(t,PPCpenalty_res2[-1].x[:N+1])
     plt.legend(M,loc=4)
     
     data = pd.DataFrame(table,index=M)
+    data2 = pd.DataFrame(table2,index=M)
     print data
+    print
+    print data2
     plt.show()
 if __name__ == '__main__':
     #test1()

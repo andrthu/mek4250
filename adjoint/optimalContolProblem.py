@@ -156,6 +156,7 @@ class OptimalControlProblem():
 
 
     def adaptive_mu_update(self,mu,dt,m,last_iter):
+        #return float(m)*100*mu/(last_iter)
         return 100*mu
         return 10*mu*np.sqrt(m)
 
@@ -164,7 +165,7 @@ class OptimalControlProblem():
         return mu<self.adaptive_stop_formula(mu,dt,m)
 
     def adaptive_stop_formula(self,mu,dt,m):
-        return m/(8.*dt)
+        return m/(16.*dt)
     
     def ODE_solver(self,u,N,y0=None):
         """
