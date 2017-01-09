@@ -169,7 +169,7 @@ class POCP(OptimalControlProblem):
         return J_val
 
     def initial_penalty(self,y,u,mu,N,i):
-        
+        rank = self.comm.Get_rank()
         return mu*(y[-1]-u[N+rank+1])
 
     def parallel_adjoint_penalty_solver(self,u,N,m,mu):
@@ -264,7 +264,51 @@ class POCP(OptimalControlProblem):
         
         return grad
 
-        
+    def parallel_penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None,algorithm='my_lbfgs',scale=False):
+
+        dt=float(self.T)/N
+        if x0==None:
+            x0 = np.zeros(N+m)
+        x = None
+        if algorithm=='my_lbfgs':
+            x0 = self.Vec(x0)
+        Result = []
+
+        for i in range(len(my_list)):
+            
+            def J(u):                
+                return self.parallel_penalty_functional(u,N,m,my_list[i])
+
+            def grad_J(u):
+
+                return self.penalty_grad(u,N,m,mu)
+            
+            
+            if algorithm=='my_lbfgs':
+                self.update_Lbfgs_options(Lbfgs_options)
+
+                if scale:
+                    scaler={'m':m,'factor':self.Lbfgs_options['scale_factor']}
+                    
+                    solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options,
+                                   scale=scaler)
+                else:
+                    solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
+            
+                res = solver.solve()
+                Result.append(res)
+                x0 = res['control']
+                print J(x0.array())
+           
+                Result.append(res)
+
+                
+            if len(Result)==1:
+                return res
+            else:
+                return Result
+
+
 
 
 class PProblem1(POCP):
@@ -288,12 +332,9 @@ class PProblem1(POCP):
         a = self.a
         return (1+dt*a)*l[-(i+1)] 
 
-if __name__ == "__main__":
 
-    y0 = 1
-    yT = 1
-    T  = 1
-    a  = 1
+def generate_problem(y0,yT,T,a):
+    
 
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
@@ -331,7 +372,52 @@ if __name__ == "__main__":
 
     
     
-    problem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J=parallel_J)
+    pproblem = PProblem1(y0,yT,T,a,J,grad_J,parallel_J=parallel_J)
+    problem = Problem1(y0,yT,T,a,J,grad_J)
+
+    return problem,pproblem
+
+def test_parallel_gradient():
+
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+
+    non_parallel,problem = generate_problem(y0,yT,T,a)
+    comm = problem.comm
+    m = comm.Get_size()
+    rank = comm.Get_rank()
+    N = 100000
+    
+    u = np.zeros(N+m)
+    u[:N+1] = 100*np.linspace(0,T,N+1)
+    
+    t0= time.time()
+    p = non_parallel.adjoint_solver(u[:N+1],N)
+    non_p_grad = non_parallel.grad_J(u[:N+1],p,1./N)
+    t1 = time.time()
+    mu=1
+    t2 = time.time()
+    grad = problem.penalty_grad(u,N,m,mu)
+    t3=time.time()
+
+    print t1-t0,t3-t2, (t1-t0)/(t3-t2),rank
+
+if __name__ == "__main__":
+
+    test_parallel_gradient()
+    """
+    y0 = 1
+    yT = 1
+    T  = 1
+    a  = 1
+
+    
+
+    
+    
+    non_parallel,problem = generate_problem(y0,yT,T,a)#PProblem1(y0,yT,T,a,J,grad_J,parallel_J=parallel_J)
     
 
     comm = problem.comm
@@ -343,7 +429,7 @@ if __name__ == "__main__":
     u = np.zeros(N+m)
     u[:N+1] = 100*np.linspace(0,T,N+1) 
     
-    non_parallel = Problem1(y0,yT,T,a,J,grad_J)
+    #non_parallel = Problem1(y0,yT,T,a,J,grad_J)
     
     t0 = time.time()
     a = non_parallel.Penalty_Functional(u,N,m,1)
@@ -359,7 +445,7 @@ if __name__ == "__main__":
     
     print (t1-t0)/(t3-t2),rank
 
-    """
+    
     y,Y,y_list=problem.parallel_ODE_penalty_solver(u,N,m)
     
     
@@ -368,7 +454,8 @@ if __name__ == "__main__":
     if rank==0:
         #print g
         print Y[-1]
-    
+    """
+    """
     t = np.linspace(1,2,100)
     l=[]
     for i in range(3):
