@@ -169,8 +169,8 @@ class POCP(OptimalControlProblem):
         return J_val
 
     def initial_penalty(self,y,u,mu,N,i):
-        rank = self.comm.Get_rank()
-        return mu*(y[-1]-u[N+rank+1])
+        #rank = self.comm.Get_rank()
+        return mu*(y[i][-1]-u[N+i+1])
 
     def parallel_adjoint_penalty_solver(self,u,N,m,mu):
         """
