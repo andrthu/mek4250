@@ -401,7 +401,7 @@ def test_adaptive_ppc():
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : np.sin(np.pi*4*x))
     
 
-    func2 = lambda x : -200*x*np.cos(6*np.pi*x)
+    func2 = lambda x : -200*x*np.cos(10*np.pi*x)
     problem2 = non_lin_problem(y0_2,yT_2,T_2,a_2,p,func=func2)
 
     opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}

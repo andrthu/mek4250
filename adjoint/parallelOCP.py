@@ -60,6 +60,26 @@ def v_comm_numbers(n,m):
     return tuple(scatter_s),tuple(scatter_l),tuple(gather_s),tuple(gather_l)
 
 def u_part(n,m,i):
+    """
+    Given a vector u of length n, partitioned into m parts with one 
+    integer overlap, this function returns the first integer place of u that
+    belongs to i-th partition.
+
+    Example:
+    n=11, m=3
+    u = [0,1,2,3,4,5,6,7,8,9,10]
+
+    We partition u:
+    u0 = [0,1,2,3]
+    u1 = [3,4,5,6,7]
+    u2 = [7,8,9,10]
+    
+    Now we want to place in u does ui start with?
+
+    i=0: 0
+    i=1: 3
+    i=2: 7
+    """
 
     
     N = n/m
@@ -80,6 +100,18 @@ def u_part(n,m,i):
     return start
 
 def interval_partition(n,m,i):
+    """
+    We want to create m overlapping partitions of an empty vector of 
+    length n. This functions returns a numpy.zeros with the correct
+    length for thi i-th partition.
+
+    Example:
+    n = 11, m=3
+
+    i=0: [0,0,0,0]
+    i=1: [0,0,0,0,0]
+    i=2: [0,0,0,0]
+    """
     
     N=n/m
     rest=n%m
@@ -170,7 +202,7 @@ class POCP(OptimalControlProblem):
 
     def initial_penalty(self,y,u,mu,N,i):
         #rank = self.comm.Get_rank()
-        return mu*(y[i][-1]-u[N+i+1])
+        return mu*(y[-1]-u[N+i+1])
 
     def parallel_adjoint_penalty_solver(self,u,N,m,mu):
         """
