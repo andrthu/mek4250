@@ -128,11 +128,11 @@ class TPOCP(OptimalControlProblem):
 
         return grad
 
-    def thread_parallel_penalty_functional(self,u,N,mu):
+    def thread_parallel_penalty_functional(self,u,N,m,mu):
 
         y = self.thread_parallel_ODE_solver(u,N,m)
 
-        m = len(y)
+        
 
         J_val = self.J(u[:N+1],y[-1][-1],self.yT,self.T)
         
@@ -141,7 +141,84 @@ class TPOCP(OptimalControlProblem):
             penalty += 0.5*(y[i][-1]-u[N+1+i])**2
 
         return J_val + penalty
+
+
+    def thread_parallel_penalty_solve(self,N,m,mu_list,x0=None,
+                                      Lbfgs_options=None,
+                                      algorithm='my_lbfgs',scale=False):
+
+        dt=float(self.T)/N
+        if x0==None:
+            x0 = np.zeros(N+m)
+        x = None
+        if algorithm=='my_lbfgs':
+            x0 = self.Vec(x0)
+        Result = []
+
+        for i in range(len(mu_list)):
             
+            def J(u):                
+                return self.thread_parallel_penalty_functional(u,N,m,mu_list[i])
+
+            def grad_J(u):
+
+                return self.thread_parallel_penalty_grad(u,N,m,mu_list[i])
+            
+            #J,grad_J = self.generate_reduced_penalty(dt,N,m,mu_list[i])
+            if algorithm=='my_lbfgs':
+                self.update_Lbfgs_options(Lbfgs_options)
+
+                if scale:
+                    scaler={'m':m,'factor':self.Lbfgs_options['scale_factor']}
+                    
+                    solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options,
+                                   scale=scaler)
+                else:
+                    solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
+            
+                res = solver.solve()
+                Result.append(res)
+                x0 = res['control']
+                print J(x0.array())
+            elif algorithm=='my_steepest_decent':
+
+                self.update_SD_options(Lbfgs_options)
+                SDopt = self.SD_options
+                if scale:
+                    
+                    scale = {'m':m,'factor':SDopt['scale_factor']}
+                    Solver = SteepestDecent(J,grad_J,x0.copy(),
+                                             options=SDopt,scale=scale)
+                    res = Solver.solve()
+                    res.rescale()
+                else:
+                    Solver = PPCSteepestDecent(J,grad_J,x0.copy(),
+                                               lambda x: x,options=SDopt)
+                    res = Solver.split_solve(m)
+                x0 = res.x.copy()
+                Result.append(res)
+            elif algorithm=='slow_steepest_decent':
+                self.update_SD_options(Lbfgs_options)
+                SDopt = self.SD_options
+                Solver = SteepestDecent(J,grad_J,x0.copy(),
+                                        options=SDopt)
+                res = Solver.solve()
+                x0 = res.x.copy()
+                Result.append(res)
+                
+            elif algorithm == 'split_lbfgs':
+                self.update_Lbfgs_options(Lbfgs_options)
+                Solver = SplitLbfgs(J,grad_J,x0,m,options=self.Lbfgs_options)
+
+                res = Solver.solve()
+                x0 = res.x.copy()
+                Result.append(res)
+        if len(Result)==1:
+            return res
+        else:
+            return Result
+
+         
 class TPProblem1(TPOCP):
     """
     optimal control with ODE y=ay'+u
@@ -192,14 +269,16 @@ def test_solvers():
 
     problem = generate_problem(y0,yT,T,a)
 
-    N = 500
+    N = 1000
     mu=1
     m = 2
 
-    u = np.linspace(0,T,N+m)
+    #u = np.linspace(0,T,N+m)
 
-    grad = problem.thread_parallel_penalty_grad(u,N,m,mu)
-    print grad
+    #grad = problem.thread_parallel_penalty_grad(u,N,m,mu)
+    #print grad
+
+    problem.thread_parallel_penalty_solve(N,m,[mu])
 
 
 if __name__ == '__main__':
