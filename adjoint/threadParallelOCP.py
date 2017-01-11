@@ -116,7 +116,7 @@ class TPOCP(OptimalControlProblem):
         
         start = 0
         for j in range(m):
-            end = start + len(p[j]) -1
+            end = start + len(p[j]) - 1
             P[start:end] = p[j][:-1]
             start = end
             
@@ -124,7 +124,7 @@ class TPOCP(OptimalControlProblem):
         grad[:N+1] = self.grad_J(u[:N+1],P,float(self.T)/N)
 
         for j in range(1,m):
-            grad[N+j] = p[j-1][0]-u[N+j]
+            grad[N+j] = p[j][0]-p[j-1][-1]
 
         return grad
 
@@ -269,17 +269,28 @@ def test_solvers():
 
     problem = generate_problem(y0,yT,T,a)
 
-    N = 1000
+    N = 500
     mu=1
     m = 2
 
-    #u = np.linspace(0,T,N+m)
+    u = np.linspace(0,T,N+m)
 
     #grad = problem.thread_parallel_penalty_grad(u,N,m,mu)
     #print grad
+    t0 =time.time()
+    problem.thread_parallel_adjoint_solver(u,N,m,mu)
+    t1=time.time()
+    problem.adjoint_penalty_solver(u,N,m,mu)
+    t2 = time.time()
+    print t1-t0,t2-t1,(t2-t1)/(t1-t0)
 
+    t0 = time.time()
+    problem.penalty_solve(N,m,[mu])
+    t1  = time.time()
     problem.thread_parallel_penalty_solve(N,m,[mu])
+    t2 = time.time()
 
+    print t1-t0,t2-t1
 
 if __name__ == '__main__':
     

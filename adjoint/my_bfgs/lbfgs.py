@@ -387,7 +387,7 @@ class Lbfgs(LbfgsParent):
         x0=x.copy()
         df0=df1.copy()
     
-        x = None
+        
 
         return x
         

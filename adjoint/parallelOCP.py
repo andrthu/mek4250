@@ -30,6 +30,44 @@ def partition_func(n,m):
     return partition
 
 def v_comm_numbers(n,m):
+    """
+    This function helps with mpi communication, i.e,
+    it creates the tuples required for scatterv and gatherv 
+    built-in communication functions.
+
+    For both theese functions you need a 'start' and 'length'
+    tuple.
+
+    For Gatherv, the start tuple contains integres that explains
+    how many elements away from the start of the recieving array 
+    to start to append the recieved arrays.
+
+    The length-tuple gives the number of recived elements from 
+    each each process.
+
+
+    Example:
+    Let n= 11 and m = 3
+    We have: 
+    u0 = [0,1,2,3]
+    u1 = [3,4,5,6,7]
+    u2 = [7,8,9,10]
+
+    remove first elements for u1 and u2:    
+    u0 = [0,1,2,3]
+    u1 = [4,5,6,7]
+    u2 = [8,9,10]
+
+    and we want to gather them into:
+    
+    u = [0,1,2,3,4,5,6,7,8,9,10]
+
+    To achive this our function would return the following tuples:
+
+    start:  (0,4,8)
+    length: (4,4,3)    
+    
+    """
 
     N = n/m
     r = n%m
@@ -272,7 +310,7 @@ class POCP(OptimalControlProblem):
         if rank!=0:
             P = np.zeros(N+1)
         comm.bcast(P,root=0)
-
+        print p[:10],rank
         grad = np.zeros(N+m)
 
         grad[:N+1] = self.grad_J(u[:N+1],P,float(self.T)/N)
@@ -281,18 +319,30 @@ class POCP(OptimalControlProblem):
         lam = np.zeros(m)
         
         
+        if rank == 0:
+            my_lam = np.array([0])
+            comm.send(p[-1],dest=1)
+        elif rank!= m-1:
+            p_n = comm.recv(source=rank-1)
+            comm.send(p[-1],dest=rank+1)
+
+            my_lam = np.array([p[0]-p_n])
+        else:
+            p_n = comm.recv(source=rank-1)
+            my_lam = np.array([p[0]-p_n])
+        """
         if rank == m-1:
             my_lam = np.array([0])
         else:
             
             my_lam = np.array([p[0]-u[N+1+rank]])
-        
+        """
         start = tuple(np.linspace(0,m-1,m))
         length = tuple(np.zeros(m) +1)
         comm.Barrier()
         comm.Allgatherv(my_lam,[lam,length,start,MPI.DOUBLE])
         #comm.bcast(lam,root=0)
-        grad[N+1:] = lam[:-1]
+        grad[N+1:] = lam[1:]
         
         return grad
 
@@ -329,10 +379,10 @@ class POCP(OptimalControlProblem):
                 else:
                     solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
                     
-                print 'fuuuuuuuuuuuuuuuuuuuuuuuuu'
+                
                 res = solver.one_iteration(self.comm)
                 Result.append(res)
-                print 'neiiiiiiiiiiiiiiiiiiiiiiiiiiiiii'
+                print res.array(),rank
                 #x0 = res['control']
                 #print J(x0.array())
                 if rank ==0:
@@ -429,7 +479,7 @@ def test_parallel_gradient():
     comm = problem.comm
     m = comm.Get_size()
     rank = comm.Get_rank()
-    N = 100000
+    N = 200000
     
     u = np.zeros(N+m)
     u[:N+1] = 100*np.linspace(0,T,N+1)
@@ -446,7 +496,7 @@ def test_parallel_gradient():
     print t1-t0,t3-t2, (t1-t0)/(t3-t2),rank
 def test_one_itt_solve():
     y0 = 1
-    yT = 300
+    yT = 1
     T  = 1
     a  = 1
 
@@ -455,9 +505,9 @@ def test_one_itt_solve():
     comm = problem.comm
 
     m = comm.Get_size()
-    N =500
+    N = 500
     problem.parallel_penalty_one_iteration_solve(N,m,[1])
-    print 'heeeeeeeeeeeeeeeeeeeeeeee'
+    
 if __name__ == "__main__":
     test_one_itt_solve()
     #test_parallel_gradient()
@@ -466,10 +516,6 @@ if __name__ == "__main__":
     yT = 1
     T  = 1
     a  = 1
-
-    
-
-    
     
     non_parallel,problem = generate_problem(y0,yT,T,a)#PProblem1(y0,yT,T,a,J,grad_J,parallel_J=parallel_J)
     
