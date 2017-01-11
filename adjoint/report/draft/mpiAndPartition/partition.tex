@@ -1,0 +1,58 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{booktabs}
+
+\usepackage{cite}
+
+
+\newtheorem{theorem}{Theorem}
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+
+\usepackage{graphicx}
+
+\title{Partitioning the time interval}
+
+
+\begin{document}
+\maketitle
+\section{The problem}
+Decomposing the time interval $I=[0,T]$ into $N$ equally sized subintervals $I_i=[T_i,T_{i+1}]$, and solving the state and adjoint equations separately on each subinterval, allows our algorithm to be run in parallel. Decomposing $I$ is simple in the continuous case, however in practice we are solving these equations numerically, and in the discrete case, partitioning $I$ gets more involved. To explain how we decompose $I$ in the discrete case, lets look at how do it for the state equation. Define a differential equation $F$:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+		F(y(t),v(t))=0 \	\textit{For $t \in [0,T]$} \\
+		y(0)=y_0
+	\end{array}
+   \right.	
+\end{align*} 
+We then decompose $I$, and assume that we have $N-1$ intermediate initial conditions $\{\lambda_i\}_{i=1}^{N-1}$, such that we get a solvable equation on each subinterval:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+		F^i(y_i(t),v(t))=0 \	\textit{For $t \in [T_i,T_{i+1}]$} \\
+		y(T_i)=\lambda_i
+	\end{array}
+   \right.	
+\end{align*} 
+Now lets look at what happens when we discretize $I$. Lets divide $I$ into $n$ parts of length $\Delta t=\frac{T}{n}$, and set $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Using some finite difference scheme, we can transform the differential equation $F$ into a difference equation $F_{\Delta t}$:
+    \begin{align*}
+\left\{
+     \begin{array}{lr}
+		F_{\Delta t}(y^k,v(t_k))=0 \	\textit{For $k=1,...,n$} \\
+		y^0=y_0
+	\end{array}
+   \right.	
+\end{align*} 
+\end{document}
