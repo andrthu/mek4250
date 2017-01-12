@@ -361,10 +361,11 @@ class Lbfgs(LbfgsParent):
         
         rank = comm.Get_rank()
 
-        
-            
-        Vec = self.options['Vector']     # Choose vector type
         x0 = self.x0                     # set initial guess
+        
+        
+        Vec = self.options['Vector']     # Choose vector type
+        
         n = x0.size()                    # find number of variables
         x = Vec(np.zeros(n))             # convert to vector class    
         Hk = self.data['lbfgs']          # get inverted hessian
@@ -372,16 +373,18 @@ class Lbfgs(LbfgsParent):
 
         df0 = Vec(self.d_J(x0.array()))  # initial gradient
         df1 = Vec(np.zeros(n))           # space for gradient  
-
+        
         iter_k = self.data['iteration']          
-
+        
 
         p = self.p_direction(df0,Hk) #Hk.matvec(-df0)
-        df1.set(self.d_J(x.array()))
+        
             
         x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
+        df1.set(self.d_J(x.array()))
         s = x-x0
         y = df1-df0
+        #print y.array(),rank, 'hei'
         Hk.update(y,s)
 
         x0=x.copy()
@@ -389,7 +392,7 @@ class Lbfgs(LbfgsParent):
     
         
 
-        return x
+        return x0
         
 ########################################
 ##########################
