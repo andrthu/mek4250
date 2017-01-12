@@ -28,7 +28,7 @@
 \begin{document}
 \maketitle
 \section{The problem}
-Decomposing the time interval $I=[0,T]$ into $N$ equally sized subintervals $I_i=[T_i,T_{i+1}]$, and solving the state and adjoint equations separately on each subinterval, allows our algorithm to be run in parallel. Decomposing $I$ is simple in the continuous case, however in practice we are solving these equations numerically, and in the discrete case, partitioning $I$ gets more involved. To explain how we decompose $I$ in the discrete case, lets look at how do it for the state equation. Define a differential equation $F$:
+Decomposing the time interval $I=[0,T]$ into $N$ equally sized subintervals $I_i=[T_i,T_{i+1}]$, and solving the state and adjoint equations separately on each subinterval, allows our algorithm to be run in parallel. Decomposing $I$ is simple in the continuous case, however in practice we are solving these equations numerically, and in the discrete case, partitioning $I$ is more involved. To explain how we decompose $I$ in the discrete case, lets look at how to do it for the state equation. Define a differential equation $F$:
 \begin{align*}
 \left\{
      \begin{array}{lr}
@@ -55,4 +55,41 @@ Now lets look at what happens when we discretize $I$. Lets divide $I$ into $n$ p
 	\end{array}
    \right.	
 \end{align*} 
+The next step is to decompose the discrete interval $I_{\Delta t}$ into $N$ discrete subintervals. This simply done by extracting a subsequence $\{t_{k_i}\}_{i=0}^N\subset I_{\Delta t}$ where $t_{k_0}=t_0$ and $t_{k_N}=t_n$. This results in $N$ sequences on the form $I_{\Delta t}^i=\{t_{k_i},t_{k_i+1},...,t_{k_{i+1}}\}$, and if we assume, as we did in the continuous case, that we have some intermediate initial conditions $\{\lambda_i\}_{i=1}^{N-1}$, we can solve $F_{\Delta t}$ separately on each $I_{\Delta t}^i$: 
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+		F_{\Delta t}^i(y_i(t_k),v(t_k))=0 \	\textit{For $k \in \{k_i,k_i+1,...,k_{i+1} \}$} \\
+		y(t_{k_i})=\lambda_i
+	\end{array}
+   \right.	
+\end{align*} 
+There is one minor issue with decomposing $I_{\Delta t}$, which I did not mention above, and that has to do with choose the subsequence $\{t_{k_i}\}_{i=0}^N$. In theory, one could of course freely chose any subsequence of $I_{\Delta t}$, but we generally want the difference $t_{k_i} -t_{k_{i+1}}$ to be constant for all $i$. This is however not always possible, since there is no guarantee that $n$ is divisible by $N$.
+\section{Partitioning}
+The general rule for partitioning a task between $N$ processes, is to distribute the work of the task as evenly as possible. The task in the above setting is solving $ F_{\Delta t}$, and the work to be distributed, is the computations required the solution from one time step to the next for all time steps. Since there are $n$ time steps, we should be able to say that the main task of solving $F_{\Delta t}$ can be divided into $n$ subtasks, and it these $n$ tasks that we want to distribute between the $N$ processes. Now deciding how many subtasks each process should get is quite simple. Start with defining the numbers:
+\begin{align*}
+q &= \lfloor \frac{n}{N}\rfloor \\
+r &= N \mod n
+\end{align*} 
+Then we give each process $q$ tasks, and then add one task to $r$ processes. To which processes you give the extra task does not rely matter, but the most straightforward way of doing it is just to give the first $r$ processes the extra task. I however chose to look at the distributing problem slightly different, by instead of trying to distribute the $n$ tasks, looking at how to evenly divide the $n+1$ points $\{t_k\}_{k=0}^{n}$ among the $N$ processes. Again lets define $q$ and $r$ as:
+\begin{align*}
+q &= \lfloor \frac{n+1}{N}\rfloor \\
+r &= N \mod n+1
+\end{align*}
+Every process now gets $q$ points, but due to overlap every process gets an extra point excluding the first process. Then the remaining $r$ points are given to the first $r$ processes. This allows me to define the sequence $\{k_{i}\}_{i=0}^N$ recursively as follows:
+\begin{align*}
+k_{i+1} = k_i + q+\delta_{i\neq0}+\delta_{i<r}
+\end{align*}
+Here the $\delta$s are conditional functions defined as:
+\begin{align*}
+\delta_{S}=\left\{
+     \begin{array}{lr}
+		1 \ S=\text{True} \\
+		0 \ S=\text{False}
+	\end{array}
+   \right.	
+\end{align*} 
+We now have a way of decomposing the discrete time interval, and therefore also a way of partitioning the finite difference solver of the state equation in temporal direction. However both when we want try to find the gradient in a penalized optimal control proble, or when we just want to paralellize solving a differential equation using the parareal scheme, some communication between the processes is required.
+\section{Communication}
+
 \end{document}
