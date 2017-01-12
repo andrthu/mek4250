@@ -381,7 +381,16 @@ def test4():
 
     plt.show()
 
+def addition_mu_updater(mu,dt,m,last_iter):
+
+    new_mu = mu + max(1,min(100.*m**2/last_iter,m*1./(2*dt)))
+
+    return new_mu
     
+
+def one_update_mu(mu,dt,m,last_iter):
+
+    return mu/float(dt)
 
 def test_adaptive_ppc():
 
@@ -413,10 +422,11 @@ def test_adaptive_ppc():
     res2 = problem2.solve(N)
     table = {#'mu itr'        : ['--'],
              'tot lbfgs itr' : [res1['iteration']],
-             #'L2 error'      : ['--'],
+             'L2 error'      : ['--'],
              'mu vals'       : ['--'],
              'itrs'          : ['--'],
-             'errors'        : ['--'],}
+             #'errors'        : ['--'],
+    }
 
     table2 = {#'mu itr'        : ['--'],
               'tot lbfgs itr' : [res2['iteration']],
@@ -434,11 +444,21 @@ def test_adaptive_ppc():
     #plt.plot(t,res1['control'].array(),'r--')
     for m in M[1:]:
         print 'jndabkjkbjacbkjcbkjc',m
-        PPCpenalty_res = problem.PPCLBFGSadaptive_solve(N,m,options=opt,scale=True)
+
+        init = np.zeros(N+m)
+        init[N+1:]= y0
+
+        PPCpenalty_res = problem.PPCLBFGSadaptive_solve(N,m,options=opt,
+                                                        scale=True,x0=init)
         
-
-        PPCpenalty_res2 = problem2.PPCLBFGSadaptive_solve(N,m,options=opt,scale=True)
-
+        
+        init = np.zeros(N+m)
+        #init[N+1:]= y0_2
+        PPCpenalty_res2 = problem2.PPCLBFGSadaptive_solve(N,m,options=opt,
+                                                          scale=True,
+                                                          x0=init
+                                                          ,mu_updater=None)#one_update_mu)
+        
         s = 0
         mu_val = []
         itrs = []
@@ -456,7 +476,7 @@ def test_adaptive_ppc():
         errs2 = []
         for i in range(len(PPCpenalty_res2)):
             s2 += PPCpenalty_res2[i].niter
-            mu_val2.append(PPCpenalty_res2[i].mu)
+            mu_val2.append(round(PPCpenalty_res2[i].mu,2))
             itrs2.append(PPCpenalty_res2[i].niter)
             errs2.append(round(l2_diff_norm(res2['control'].array(),PPCpenalty_res2[i].x[:N+1],t),4))
 
@@ -464,10 +484,10 @@ def test_adaptive_ppc():
 
         #table['mu itr'].append(len(PPCpenalty_res))
         table['tot lbfgs itr'].append(s)
-        #table['L2 error'].append(err)
+        table['L2 error'].append(err)
         table['mu vals'].append(tuple(mu_val))
         table['itrs'].append(tuple(itrs))
-        table['errors'].append(tuple(errs))
+        #table['errors'].append(tuple(errs))
 
 
         #table2['mu itr'].append(len(PPCpenalty_res))
@@ -483,6 +503,7 @@ def test_adaptive_ppc():
     data = pd.DataFrame(table,index=M)
     data2 = pd.DataFrame(table2,index=M)
     print data
+    data.to_latex('report/draft/parareal/adaptive1.tex')
     print
     print data2
     plt.show()

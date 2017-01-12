@@ -708,6 +708,24 @@ yielded the following results:
   \label{Fig 3}
 \end{figure}
 One thing of note with the last experiment, is that beyond a certain $\mu$ value, the difference between non-penalty and penalty control solution declines moderately when $\mu$ is increased. With this in mind one could perhaps imagine some condition on $\mu$ as a stopping criterion for the penalty method. 
+\\
+\\
+To check if the above stopping criteria for an adaptive penalty solver might work, I redo the above example for different time-decompositions, using the same parameters, but with $\delta t=\frac{1}{1000}$ as time step. Between each penalty iteration, I update $\mu$ by multiplying it with $100$. 
+\\
+\\
+\begin{tabular}{llllr}
+\toprule
+{} &  L2 error &          itrs &          mu vals &  tot lbfgs itr \\
+\midrule
+1  &        -- &            -- &               -- &             18 \\
+2  &  0.290221 &    (21, 8, 8) &   (1, 100, 1000) &             37 \\
+4  &   0.93696 &   (23, 16, 6) &   (1, 100, 1000) &             45 \\
+8  &  0.236236 &  (15, 14, 13) &   (1, 100, 1000) &             42 \\
+16 &  0.517378 &  (14, 16, 14) &   (1, 100, 1000) &             44 \\
+32 &   1.03916 &  (11, 19, 17) &  (1, 100, 10000) &             47 \\
+64 &   2.08778 &  (12, 12, 26) &  (1, 100, 10000) &             50 \\
+\bottomrule
+\end{tabular}
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}

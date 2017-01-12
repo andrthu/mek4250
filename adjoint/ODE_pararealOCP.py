@@ -172,7 +172,8 @@ class PararealOCP(OptimalControlProblem):
         else:
             return result
 
-    def PPCLBFGSadaptive_solve(self,N,m,mu0=1,x0=None,options=None,scale=False):
+    def PPCLBFGSadaptive_solve(self,N,m,mu0=1,x0=None,options=None,scale=False,
+                               mu_stop_codition=None,mu_updater=None):
         dt=float(self.T)/N
         if x0==None:
             x0 = np.zeros(N+m)
@@ -185,7 +186,11 @@ class PararealOCP(OptimalControlProblem):
             scaler = None
         mu = mu0
         
-        while self.adaptive_stop_condition(mu0,dt,m): ###### OBS!!! ######
+        if mu_stop_codition==None:
+            mu_stop_codition = self.adaptive_stop_condition
+        if mu_updater==None:
+            mu_updater = self.adaptive_mu_update
+        while mu_stop_codition(mu0,dt,m): ###### OBS!!! ######
             
 
             if  not self.adaptive_stop_condition(10*mu0,dt,m):
@@ -212,7 +217,7 @@ class PararealOCP(OptimalControlProblem):
                 
             result.append(res)
             mu0=mu
-            mu = self.adaptive_mu_update(mu,dt,m,res.niter) ###### OBS!!! ######
+            mu = mu_updater(mu,dt,m,res.niter) ###### OBS!!! ######
         
         return result
 
