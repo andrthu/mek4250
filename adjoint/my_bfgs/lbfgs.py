@@ -1,6 +1,7 @@
 import numpy as np
 from linesearch.strong_wolfe import *
 from scaler import PenaltyScaler
+from diagonalMatrix import DiagonalMatrix
 
 from matplotlib.pyplot import *
 
@@ -33,7 +34,8 @@ class LbfgsParent():
 
         self.set_options(options)   
         if Hinit==None:
-            self.Hinit = np.identity(len(x0))
+            #self.Hinit = np.identity(len(x0))
+            self.Hinit = DiagonalMatrix(len(x0))
         self.scaler = self.scale_problem(scale)
 
 
@@ -115,7 +117,8 @@ class LbfgsParent():
         self.d_J = grad_J_
         self.scale = True
         if self.options['scale_hessian']==True:
-            self.Hinit[range(N+1,N+m),range(N+1,N+m)] = 1./scaler.gamma**2
+            #self.Hinit[range(N+1,N+m),range(N+1,N+m)] = 1./scaler.gamma**2
+            self.Hinit.diag[N+1:] = 1./scaler.gamma**2
         return scaler
 
     def rescale(self,x):

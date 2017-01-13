@@ -611,7 +611,7 @@ With some initial approximation $H^0$, typically set to identity. We can then me
 H_Q^1 &=(I-\rho_kS_kY_k^T)H_Q(I-\rho_kY_kS_k^T) + S_kS_k^T \\
 H_Q^{k+1} &= (I-\rho_kS_kY_k^T)H_Q^k(I-\rho_kY_kS_k^T) + S_kS_k^T
 \end{align*}
-\section{Testing preconditioner on steepest descent solver}
+\section{Testing preconditioner on LBFGS solver}
 For steepest descent we used the problem (\ref{example1_func}-\ref{example1_ODE}) to test the preconditioner. Since this problem is very easily solved when using LBFGS, I will complicate things slightly to make the LBFGS example more interesting. The change I do, is simply just to increase the exponent on the end state difference from 2 to 4. The problem then reads:
 \begin{align}
 J(y(v),v)=\int_0^T v(t)^2 dt + \frac{1}{4}(y(T)-y_T)^4 \label{example2_func}
@@ -660,7 +660,7 @@ We can improve the performance of the LBFGS by scaling, and I think it is intere
 \end{tabular}  
 \\
 \\
-Looking at the tables above we see that using the LBFGS solver using the parareal preconditioner as initial inverse Hessian approximation generally performs better than or as good the solver that does not, even though we observe a slightly increased iteration count for the $N=4$ case. We also see the same pattern as we did for steepest descent, namely that increasing $N$ yields lower, equal or slightly higher iteration count for parareal solver, while the opposite is true for the unaltered LBFGS solver, i.e increased $N$ results in higher iteration count. The second table shows that scaling improves both solvers, and that the improvement generally is greater for the cases where the unscaled iteration count is high.
+Looking at the tables above we see that using the LBFGS solver using the parareal preconditioner as initial inverse Hessian approximation generally performs better than or as good as the solver that does not, even though we observe a slightly increased iteration count for the $N=4$ case. We also see the same pattern as we did for steepest descent, namely that increasing $N$ yields lower, equal or slightly higher iteration count for parareal solver, while the opposite is true for the unaltered LBFGS solver, i.e increased $N$ results in higher iteration count. The second table shows that scaling improves both solvers, and that the improvement generally is greater for the cases where the unscaled iteration count is high.
 \\
 \\
 In the previous experiments I only did one penalty iteration, and also did not focus on the difference between the penalty and non-penalty solutions. Lets now look at some examples, where we let $N$ be constant and manually chose a sequence of $\mu$s, in an attempt to reach the non-penalty solution using the time-decomposed penalty solver. For this experiment I will solve problem (\ref{example2_func}-\ref{example2_ODE}) using parameters $(y_0,y_T,a,T,\Delta t,N)=(3.2,1.5,1,0.9,\frac{1}{800},16)$, but withe a slightly changed functional (\ref{example2_func}):
@@ -710,22 +710,23 @@ yielded the following results:
 One thing of note with the last experiment, is that beyond a certain $\mu$ value, the difference between non-penalty and penalty control solution declines moderately when $\mu$ is increased. With this in mind one could perhaps imagine some condition on $\mu$ as a stopping criterion for the penalty method. 
 \\
 \\
-To check if the above stopping criteria for an adaptive penalty solver might work, I redo the above example for different time-decompositions, using the same parameters, but with $\delta t=\frac{1}{1000}$ as time step. Between each penalty iteration, I update $\mu$ by multiplying it with $100$. 
+To check if the above stopping criteria for an adaptive penalty solver might work, I redo the above example for different time-decompositions, using the same parameters, but with $\Delta t=\frac{1}{1000}$ as time step. Between each penalty iteration, I update $\mu$ by multiplying it with $100$. 
 \\
 \\
 \begin{tabular}{llllr}
 \toprule
-{} &  L2 error &          itrs &          mu vals &  tot lbfgs itr \\
+{} &   L2 error &          itrs &          mu vals &  tot lbfgs itr \\
 \midrule
-1  &        -- &            -- &               -- &             18 \\
-2  &  0.290221 &    (21, 8, 8) &   (1, 100, 1000) &             37 \\
-4  &   0.93696 &   (23, 16, 6) &   (1, 100, 1000) &             45 \\
-8  &  0.236236 &  (15, 14, 13) &   (1, 100, 1000) &             42 \\
-16 &  0.517378 &  (14, 16, 14) &   (1, 100, 1000) &             44 \\
-32 &   1.03916 &  (11, 19, 17) &  (1, 100, 10000) &             47 \\
-64 &   2.08778 &  (12, 12, 26) &  (1, 100, 10000) &             50 \\
+1  &         -- &            -- &               -- &             18 \\
+2  &    0.02045 &    (17, 8, 8) &   (1, 100, 1000) &             33 \\
+4  &  0.0381741 &   (21, 11, 6) &   (1, 100, 1000) &             38 \\
+8  &  0.0242411 &  (14, 16, 18) &   (1, 100, 1000) &             48 \\
+16 &  0.0427416 &  (14, 12, 16) &   (1, 100, 1000) &             42 \\
+32 &   0.079583 &  (11, 15, 17) &  (1, 100, 10000) &             43 \\
+64 &  0.0438939 &  (13, 13, 22) &  (1, 100, 10000) &             48 \\
 \bottomrule
 \end{tabular}
+
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}

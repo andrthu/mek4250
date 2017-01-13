@@ -577,7 +577,7 @@ def test_parallel_solve():
     comm = problem.comm
 
     m = comm.Get_size()
-    N = 1000
+    N = 10000
     t0 = time.time()
     non_parallel.penalty_solve(N,m,[1])
     t1=time.time()

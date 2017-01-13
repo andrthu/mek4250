@@ -43,12 +43,14 @@ class SimpleVector(Vector):
         return np.sum(self.data*y.data)
     
     def matDot(self,A):
+        """
         n=len(self.data)
         y = np.zeros(n)
         A = np.matrix(A)
         for i in range(n):
             y[i]=np.sum(np.array(A[i,:][0])*self.data)
-        return y
+        """
+        return A(self.data)
     
     def matApy(self,A):
         y = self.matDot(A)

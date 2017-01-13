@@ -446,7 +446,7 @@ def test_adaptive_ppc():
         print 'jndabkjkbjacbkjcbkjc',m
 
         init = np.zeros(N+m)
-        init[N+1:]= y0
+        #init[N+1:]= y0
 
         PPCpenalty_res = problem.PPCLBFGSadaptive_solve(N,m,options=opt,
                                                         scale=True,x0=init)
@@ -468,7 +468,7 @@ def test_adaptive_ppc():
             mu_val.append(PPCpenalty_res[i].mu)
             itrs.append(PPCpenalty_res[i].niter)
             errs.append(round(l2_diff_norm(res1['control'].array(),PPCpenalty_res[i].x[:N+1],t),4))
-        err = l2_diff_norm(res1['control'].array(),PPCpenalty_res[-1].x[:N+1],t)
+        err1 = l2_diff_norm(res1['control'].array(),PPCpenalty_res[-1].x[:N+1],t)
 
         s2 = 0
         mu_val2 = []
@@ -484,7 +484,7 @@ def test_adaptive_ppc():
 
         #table['mu itr'].append(len(PPCpenalty_res))
         table['tot lbfgs itr'].append(s)
-        table['L2 error'].append(err)
+        table['L2 error'].append(err1)
         table['mu vals'].append(tuple(mu_val))
         table['itrs'].append(tuple(itrs))
         #table['errors'].append(tuple(errs))
@@ -503,7 +503,7 @@ def test_adaptive_ppc():
     data = pd.DataFrame(table,index=M)
     data2 = pd.DataFrame(table2,index=M)
     print data
-    data.to_latex('report/draft/parareal/adaptive1.tex')
+    #data.to_latex('report/draft/parareal/adaptive1.tex')
     print
     print data2
     plt.show()
