@@ -528,23 +528,48 @@ def jump_difference():
     
     t = np.linspace(0,T,N+1)
     y = problem.ODE_solver(res['control'].array(),N)
+    plt.figure()
     plt.plot(t,y,'r--')
+    
+    end_crit = lambda mu0,dt,m : mu0<(1./dt)**2
 
     res2 = problem.PPCLBFGSadaptive_solve(N,m,options=opt,
-                                                        scale=True,
-                                                        mu0=1)
+                                          scale=True,mu_stop_codition=end_crit,
+                                          mu0=1)
     
+
+    #res3 = problem.penalty_solve(N,m,[1,100,1000,10000])
     all_jump_diff = []
+    all_jump_diff2 = []
+    s = 0
     for i in range(len(res2)):
         y,Y = problem.ODE_penalty_solver(res2[i].x,N,m)
         jump_diff = []
-        for i in range(len(y)-1):
-            jump_diff.append(abs(y[i][-1]-y[i+1][0]))
+        for j in range(len(y)-1):
+            jump_diff.append(abs(y[j][-1]-y[j+1][0]))
         all_jump_diff.append((max(jump_diff),min((jump_diff))))
+        all_jump_diff2.append(jump_diff)
         plt.plot(t,Y)
+
+        err = l2_diff_norm(res['control'].array(),res2[i].x[:N+1],t)
+        
+        print res2[i].niter,res2[i].mu,err
+        s+=res2[i].niter
     print all_jump_diff
     print 1./N
     plt.show()
+    for i in range(len(res3)):
+        err=l2_diff_norm(res['control'].array(),res3[i]['control'].array()[:N+1],t)
+        print err
+    print s,res['iteration']
+
+    """
+    for i in range(len(all_jump_diff2)):
+        plt.figure()
+        plt.plot(np.array(all_jump_diff2[i]))
+    """
+    plt.show()
+    
 
 if __name__ == '__main__':
     #test1()

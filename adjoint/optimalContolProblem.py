@@ -218,12 +218,19 @@ class OptimalControlProblem():
             
 
         Y = np.zeros(N+1)
+        #"""
         start = 0
         for i in range(m):
             Y[start:start+len(y[i])-1] = y[i][:-1]
             start = start + len(y[i]) - 1
         Y[-1] = y[-1][-1]
-            
+        """
+        Y[0] = y[0][0]
+        start = 1
+        for i in range(m):
+            Y[start:start+len(y[i])-1] = y[i][1:]
+            start = start + len(y[i]) - 1
+        #"""
         return y,Y
 
     def adjoint_solver(self,u,N,l0=None):
@@ -284,16 +291,20 @@ class OptimalControlProblem():
                 l[i][-(j+2)] = self.adjoint_update(l[i],y[i],j,dt)
             
         L=np.zeros(N+1)
-            
+        #"""
         start=0
         for i in range(m):
             L[start:start+len(l[i])-1] = l[i][:-1]
             start = start + len(l[i])-1
         L[-1]=l[-1][-1]
+        """
+        L[0] = l[0][0]
+        start = 1
+        for i in range(m):
+            L[start:start+len(l[i])-1] = l[i][1:]
+            start += len(l[i])-1
         
-        import matplotlib.pyplot as plt
-        
-        
+        """
         return l,L
 
     def Lagrange_Penalty_Functional(self,u,N,m,my,G):
@@ -343,7 +354,7 @@ class OptimalControlProblem():
 
         for i in range(m-1):
             penalty = penalty + my*((y[i][-1]-u[N+1+i])**2)
-    
+        #print penalty
         return J_val + 0.5*penalty
 
 
@@ -894,7 +905,7 @@ class Problem1(OptimalControlProblem):
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
         return (y[i] +dt*u[j+1])/(1.-dt*a)
-
+        #return (y[i] +dt*u[j])/(1.-dt*a)
 
     def adjoint_update(self,l,y,i,dt):
         a = self.a
