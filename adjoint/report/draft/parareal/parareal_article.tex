@@ -593,7 +593,7 @@ In this test I want to look at what happens when we increase the number of subin
     $N=64$ & 0.0203 & 52& [1, 101, 201, 301]	&0.8125\\ \hline
     \end{tabular}
 \end{center}
-\section{Preconditioning the LBFGS-solver}
+\section{Preconditioning the L-BFGS-solver}
 The LBFGS iteration for our time-partitioned control problem is given by:
 \begin{align}
 (v^{k+1},\Lambda^{k+1})= (v^{k},\Lambda^{k}) - \rho H^k\nabla\hat{J}(v^{k},\Lambda^{k}) \label{lbfgs_itr}
@@ -726,7 +726,6 @@ To check if the above stopping criteria for an adaptive penalty solver might wor
 64 &  0.0438939 &  (13, 13, 22) &  (1, 100, 10000) &             48 \\
 \bottomrule
 \end{tabular}
-
 \bibliography{ppaper}
 \bibliographystyle{plain}
 \end{document}

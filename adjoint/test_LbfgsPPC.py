@@ -449,15 +449,17 @@ def test_adaptive_ppc():
         #init[N+1:]= y0
 
         PPCpenalty_res = problem.PPCLBFGSadaptive_solve(N,m,options=opt,
-                                                        scale=True,x0=init)
+                                                        scale=True,x0=init,
+                                                        mu0=0.5)
         
         
         init = np.zeros(N+m)
         #init[N+1:]= y0_2
         PPCpenalty_res2 = problem2.PPCLBFGSadaptive_solve(N,m,options=opt,
                                                           scale=True,
-                                                          x0=init
-                                                          ,mu_updater=None)#one_update_mu)
+                                                          x0=init,
+                                                          mu0=1,
+                                                          mu_updater=None)#one_update_mu)
         
         s = 0
         mu_val = []
@@ -507,6 +509,43 @@ def test_adaptive_ppc():
     print
     print data2
     plt.show()
+
+def jump_difference():
+
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 4
+
+    problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*20*x))
+
+    N = 1000
+    m = 10
+    opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    res = problem.solve(N)
+
+    
+    t = np.linspace(0,T,N+1)
+    y = problem.ODE_solver(res['control'].array(),N)
+    plt.plot(t,y,'r--')
+
+    res2 = problem.PPCLBFGSadaptive_solve(N,m,options=opt,
+                                                        scale=True,
+                                                        mu0=1)
+    
+    all_jump_diff = []
+    for i in range(len(res2)):
+        y,Y = problem.ODE_penalty_solver(res2[i].x,N,m)
+        jump_diff = []
+        for i in range(len(y)-1):
+            jump_diff.append(abs(y[i][-1]-y[i+1][0]))
+        all_jump_diff.append((max(jump_diff),min((jump_diff))))
+        plt.plot(t,Y)
+    print all_jump_diff
+    print 1./N
+    plt.show()
+
 if __name__ == '__main__':
     #test1()
     #test2()
@@ -514,4 +553,5 @@ if __name__ == '__main__':
     #compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
     #test4()
-    test_adaptive_ppc()
+    #test_adaptive_ppc()
+    jump_difference()
