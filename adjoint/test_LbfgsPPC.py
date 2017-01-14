@@ -523,10 +523,11 @@ def jump_difference():
 
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*20*x))
 
-    N = 10000
+    N = 100
     m = 10
-    opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
-    res = problem.solve(N)
+    seq_opt = {'jtol':1e-3}
+    opt = {'jtol':1e-3,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    res = problem.solve(N,Lbfgs_options=seq_opt)
 
     
     t = np.linspace(0,T,N+1)
