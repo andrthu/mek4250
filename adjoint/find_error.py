@@ -16,8 +16,8 @@ def non_lin_problem(y0,yT,T,a):
     def grad_J(u,p,dt):
             
         grad=dt*(u+p)
-        #grad[0] = 0.5*u[0]
-        #grad[-1] = 0.5*grad[-1]
+        grad[0] = dt*0.5*u[0]
+        grad[-1] = dt*(0.5*u[-1]+p[-1])#grad[-1]
         return grad
     
 
@@ -90,40 +90,86 @@ def finite_diff(J,eps,u):
     for i in range(len(u)):
         Eps = np.zeros(len(u))
         Eps[i] = eps
-        g[i] = (J(u+eps) -J(u))/eps
+        g[i] = (J(u+Eps) -J(u))/eps
 
     return g
 def finite_difference_grad():
     y0=1
     yT=-10
     T=1
-    a=1
+    a=2
 
     problem = non_lin_problem(y0,yT,T,a)
 
 
     N =100
 
-    m = 3
-    my=1
+    m = 5
+    my = 10
     dt = float(T)/N
 
     J,grad_J = problem.generate_reduced_penalty(dt,N,m,my)
 
     
-    u= np.linspace(0,T,N+m)
+    u= np.linspace(0,T,N+m) +10
     
-    eps =0.00000000001
+    eps =0.001
     grad1 = grad_J(u)
     grad2 = finite_diff(J,eps,u)
     
-    grad2[:N+1]=dt*grad2[:N+1]
+    #grad2[:N+1]=dt*grad2[:N+1]
     print grad2
     plt.plot(grad1[:N+1],'r--')
     plt.plot(grad2[:N+1])
+    
+    plt.show()
+    plt.plot(grad1[N+1:],'r--')
+    plt.plot(grad2[N+1:])
     plt.show()
 
+def compare_state():
+
+    y0=1
+    yT=-10
+    T=1
+    a=2
+
+    problem = non_lin_problem(y0,yT,T,a)
+
+
+    N = 100
+    m = 3
+    u = np.zeros(N+1)
+    t  = np.linspace(0,T,N+1)
+    y = problem.ODE_solver(u,N)
+
+    u2 = np.zeros(N+m)
+
+    u2[N+1] = y[33]
+    u2[N+2] = y[67]
+
+    y2,Y2 = problem.ODE_penalty_solver(u2,N,m)
+
+    plt.plot(t,y)
+    plt.plot(t,Y2)
+    print max(abs(y-Y2))
+
+    print len(y2[0]),y2[0][-1],y2[1][0]
+    print y2[2][0]
+    plt.show()
+
+    p1 = problem.adjoint_solver(u,N)
+    
+    p2,P = problem.adjoint_penalty_solver(u2,N,m,1)
+    plt.plot(t,p1)
+    plt.plot(t,P)
+    print
+    print len(y2[0]),len(y2[1]),len(y2[2])
+    print len(p2[0]),len(p2[1]),len(p2[2])
+    print p2[0],p2[1]
+    plt.show()
 if __name__=='__main__':
     #also_in_simple()
     #check_gather()
-    finite_difference_grad()
+    #finite_difference_grad()
+    compare_state()

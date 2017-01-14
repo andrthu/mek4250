@@ -129,7 +129,10 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
 
         def grad_J(u,p,dt):
             t = np.linspace(0,T,len(u))
-            return dt*(u-func(t)+p)
+            grad = dt*(u-func(t)+p)
+            grad[0] = 0.5*dt*(u[0]-func(t[0]))
+            grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) + dt*p[-1]
+            return grad
 
 
 
@@ -520,7 +523,7 @@ def jump_difference():
 
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*20*x))
 
-    N = 1000
+    N = 10000
     m = 10
     opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     res = problem.solve(N)
@@ -542,6 +545,22 @@ def jump_difference():
     all_jump_diff = []
     all_jump_diff2 = []
     s = 0
+    
+    y_end=problem.ODE_solver(res['control'].array(),N)
+    val1=problem.J(res['control'].array(),y_end[-1],yT,T)
+    y2_end,Y = problem.ODE_penalty_solver(res2[-1].x,N,m)
+    val2=  problem.J(res2[-1].x[:N+1],y2_end[-1][-1],yT,T)
+    
+    
+    print val1,val2
+    print abs(val1-val2)
+
+
+    val3 = problem.Functional(res['control'].array(),N)
+    val4 = problem.Functional(res2[-1].x[:N+1],N)
+    print val3,val4
+    print abs(val3-val4)
+
     for i in range(len(res2)):
         y,Y = problem.ODE_penalty_solver(res2[i].x,N,m)
         jump_diff = []
@@ -553,7 +572,7 @@ def jump_difference():
 
         err = l2_diff_norm(res['control'].array(),res2[i].x[:N+1],t)
         
-        print res2[i].niter,res2[i].mu,err
+        print res2[i].niter,res2[i].mu,res2[i].J_func(res2[i].x),err
         s+=res2[i].niter
     print all_jump_diff
     print 1./N

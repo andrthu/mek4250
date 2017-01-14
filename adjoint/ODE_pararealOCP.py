@@ -156,7 +156,7 @@ class PararealOCP(OptimalControlProblem):
 
             self.update_Lbfgs_options(options)
             Lbfgsopt = self.Lbfgs_options
-
+            
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
                                 options=Lbfgsopt,ppc=PPC,scale=scaler)
             res = Solver.normal_solve()
@@ -199,7 +199,7 @@ class PararealOCP(OptimalControlProblem):
 
             self.update_Lbfgs_options(options)
             Lbfgsopt = self.Lbfgs_options
-
+            
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
                                 options=Lbfgsopt,ppc=PPC,scale=scaler)
             try:

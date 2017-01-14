@@ -218,7 +218,7 @@ class OptimalControlProblem():
             
 
         Y = np.zeros(N+1)
-        #"""
+        """
         start = 0
         for i in range(m):
             Y[start:start+len(y[i])-1] = y[i][:-1]
@@ -291,7 +291,7 @@ class OptimalControlProblem():
                 l[i][-(j+2)] = self.adjoint_update(l[i],y[i],j,dt)
             
         L=np.zeros(N+1)
-        #"""
+        """
         start=0
         for i in range(m):
             L[start:start+len(l[i])-1] = l[i][:-1]
@@ -304,7 +304,7 @@ class OptimalControlProblem():
             L[start:start+len(l[i])-1] = l[i][1:]
             start += len(l[i])-1
         
-        """
+        #"""
         return l,L
 
     def Lagrange_Penalty_Functional(self,u,N,m,my,G):
@@ -403,8 +403,9 @@ class OptimalControlProblem():
        
         if algorithm=='my_lbfgs':
             self.update_Lbfgs_options(Lbfgs_options)
+            
             solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
-
+            
             res = solver.solve()
         elif algorithm=='my_steepest_decent':
             self.update_SD_options(Lbfgs_options)
