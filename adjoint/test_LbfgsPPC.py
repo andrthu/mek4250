@@ -130,8 +130,8 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
         def grad_J(u,p,dt):
             t = np.linspace(0,T,len(u))
             grad = dt*(u-func(t)+p)
-            grad[0] = 0.5*dt*(u[0]-func(t[0]))
-            grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) + dt*p[-1]
+            #grad[0] = 0.5*dt*(u[0]-func(t[0]))
+            #grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) + dt*p[-1]
             return grad
 
 
@@ -523,10 +523,10 @@ def jump_difference():
 
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*20*x))
 
-    N = 100
+    N = 1000
     m = 10
-    seq_opt = {'jtol':1e-3}
-    opt = {'jtol':1e-3,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    seq_opt = {'jtol':1e-4}
+    opt = {'jtol':1e-4,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
     
@@ -578,6 +578,11 @@ def jump_difference():
     print all_jump_diff
     print 1./N
     plt.show()
+    plt.plot(t,res['control'].array(),'r--')
+    for i in range(len(res2)):
+        plt.plot(t,res2[i].x[:N+1])
+    plt.show()
+        
     for i in range(len(res3)):
         err=l2_diff_norm(res['control'].array(),res3[i]['control'].array()[:N+1],t)
         print err
