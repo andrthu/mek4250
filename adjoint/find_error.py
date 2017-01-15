@@ -28,7 +28,8 @@ def non_lin_problem(y0,yT,T,a):
 
 def l2_diff_norm(u1,u2,t):
     return np.sqrt(trapz((u1-u2)**2,t))
-
+def l_inf_norm(u1,u2,t):
+    return max(abs(u1-u2))
 def also_in_simple():
 
 
@@ -168,8 +169,43 @@ def compare_state():
     print len(p2[0]),len(p2[1]),len(p2[2])
     print p2[0],p2[1]
     plt.show()
+
+def gradient_tolerance():
+
+    y0=1
+    yT=-10
+    T=1
+    a=1
+
+    problem = non_lin_problem(y0,yT,T,a)
+
+    N = 1000
+    m = 10
+    mu = 1
+    t = np.linspace(0,T,N+1)
+
+    tol = [1e-3,1e-5,1e-6,1e-9]
+    
+    opt_pen = {'jtol':1e-4}
+
+    pen_res = problem.penalty_solve(N,m,[1,10,100,1000,2000,10000,100000],Lbfgs_options=opt_pen)
+
+    for i in range(len(tol)):
+        seq_res = problem.solve(N,Lbfgs_options={'jtol':tol[i]})
+        
+        plt.plot(t,seq_res['control'].array(),'r--')
+        for j in range(len(pen_res)):
+            plt.plot(t,pen_res[j]['control'].array()[:N+1])
+            err= l_inf_norm(seq_res['control'].array(),pen_res[j]['control'].array()[:N+1],t)
+            print err
+        print seq_res['iteration']
+        
+        print err
+        plt.show()
+
 if __name__=='__main__':
     #also_in_simple()
     #check_gather()
     #finite_difference_grad()
-    compare_state()
+    #compare_state()
+    gradient_tolerance()
