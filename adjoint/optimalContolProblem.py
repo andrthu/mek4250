@@ -404,9 +404,11 @@ class OptimalControlProblem():
         if algorithm=='my_lbfgs':
             self.update_Lbfgs_options(Lbfgs_options)
             
-            solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
-            
-            res = solver.solve()
+            #solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
+            solver=SplitLbfgs(J,grad_J,x0.array(),
+                              options=self.Lbfgs_options)
+            #res = solver.solve()
+            res = solver.normal_solve()
         elif algorithm=='my_steepest_decent':
             self.update_SD_options(Lbfgs_options)
             SDopt = self.SD_options

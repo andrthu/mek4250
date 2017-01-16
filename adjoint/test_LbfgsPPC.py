@@ -611,21 +611,19 @@ def look_at_gradient():
     end_crit = lambda mu0,dt,m : mu0<(1./dt)**2
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*20*x))
 
-    problem = non_lin_problem(y0,yT,T,a,p,c=0.5)
+    #problem = non_lin_problem(y0,yT,T,a,p,c=0.5)
     
     N = 10000
     m = 10
-    seq_opt = {'jtol':1e-7}
-    opt = {'jtol':1e-5,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    seq_opt = {'jtol':1e-8}
+    opt = {'jtol':1e-6,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     res = problem.solve(N,Lbfgs_options=seq_opt)
     res_u = res['control'].array()
     adjoint_res = problem.adjoint_solver(res_u,N)
     grad1 = problem.grad_J(res_u,adjoint_res,float(T)/N)
     mu_list = [1,100,1000,10000]
     """
-    res2=problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt,scale=True)#,scale=True
-                                        #,mu_stop_codition=end_crit
-                                        #,mu0=1)
+    res2=problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt,scale=True)
     """
     res2=problem.PPCLBFGSadaptive_solve(N,m,options=opt,scale=True
                                         ,mu_stop_codition=end_crit

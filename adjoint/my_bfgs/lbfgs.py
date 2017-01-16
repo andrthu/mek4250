@@ -53,6 +53,8 @@ class LbfgsParent():
         if user_options!=None:
             for key, val in user_options.iteritems():
                 options[key]=val
+
+        options["line_search_options"]['ftol'] = options['jtol']
         self.options = options
         
 

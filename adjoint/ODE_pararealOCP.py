@@ -201,11 +201,13 @@ class PararealOCP(OptimalControlProblem):
             Lbfgsopt = self.Lbfgs_options
             
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
-                                options=Lbfgsopt,ppc=PPC,scale=scaler)
+                                options=Lbfgsopt,ppc=PPC,
+                                scale=scaler)
             try:
                 res = Solver.normal_solve()
             except Warning:
                 try:
+                    print 'ai ai ai'
                     mu = 2*mu0
                     J,grad_J = self.generate_reduced_penalty(dt,N,m,mu)
                     Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,

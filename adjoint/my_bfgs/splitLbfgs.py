@@ -5,6 +5,7 @@ from linesearch.strong_wolfe import *
 from my_vector import SimpleVector
 from LmemoryHessian import LimMemoryHessian,NumpyLimMemoryHessian
 from lbfgsOptimizationControl import LbfgsOptimizationControl
+from diagonalMatrix import DiagonalMatrix
 
 class SplitLbfgs(LbfgsParent):
 
@@ -23,6 +24,7 @@ class SplitLbfgs(LbfgsParent):
             
             Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta)
         else:
+            
             Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta,
                                             PPCH=ppc)
         
@@ -120,7 +122,7 @@ class SplitLbfgs(LbfgsParent):
         
         y = self.data.dJ
         k = self.data.niter
-
+        
         if self.scaler==None:
             grad_norm = np.sqrt(np.sum(y**2)/len(y))
         else:
