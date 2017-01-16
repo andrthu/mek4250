@@ -594,8 +594,65 @@ def jump_difference():
         plt.plot(np.array(all_jump_diff2[i]))
     """
     plt.show()
+
+
+def l2_norm(u):
+
+    return np.sqrt(np.sum(u**2)/len(u))
+    
+def look_at_gradient():
+
+
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 4
+    end_crit = lambda mu0,dt,m : mu0<(1./dt)**2
+    problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*20*x))
+
+    problem = non_lin_problem(y0,yT,T,a,p,c=0.5)
+    
+    N = 10000
+    m = 10
+    seq_opt = {'jtol':1e-7}
+    opt = {'jtol':1e-5,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    res = problem.solve(N,Lbfgs_options=seq_opt)
+    res_u = res['control'].array()
+    adjoint_res = problem.adjoint_solver(res_u,N)
+    grad1 = problem.grad_J(res_u,adjoint_res,float(T)/N)
+    mu_list = [1,100,1000,10000]
+    """
+    res2=problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt,scale=True)#,scale=True
+                                        #,mu_stop_codition=end_crit
+                                        #,mu0=1)
+    """
+    res2=problem.PPCLBFGSadaptive_solve(N,m,options=opt,scale=True
+                                        ,mu_stop_codition=end_crit
+                                        ,mu0=1)
+    print l2_norm(grad1)
+    t = np.linspace(0,T,N+1)
+    plt.plot(t,res_u,'r--')
     
 
+    
+    for i in range(len(res2)):
+        
+        pen_u = res2[i]['control'].array()
+        err = l2_diff_norm(res_u,pen_u[:N+1],t)
+        mu = res2[i].mu
+        _,pen_dJ=problem.generate_reduced_penalty(float(T)/N,N,m,mu)
+        
+        pen_grad = pen_dJ(pen_u)
+        
+        big=l2_norm(pen_grad)
+        small =l2_norm(pen_grad[:N+1])
+        
+        plt.plot(t,pen_u[:N+1])
+        
+        print big,small,max(abs(pen_grad[N+1:])),err,mu
+    
+    plt.show()
 if __name__ == '__main__':
     #test1()
     #test2()
@@ -604,4 +661,5 @@ if __name__ == '__main__':
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    jump_difference()
+    #jump_difference()
+    look_at_gradient()

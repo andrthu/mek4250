@@ -120,9 +120,19 @@ class SplitLbfgs(LbfgsParent):
         
         y = self.data.dJ
         k = self.data.niter
-        
-        if np.sqrt(np.sum(y**2)/len(y))<self.options['jtol']:
-            print 'Success'
+
+        if self.scaler==None:
+            grad_norm = np.sqrt(np.sum(y**2)/len(y))
+        else:
+            N = self.scaler.N
+            gamma = self.scaler.gamma
+            grad_norm = np.sum((y[:N+1])**2)/len(y)
+            grad_norm+=np.sum((y[N+1:])**2)/(len(y)*gamma**2)
+            grad_norm = np.sqrt(grad_norm)
+            
+
+
+        if grad_norm<self.options['jtol']:
             return 1
             
         if k>self.options['maxiter']:

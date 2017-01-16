@@ -205,11 +205,14 @@ class PararealOCP(OptimalControlProblem):
             try:
                 res = Solver.normal_solve()
             except Warning:
-                mu = 10*mu0
-                J,grad_J = self.generate_reduced_penalty(dt,N,m,mu)
-                Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
-                                options=Lbfgsopt,ppc=PPC,scale=scaler)
-                res = Solver.normal_solve()
+                try:
+                    mu = 2*mu0
+                    J,grad_J = self.generate_reduced_penalty(dt,N,m,mu)
+                    Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
+                                        options=Lbfgsopt,ppc=PPC,scale=scaler)
+                    res = Solver.normal_solve()
+                except Warning:
+                    return result
             if scale:
                 res.rescale()
             x0=res.x

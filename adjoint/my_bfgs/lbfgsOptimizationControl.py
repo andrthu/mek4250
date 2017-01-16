@@ -57,8 +57,10 @@ class LbfgsOptimizationControl():
         self.x = x
         self.J_func = self.scaler.old_J
         self.grad_J = self.scaler.old_grad
+        #self.dJ=self.grad_J(self.x)
         
 
+    
     def add_mu(self,mu):
         self.mu = mu
         

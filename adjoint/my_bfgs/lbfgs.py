@@ -69,7 +69,7 @@ class LbfgsParent():
             gamma = self.scaler.gamma
             y = df0.array()
             grad_norm = np.sum((y[:N+1])**2)/len(df0)
-            grad_norm+=np.sum((y[N+1:])**2)/(len(df0)*gamma)
+            grad_norm+=np.sum((y[N+1:])**2)/(len(df0)*gamma**2)
             grad_norm = np.sqrt(grad_norm)
         if grad_norm<self.options['jtol']:
             return 1
