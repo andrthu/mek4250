@@ -54,7 +54,7 @@ def test1():
     yT = 5
     alpha = 0.5
     N = 500
-    m = 20
+    m = 10
     
     def J(u,y,yT,T,alp):
         t = np.linspace(0,T,len(u))
@@ -69,14 +69,14 @@ def test1():
     problem = Problem3(y0,yT,T,a,alpha,J,grad_J)
     
     t0=time.time()
-    res = problem.solve(N,algorithm='my_steepest_decent')
+    res = problem.solve(N,algorithm='my_steepest_decent',Lbfgs_options={'jtol':1e-6})
     t1=time.time()
     normal_time = t1-t0
 
-    mu_val = [1,10,30,50,75,100,120,150,175,200]
+    mu_val = [1,10,30,50,75,100,200,400,800,1600,3200]
 
     t0=time.time()
-    res2=problem.scaled_PPCSDsolve(N,m,mu_val)
+    res2=problem.scaled_PPCSDsolve(N,m,mu_val,options={'jtol':1e-3})
     t1 = time.time()
     penalty_time = t1-t0
     
@@ -120,8 +120,8 @@ def test1():
     #plt.savefig('test1_PC_state.png')
     plt.show()
 
-    if True:
-        sd_opt = {'maxiter':500}
+    if False:
+        sd_opt = {'maxiter':500,'jtol':1e-4}
         t0 = time.time()
         res3 = problem.penalty_solve(N,m,mu_val,algorithm='my_steepest_decent',
                                      Lbfgs_options=sd_opt,scale=True)
@@ -302,7 +302,7 @@ def scaled_unscaled():
 
 
     t = np.linspace(0,T,N+1)
-    opt={'maxiter':600}
+    opt={'jtol':1e-4,'maxiter':600}
     for i in range(1,len(m)):
         res_scaled = problem.penalty_solve(N,m[i],[mu],
                                            algorithm='my_steepest_decent',
@@ -359,7 +359,7 @@ def diffrent_gammas():
              'm=16 (iter,gamma)':[],}
 
     for i in range(len(gamma)):
-        opt = opt={'maxiter':500,'scale_factor':gamma[i]}
+        opt = opt={'jtol':1e-3,'maxiter':500,'scale_factor':gamma[i]}
 
         res1 = problem.penalty_solve(N,2,[mu],
                                      algorithm='my_steepest_decent',
@@ -440,7 +440,7 @@ def mesh_resolution_and_scaling():
     table['N=2000 (iter,gamma,err)'].append((res55.niter,'--'))
 
     for i in range(1,len(gamma)):
-        opt = opt={'maxiter':100,'scale_factor':gamma[i]}
+        opt = opt={'jtol':1e-2,'maxiter':100,'scale_factor':gamma[i]}
 
         res1 = problem.penalty_solve(N[0],m,[mu],
                                      algorithm='my_steepest_decent',
@@ -479,11 +479,11 @@ def mesh_resolution_and_scaling():
     data = pd.DataFrame(table,index=gamma)
     data2 = data.reindex_axis(NequalNum_sort(data.columns), axis=1)
     print data2
-    data2.to_latex('report/draft/optimization/mesh_res_and_scale_data.tex')
+    #data2.to_latex('report/draft/optimization/mesh_res_and_scale_data.tex')
 if __name__ == '__main__':
-    #test1()
+    test1()
     #test2()
     #test3()
     #scaled_unscaled()
     #diffrent_gammas()
-    mesh_resolution_and_scaling()
+    #mesh_resolution_and_scaling()

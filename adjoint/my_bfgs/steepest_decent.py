@@ -181,7 +181,7 @@ class SteepestDecent():
             N = self.data.scaler.N
             gamma = self.data.scaler.gamma
             grad_norm = np.sum(y[:N+1]**2)/(len(y))
-            grad_norm += np.sum(y[N+1:]**2)/(len(y)*gamma)
+            grad_norm += np.sum(y[N+1:]**2)/(len(y)*gamma**2)
             grad_norm = np.sqrt(grad_norm)
         if grad_norm<self.options['jtol']:
             #print 'Success'
@@ -242,21 +242,23 @@ class PPCSteepestDecent(SteepestDecent):
     
         self.PC = PC
 
-    def solve(self):
+    def solve(self,m):
 
         J = self.J
         grad_J = self.grad_J
         opt = self.options
         #import matplotlib.pyplot as plt
-
+        N = len(self.data.dJ)-m
         while self.check_convergence()==0:
 
-            p = -self.PC(self.data.dJ)
+            p = -self.data.dJ
+
+            p[N+1:] = self.PC(p[N+1:].copy())
 
             x,alfa = self.do_linesearch(J,grad_J,self.data.x,p)           
             self.data.update(x)
 
-            plt.plot(x[:len(x)-self.decomp+1])
+            #plt.plot(x[:len(x)-m+1])
             #plt.show()
             #print 'val: ',self.data.val()
         #plt.show()
@@ -292,7 +294,7 @@ class PPCSteepestDecent(SteepestDecent):
     def get_lamda_grad(self,N,m,v,lamda):
 
         p_lamda = -self.PC(self.data.dJ[N+1:])
-
+        #p_lamda = -self.data.dJ[N+1:]
         def lamda_J(x_lamda):
             x = np.zeros(N+m)
             x[:N+1] = v[:]
@@ -318,17 +320,18 @@ class PPCSteepestDecent(SteepestDecent):
         while self.check_convergence()==0:
 
             v,lamda = self.split_control(self.data.x,N,m)
-
+            
             p_lamda,lamda_J,lamda_grad = self.get_lamda_grad(N,m,v,lamda)
             
             lamda,alfa =  self.do_linesearch(lamda_J,lamda_grad,lamda,p_lamda)
             
             self.data.lamda_update(N,lamda)
-
+            
             p_v,v_J,v_grad = self.get_v_grad(N,m,v,lamda)
             v,alfa = self.do_linesearch(v_J,v_grad,v,p_v)
             self.data.v_update(N,v)
             
+           
             
             #self.data.split_update(N,v,lamda)
 

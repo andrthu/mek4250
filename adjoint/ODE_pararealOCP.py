@@ -276,7 +276,7 @@ class PararealOCP(OptimalControlProblem):
             if split:
                 res = Solver.split_solve(m)
             else:
-                res = Solver.solve()
+                res = Solver.solve(m)
             x0=res.x
             result.append(res)
         if len(result)==1:

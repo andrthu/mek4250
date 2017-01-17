@@ -1,7 +1,7 @@
 import numpy as np
 class PenaltyScaler():
 
-    def __init__(self,J,grad_J,x0,m,factor=20):
+    def __init__(self,J,grad_J,x0,m,factor=1):
 
         self.J = J
         self.grad_J = grad_J

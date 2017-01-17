@@ -260,14 +260,14 @@ def pre_choosen_mu_test():
 
     
     problem = non_lin_problem(y0,yT,T,a,p,c=c)
-    N = 800
+    N = 1000
     m = 16
     
     t = np.linspace(0,T,N+1)
-    opt = {'scale_factor':1,'mem_lim':10,'scale_hessian':True}
-
+    opt = {'jtol':1e-3,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    seq_opt = {'jtol':1e-5}
     #"""
-    res1=problem.solve(N)
+    res1=problem.solve(N,Lbfgs_options=seq_opt)
     
     c_table = {'non-penalty itr' : [res1['iteration']],
                'ppc itr'         : ['--'],
@@ -275,7 +275,7 @@ def pre_choosen_mu_test():
                'penalty err'     : ['--'],
                'ppc err'         : ['--'],} 
     order1 = ['non-penalty itr','penalty itr','ppc itr','penalty err','ppc err']
-    c_mu_list = [1,500,10000]
+    c_mu_list = [1,500,1000]
     res2=problem.PPCLBFGSsolve(N,m,c_mu_list,options=opt,scale=True)
     res3=problem.penalty_solve(N,m,c_mu_list,Lbfgs_options=opt,scale=True)
     print res1['iteration']
@@ -316,17 +316,23 @@ def pre_choosen_mu_test():
         plt.plot(res2['control'].array()[N+1:])
         plt.show()
     #"""
-
+    N = 1000
+    t=np.linspace(0,T,N+1)
+    seq_opt = {'jtol':1e-6}
+    opt = {'jtol':1e-3,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     problem2 = non_lin_problem(y0,yT,T,a,p,func=lambda x : np.sin(np.pi*4*x))
 
-    res2_1=problem2.solve(N)
+    res2_1=problem2.solve(N,Lbfgs_options=seq_opt)
     sin_mu_list=[1,500,10000,100000,1000000]
+    seq_u_norm = l2_norm(res2_1.x)
     m=16
+    
     res2_2=problem2.PPCLBFGSsolve(N,m,sin_mu_list,options=opt,scale=True)
 
     sin_table = {'Penalty iterations'    : ['--'],
                  '||v_mu-v||_L2'         : ['--'],
-                 'Non-penalty iterations': [res2_1['iteration']],}
+                 'Non-penalty iterations': [res2_1['iteration']],
+                 'rel error'             : ['--']}
     print res2_1['iteration']
     plt.figure()
     plt.plot(t,res2_1['control'].array(),'r--')
@@ -339,11 +345,12 @@ def pre_choosen_mu_test():
         sin_table['Penalty iterations'].append(res2_2[i].niter)
         sin_table['||v_mu-v||_L2'].append(err)
         sin_table['Non-penalty iterations'].append('--')
-        
+        sin_table['rel error'].append(err/seq_u_norm)
+
         leg.append('mu='+str(sin_mu_list[i]))
 
     sin_data = pd.DataFrame(sin_table,index=[0]+sin_mu_list)
-    Order = ['Non-penalty iterations','Penalty iterations','||v_mu-v||_L2']
+    Order = ['Non-penalty iterations','Penalty iterations','||v_mu-v||_L2','rel error']
     sin_data = sin_data.reindex_axis(Order, axis=1)
     print c_data
     print sin_data
@@ -656,8 +663,8 @@ if __name__ == '__main__':
     #test2()
     #test3()
     #compare_pc_and_nonpc_for_different_m()
-    #pre_choosen_mu_test()
+    pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
     #jump_difference()
-    look_at_gradient()
+    #look_at_gradient()
