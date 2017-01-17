@@ -232,11 +232,28 @@ class POCP(OptimalControlProblem):
         comm = self.comm
 
         m = comm.Get_size()
-        y ,_,_= self.parallel_ODE_penalty_solver(u,N,m)
+        rank = comm.Get_rank()
+        y ,Y,y_list= self.parallel_ODE_penalty_solver(u,N,m)
 
         J_val = self.parallel_J(u,y,self.yT,self.T,mu,comm)
-
         return J_val
+        last_y = None
+        if rank!=0:
+            Y = np.zeros(N+1)
+        
+        comm.Bcast(Y,root=0)
+        
+        J_val = self.J(u[:N+1],Y[-1],self.yT,self.T)
+        
+        penalty = np.zeros(1)
+        if rank == 0:
+            
+            for k in range(m-1):
+                penalty[0] = penalty[0]+mu*((y_list[k][-1]-u[N+1+k])**2)
+
+        comm.Bcast(penalty,root=0)
+        
+        return J_val + 0.5*penalty[0]
 
     def initial_penalty(self,y,u,mu,N,i):
         #rank = self.comm.Get_rank()
@@ -359,7 +376,7 @@ class POCP(OptimalControlProblem):
         Result = []
         rank = self.comm.Get_rank()
         for i in range(len(my_list)):
-            #print 'reeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+            
             def J(u):                
                 return self.parallel_penalty_functional(u,N,my_list[i])
 
@@ -389,7 +406,7 @@ class POCP(OptimalControlProblem):
                     Result.append(res)
                 else:
                     Result.append(0)
-            #print 'weeeeeeeeeeeeeeeeeeeeeeeeeeeee',rank
+            
             return Result
             if len(Result)==1:
                 return res
@@ -470,8 +487,8 @@ class PProblem1(POCP):
 
     def adjoint_update(self,l,y,i,dt):
         a = self.a
-        return (1+dt*a)*l[-(i+1)] 
-
+        #return (1+dt*a)*l[-(i+1)]/ 
+        return l[-(i+1)]/(1.-dt*a) 
 
 def generate_problem(y0,yT,T,a):
     
@@ -577,20 +594,34 @@ def test_parallel_solve():
     comm = problem.comm
 
     m = comm.Get_size()
+    rank = comm.Get_rank()
     N = 10000
     t0 = time.time()
-    non_parallel.penalty_solve(N,m,[1])
+    res1=non_parallel.penalty_solve(N,m,[1])
     t1=time.time()
     comm.Barrier()
     t2=time.time()
-    problem.parallel_penalty_solve(N,m,[1])
+    res2=problem.parallel_penalty_solve(N,m,[1])
     t3=time.time()
+    
+    
+    
+    print 'seq time: ',t1-t0,'parallel time: ',t3-t2, 'rank:',rank
+    print 'seq time/parallel time: ', (t1-t0)/(t3-t2), 'rank:',rank
+    
+    
+    if rank==0:
+        import matplotlib.pyplot as plt
 
-    print t1-t0,t3-t2,(t1-t0)/(t3-t2)
+        t = np.linspace(0,T,N+1)
+
+        plt.plot(t,res1['control'].array()[:N+1],'r--')
+        plt.plot(t,res2[0]['control'].array()[:N+1])
+        plt.show()
 if __name__ == "__main__":
-    #test_parallel_solve()
+    test_parallel_solve()
     #test_one_itt_solve()
-    test_parallel_gradient()
+    #test_parallel_gradient()
     """
     y0 = 1
     yT = 1

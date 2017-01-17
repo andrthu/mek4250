@@ -613,9 +613,9 @@ def look_at_gradient():
 
     #problem = non_lin_problem(y0,yT,T,a,p,c=0.5)
     
-    N = 10000
+    N = 100000
     m = 10
-    seq_opt = {'jtol':1e-8}
+    seq_opt = {'jtol':1e-9}
     opt = {'jtol':1e-6,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     res = problem.solve(N,Lbfgs_options=seq_opt)
     res_u = res['control'].array()

@@ -55,6 +55,7 @@ class LbfgsParent():
                 options[key]=val
 
         options["line_search_options"]['ftol'] = options['jtol']
+        options["line_search_options"]['gtol'] = max([1-options['jtol'],0.9])
         self.options = options
         
 
