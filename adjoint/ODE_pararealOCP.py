@@ -139,7 +139,7 @@ class PararealOCP(OptimalControlProblem):
             #return x
         return pc
 
-    def PPCLBFGSsolve(self,N,m,my_list,x0=None,options=None,scale=False):
+    def PPCLBFGSsolve(self,N,m,my_list,tol_list=None,x0=None,options=None,scale=False):
         dt=float(self.T)/N
         if x0==None:
             x0 = np.zeros(N+m)
@@ -156,6 +156,13 @@ class PararealOCP(OptimalControlProblem):
 
             self.update_Lbfgs_options(options)
             Lbfgsopt = self.Lbfgs_options
+            if tol_list!=None:
+                try:
+                    opt = {'jtol':tol_list[i]}
+                    self.update_Lbfgs_options(opt)
+                    Lbfgsopt = self.Lbfgs_options
+                except:
+                    print 'no good tol_list'
             
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
                                 options=Lbfgsopt,ppc=PPC,scale=scaler)

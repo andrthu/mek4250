@@ -42,11 +42,11 @@ def test():
     problem = non_lin_problem(y0,yT,T,a)
 
     N = 1000
-    m = 2
+    m = 10
     mu = 1
     
 
-    res = problem.solve(N)
+    res = problem.solve(N,Lbfgs_options={'jtol':1e-7})
 
     u = res.x
     
@@ -60,7 +60,7 @@ def test():
 
     
     
-    opt = {'jtol':1e-4}
+    opt = {'jtol':0,'maxiter':20}
 
     if m == 2:
 
@@ -79,15 +79,18 @@ def test():
     #plt.savefig('report/whyNotEqual/adjoint.png')
     #plt.show()
 
-    mu_list = [40000000000,80000000000]
+    #mu_list = [40000000000,80000000000]
     mu_list = [10,100,1000,10000,20000,40000,80000,160000,320000,640000,1280000]
-    tol_list = [1e-3,1e-3,5e-4,1e-4,1e-5,5e-6,5e-6,5e-6,4e-6,4e-6,4e-6,1e-9]
-    res2 = problem.penalty_solve(N,m,mu_list,tol_list=tol_list,x0=u0,Lbfgs_options=opt)
+    mu_list = [1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e12]
+    tol_list = [1e-3,1e-3,5e-4,1e-4,1e-2,5e-6,5e-6,5e-6,2e-6,4e-7,4e-6,1e-9]
+    res2 = problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
 
-    #19.2836230146
+   #res2 = problem.penalty_solve(N,m,mu_list,tol_list=tol_list,x0=u0,Lbfgs_options=opt)
 
     for i in range(len(res2)):
-        print l2_diff_norm(res2[i]['control'].array()[:N+1],u,t),i,mu_list[i],tol_list[i]#max(abs(res2[-1]['control'].array()[:N+1]-u))
+        err = l2_diff_norm(res2[i]['control'].array()[:N+1],u,t)
+        print err,res2[i].niter,mu_list[i]#,tol_list[i]
+        #max(abs(res2[-1]['control'].array()[:N+1]-u))
     
     print l2_diff_norm(res2[-1]['control'].array()[:N+1],u,t)#max(abs(res2[-1]['control'].array()[:N+1]-u))
 
@@ -159,11 +162,11 @@ def increasing_mu():
         table['||u-u_mu||'].append(err)
 
 
-    data =pd.DataFrame(table)
+    data = pd.DataFrame(table)
     print data
 
     #data.to_latex('report/whyNotEqual/mu_error.tex')
 
 if __name__ =='__main__':
-    #test()
-    increasing_mu()
+    test()
+    #increasing_mu()

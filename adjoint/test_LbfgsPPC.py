@@ -318,14 +318,15 @@ def pre_choosen_mu_test():
     #"""
     N = 1000
     t=np.linspace(0,T,N+1)
-    seq_opt = {'jtol':1e-6}
-    opt = {'jtol':1e-3,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    seq_opt = {'jtol':1e-12}
+    opt = {'maxiter':30,'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     problem2 = non_lin_problem(y0,yT,T,a,p,func=lambda x : np.sin(np.pi*4*x))
 
     res2_1=problem2.solve(N,Lbfgs_options=seq_opt)
-    sin_mu_list=[1,500,10000,100000,1000000]
+    sin_mu_list=[1,500,1e+4,1e+5,1e+6,1e+8,1e+9,1e+13]#10000,100000,1000000,]
+    tol_list = []
     seq_u_norm = l2_norm(res2_1.x)
-    m=16
+    m=10
     
     res2_2=problem2.PPCLBFGSsolve(N,m,sin_mu_list,options=opt,scale=True)
 
