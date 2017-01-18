@@ -425,7 +425,7 @@ class OptimalControlProblem():
         return res
 
 
-    def penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None,algorithm='my_lbfgs',scale=False):
+    def penalty_solve(self,N,m,my_list,tol_list=None,x0=None,Lbfgs_options=None,algorithm='my_lbfgs',scale=False):
         """
         Solve the optimazation problem with penalty
 
@@ -467,7 +467,12 @@ class OptimalControlProblem():
             #J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
             if algorithm=='my_lbfgs':
                 self.update_Lbfgs_options(Lbfgs_options)
-
+                if tol_list!=None:
+                    try:
+                        opt = {'jtol':tol_list[i]}
+                        self.update_Lbfgs_options(opt)
+                    except:
+                        print 'no good tol_list'
                 if scale:
                     scaler={'m':m,'factor':self.Lbfgs_options['scale_factor']}
                     
