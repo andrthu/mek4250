@@ -156,8 +156,8 @@ class SplitLbfgs(LbfgsParent):
                 try:
                     x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
                 except:
-                     s = x-x0
-                     y = df1-df0
+                     #s = x-x0
+                     #y = df1-df0
 
                      
              
