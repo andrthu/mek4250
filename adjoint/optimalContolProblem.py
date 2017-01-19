@@ -476,12 +476,13 @@ class OptimalControlProblem():
                 if scale:
                     scaler={'m':m,'factor':self.Lbfgs_options['scale_factor']}
                     
-                    solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options,
-                                   scale=scaler)
+                    #solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options,scale=scaler)
+                    solver = SplitLbfgs(J,grad_J,x0.array(),options=self.Lbfgs_options,scale=scaler)
                 else:
-                    solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
-            
-                res = solver.solve()
+                    #solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
+                    solver = SplitLbfgs(J,grad_J,x0.array(),options=self.Lbfgs_options)
+                #res = solver.solve()
+                res = solver.normal_solve()
                 Result.append(res)
                 x0 = res['control']
                 print J(x0.array())

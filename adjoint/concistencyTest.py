@@ -1,14 +1,16 @@
 import numpy as np
 from optimalContolProblem import OptimalControlProblem,Problem1
 from ODE_pararealOCP import SimplePpcProblem,PararealOCP
-from scipy.integrate import trapz
+from scipy.integrate import trapz,simps,romb
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from runge_kutta_OCP import RungeKuttaProblem
 def l2_diff_norm(u1,u2,t):
+    return max(abs(u1-u2))
     return np.sqrt(trapz((u1-u2)**2,t))
 
 def l2_norm(u,t):
+    return max(abs(u))
     return np.sqrt(trapz((u)**2,t))
 
 def lin_problem(y0,yT,T,a):
@@ -18,7 +20,7 @@ def lin_problem(y0,yT,T,a):
         t = np.linspace(0,T,len(u))
 
         I = trapz((u)**2,t)
-
+        
         return 0.5*I + 0.5*(y-yT)**2
 
     def grad_J(u,p,dt):
@@ -28,10 +30,10 @@ def lin_problem(y0,yT,T,a):
         #grad[-1] = dt*(0.5*u[-1]+p[-1])#grad[-1]
         return grad
     
+        
 
-
-    problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
-
+    #problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
+    problem = RungeKuttaProblem(y0,yT,T,a,J,grad_J)
     return problem
 
 def test(N=1000):
@@ -42,7 +44,9 @@ def test(N=1000):
     a=1
 
     problem = lin_problem(y0,yT,T,a)
+    """
 
+    """
     
     
     seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-10})
@@ -72,21 +76,21 @@ def test(N=1000):
 
 def test2():
     
-    y0=30.3
-    yT=-10
+    y0=3.3
+    yT=10
     T=1
     a=1.4
 
     problem = lin_problem(y0,yT,T,a)
 
-    m = 5
+    m = 15
 
-    N = [100,500,800,1000,2000,5000,10000,50000]
+    N = [101,501]#,801,1001]#,2000,5000,10000,50000]
 
-    mu_list = [1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e13]
+    mu_list = [1,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e13]
 
-    seq_opt = {'jtol': 0,'maxiter':30}
-    pen_opt = {'jtol' :0,'maxiter':30}
+    seq_opt = {'jtol': 0,'maxiter':60}
+    pen_opt = {'jtol' :0,'maxiter':60}
 
     table = {}
     for i in range(len(N)):
@@ -95,8 +99,8 @@ def test2():
 
         seq_res = problem.solve(N[i],Lbfgs_options=seq_opt)
 
-        res = problem.PPCLBFGSsolve(N[i],m,mu_list,options=pen_opt)
-        
+        #res = problem.PPCLBFGSsolve(N[i],m,mu_list,options=pen_opt)
+        res = problem.penalty_solve(N[i],m,mu_list,Lbfgs_options=pen_opt)
         seq_norm = l2_norm(seq_res.x,t)
         
         error = []

@@ -100,7 +100,7 @@ class SplitLbfgs(LbfgsParent):
 
     def default_options(self):
 
-        ls = {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1}
+        ls = {"ftol": 1e-1, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
                    "gtol"                   : 1e-4,
@@ -156,14 +156,14 @@ class SplitLbfgs(LbfgsParent):
                 try:
                     x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
                 except:
-                     #s = x-x0
-                     #y = df1-df0
+                    #s = x-x0
+                    #y = df1-df0
 
-                     
+                    
              
-                     #self.data.update(x,df1)
-                     #x0=x.copy()
-                     return self.data
+                    #self.data.update(x,df1)
+                    #x0=x.copy()
+                    return self.data
                     
             else:
                 x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)

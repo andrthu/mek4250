@@ -33,7 +33,7 @@ class PararealOCP(OptimalControlProblem):
         v = np.zeros(step+1)
         v[-1] = omega
         for i in range(step):
-            v[-(i+2)] = self.adjoint_update(v,None,i,step_dt)
+            v[-(i+2)] = self.adjoint_ppc_update(v,None,i,step_dt)
 
         return v[0]
 
@@ -43,9 +43,15 @@ class PararealOCP(OptimalControlProblem):
         v = np.zeros(step+1)
         v[0] = omega
         for i in range(step):
-            v[i+1] = self.ODE_update(v,np.zeros(step+1),i,0,step_dt)
+            v[i+1] = self.ODE_ppc_update(v,np.zeros(step+1),i,0,step_dt)
         return v[-1]
-
+        
+        
+    def adjoint_ppc_update(self,l,y,i,dt):
+        return self.adjoint_update(l,y,i,dt)
+    def ODE_ppc_update(self,y,u,i,j,dt):
+        return self.ODE_update(y,u,i,j,dt)
+        
     def PC_maker2(self,N,m,step=1):
         #"""
         def pc(x):
@@ -107,7 +113,7 @@ class PararealOCP(OptimalControlProblem):
         delta[0] = delta0
 
         for i in range(m):
-            delta[i+1] = self.ODE_update(delta,S/dT,i,i-1,dT)
+            delta[i+1] = self.ODE_ppc_update(delta,S/dT,i,i-1,dT)
 
         return delta
 
