@@ -206,8 +206,8 @@ class PararealOCP(OptimalControlProblem):
         while mu_stop_codition(mu0,dt,m): ###### OBS!!! ######
             
 
-            if  not self.adaptive_stop_condition(10*mu0,dt,m):
-                mu = 10*mu0
+            #if  not self.adaptive_stop_condition(10*mu0,dt,m):
+                #mu = 10*mu0
             J,grad_J = self.generate_reduced_penalty(dt,N,m,mu)
 
             self.update_Lbfgs_options(options)
@@ -356,13 +356,14 @@ class SimplePpcProblem(PararealOCP):
 
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
-        return (y[i] +dt*u[j+1])/(1.-dt*a)
-        #return (y[i] +dt*u[j])/(1.-dt*a)
+        #return (y[i] +dt*u[j+1])/(1.-dt*a)
+        return (y[i] +dt*u[j])/(1.-dt*a)
         
     def adjoint_update(self,l,y,i,dt):
         a = self.a
         return l[-(i+1)]/(1.-dt*a) 
-
+        #return l[-(i+1)]*(1.+dt*a)
+        #return l[-(i+1)]/(1.-dt*a) 
 
     def adjoint_propogator_update(self,l,rhs,i,dt):
         a = self.a

@@ -34,6 +34,7 @@ class GeneralPowerEndTermPCP(SimplePpcProblem):
 
 
 def l2_diff_norm(u1,u2,t):
+    return max(abs(u1-u2))
     return np.sqrt(trapz((u1-u2)**2,t))
 
 def test1():
@@ -117,8 +118,10 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
             return 0.5*I + (1./power)*(y-yT)**power
 
         def grad_J(u,p,dt):
-        
-            return dt*(u-c+p)
+            grad = dt*(u-c+p)
+            #grad[0] = 0.5*dt*(u[0]-c)+ dt*p[0]
+            #grad[-1] = 0.5*dt*(u[-1]-c) 
+            return grad
     else:
         def J(u,y,yT,T,power):
             t = np.linspace(0,T,len(u))
@@ -130,8 +133,8 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
         def grad_J(u,p,dt):
             t = np.linspace(0,T,len(u))
             grad = dt*(u-func(t)+p)
-            #grad[0] = 0.5*dt*(u[0]-func(t[0]))
-            #grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) + dt*p[-1]
+            #grad[0] = 0.5*dt*(u[0]-func(t[0]))+ dt*p[0]
+            #grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) 
             return grad
 
 
@@ -261,12 +264,12 @@ def pre_choosen_mu_test():
     
     problem = non_lin_problem(y0,yT,T,a,p,c=c)
     N = 1000
-    m = 16
+    m = 2
     
     t = np.linspace(0,T,N+1)
-    opt = {'jtol':1e-3,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    opt = {'jtol':1e-3,'scale_factor':1,'mem_lim':0,'scale_hessian':True}
     seq_opt = {'jtol':1e-5}
-    #"""
+    """
     res1=problem.solve(N,Lbfgs_options=seq_opt)
     
     c_table = {'non-penalty itr' : [res1['iteration']],
@@ -319,14 +322,14 @@ def pre_choosen_mu_test():
     N = 100
     t=np.linspace(0,T,N+1)
     seq_opt = {'jtol':0,'maxiter':30}
-    opt = {'maxiter':30,'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
-    problem2 = non_lin_problem(y0,yT,T,a,p,func=lambda x : np.sin(np.pi*4*x))
+    opt = {'maxiter':30,'jtol':1e-10,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    problem2 = non_lin_problem(y0,yT,T,a,p,c=c)#func=lambda x : np.sin(np.pi*4*x))
 
     res2_1=problem2.solve(N,Lbfgs_options=seq_opt)
     sin_mu_list=[1,500,1e+4,1e+5,1e+6,1e+8,1e+9,1e+13]#10000,100000,1000000,]
     tol_list = []
     seq_u_norm = l2_norm(res2_1.x)
-    m=10
+    m=2
     
     res2_2=problem2.PPCLBFGSsolve(N,m,sin_mu_list,options=opt,scale=True)
 
@@ -353,7 +356,7 @@ def pre_choosen_mu_test():
     sin_data = pd.DataFrame(sin_table,index=[0]+sin_mu_list)
     Order = ['Non-penalty iterations','Penalty iterations','||v_mu-v||_L2','rel error']
     sin_data = sin_data.reindex_axis(Order, axis=1)
-    print c_data
+    #print c_data
     print sin_data
     
     #c_data.to_latex('report/draft/parareal/c_self_choise_mu.tex')
@@ -543,8 +546,8 @@ def jump_difference():
 
     N = 1000
     m = 10
-    seq_opt = {'jtol':1e-4}
-    opt = {'jtol':1e-4,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    seq_opt = {'jtol':0,'maxiter':40}
+    opt = {'jtol':0,'scale_factor':1,'mem_lim':30,'scale_hessian':True,'maxiter':40}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
     
@@ -554,11 +557,14 @@ def jump_difference():
     plt.plot(t,y,'r--')
     
     end_crit = lambda mu0,dt,m : mu0<(1./dt)**2
-
+    #mu_updater1=lambda mu,dt,m,last_iter : mu + 10000
+    """
     res2 = problem.PPCLBFGSadaptive_solve(N,m,options=opt,
                                           scale=True,mu_stop_codition=end_crit,
-                                          mu0=1)
-    
+                                          mu_updater=mu_updater1,mu0=N)
+    """
+    mu_list = [N,2*N,5*N,10*N,50*N,70*N,200*N,2000*N,3000*N,4000*N,5000*N,6000*N,10000*N]
+    res2 = problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
 
     #res3 = problem.penalty_solve(N,m,[1,100,1000,10000])
     all_jump_diff = []
@@ -579,7 +585,8 @@ def jump_difference():
     val4 = problem.Functional(res2[-1].x[:N+1],N)
     print val3,val4
     print abs(val3-val4)
-
+    
+    seq_norm = l2_norm(res['control'].array())
     for i in range(len(res2)):
         y,Y = problem.ODE_penalty_solver(res2[i].x,N,m)
         jump_diff = []
@@ -589,7 +596,7 @@ def jump_difference():
         all_jump_diff2.append(jump_diff)
         plt.plot(t,Y)
 
-        err = l2_diff_norm(res['control'].array(),res2[i].x[:N+1],t)
+        err = l2_diff_norm(res['control'].array(),res2[i].x[:N+1],t)/seq_norm
         
         print res2[i].niter,res2[i].mu,res2[i].J_func(res2[i].x),err
         s+=res2[i].niter
@@ -600,12 +607,12 @@ def jump_difference():
     for i in range(len(res2)):
         plt.plot(t,res2[i].x[:N+1])
     plt.show()
-        
+    """
     for i in range(len(res3)):
         err=l2_diff_norm(res['control'].array(),res3[i]['control'].array()[:N+1],t)
         print err
     print s,res['iteration']
-
+    """
     """
     for i in range(len(all_jump_diff2)):
         plt.figure()
@@ -615,7 +622,7 @@ def jump_difference():
 
 
 def l2_norm(u):
-
+    return max(abs(u))
     return np.sqrt(np.sum(u**2)/len(u))
     
 def look_at_gradient():
@@ -626,15 +633,15 @@ def look_at_gradient():
     T  = 1
     a  = 0.9
     p = 4
-    end_crit = lambda mu0,dt,m : mu0<(1./dt)**2
+    end_crit = lambda mu0,dt,m : mu0<(1./dt)**4
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*20*x))
 
     #problem = non_lin_problem(y0,yT,T,a,p,c=0.5)
     
     N = 100000
     m = 10
-    seq_opt = {'jtol':1e-9}
-    opt = {'jtol':1e-6,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    seq_opt = {'jtol':0,'maxiter':40}
+    opt = {'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True,'maxiter':40 }
     res = problem.solve(N,Lbfgs_options=seq_opt)
     res_u = res['control'].array()
     adjoint_res = problem.adjoint_solver(res_u,N)
@@ -674,8 +681,8 @@ if __name__ == '__main__':
     #test2()
     #test3()
     #compare_pc_and_nonpc_for_different_m()
-    #pre_choosen_mu_test()
+    pre_choosen_mu_test()
     #test4()
-    test_adaptive_ppc()
+    #test_adaptive_ppc()
     #jump_difference()
     #look_at_gradient()

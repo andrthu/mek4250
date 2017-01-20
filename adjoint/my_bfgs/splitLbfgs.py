@@ -1,6 +1,8 @@
 import numpy as np
 from lbfgs import LbfgsParent
 from linesearch.strong_wolfe import *
+from linesearch.armijo import *
+
 
 from my_vector import SimpleVector
 from LmemoryHessian import LimMemoryHessian,NumpyLimMemoryHessian
@@ -87,7 +89,8 @@ class SplitLbfgs(LbfgsParent):
             
             ls = StrongWolfeLineSearch(ftol,gtol,xtol,start_stp,
                                         ignore_warnings=False)
-
+             
+            #ls = ArmijoLineSearch(ftol,gtol,xtol,start_stp)
         alpha = ls.search(phi, phi_dphi, phi_dphi0)
 
         
@@ -153,6 +156,7 @@ class SplitLbfgs(LbfgsParent):
             df0 = self.data.dJ.copy()
             p = H.matvec(-df0)
             if self.options['ignore xtol']:
+                
                 try:
                     x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
                 except Warning:
@@ -164,7 +168,7 @@ class SplitLbfgs(LbfgsParent):
                     #self.data.update(x,df1)
                     #x0=x.copy()
                     return self.data
-                    
+                
             else:
                 x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
@@ -178,7 +182,7 @@ class SplitLbfgs(LbfgsParent):
              
             self.data.update(x,df1)
             x0=x.copy()
-
+            print 'max grad:', max(abs(self.data.dJ))
         return self.data
 
 

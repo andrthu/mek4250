@@ -218,7 +218,7 @@ class OptimalControlProblem():
             
 
         Y = np.zeros(N+1)
-        """
+        #"""
         start = 0
         for i in range(m):
             Y[start:start+len(y[i])-1] = y[i][:-1]
@@ -291,7 +291,7 @@ class OptimalControlProblem():
                 l[i][-(j+2)] = self.adjoint_update(l[i],y[i],j,dt)
             
         L=np.zeros(N+1)
-        """
+        #"""
         start=0
         for i in range(m):
             L[start:start+len(l[i])-1] = l[i][:-1]
@@ -913,8 +913,8 @@ class Problem1(OptimalControlProblem):
 
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
-        return (y[i] +dt*u[j+1])/(1.-dt*a)
-        #return (y[i] +dt*u[j])/(1.-dt*a)
+        #return (y[i] +dt*u[j+1])/(1.-dt*a)
+        return (y[i] +dt*u[j])/(1.-dt*a)
 
     def adjoint_update(self,l,y,i,dt):
         a = self.a

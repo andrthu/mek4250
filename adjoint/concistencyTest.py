@@ -26,14 +26,14 @@ def lin_problem(y0,yT,T,a):
     def grad_J(u,p,dt):
             
         grad=dt*(u+p)
-        #grad[0] = dt*0.5*u[0]
-        #grad[-1] = dt*(0.5*u[-1]+p[-1])#grad[-1]
+        #grad[0] = dt*0.5*u[0]+p[-1]*dt
+        #grad[-1] = dt*(0.5*u[-1])#grad[-1]
         return grad
     
         
 
     problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
-    problem = RungeKuttaProblem(y0,yT,T,a,J,grad_J)
+    #problem = RungeKuttaProblem(y0,yT,T,a,J,grad_J)
     return problem
 
 def test(N=1000):
@@ -81,19 +81,19 @@ def test2():
     
     y0=3.3
     yT=10
-    T=1
-    a=1.4
+    T=0.1
+    a=10.4
 
     problem = lin_problem(y0,yT,T,a)
 
-    m = 10
+    m = 2
 
-    N = [101,501,801,1001,2000,5000,10000,50000]
+    N = [101,501,801,1001]#,2000,5000,10000,50000]
     #N = [100,50000,]
     mu_list = [1,1e1,1e2,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e13]
     #mu_list = [1e5,1e6,1e7,1e8,1e9,2e9,5e9,1e10,1e11]
     seq_opt = {'jtol': 0,'maxiter':60}
-    pen_opt = {'jtol' :0,'maxiter':60}
+    pen_opt = {'jtol' :1e-10,'maxiter':60}
 
     table = {}
     for i in range(len(N)):
@@ -114,9 +114,9 @@ def test2():
         #print table
     data = pd.DataFrame(table,index=mu_list)
     print data
-    data.to_latex('report/consitency_tables/different_N_meql'+str(m)+'.tex')
+    #data.to_latex('report/consitency_tables/different_N_meql'+str(m)+'.tex')
     print '||u||: ', seq_norm
 
 if __name__ == '__main__':
-    test(500)
-    #test2()
+    #test(1000)
+    test2()
