@@ -32,7 +32,7 @@ def lin_problem(y0,yT,T,a):
     
         
 
-    #problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
+    problem = SimplePpcProblem(y0,yT,T,a,J,grad_J)
     problem = RungeKuttaProblem(y0,yT,T,a,J,grad_J)
     return problem
 
@@ -49,13 +49,15 @@ def test(N=1000):
     """
     
     
-    seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-10})
+    seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':50})
 
     opt = {'jtol':0,'maxiter':60}
 
     m = [2,4,8,16,32,64]
+    m = [2,4,16,64]
     t = np.linspace(0,T,N+1)
-    mu_list = [1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e13]
+    mu_list = [1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e13,1e15,1e17,1e18,1e20]
+    mu_list =[1,1e1,1e2,1e3,2e3,5e3,1e4,2e4,5e4,7e4,1e5,2e5,5e5,7e5,1e6,2e6,5e6,7e6,1e7,2e7,5e7,7e7,1e8,2e8,5e8]
     table={}
     seq_norm = l2_norm(seq_res.x,t)
     for i in range(len(m)):
@@ -73,6 +75,7 @@ def test(N=1000):
         
     print data
     print seq_norm
+    data.to_latex('report/consitency_tables/different_m_Neql'+str(N)+'.tex')
 
 def test2():
     
@@ -83,12 +86,12 @@ def test2():
 
     problem = lin_problem(y0,yT,T,a)
 
-    m = 15
+    m = 10
 
-    N = [101,501]#,801,1001]#,2000,5000,10000,50000]
-
-    mu_list = [1,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e13]
-
+    N = [101,501,801,1001,2000,5000,10000,50000]
+    #N = [100,50000,]
+    mu_list = [1,1e1,1e2,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e13]
+    #mu_list = [1e5,1e6,1e7,1e8,1e9,2e9,5e9,1e10,1e11]
     seq_opt = {'jtol': 0,'maxiter':60}
     pen_opt = {'jtol' :0,'maxiter':60}
 
@@ -99,8 +102,8 @@ def test2():
 
         seq_res = problem.solve(N[i],Lbfgs_options=seq_opt)
 
-        #res = problem.PPCLBFGSsolve(N[i],m,mu_list,options=pen_opt)
-        res = problem.penalty_solve(N[i],m,mu_list,Lbfgs_options=pen_opt)
+        res = problem.PPCLBFGSsolve(N[i],m,mu_list,options=pen_opt)
+        #res = problem.penalty_solve(N[i],m,mu_list,Lbfgs_options=pen_opt)
         seq_norm = l2_norm(seq_res.x,t)
         
         error = []
@@ -108,11 +111,12 @@ def test2():
             err = l2_diff_norm(seq_res.x,res[j].x[:N[i]+1],t)/seq_norm 
             error.append(err)
         table.update({N[i]:error})
-    #print table
+        #print table
     data = pd.DataFrame(table,index=mu_list)
     print data
+    data.to_latex('report/consitency_tables/different_N_meql'+str(m)+'.tex')
     print '||u||: ', seq_norm
 
 if __name__ == '__main__':
-    #test()
-    test2()
+    test(500)
+    #test2()
