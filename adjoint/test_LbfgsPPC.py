@@ -119,8 +119,8 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
 
         def grad_J(u,p,dt):
             grad = dt*(u-c+p)
-            #grad[0] = 0.5*dt*(u[0]-c)+ dt*p[0]
-            #grad[-1] = 0.5*dt*(u[-1]-c) 
+            grad[0] = 0.5*dt*(u[0]-c)+ dt*p[0]
+            grad[-1] = 0.5*dt*(u[-1]-c) 
             return grad
     else:
         def J(u,y,yT,T,power):
@@ -322,7 +322,7 @@ def pre_choosen_mu_test():
     N = 100
     t=np.linspace(0,T,N+1)
     seq_opt = {'jtol':0,'maxiter':30}
-    opt = {'maxiter':30,'jtol':1e-10,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    opt = {'maxiter':30,'jtol':0,'scale_factor':1,'mem_lim':20,'scale_hessian':True}
     problem2 = non_lin_problem(y0,yT,T,a,p,c=c)#func=lambda x : np.sin(np.pi*4*x))
 
     res2_1=problem2.solve(N,Lbfgs_options=seq_opt)

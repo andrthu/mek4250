@@ -26,8 +26,8 @@ def lin_problem(y0,yT,T,a):
     def grad_J(u,p,dt):
             
         grad=dt*(u+p)
-        #grad[0] = dt*0.5*u[0]+p[-1]*dt
-        #grad[-1] = dt*(0.5*u[-1])#grad[-1]
+        grad[0] = dt*0.5*u[0]+p[-1]*dt
+        grad[-1] = dt*(0.5*u[-1])#grad[-1]
         return grad
     
         
@@ -81,7 +81,7 @@ def test2():
     
     y0=3.3
     yT=10
-    T=0.1
+    T=1
     a=10.4
 
     problem = lin_problem(y0,yT,T,a)
@@ -92,6 +92,7 @@ def test2():
     #N = [100,50000,]
     mu_list = [1,1e1,1e2,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e13]
     #mu_list = [1e5,1e6,1e7,1e8,1e9,2e9,5e9,1e10,1e11]
+    #mu_list = [1,1e1,1e2,1e3,2e3,5e3,1e4,2e4,3e4,5e4,1e5,2e5,7e5,1e6]
     seq_opt = {'jtol': 0,'maxiter':60}
     pen_opt = {'jtol' :1e-10,'maxiter':60}
 

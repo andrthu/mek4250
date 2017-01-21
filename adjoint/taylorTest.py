@@ -93,9 +93,9 @@ def taylor_test_non_penalty():
 
 def taylor_penalty_test():
     y0 = 3.2
-    yT = 1.5
+    yT = 100.5
     T  = 1
-    a  = 0.9
+    a  = 10.9
     p = 2
     c =0.5
 
@@ -103,13 +103,13 @@ def taylor_penalty_test():
     #problem = non_lin_problem(y0,yT,T,a,p,c=c)
     N = 100
     dt = 1./(N)
-    m = 5
+    m = 2
     my = 1
     
 
     J,grad_J = problem.generate_reduced_penalty(dt,N,m,my)
     h = 100*np.random.random(N+m)
-    u = np.zeros(N+m) + 1
+    u = np.zeros(N+m) 
     for i in range(10):
 
         print abs(J(u+h/(10**i))-J(u))
@@ -135,7 +135,91 @@ def taylor_penalty_test():
     
     plt.show()
     
+def quad_end():
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 1.9
+    p = 2
+    c =0
     
+    problem = non_lin_problem(y0,yT,T,a,p,c=c)
+    N = 100
+    dt = 1./(N)
+    my =10
+    m=6
+    h = 100*np.random.random(N+1)
+    
+    
+
+    J = lambda u: problem.Functional(u,N)
+    u = np.zeros(N+1) +1
+    for i in range(10):
+
+        print J(u+h/(10**i))-J(u)
+
+
+    def grad_J(x):
+        l = problem.adjoint_solver(u,N)
+        return problem.grad_J(u,l,dt)
+
+    print
+
+    for i in range(9):
+        eps = 1./(10**i)
+        print abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
+    print
+
+    for i in range(9):
+        eps = 1./(10**i)
+        grad_fd = finite_diff(J,u,eps)
+        grad = grad_J(u)
+        print max(abs(grad_fd[:]-grad[:]))
+    
+    import matplotlib.pyplot as plt
+    #grad2 = grad_J2(u)
+    #plt.plot(grad)
+    #plt.plot(grad_fd,'r--')
+    #plt.plot(grad2)
+    #plt.show()
+    
+    print
+    print 'Penalty:'
+    J,grad_J = problem.generate_reduced_penalty(dt,N,m,my)
+    h = 100*np.random.random(N+m)
+    u = np.zeros(N+m) 
+    for i in range(10):
+
+        print abs(J(u+h/(10**i))-J(u))
+
+
+    print
+
+    for i in range(10):
+        eps = 1./(10**i)
+        print abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
+    print
+
+    for i in range(10):
+        eps = 1./(10**i)
+        grad_fd = finite_diff(J,u,eps)
+        grad = grad_J(u)
+        print max(abs(grad_fd[:]-grad[:]))
+    
+    import matplotlib.pyplot as plt
+    
+    plt.plot(grad)
+    plt.plot(grad_fd,'r--')
+    
+    plt.show()
+
+    y,Y = problem.ODE_penalty_solver(u,N,m)
+    plt.plot(Y)
+    plt.show()
+    
+    p,P = problem.adjoint_penalty_solver(u,N,m,my)
+    plt.plot(P)
+    plt.show()
 def finite_diff(J,u,epsilon):
     grad = np.zeros(len(u))
 
@@ -147,9 +231,9 @@ def finite_diff(J,u,epsilon):
 
     return grad
 if __name__ == '__main__':
-    taylor_test_non_penalty()
+    #taylor_test_non_penalty()
     #taylor_penalty_test()
-
+    quad_end()
 
 
 """
