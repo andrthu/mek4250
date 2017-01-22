@@ -205,7 +205,7 @@ def gradient_tolerance():
 
 if __name__=='__main__':
     #also_in_simple()
-    #check_gather()
+    check_gather()
     #finite_difference_grad()
-    compare_state()
+    #compare_state()
     #gradient_tolerance()

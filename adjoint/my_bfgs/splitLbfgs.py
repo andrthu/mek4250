@@ -116,7 +116,7 @@ class SplitLbfgs(LbfgsParent):
                    "beta"                   : 1,
                    "return_data"            : False,
                    "scale_hessian"          : False, 
-                   "ignore xtol"            : True,}
+                   "ignore xtol"            : False,}
         
         return default
 

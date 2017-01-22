@@ -5,6 +5,7 @@ from scipy.integrate import trapz,simps,romb
 import matplotlib.pyplot as plt
 import pandas as pd
 from runge_kutta_OCP import RungeKuttaProblem
+
 def l2_diff_norm(u1,u2,t):
     return max(abs(u1-u2))
     return np.sqrt(trapz((u1-u2)**2,t))
@@ -26,8 +27,8 @@ def lin_problem(y0,yT,T,a):
     def grad_J(u,p,dt):
             
         grad=dt*(u+p)
-        grad[0] = dt*0.5*u[0]+p[-1]*dt
-        grad[-1] = dt*(0.5*u[-1])#grad[-1]
+        #grad[0] = dt*0.5*u[0]+p[-1]*dt
+        #grad[-1] = dt*(0.5*u[-1])#grad[-1]
         return grad
     
         
@@ -85,8 +86,8 @@ def test2():
     a=10.4
 
     problem = lin_problem(y0,yT,T,a)
-
-    m = 2
+    import matplotlib.pyplot as plt
+    m = 10
 
     N = [101,501,801,1001]#,2000,5000,10000,50000]
     #N = [100,50000,]
@@ -94,7 +95,7 @@ def test2():
     #mu_list = [1e5,1e6,1e7,1e8,1e9,2e9,5e9,1e10,1e11]
     #mu_list = [1,1e1,1e2,1e3,2e3,5e3,1e4,2e4,3e4,5e4,1e5,2e5,7e5,1e6]
     seq_opt = {'jtol': 0,'maxiter':60}
-    pen_opt = {'jtol' :1e-10,'maxiter':60}
+    pen_opt = {'jtol' :1e-4,'maxiter':60}
 
     table = {}
     for i in range(len(N)):
@@ -102,7 +103,8 @@ def test2():
         t = np.linspace(0,T,N[i]+1)
 
         seq_res = problem.solve(N[i],Lbfgs_options=seq_opt)
-
+        #seq_res = problem.scipy_solver(N[i])
+        #res  = problem.scipy_penalty_solve(N[i],m,mu_list)
         res = problem.PPCLBFGSsolve(N[i],m,mu_list,options=pen_opt)
         #res = problem.penalty_solve(N[i],m,mu_list,Lbfgs_options=pen_opt)
         seq_norm = l2_norm(seq_res.x,t)
@@ -113,6 +115,14 @@ def test2():
             error.append(err)
         table.update({N[i]:error})
         #print table
+
+        if i ==0:
+            plt.plot(t,seq_res.x)
+            for j in range(len(res)):
+                print 'he'
+                plt.plot(t,res[j].x[:N[i]+1])
+
+    plt.show()
     data = pd.DataFrame(table,index=mu_list)
     print data
     #data.to_latex('report/consitency_tables/different_N_meql'+str(m)+'.tex')

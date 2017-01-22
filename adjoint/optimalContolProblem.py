@@ -218,7 +218,7 @@ class OptimalControlProblem():
             
 
         Y = np.zeros(N+1)
-        #"""
+        """
         start = 0
         for i in range(m):
             Y[start:start+len(y[i])-1] = y[i][:-1]
@@ -757,7 +757,7 @@ class OptimalControlProblem():
                     g[N+1+j]= l[j+1][0] - l[j][-1]
                     
                 return g
-            opt={'jtol':1e-4,'gtol': 1e-4, 'disp': disp,'maxcor':10}
+            opt={'gtol':1e-4, 'disp': disp,'maxcor':10}
         
             if options!=None:
                 for key, val in options.iteritems():
