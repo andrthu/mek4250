@@ -16,8 +16,8 @@ def non_lin_problem(y0,yT,T,a):
     def grad_J(u,p,dt):
             
         grad=dt*(u+p)
-        grad[0] = dt*0.5*u[0]
-        grad[-1] = dt*(0.5*u[-1]+p[-1])#grad[-1]
+        grad[0] = dt*0.5*u[0] +dt*p[0]
+        grad[-1] = dt*(0.5*u[-1])#grad[-1]
         return grad
     
 
@@ -69,7 +69,7 @@ def check_gather():
     N = 100
     m = 2
     mu = 1
-    u = np.zeros(N+m)
+    u = np.zeros(N+m) 
 
     l,L = problem.adjoint_penalty_solver(u,N,m,mu)
 
@@ -140,12 +140,12 @@ def compare_state():
 
     N = 100
     m = 3
-    u = np.zeros(N+1)
+    u = np.linspace(0,T,N+1) +10
     t  = np.linspace(0,T,N+1)
     y = problem.ODE_solver(u,N)
 
     u2 = np.zeros(N+m)
-
+    u2[:N+1]=u[:]
     u2[N+1] = y[33]
     u2[N+2] = y[67]
 
@@ -207,5 +207,5 @@ if __name__=='__main__':
     #also_in_simple()
     #check_gather()
     #finite_difference_grad()
-    #compare_state()
-    gradient_tolerance()
+    compare_state()
+    #gradient_tolerance()
