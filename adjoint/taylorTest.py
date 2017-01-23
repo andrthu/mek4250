@@ -27,16 +27,17 @@ def lin_problem(y0,yT,T,a):
 
     def grad_J(u,p,dt):
         t = np.linspace(0,T,len(u))
-        
-        grad = dt*(u+p)
-        grad[0] = 0.5*dt*(u[0]) + dt*p[0]
-        grad[-1] = 0.5*dt*(u[-1]) 
+        grad = np.zeros(len(u))
+        grad[1:] = dt*(u[1:]+p[:-1])
+        grad[0] = 0.5*dt*(u[0]) 
+        grad[-1] = 0.5*dt*(u[-1]) + dt*p[-2]
         return grad
 
 
 
     problem1 = RungeKuttaProblem(y0,yT,T,a,J,grad_J)
     problem2 = SimplePpcProblem(y0,yT,T,a,J,grad_J)
+    problem2 = Problem1(y0,yT,T,a,J,grad_J)
     return problem2,problem1
 
 
@@ -50,7 +51,7 @@ def taylor_test_non_penalty():
     c =0.5
 
     problem,problem2 = lin_problem(y0,yT,T,a)
-    problem = non_lin_problem(y0,yT,T,a,p,c=c)
+    #problem = non_lin_problem(y0,yT,T,a,p,c=c)
     N = 100
     dt = 1./(N)
     
@@ -256,8 +257,8 @@ def augemted_test():
 
 if __name__ == '__main__':
     #taylor_test_non_penalty()
-    #taylor_penalty_test()
-    quad_end()
+    taylor_penalty_test()
+    #quad_end()
 
 
 """

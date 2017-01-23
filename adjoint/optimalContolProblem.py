@@ -904,17 +904,27 @@ class Problem1(OptimalControlProblem):
 
         self.a = a
 
-
+    #"""
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
         #return (y[i] +dt*u[j+1])/(1.-dt*a)
-        return (y[i] +dt*u[j])/(1.-dt*a)
+        return (y[i] +dt*u[j+1])/(1.-dt*a)
 
     def adjoint_update(self,l,y,i,dt):
         a = self.a
         #return l[-(i+1)]*(1.+dt*a)
-        return l[-(i+1)]/(1.-dt*a) 
+        return l[-(i+1)]/(1.-dt*a)
+    """
+    def ODE_update(self,y,u,i,j,dt):
+        a = self.a
+        
+        return y[i] +dt*(u[j]+a*y[i])
 
+    def adjoint_update(self,l,y,i,dt):
+        a = self.a
+        #return l[-(i+1)]/(1.-dt*a)
+        return l[-(i+1)] + dt*a*l[-(i+1)]
+    #"""
 class Problem2(OptimalControlProblem):
     """
     optimal control with ODE y'=a(t)y + u

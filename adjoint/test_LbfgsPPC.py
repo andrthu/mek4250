@@ -132,9 +132,10 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
 
         def grad_J(u,p,dt):
             t = np.linspace(0,T,len(u))
-            grad = dt*(u-func(t)+p)
-            grad[0] = 0.5*dt*(u[0]-func(t[0]))+ dt*p[0]
-            grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) 
+            grad = np.zeros(len(u))
+            grad[1:] = dt*(u[1:]-func(t[1:])+p[:-1])
+            grad[0] = 0.5*dt*(u[0]-func(t[0]))
+            grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) + dt*p[-2]
             return grad
 
 
@@ -263,7 +264,7 @@ def pre_choosen_mu_test():
 
     
     problem = non_lin_problem(y0,yT,T,a,p,c=c)
-    N = 1000
+    N = 100
     m = 2
     
     t = np.linspace(0,T,N+1)
@@ -540,12 +541,12 @@ def jump_difference():
     yT = 1.5
     T  = 1
     a  = 0.9
-    p = 4
+    p = 2
     
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*2*x))
 
     N = 1000
-    m = 10
+    m = 2
     part_start,_,_,_ = v_comm_numbers(N+1,m)
     
     #dt = N/T
@@ -554,7 +555,8 @@ def jump_difference():
     opt = {'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True,'maxiter':40}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
-    
+    table = {'\fraq{J(v_mu)-J(v)}{J(v)}':[],'||v_mu-v||':[],'jumps':[],'\fraq{Jmu(v_mu)-Jmu(v)}{Jmu(v)}':[] }
+
     t = np.linspace(0,T,N+1)
     y_seq = problem.ODE_solver(res['control'].array(),N)
     plt.figure()
@@ -611,13 +613,26 @@ def jump_difference():
         plt.plot(t,Y)
 
         err = l2_diff_norm(res['control'].array(),res2[i].x[:N+1],t)/seq_norm
+        #res2[i].J_func(res2[i].x)
         
-        print res2[i].niter,res2[i].J_func(res2[i].x),all_state_diff[i][0],err
+        f_val1 = res2[i].J_func(res2[i].x)
+        f_val2 = problem.Functional(res2[i].x[:N+1],N)
+        print res2[i].niter,(f_val2-val1)/val1,all_jump_diff[i][0],err
+
+        table['\fraq{J(v_mu)-J(v)}{J(v)}'].append((f_val2-val1)/val1)
+        table['||v_mu-v||'].append(err)
+        table['jumps'].append(all_jump_diff[i][0])
+        table['\fraq{Jmu(v_mu)-Jmu(v)}{Jmu(v)}'].append((f_val1-val1)/val1)
+
         s+=res2[i].niter
     print all_jump_diff
     print
     #print all_state_diff2
     print float(T)/N
+    data = pd.DataFrame(table,index = mu_list)
+
+    data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'.tex')
+    print data
     plt.show()
     plt.plot(t,res['control'].array(),'r--')
     for i in range(len(res2)):
