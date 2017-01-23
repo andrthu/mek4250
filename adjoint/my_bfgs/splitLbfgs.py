@@ -116,7 +116,7 @@ class SplitLbfgs(LbfgsParent):
                    "beta"                   : 1,
                    "return_data"            : False,
                    "scale_hessian"          : False, 
-                   "ignore xtol"            : False,}
+                   "ignore xtol"            : True,}
         
         return default
 
@@ -156,7 +156,6 @@ class SplitLbfgs(LbfgsParent):
             df0 = self.data.dJ.copy()
             p = H.matvec(-df0)
             if self.options['ignore xtol']:
-                
                 try:
                     x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
                 except Warning:

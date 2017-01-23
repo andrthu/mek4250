@@ -152,7 +152,8 @@ class OptimalControlProblem():
         """
         Same as above, when we use augmented Lagrange
         """
-        return self.initial_penalty(y,u,my,N,i) + G[i]
+        
+        return self.initial_penalty(y,u,my,N,i) - G[i]
 
 
     def adaptive_mu_update(self,mu,dt,m,last_iter):
@@ -328,7 +329,7 @@ class OptimalControlProblem():
         pen = 0
 
         for i in range(m-1):
-            pen = pen + (my*(y[i][-1]-u[N+1+i])+2*G[i])*(y[i][-1]-u[N+1+i])
+            pen = pen + my*(y[i][-1]-u[N+1+i])**2-2*G[i]*(y[i][-1]-u[N+1+i])
     
         return J_val + 0.5*pen
 
@@ -563,28 +564,21 @@ class OptimalControlProblem():
                 g[:N+1]=self.grad_J(u[:N+1],L,dt)
 
                 for j in range(m-1):
-                    g[N+1+j]=l[j+1][0]-l[j][-1] - G[j]
+                    g[N+1+j]=l[j+1][0]-l[j][-1] + G[j]
                     
                 return g
+            self.update_Lbfgs_options(Lbfgs_options)
+            #solver = Lbfgs(J,grad_J,x0,options=Loptions)
+            solver = SplitLbfgs(J,grad_J,x0.array(),options=self.Lbfgs_options)
             
-            if Lbfgs_options==None:
-                Loptions = self.Lbfgs_options
-            else:
-                Loptions = self.Lbfgs_options
-                for key, val in Lbfgs_options.iteritems():
-                    Loptions[key]=val
-
-            
-            solver = Lbfgs(J,grad_J,x0,options=Loptions)
-
-            
-            res = solver.solve()
+            #res = solver.solve()
+            res=solver.normal_solve()
             Result.append(res)
             x0 = res['control']
             print 
             y,Y = self.ODE_penalty_solver(res['control'].array(),N,m)
             for j in range(m-1):
-                G[j]=G[j]-my_list[i]*(y[j][-1]-res['control'].array()[N+1+j])
+                G[j]=G[j]-my_list[i]*(y[j][-1]-y[j+1][0])
 
         if len(Result)==1:
             return res

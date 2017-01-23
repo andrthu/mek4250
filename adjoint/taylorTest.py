@@ -230,6 +230,30 @@ def finite_diff(J,u,epsilon):
         grad[i] = (J(u+Eps)-J(u))/epsilon
 
     return grad
+
+
+def augemted_test():
+
+
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 2
+    c =0.5
+
+    problem,problem2 = lin_problem(y0,yT,T,a)
+    problem = non_lin_problem(y0,yT,T,a,p,c=c)
+    N = 100
+    dt = 1./(N)
+    
+    h = 100*np.random.random(N+1)
+
+
+    
+
+
+
 if __name__ == '__main__':
     #taylor_test_non_penalty()
     #taylor_penalty_test()
