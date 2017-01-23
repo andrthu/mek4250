@@ -8,7 +8,7 @@ from my_bfgs.splitLbfgs import SplitLbfgs
 from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
-
+from parallelOCP import v_comm_numbers
 
 class GeneralPowerEndTermPCP(SimplePpcProblem):
 
@@ -133,8 +133,8 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
         def grad_J(u,p,dt):
             t = np.linspace(0,T,len(u))
             grad = dt*(u-func(t)+p)
-            #grad[0] = 0.5*dt*(u[0]-func(t[0]))+ dt*p[0]
-            #grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) 
+            grad[0] = 0.5*dt*(u[0]-func(t[0]))+ dt*p[0]
+            grad[-1] = 0.5*dt*(u[-1]-func(t[-1])) 
             return grad
 
 
@@ -541,20 +541,24 @@ def jump_difference():
     T  = 1
     a  = 0.9
     p = 4
-
-    problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*20*x))
+    
+    problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*2*x))
 
     N = 1000
     m = 10
+    part_start,_,_,_ = v_comm_numbers(N+1,m)
+    
+    #dt = N/T
+
     seq_opt = {'jtol':0,'maxiter':40}
-    opt = {'jtol':0,'scale_factor':1,'mem_lim':30,'scale_hessian':True,'maxiter':40}
+    opt = {'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True,'maxiter':40}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
     
     t = np.linspace(0,T,N+1)
-    y = problem.ODE_solver(res['control'].array(),N)
+    y_seq = problem.ODE_solver(res['control'].array(),N)
     plt.figure()
-    plt.plot(t,y,'r--')
+    plt.plot(t,y_seq,'r--')
     
     end_crit = lambda mu0,dt,m : mu0<(1./dt)**2
     #mu_updater1=lambda mu,dt,m,last_iter : mu + 10000
@@ -563,12 +567,15 @@ def jump_difference():
                                           scale=True,mu_stop_codition=end_crit,
                                           mu_updater=mu_updater1,mu0=N)
     """
-    mu_list = [N,2*N,5*N,10*N,50*N,70*N,200*N,2000*N,3000*N,4000*N,5000*N,6000*N,10000*N]
+    mu_list = [N,2*N,5*N,10*N,50*N,70*N,200*N,2000*N,3000*N,4000*N,5000*N,6000*N,10000*N,100000*N,200000*N,1000000*N,1e11,1e12,1e13,1e14,1e16]
     res2 = problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
-
+    #res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt)
     #res3 = problem.penalty_solve(N,m,[1,100,1000,10000])
     all_jump_diff = []
     all_jump_diff2 = []
+
+    all_state_diff = []
+    all_state_diff2 = []
     s = 0
     
     y_end=problem.ODE_solver(res['control'].array(),N)
@@ -578,30 +585,39 @@ def jump_difference():
     
     
     print val1,val2
-    print abs(val1-val2)
+    print val1-val2
 
 
     val3 = problem.Functional(res['control'].array(),N)
     val4 = problem.Functional(res2[-1].x[:N+1],N)
     print val3,val4
-    print abs(val3-val4)
+    print val3-val4
     
-    seq_norm = l2_norm(res['control'].array())
+    seq_norm = l2_norm(res['control'].array(),t)
     for i in range(len(res2)):
         y,Y = problem.ODE_penalty_solver(res2[i].x,N,m)
+        
         jump_diff = []
+        state_diff = []
         for j in range(len(y)-1):
+            state_diff.append(abs(y[j+1][0]-y_seq[part_start[j+1]]))
+            #state_diff.append(max(abs(Y-y_seq)))
             jump_diff.append(abs(y[j][-1]-y[j+1][0]))
         all_jump_diff.append((max(jump_diff),min((jump_diff))))
         all_jump_diff2.append(jump_diff)
+
+        all_state_diff.append((max(state_diff),min(state_diff)))
+        all_state_diff2.append(state_diff)
         plt.plot(t,Y)
 
         err = l2_diff_norm(res['control'].array(),res2[i].x[:N+1],t)/seq_norm
         
-        print res2[i].niter,res2[i].mu,res2[i].J_func(res2[i].x),err
+        print res2[i].niter,res2[i].J_func(res2[i].x),all_state_diff[i][0],err
         s+=res2[i].niter
     print all_jump_diff
-    print 1./N
+    print
+    #print all_state_diff2
+    print float(T)/N
     plt.show()
     plt.plot(t,res['control'].array(),'r--')
     for i in range(len(res2)):
@@ -621,9 +637,9 @@ def jump_difference():
     plt.show()
 
 
-def l2_norm(u):
+def l2_norm(u,t=None):
     return max(abs(u))
-    return np.sqrt(np.sum(u**2)/len(u))
+    #return np.sqrt(trapz(u**2,t))
     
 def look_at_gradient():
 
@@ -681,8 +697,8 @@ if __name__ == '__main__':
     #test2()
     #test3()
     #compare_pc_and_nonpc_for_different_m()
-    pre_choosen_mu_test()
+    #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    #jump_difference()
+    jump_difference()
     #look_at_gradient()
