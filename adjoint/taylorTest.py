@@ -9,6 +9,7 @@ from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
 from optimalContolProblem import OptimalControlProblem,Problem1
+from scipy import linalg
 
 
 from test_LbfgsPPC import GeneralPowerEndTermPCP,non_lin_problem
@@ -53,7 +54,7 @@ def taylor_test_non_penalty():
     problem,problem2 = lin_problem(y0,yT,T,a)
     #problem = non_lin_problem(y0,yT,T,a,p,c=c)
     N = 100
-    dt = 1./(N)
+    dt = float(T)/(N)
     
     h = 100*np.random.random(N+1)
     
@@ -61,7 +62,7 @@ def taylor_test_non_penalty():
 
     J = lambda u: problem.Functional(u,N)
     u = np.zeros(N+1) +1
-    for i in range(10):
+    for i in range(8):
 
         print J(u+h/(10**i))-J(u)
 
@@ -73,24 +74,46 @@ def taylor_test_non_penalty():
         l = problem2.adjoint_solver(u,N)
         return problem.grad_J(u,l,dt)
     print
-
-    for i in range(10):
+    table = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
+             'rate2':['--'],'e v':[]}
+    eps_list = []
+    for i in range(8):
         eps = 1./(10**i)
-        print abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
+        grad_val = abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
+        func_val = J(u+h*(eps))-J(u)
+        eps_list.append(eps)
+        table['J(u+v)-J(u)'].append(func_val)
+        table['J(u+v)-J(u)-dJ(u)v'].append(grad_val)
+        table['e v'].append(eps*max(h))
+        if i!=0:
+            table['rate1'].append(np.log(table['J(u+v)-J(u)'][i-1]/table['J(u+v)-J(u)'][i])/np.log(10))
+            table['rate2'].append(np.log(table['J(u+v)-J(u)-dJ(u)v'][i-1]/table['J(u+v)-J(u)-dJ(u)v'][i])/np.log(10))
     print
-
+    
     for i in range(10):
-        eps = 1./(10**i)
+        eps = 1./(2**i)
         grad_fd = finite_diff(J,u,eps)
         grad = grad_J(u)
-        print max(abs(grad_fd[:]-grad[:]))
+        #print max(abs(grad_fd[:]-grad[:]))
     
+    data2 = pd.DataFrame(table,index=eps_list)
+    data2.to_latex('report/draft/discertizedProblem/taylorTest1.tex')
+    
+    print data2
+    
+    Q = np.vstack([np.log(np.array(eps_list)),np.ones(len(eps_list))]).T
+    LS_F=linalg.lstsq(Q, np.log(np.array(table['J(u+v)-J(u)'])))[0]
+    LS_grad = linalg.lstsq(Q, np.log(np.array(table['J(u+v)-J(u)-dJ(u)v'])))[0]
+    print LS_F[0],np.exp(LS_F[1])
+    print LS_grad[0],np.exp(LS_grad[1])
     import matplotlib.pyplot as plt
+
+
     #grad2 = grad_J2(u)
     plt.plot(grad)
     plt.plot(grad_fd,'r--')
     #plt.plot(grad2)
-    plt.show()
+    #plt.show()
 
 def taylor_penalty_test():
     y0 = 3.2
@@ -256,8 +279,8 @@ def augemted_test():
 
 
 if __name__ == '__main__':
-    #taylor_test_non_penalty()
-    taylor_penalty_test()
+    taylor_test_non_penalty()
+    #taylor_penalty_test()
     #quad_end()
 
 

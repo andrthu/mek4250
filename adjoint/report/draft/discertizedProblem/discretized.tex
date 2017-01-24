@@ -77,9 +77,9 @@ With these formulas in mind lets
 \section{Numerical gradient}
 \begin{theorem}
 Discrtizing the adjoint and state equation using the implicit Euler finite difference scheme, and evaluating the integral in the functional using the trapezoid rule, means that the numerical gradient will look like the following:
-\begin{align*}
-\nabla J_{\Delta t}(u_{\Delta t}) = Mu_{\Delta t} + Bp_{\Delta t}
-\end{align*}
+\begin{align}
+\nabla J_{\Delta t}(u_{\Delta t}) = Mu_{\Delta t} + Bp_{\Delta t} \label{num_grad}
+\end{align}
 where $M$ and $B$ are the following matrices:
 \begin{align*}
 M=\left[ \begin{array}{cccc}
@@ -116,7 +116,55 @@ To get to the second line I used the implicit Euler formula (\ref{I_state}). If 
 \end{align*} 
 Using the same approach, we can find an expression for $\frac{\partial g(u)}{\partial u_i}$: 
 \begin{align*}
-\frac{\partial g(u)}{\partial u_i}
+\frac{\partial g(u)}{\partial u_i} &= (y_N -y^T) (\prod_{k=i+1}^{N}\frac{\partial y_{k}}{\partial y_{k-1}}) \frac{\partial y_i}{\partial u_{i}} = \frac{p_N}{(1-\alpha\Delta t)^{N-i}}\frac{\Delta t}{1-\alpha\Delta t} \\
+&= \frac{p_N\Delta t}{(1-\alpha\Delta t)^{N-i+1}}=\Delta t p_{i-1}
 \end{align*}
+since $u_0$ is not part of the scheme, $\frac{\partial g(u)}{\partial u_0}=0$. If write now write up the gradient of $g(u)$ on matrix form, you get $\nabla g(u) = Bp$. The expression for the gradient in the case where we use the explicit Euler scheme can be found in a similar fashion. 
 \end{proof}
+\section{Taylor test}
+A good way to test whether a proposed gradient of functional actually is the correct gradient, is to use the Taylor test. The test is as its name implies connected with Taylor expansions of function, or more precisely the following two observations:
+\begin{align*}
+|J(u+\epsilon v)-J(u)| &= O(\epsilon) \\
+|J(u+\epsilon v)-J(u)-\epsilon\nabla J(u)\cdot v| &= O(\epsilon^2)
+\end{align*}
+Here $v$ is a random direction in the same space as $u$, while $\epsilon$ is some constant. 
+\\
+\\
+The test is carried out, by evaluating $D=|J(u+\epsilon v)-J(u)-\epsilon\nabla J(u)\cdot v|$ for decreasing $\epsilon$s, and if $D$ approaches 0 at 2nd order rate, we consider the test as passed.
+\section{Verifying the numerical gradient using the Taylor test}
+I will now use the Taylor test on the numerical gradient (\ref{num_grad}) that we get when solving the following problem:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	y'(t)=0.9y(t) +u(t), \ t \in (0,1)\\
+       	   y(0)=3.2
+     \end{array}
+   \right. 
+\end{align}
+\begin{align}
+J(y,u) = \frac{1}{2}\int_0^1u(t)^2dt + \frac{1}{2}(y(1)-1.5)^2
+\end{align}
+I then discretize in time using $\Delta t=\frac{1}{100}$, and I set $u_i=1 \ \forall i$, while $v_i$ are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
+\begin{align*}
+D_1(\epsilon) &= |J(u+\epsilon v)-J(u)|\\
+D_2(\epsilon) &=|J(u+\epsilon v)-J(u)-\epsilon \nabla J(u)\cdot v|
+\end{align*} 
+yielded the following:
+\\
+ \begin{tabular}{lrrrll}
+\toprule
+{} $\epsilon$&  $D_1$ &  $D_2$ &        $||\epsilon v||_{l_{\infty}}$ &    $ \log(\frac{D_1(10\epsilon)}{D_1(\epsilon)})$ &    $ \log(\frac{D_2(10\epsilon)}{D_2(\epsilon)})$ \\
+\midrule
+1.000000e+00 &  5956.494584 &        5.244487e+03 &  99.987417 &       -- &       -- \\
+1.000000e-01 &   123.645671 &        5.244487e+01 &   9.998742 &  1.68281 &        2 \\
+1.000000e-02 &     7.644529 &        5.244487e-01 &   0.999874 &  1.20883 &        2 \\
+1.000000e-03 &     0.717253 &        5.244487e-03 &   0.099987 &  1.02768 &        2 \\
+1.000000e-04 &     0.071253 &        5.244487e-05 &   0.009999 &  1.00287 &        2 \\
+1.000000e-05 &     0.007121 &        5.244489e-07 &   0.001000 &  1.00029 &        2 \\
+1.000000e-06 &     0.000712 &        5.244760e-09 &   0.000100 &  1.00003 &  1.99998 \\
+1.000000e-07 &     0.000071 &        5.255194e-11 &   0.000010 &        1 &  1.99914 \\
+\bottomrule
+\end{tabular}
+\\
+
 \end{document}
