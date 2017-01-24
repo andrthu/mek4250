@@ -546,10 +546,10 @@ def jump_difference():
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*2*x))
 
     N = 1000
-    m = 2
+    m = 10
     part_start,_,_,_ = v_comm_numbers(N+1,m)
     
-    #dt = N/T
+    dt = float(T)/N
 
     seq_opt = {'jtol':0,'maxiter':40}
     opt = {'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True,'maxiter':40}
@@ -631,7 +631,7 @@ def jump_difference():
     print float(T)/N
     data = pd.DataFrame(table,index = mu_list)
 
-    data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'.tex')
+    #data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'.tex')
     print data
     plt.show()
     plt.plot(t,res['control'].array(),'r--')
