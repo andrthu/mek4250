@@ -39,9 +39,12 @@ def lin_problem(y0,yT,T,a):
         grad = np.zeros(len(u))
 
         factor = dt*(3.+a*dt+(a*dt*0.5)**2)/6.
+        factor2 = dt*(3+2*a*dt+0.75*(a*dt)**2+0.25*(a*dt)**3)/6.
+
+        factor22 = 1+dt*(6*a+dt*a+2*dt*a**2+0.5*(dt*a)**2+0.5*a*(dt*a)**2+0.25*(dt*a)**3)/6.
 
         grad[:-1] =dt*(u[:-1]+p[:-1])
-        grad[0] = 0.5*dt*(u[0]) +0.5*dt*p[0]
+        grad[0] = 0.5*dt*(u[0]) +factor2*factor22*p[1]
         grad[-1] = 0.5*dt*(u[-1]) +factor*p[-1]
         return grad
 
@@ -321,7 +324,7 @@ def runge_kutta_test():
     table = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
              'rate2':['--'],'e v':[]}
     eps_list = []
-    for i in range(8):
+    for i in range(9):
         eps = 1./(10**i)
         grad_val = abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
         func_val = J(u+h*(eps))-J(u)
