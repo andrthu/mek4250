@@ -55,7 +55,7 @@ Now lets look at what happens when we discretize $I$. Lets divide $I$ into $n$ p
 	\end{array}
    \right.	
 \end{align*} 
-The next step is to decompose the discrete interval $I_{\Delta t}$ into $N$ discrete subintervals. This simply done by extracting a subsequence $\{t_{k_i}\}_{i=0}^N\subset I_{\Delta t}$ where $t_{k_0}=t_0$ and $t_{k_N}=t_n$. This results in $N$ sequences on the form $I_{\Delta t}^i=\{t_{k_i},t_{k_i+1},...,t_{k_{i+1}}\}$, and if we assume, as we did in the continuous case, that we have some intermediate initial conditions $\{\lambda_i\}_{i=1}^{N-1}$, we can solve $F_{\Delta t}$ separately on each $I_{\Delta t}^i$: 
+The next step is to decompose the discrete interval $I_{\Delta t}$ into $N$ discrete subintervals. This is simply done by extracting a subsequence $\{t_{k_i}\}_{i=0}^N\subset I_{\Delta t}$ where $t_{k_0}=t_0$ and $t_{k_N}=t_n$. This results in $N$ sequences on the form $I_{\Delta t}^i=\{t_{k_i},t_{k_i+1},...,t_{k_{i+1}}\}$, and if we assume, as we did in the continuous case, that we have some intermediate initial conditions $\{\lambda_i\}_{i=1}^{N-1}$, we can solve $F_{\Delta t}$ separately on each $I_{\Delta t}^i$: 
 \begin{align*}
 \left\{
      \begin{array}{lr}
@@ -64,14 +64,14 @@ The next step is to decompose the discrete interval $I_{\Delta t}$ into $N$ disc
 	\end{array}
    \right.	
 \end{align*} 
-There is one minor issue with decomposing $I_{\Delta t}$, which I did not mention above, and that has to do with choose the subsequence $\{t_{k_i}\}_{i=0}^N$. In theory, one could of course freely chose any subsequence of $I_{\Delta t}$, but we generally want the difference $t_{k_i} -t_{k_{i+1}}$ to be constant for all $i$. This is however not always possible, since there is no guarantee that $n$ is divisible by $N$.
+There is one minor issue with decomposing $I_{\Delta t}$, which I did not mention above, and that has to do with the choice of the subsequence $\{t_{k_i}\}_{i=0}^N$. In theory, one could of course freely chose any subsequence of $I_{\Delta t}$, but we generally want the difference $t_{k_i} -t_{k_{i+1}}$ to be constant for all $i$. This is however not always possible, since there is no guarantee that $n$ is divisible by $N$.
 \section{Partitioning}
-The general rule for partitioning a task between $N$ processes, is to distribute the work of the task as evenly as possible. The task in the above setting is solving $ F_{\Delta t}$, and the work to be distributed, is the computations required the solution from one time step to the next for all time steps. Since there are $n$ time steps, we should be able to say that the main task of solving $F_{\Delta t}$ can be divided into $n$ subtasks, and it these $n$ tasks that we want to distribute between the $N$ processes. Now deciding how many subtasks each process should get is quite simple. Start with defining the numbers:
+The general rule for partitioning a task between $N$ processes, is to distribute the work of the task as evenly as possible. The task in the above setting is solving $ F_{\Delta t}$, and the work to be distributed, is the computations required to move the solution from one time step to the next for all time steps. Since there are $n$ time steps, we should be able to say that the main task of solving $F_{\Delta t}$ can be divided into $n$ subtasks, and it is these $n$ tasks that we want to distribute between the $N$ processes. Now deciding how many subtasks each process should get is quite simple. Start with defining the numbers:
 \begin{align*}
 q &= \lfloor \frac{n}{N}\rfloor \\
 r &= N \mod n
 \end{align*} 
-Then we give each process $q$ tasks, and then add one task to $r$ processes. To which processes you give the extra task does not rely matter, but the most straightforward way of doing it is just to give the first $r$ processes the extra task. I however chose to look at the distributing problem slightly different, by instead of trying to distribute the $n$ tasks, looking at how to evenly divide the $n+1$ points $\{t_k\}_{k=0}^{n}$ among the $N$ processes. Again lets define $q$ and $r$ as:
+Then we give each process $q$ tasks, and then add one task to $r$ processes. To which processes you give the extra task does not really matter, but the most straightforward way of doing it is just to give the first $r$ processes the extra task. I however chose to look at the distributing problem slightly different, by instead of trying to distribute the $n$ tasks, looking at how to evenly divide the $n+1$ points $\{t_k\}_{k=0}^{n}$ among the $N$ processes. Again lets define $q$ and $r$ as:
 \begin{align*}
 q &= \lfloor \frac{n+1}{N}\rfloor \\
 r &= N \mod n+1
