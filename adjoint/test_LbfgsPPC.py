@@ -118,9 +118,10 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
             return 0.5*I + (1./power)*(y-yT)**power
 
         def grad_J(u,p,dt):
-            grad = dt*(u-c+p)
-            grad[0] = 0.5*dt*(u[0]-c)+ dt*p[0]
-            grad[-1] = 0.5*dt*(u[-1]-c) 
+            grad = np.zeros(len(u))
+            grad[1:] = dt*(u[1:]-c+p[:-1])
+            grad[0] = 0.5*dt*(u[0]-c)
+            grad[-1] = 0.5*dt*(u[-1]-c) + dt*p[-2]
             return grad
     else:
         def J(u,y,yT,T,power):
@@ -265,11 +266,11 @@ def pre_choosen_mu_test():
     
     problem = non_lin_problem(y0,yT,T,a,p,c=c)
     N = 100
-    m = 2
+    m = 10
     
     t = np.linspace(0,T,N+1)
-    opt = {'jtol':1e-3,'scale_factor':1,'mem_lim':0,'scale_hessian':True}
-    seq_opt = {'jtol':1e-5}
+    opt = {'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    seq_opt = {'jtol':1e-15}
     """
     res1=problem.solve(N,Lbfgs_options=seq_opt)
     
@@ -322,17 +323,17 @@ def pre_choosen_mu_test():
     #"""
     N = 100
     t=np.linspace(0,T,N+1)
-    seq_opt = {'jtol':0,'maxiter':30}
-    opt = {'maxiter':30,'jtol':0,'scale_factor':1,'mem_lim':20,'scale_hessian':True}
+    seq_opt = {'jtol':0,'maxiter':200}
+    opt = {'maxiter':200,'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
     problem2 = non_lin_problem(y0,yT,T,a,p,c=c)#func=lambda x : np.sin(np.pi*4*x))
 
     res2_1=problem2.solve(N,Lbfgs_options=seq_opt)
-    sin_mu_list=[1,500,1e+4,1e+5,1e+6,1e+8,1e+9,1e+13]#10000,100000,1000000,]
-    tol_list = []
+    sin_mu_list=[500,1e+4,1e+5,1e+6,1e+7,1e+8,1e+9,1e+10,1e+11,1e+13,1e+14,1e+15]#10000,100000,1000000,]
+    tol_list = [1e-4,1e-5,1e-7,1e-8,1e-8,1e-8,1e-10,1e-12,1e-12,1e-13,1e-14,1e-15]
     seq_u_norm = l2_norm(res2_1.x)
-    m=2
-    
-    res2_2=problem2.PPCLBFGSsolve(N,m,sin_mu_list,options=opt,scale=True)
+    m=20
+    #tol_list=None
+    res2_2=problem2.PPCLBFGSsolve(N,m,sin_mu_list,tol_list=tol_list,options=opt,scale=False)
 
     sin_table = {'Penalty iterations'    : ['--'],
                  '||v_mu-v||_L2'         : ['--'],
@@ -712,8 +713,8 @@ if __name__ == '__main__':
     #test2()
     #test3()
     #compare_pc_and_nonpc_for_different_m()
-    #pre_choosen_mu_test()
+    pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    jump_difference()
+    #jump_difference()
     #look_at_gradient()

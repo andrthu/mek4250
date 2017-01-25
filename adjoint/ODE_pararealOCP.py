@@ -186,7 +186,8 @@ class PararealOCP(OptimalControlProblem):
             return result
 
     def PPCLBFGSadaptive_solve(self,N,m,mu0=1,x0=None,options=None,scale=False,
-                               mu_stop_codition=None,mu_updater=None):
+                               mu_stop_codition=None,mu_updater=None,
+                               tol_update=None):
         dt=float(self.T)/N
         if x0==None:
             x0 = np.zeros(N+m)
@@ -203,6 +204,9 @@ class PararealOCP(OptimalControlProblem):
             mu_stop_codition = self.adaptive_stop_condition
         if mu_updater==None:
             mu_updater = self.adaptive_mu_update
+        if tol_update == None:
+            tol_update = lambda x,dt,mu: x
+
         while mu_stop_codition(mu0,dt,m): ###### OBS!!! ######
             
 
@@ -212,7 +216,7 @@ class PararealOCP(OptimalControlProblem):
 
             self.update_Lbfgs_options(options)
             Lbfgsopt = self.Lbfgs_options
-            
+            options.update({'jtol':tol_update(Lbfgsopt['jtol'],dt,mu)})
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
                                 options=Lbfgsopt,ppc=PPC,
                                 scale=scaler)
@@ -351,19 +355,14 @@ class SimplePpcProblem(PararealOCP):
 
         self.a = a
 
-        
-
-
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
         return (y[i] +dt*u[j+1])/(1.-dt*a)
-        return (y[i] +dt*u[j])/(1.-dt*a)
+
         
     def adjoint_update(self,l,y,i,dt):
         a = self.a
-        return l[-(i+1)]/(1.-dt*a) 
-        #return l[-(i+1)]*(1.+dt*a)
-        #return l[-(i+1)]/(1.-dt*a) 
+        return l[-(i+1)]/(1.-dt*a)
 
     def adjoint_propogator_update(self,l,rhs,i,dt):
         a = self.a
