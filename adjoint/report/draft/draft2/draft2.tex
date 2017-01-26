@@ -47,23 +47,24 @@ Replacing $y$ with $y(v)$ allows us to define the reduced problem:
 \end{align}
 To find a solution to (\ref{reduced problem}), we need to be able to differentiate the objective function $\hat{J}$ with respect to the control $v$. There are different ways of doing that, but I will focus on the so called adjoint approach, which is the most computational effective way of calculating the gradient of $\hat{J}$.
 \subsubsection{The adjoint equation and the gradient}
-To find the gradient $\hat{J}'(u)$, lets start by differentiating $\hat J$:
+To find the gradient $\hat{J}'(v)$, lets start by differentiating $\hat J$:
 \begin{align*}
-\hat{J}'(u) = DJ(y(u),u) = y'(u)^*J_y(y(u),u) + J_u(y(u),u)
+\hat{J}'(v) = DJ(y(v),v) = y'(v)^*J_y(y(v),v) + J_v(y(v),v)
 \end{align*}
-The problematic term in the above expression, is $y'(u)^*$. To calcualte this we need to differentiate the state equation:
+The problematic term in the above expression, is $y'(v)^*$. To calcualte this we need to differentiate the state equation:
 \begin{align*}
-DE(y(u),u)=0 &\Rightarrow E_y(y(u),u)y'(u)=-E_u(y(u),u) \\ &\Rightarrow y'(u)=-E_y(y(u),u)^{-1}E_u(y(u),u) \\ &\Rightarrow y'(u)^* = -E_u(y(u),u)^*E_y(y(u),u)^{-*}
+DE(y(v),v)=0 &\Rightarrow E_y(y(v),v)y'(v)=-E_v(y(v),v) \\ &\Rightarrow y'(v)=-E_y(y(v),v)^{-1}E_v(y(v),v) \\ &\Rightarrow y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}
 \end{align*}
-Instead of inserting $y'(u)^* = -E_u(y(u),u)^*E_y(y(u),u)^{-*}$ into our gradient expression, we first define the adjoint equation as:
+Instead of inserting $y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}$ into our gradient expression, we first define the adjoint equation as:
 \begin{align}
-E_y(y(u),u)^{*}p=J_y(u) \label{general adjoint}
+E_y(y(v),v)^{*}p=J_y(v) \label{general adjoint}
 \end{align}
 This now allows us to write up the gradient as follows:
 \begin{align}
-\hat{J}'(u)&= y'(u)^*J_y(y(u),u) + J_u(y(u),u)\\
-&=-E_u(y(u),u)^*E_y(y(u),u)^{-*}J_y(y(u),u) + J_u(y(u),u) \\
-&= -E_u(y(u),u)^*p +J_u(y(u),u) \label{gradient}
+\hat{J}'(v)&= y'(v)^*J_y(y(v),v) + J_v(y(v),v)\\
+&=-E_v(y(v),v)^*E_y(y(v),v)^{-*}J_y(y(v),v) + J_v(y(v),v) \\
+&= -E_v(y(v),v)^*p +J_v(y(v),v) \label{gradient}
 \end{align}
-
+Evaluating the gradient for a control variable $v\in V$ typically requires us to solve both the state and adjoint equation, and then inserting the solutions into the expression for the gradient.
+\subsubsection{Time dependent differential equations}
 \end{document}

@@ -90,5 +90,42 @@ Here the $\delta$s are conditional functions defined as:
    \right.	
 \end{align*} 
 We now have a way of decomposing the discrete time interval, and therefore also a way of partitioning the finite difference solver of the state equation in temporal direction. However both when we want try to find the gradient in a penalized optimal control problem, or when we just want to parallelize solving a differential equation using the parareal scheme, some communication between the processes is required. 
-\section{Communication}
+\section{Communication without shared memory}
+If we assume that we are solving our optimal control problem in parallel on processes that do not share any memory, there will have to be communication between the processes. The parts of the algorithm that we are parallelizing using the penalty method, is the evaluation of the objective function and its gradient for a given control variable $v$. The function evaluation requires us to solve the state equation, while we to calculate the gradient need both the solution of the state and adjoint equation. the required communication between the processes are different for function and gradient evaluation, so I will describe them separately. However they both share the same starting point, which I explain below.
+\\
+\\
+Lets assume that we have $N$ processes, which we name $\{P_{i}\}_{i=0}^{N-1}$. Then assume that each process $P_i$ only knows the parts of the control that are required for the process to be able to solve the state equation and to locally evaluate the objective function. This also includes the the control variables $\{\lambda_i\}_{i=1}^{N-1}$ that originates from the penalty terms in the functional. After each $P_i$ then have solved their part of the state equation, they all have the following data stored locally:
+\begin{align*}
+&\textit{Control variable: } \ v_i \\
+&\textit{Penalty control variable: } \ \lambda_i \\
+&\textit{Solution to local state equation: } \ y^i =\{y_j^i\}_{j=k_i}^{ k_{i+1}}
+\end{align*}
+Using this data we should be able to evaluate the penalized objective function, or to calculate its gradient.
+\subsubsection{Communication in functional evaluation}
+The penalized objective function consists of two parts:
+\begin{align*}
+\hat J_{\mu}(v,\lambda) = \hat{J}(y(v),v) + \frac{\mu}{2}\sum_{j=1}^{N-1}(y^{j-1}(T_j)-\lambda_j)^2
+\end{align*}
+Lets begin with the penalty term. Since each process $P_i$ only have $\lambda_i$ and $y^i(T_i+1)$ stored locally. This means that to calculate all penalty terms the processes will have to send either $\lambda_i$ or $y^i(T_i+1)$ to one of it neighbours. For example $P_i$ could send $\lambda_i$ to $P_{i-1}$ for $i=1,...,N-1$:
+\begin{align*}
+P_0\overset{\lambda_1}{\longleftarrow}P_1\overset{\lambda_2}{\longleftarrow}P_2 \overset{\lambda_3}{\longleftarrow}\cdots \overset{\lambda_{N-2}}{\longleftarrow}P_{N-2}\overset{\lambda_{N-1}}{\longleftarrow}P_{N-1}
+\end{align*} 
+For the evaluation of $ \hat{J}(y(v),v)$. lets assume that there exists functions $\hat{J}^i(y^i(v_i),v_i)$, such that:
+\begin{align*}
+\hat{J}(y(v),v)= \sum_{j=0}^{N-1}\hat{J}^j(y^j(v_j),v_j)
+\end{align*}
+If this is the case we can evaluate each part of the objective function locally, and then get the global $\hat{J}_{\mu}$ by doing one summation reduction. The penalized objective function evaluation algorithm will then look like the following:
+\begin{align*}
+1. \ &P_i \ \textit{calculates} \ y^i \ \forall i \\
+2. \ &P_{i-1}\overset{\lambda_i}{\longleftarrow}P_{i} \ \textit{for} \ i=1,..,N-1 \\
+3. \ &\hat{J}_{\mu}^i(y^i(v_i),v_i) = \hat{J}^i(y^i(v_i),v_i) + \frac{\mu}{2}(y^{i}(T_{i+1})-\lambda_{i+1})^2 \ \textit{for} \ i=0,..,N-2 \\
+&\hat{J}_{\mu}^{N-1}(y^{N-1}(v_{N-1}),v_{N-1})= \hat{J}^{N-1}(y^{N-1}(v_{N-1}),v_{N-1}) \\
+4. \ &\hat{J}_{\mu}(y(u),u) = \textbf{Reduce}(\hat{J}_{\mu}^i,+)
+\end{align*}
+\subsubsection{Communication in gradient computation}
+The gradient of the penalized optimal control problem looks like the following:
+\begin{align*}
+\nabla \hat J_{\mu}(v,\lambda) = (J_v(y(v),v)-B^*p,\{p_i(T_i) - p_{i-1}(T_i)\}_{i=1}^{N-1})
+\end{align*}
+$p$ is here the solution to the adjoint equation, which has to be calculated before we can evaluate the gradient. 
 \end{document}
