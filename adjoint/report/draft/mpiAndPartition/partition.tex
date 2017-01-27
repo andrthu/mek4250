@@ -127,5 +127,59 @@ The gradient of the penalized optimal control problem looks like the following:
 \begin{align*}
 \nabla \hat J_{\mu}(v,\lambda) = (J_v(y(v),v)-B^*p,\{p_i(T_i) - p_{i-1}(T_i)\}_{i=1}^{N-1})
 \end{align*}
-$p$ is here the solution to the adjoint equation, which has to be calculated before we can evaluate the gradient. 
+$p$ is here the solution to the adjoint equation, which has to be calculated before we can evaluate the gradient. For processes $P_i$, $i<N-1$, the initial condition of the adjoint equation is $p^i(T_{i+1})=\mu(y^i(T_{i+1}-\lambda_{i+1})$. This means that the first step after solving the state equations for gradient evaluation, is the same as for function evaluation, i.e. we have to send $\lambda_i$ from $P-i$ to $P_{i-1}$:
+\begin{align*}
+P_0\overset{\lambda_1}{\longleftarrow}P_1\overset{\lambda_2}{\longleftarrow}P_2 \overset{\lambda_3}{\longleftarrow}\cdots \overset{\lambda_{N-2}}{\longleftarrow}P_{N-2}\overset{\lambda_{N-1}}{\longleftarrow}P_{N-1}
+\end{align*}
+Each process can now solve its adjoint equation locally, and we can start to actually evaluate the gradient. The first step, would be to send $p_i(T_{i})$ from $P_i$ to $P_{i-1}$ so that we can find the penalty part of the gradient. Each process should also be able to calculate their own part of the gradient as $\nabla \hat J^i=(J_v(y^i(v^i),v^i)-B^*_ip^i)$. The final step is now to gather all the local parts of the gradient to the form the actual gradient. In summation we get the following algorithm for gradient evaluation:
+\begin{align*}
+1. \ &P_i \ \textit{calculates} \ y^i \ \forall i \\
+2. \ &P_{i-1}\overset{\lambda_i}{\longleftarrow}P_{i} \ \textit{for} \ i=1,..,N-1 \\
+3. \ &P_i \ \textit{calculates} \ p^i \ \forall i \\
+4. \ &P_{i-1}\overset{p^i(T_i)}{\longleftarrow}P_{i} \ \textit{for} \ i=1,..,N-1 \\
+5. \ &\textit{Penalty part of gradient } \ p_i(T_i) - p_{i-1}(T_i) \ \textit{is stored for $i\neq N-1$} \\
+&\textit{Local gradient if calcualated: } \ \nabla \hat J^i=(J_v(y^i(v^i),v^i)-B^*_ip^i) \\
+6. \ &\nabla \hat J_{\mu} = \textbf{Gather}(\nabla \hat J^i,p_i(T_i) - p_{i-1}(T_i))
+\end{align*}
+\section{Analysing parallel performance}
+Now that we what type of communication is involved in objective function evaluation and gradient computation, we can try to model the expected performance of the two algorithms. One way to measure performance of algorithms is to at their execution times. Therefore lets define $T_s$ as execution time of sequential algorithm, and $T_p$ as parallel algorithm execution time. Let us also define the speedup $S=\frac{T_s}{T_p}$. Since we for now only are modelling performance we do not actually calculate the execution times, but we do know that the run time of the algorithms are related to the size of the problem, namely the number of time-steps $n$. The last thing we need before we start our performance analysis, is a way to model communication between two processes. The communication time $T_c$ for sending a message of size $m$ between to processes, is usually modelled in the following way:
+\begin{align*}
+T_c = T_l + mT_w
+\end{align*} 
+Here $T_l$ is a constant representing latency or startup time, while $T_w$ is a constant representing the per message-unit transfer time. With these tools, we can now start analysing the performance of our algorithms.
+\subsection{Objective function evaluation speedup}
+The function evaluation consists of solving the state equation, which requires $O(n)$ operations, and then applying the functional on the control and the state on all $n+1$ time points, which probably also requires $O(n)$ operations, we can assume that the sequential Objective function evaluation execution time is 
+\begin{align*}
+T_s = O(n)
+\end{align*}
+For our parallel algorithm we also solve the state equation and apply the functional, but since we divide the time steps equally to each process, solving the state equation and applying the functional only requires $O(\frac{n}{N})$ operations. Since we also have penalty terms in our functional we also get an extra $O(N)$ operations. Now for the communication. We are doing two communication steps one is sharing the $\lambda$s between process neighbours, and the other is reducing the local function values into one global function value. The send and receive time is given by $T_c = T_l + \textit{dim}(\lambda_i)T_w$, which requires $O(1)$ operations, while the reduction time $T_{red}$ can be modelled as:
+\begin{align*}
+T_{red} &= \log N (T_l+T_w) \\
+&= O(\log N)
+\end{align*} 
+Here we assume that the parallel architecture is made in a certain way, and that the local functional value is a float. This results in parallel function evaluation execution time:
+\begin{align*}
+T_p &= O(\frac{n}{N}) +O(N) + O(\log N) + O(1) \\
+&=O(\frac{n}{N}) +O(N)
+\end{align*}
+The speedup is then:
+\begin{align*}
+S &= \frac{T_s}{T_p} = \frac{O(n)}{O(\frac{n}{N}) +O(N)} \\
+&=O(N)
+\end{align*}
+This is an optimal speedup.
+\subsection{Gradient speedup}
+When we calculate the objective function gradient sequentially, we solve both the state and adjoint equations. Still the required operations is still in the order of number of time-steps, i.e:
+\begin{align*}
+T_s = O(n)
+\end{align*}
+For the parallel algorithm the operations required to solve the local state and adjoint equations are $O(\frac{n}{N})$. We then have two $O(1)$ send receive communications similar to the send and receive for function evaluation. Lastly we need to model the gathering of the gradient. First define $L$ to be the length of the gradient. The run time of the gather $T_{gather}$, can then be modelled as:
+\begin{align*}
+T_{gather} &= T_l\log N + \frac{L}{N}T_w(N-1) \\
+&= O(\log N) + O(L)
+\end{align*}
+The execution time of the parallel algorithm is therefore:
+\begin{align*}
+T_p = O(\frac{n}{N}) + O(\log N) + O(L)
+\end{align*}
 \end{document}
