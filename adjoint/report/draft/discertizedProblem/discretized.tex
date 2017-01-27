@@ -76,7 +76,7 @@ p^{n-1} &=p^n(1 +\Delta t\alpha)\label{E_adjoint}
 With these formulas in mind lets 
 \section{Numerical gradient}
 \begin{theorem}
-Discrtizing the adjoint and state equation using the implicit Euler finite difference scheme, and evaluating the integral in the functional using the trapezoid rule, means that the numerical gradient will look like the following:
+Discretizing the adjoint and state equation using the implicit Euler finite difference scheme, and evaluating the integral in the functional using the trapezoid rule, means that the numerical gradient will look like the following:
 \begin{align}
 \nabla J_{\Delta t}(u_{\Delta t}) = Mu_{\Delta t} + Bp_{\Delta t} \label{num_grad}
 \end{align}
@@ -119,7 +119,7 @@ Using the same approach, we can find an expression for $\frac{\partial g(u)}{\pa
 \frac{\partial g(u)}{\partial u_i} &= (y_N -y^T) (\prod_{k=i+1}^{N}\frac{\partial y_{k}}{\partial y_{k-1}}) \frac{\partial y_i}{\partial u_{i}} = \frac{p_N}{(1-\alpha\Delta t)^{N-i}}\frac{\Delta t}{1-\alpha\Delta t} \\
 &= \frac{p_N\Delta t}{(1-\alpha\Delta t)^{N-i+1}}=\Delta t p_{i-1}
 \end{align*}
-since $u_0$ is not part of the scheme, $\frac{\partial g(u)}{\partial u_0}=0$. If write now write up the gradient of $g(u)$ on matrix form, you get $\nabla g(u) = Bp$. The expression for the gradient in the case where we use the explicit Euler scheme can be found in a similar fashion. 
+since $u_0$ is not part of the scheme, $\frac{\partial g(u)}{\partial u_0}=0$. If we now write up the gradient of $g(u)$ on matrix form, you get $\nabla g(u) = Bp$. The expression for the gradient in the case where we use the explicit Euler scheme can be found in a similar fashion. 
 \end{proof}
 \section{Taylor test}
 A good way to test whether a proposed gradient of functional actually is the correct gradient, is to use the Taylor test. The test is as its name implies connected with Taylor expansions of function, or more precisely the following two observations:

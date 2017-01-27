@@ -233,7 +233,7 @@ class POCP(OptimalControlProblem):
 
         m = comm.Get_size()
         rank = comm.Get_rank()
-        y ,Y,y_list= self.parallel_ODE_penalty_solver(u,N,m)
+        y ,Y,y_list = self.parallel_ODE_penalty_solver(u,N,m)
 
         J_val = self.parallel_J(u,y,self.yT,self.T,mu,comm)
         return J_val
@@ -619,9 +619,9 @@ def test_parallel_solve():
         plt.plot(t,res2[0]['control'].array()[:N+1])
         plt.show()
 if __name__ == "__main__":
-    test_parallel_solve()
+    #test_parallel_solve()
     #test_one_itt_solve()
-    #test_parallel_gradient()
+    test_parallel_gradient()
     """
     y0 = 1
     yT = 1

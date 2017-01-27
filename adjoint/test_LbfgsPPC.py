@@ -328,10 +328,11 @@ def pre_choosen_mu_test():
     problem2 = non_lin_problem(y0,yT,T,a,p,c=c)#func=lambda x : np.sin(np.pi*4*x))
 
     res2_1=problem2.solve(N,Lbfgs_options=seq_opt)
-    sin_mu_list=[500,1e+4,1e+5,1e+6,1e+7,1e+8,1e+9,1e+10,1e+11,1e+13,1e+14,1e+15]#10000,100000,1000000,]
+    sin_mu_list=np.array([500,1e+4,1e+5,1e+6,1e+7,1e+8,1e+9,1e+10,1e+11,1e+13,1e+14,1e+15])#10000,100000,1000000,]
+    sin_mu_list = (N/100)*sin_mu_list
     tol_list = [1e-4,1e-5,1e-7,1e-8,1e-8,1e-8,1e-10,1e-12,1e-12,1e-13,1e-14,1e-15]
     seq_u_norm = l2_norm(res2_1.x)
-    m=20
+    m=10
     #tol_list=None
     res2_2=problem2.PPCLBFGSsolve(N,m,sin_mu_list,tol_list=tol_list,options=opt,scale=False)
 
@@ -355,7 +356,7 @@ def pre_choosen_mu_test():
 
         leg.append('mu='+str(sin_mu_list[i]))
 
-    sin_data = pd.DataFrame(sin_table,index=[0]+sin_mu_list)
+    sin_data = pd.DataFrame(sin_table,index=[0]+list(sin_mu_list))
     Order = ['Non-penalty iterations','Penalty iterations','||v_mu-v||_L2','rel error']
     sin_data = sin_data.reindex_axis(Order, axis=1)
     #print c_data
@@ -546,8 +547,8 @@ def jump_difference():
     
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*2*x))
 
-    N = 1000
-    m = 10
+    N = 100
+    m = 2
     part_start,_,_,_ = v_comm_numbers(N+1,m)
     
     dt = float(T)/N
