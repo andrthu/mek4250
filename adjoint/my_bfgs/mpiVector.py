@@ -27,7 +27,8 @@ class MPIVector():
         return global_res[0]
     def __str__(self):
         return str(self.local_vec)
-
+    def __len__(self):
+        return len(self.local_vec)
 def test_mpivec():
 
     comm = MPI.COMM_WORLD
@@ -52,6 +53,13 @@ def test_mpivec():
     if rank==0:
         print 'dot prod:'
     print v.dot(v)
+    
+    comm.Barrier()
+    print
+    if rank==0:
+        print 'length:'
+    print len(v)
+
 
 if __name__=='__main__':
     test_mpivec()
