@@ -29,6 +29,10 @@ class MPIVector():
         return str(self.local_vec)
     def __len__(self):
         return len(self.local_vec)
+    def __getitem__(self,i):
+        return self.local_vec[i]
+    def __setitem__(self,i,val):
+        self.local_vec[i] = val
 def test_mpivec():
 
     comm = MPI.COMM_WORLD
