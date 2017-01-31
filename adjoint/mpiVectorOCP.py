@@ -11,8 +11,9 @@ from mpi4py import MPI
 from optimalContolProblem import OptimalControlProblem, Problem1
 from my_bfgs.mpiVector import MPIVector
 from parallelOCP import interval_partition,v_comm_numbers
+from ODE_pararealOCP import PararealOCP
 
-class MpiVectorOCP(OptimalControlProblem):
+class MpiVectorOCP(PararealOCP):
 
     def __init__(self,y0,yT,T,J,grad_J,parallel_J=None,parallel_grad_J=None,
                  Lbfgs_options=None,options=None):
@@ -159,6 +160,26 @@ class MpiVectorOCP(OptimalControlProblem):
             Result.append(res)
 
         return Result
+
+    def PC_maker4(self,N,m,comm,step=1):
+        
+        rank = comm.Get_rank()
+        
+        
+        def pc(x):
+            
+            lam = np.zeros(m)
+            loc_lam = np.zeros(1)
+            loc_lam[0] = x[-1]
+
+            comm.Allgatherv(lam,[loc_lam,tuple(np.ones(m)),tuple(np.linspace(0,m-1,m)),MPI.DOUBLE])
+            lam = lam[1:]
+            lam_pc = self.PC_maker2(N,m,step)            
+            lam2 = lam_pc(lam)
+            if rank!=0:
+                x[-1] = lam2[rank-1]
+            return x
+        return pc
 
             
                 
@@ -405,5 +426,5 @@ def time_measure_test():
     print t1-t0,t4-t3,(t1-t0)/(t4-t3)
 if __name__ =='__main__':
     #test_mpi_solvers()
-    #test_solve()
-    time_measure_test()
+    test_solve()
+    #time_measure_test()
