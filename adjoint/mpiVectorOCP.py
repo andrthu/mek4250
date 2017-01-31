@@ -365,18 +365,45 @@ def test_solve():
     comm = mpi_problem.comm
     
 
-    N = 100
+    N = 1000
     m = comm.Get_size()
     rank = comm.Get_rank()
 
-
+    res2 = non_mpi.penalty_solve(N,m,[1])
     res = mpi_problem.parallel_penalty_solve(N,m,[1])
-
+    
     print res[0].niter
     print
     print res[0].x
+    print
+    u=res[0].x.gather_control()
+    if rank==0:
+        print max(abs(u-res2.x))
+
+def time_measure_test():
+    y0 = 1
+    yT = 1
+    T =  1
+    a =  1
+
+    non_mpi, mpi_problem = generate_problem(y0,yT,T,a)
+    
+    comm = mpi_problem.comm
     
 
+    N = 10000
+    m = comm.Get_size()
+    rank = comm.Get_rank()
+    t0 = time.time()
+    res2 = non_mpi.penalty_solve(N,m,[1])
+    t1=time.time()
+    comm.Barrier()
+    t3=time.time()
+    res = mpi_problem.parallel_penalty_solve(N,m,[1])
+    t4 = time.time()
+
+    print t1-t0,t4-t3,(t1-t0)/(t4-t3)
 if __name__ =='__main__':
     #test_mpi_solvers()
-    test_solve()
+    #test_solve()
+    time_measure_test()

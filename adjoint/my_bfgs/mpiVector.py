@@ -23,7 +23,6 @@ class MPIVector():
     def dot(self,other):
         comm = self.comm
         local_res = np.array([np.sum(self[:]*other[:])])
-        #print local_res,comm.Get_rank()
         global_res = np.zeros(1)
         comm.Allreduce(local_res,global_res,op=MPI.SUM)
         return global_res[0]
@@ -63,7 +62,45 @@ class MPIVector():
 
         return np.sqrt(global_norm[0])
 
-    
+    def gather_control(self):
+        
+        comm = self.comm
+        m = comm.Get_size()
+        rank = comm.Get_rank()
+        N = self.global_length()
+
+        lam = np.zeros(m)
+        control_length = np.zeros(m)
+        if rank==0:
+            local_lam = np.zeros(1)
+            local_length = np.zeros(1)
+            local_length[0] = len(self)
+            loc_control = self[:]
+        else:
+            local_lam = np.zeros(1)
+            local_lam[0] = self[-1]
+            local_length = np.zeros(1)
+            local_length[0] = len(self)-1
+            loc_control=self[:-1]
+        
+        length = tuple(np.zeros(m)+1)
+        start = tuple(np.linspace(0,m-1,m))
+        comm.Allgatherv(local_lam,[lam,length,start,MPI.DOUBLE])
+        comm.Allgatherv(local_length,[control_length,length,start,MPI.DOUBLE])
+        
+        
+        global_control = np.zeros(N+1-m)
+        start = np.zeros(m)
+        for i in range(m-1):
+            start[i+1]= start[i]+control_length[i]
+
+        comm.Allgatherv(loc_control,[global_control,tuple(control_length),tuple(start),MPI.DOUBLE])
+        
+        control = np.zeros(N)
+        control[:N+1-m] = global_control[:]
+        control[N+1-m:] = lam[1:]
+
+        return control
 
 
 def test_mpivec():
