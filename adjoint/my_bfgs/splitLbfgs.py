@@ -2,16 +2,16 @@ import numpy as np
 from lbfgs import LbfgsParent
 from linesearch.strong_wolfe import *
 from linesearch.armijo import *
-
+from mpiVector import MPIVector
 
 from my_vector import SimpleVector
 from LmemoryHessian import LimMemoryHessian,NumpyLimMemoryHessian
 from lbfgsOptimizationControl import LbfgsOptimizationControl
-from diagonalMatrix import DiagonalMatrix
+from diagonalMatrix import DiagonalMatrix,DiagonalMpiMatrix
 
 class SplitLbfgs(LbfgsParent):
 
-    def __init__(self,J,d_J,x0,m=0,Hinit=None,options=None,ppc=None,scale=None):
+    def __init__(self,J,d_J,x0,m=0,Hinit=None,options=None,ppc=None,scale=None,mpi=False):
 
         LbfgsParent.__init__(self,J,d_J,x0,Hinit=Hinit,options=options,
                              scale=scale)
@@ -21,7 +21,11 @@ class SplitLbfgs(LbfgsParent):
         mem_lim = self.options['mem_lim']
         
         beta = self.options["beta"]
-        
+        if mpi:
+            if Hinit==None:            
+                self.Hinit = DiagonalMpiMatrix(len(x0),x0.comm)
+
+
         if ppc == None:
             
             Hessian = NumpyLimMemoryHessian(self.Hinit,mem_lim,beta=beta)
@@ -74,7 +78,7 @@ class SplitLbfgs(LbfgsParent):
             djs = p.dot(d_J(x_new))
         
             return f,float(djs)
-            
+        
         
         phi_dphi0 = J(x),float(p.dot(d_J(x)))
         
@@ -103,7 +107,7 @@ class SplitLbfgs(LbfgsParent):
 
     def default_options(self):
 
-        ls = {"ftol": 1e-12, "gtol": 1-1e-12, "xtol": 0, "start_stp": 1}
+        ls = {"ftol": 1e-3, "gtol": 1-1e-12, "xtol": 0, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
                    "gtol"                   : 1e-4,
@@ -116,7 +120,7 @@ class SplitLbfgs(LbfgsParent):
                    "beta"                   : 1,
                    "return_data"            : False,
                    "scale_hessian"          : False, 
-                   "ignore xtol"            : True,}
+                   "ignore xtol"            : False,}
         
         return default
 
@@ -144,6 +148,21 @@ class SplitLbfgs(LbfgsParent):
         if k>self.options['maxiter']:
             return 1
         return 0
+
+    def mpi_check_convergence(self):
+        y = self.data.dJ
+        k = self.data.niter
+        
+        grad_norm = y.l2_norm()
+        
+        if grad_norm<self.options['jtol']:
+            
+            return 1
+        
+        if k>self.options['maxiter']:
+            return 1
+        return 0
+
     def normal_solve(self):
         x0 = self.data.x.copy()
 
@@ -159,19 +178,13 @@ class SplitLbfgs(LbfgsParent):
                 try:
                     x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
                 except:
-                    #s = x-x0
-                    #y = df1-df0
-
-                    
-             
-                    #self.data.update(x,df1)
-                    #x0=x.copy()
+                   
                     return self.data
                 
             else:
                 x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
-            #print x
+            
             df1=self.d_J(x).copy()
             
             s = x-x0
@@ -184,7 +197,43 @@ class SplitLbfgs(LbfgsParent):
             print 'max grad:', max(abs(self.data.dJ))
         return self.data
 
+        
+    def mpi_solve(self):
+        x0 = self.data.x
+        comm = x0.comm
+        rank = comm.Get_rank()
+        H = self.data.H
+        n = self.data.length
+        df1 = MPIVector(np.zeros(n),comm)
+        
+        while self.mpi_check_convergence()==0:
+            
+            df0 = self.data.dJ.copy()
+            p = MPIVector(H.matvec(-df0),comm)
+            #print p
+            if self.options['ignore xtol']:
+                try:
+                    x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
+                except:
+                   
+                    return self.data
+                
+            else:
+                x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
 
+            
+            df1=self.d_J(x).copy()
+            
+            s = x-x0
+            y = df1-df0            
+            H.update(y,s)
+             
+            self.data.update(x,df1)
+            x0=x.copy()
+            if rank==0:
+                print 'max grad:', max(abs(self.data.dJ))
+        return self.data
+        
     def solve(self):
         
         n = self.data.length

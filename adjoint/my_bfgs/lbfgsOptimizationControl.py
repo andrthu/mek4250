@@ -2,6 +2,7 @@ import numpy as np
 
 from my_vector import SimpleVector, MuVector,MuVectors
 from LmemoryHessian import LimMemoryHessian,NumpyLimMemoryHessian
+from mpiVector import MPIVector
 
 class LbfgsOptimizationControl():
 

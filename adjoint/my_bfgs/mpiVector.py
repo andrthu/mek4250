@@ -8,10 +8,12 @@ class MPIVector():
         self.comm = comm
 
     def __add__(self,other):
-        return MPIVector(self.local_vec + other.local_vec,self.comm)
+        return MPIVector(self[:] + other[:],self.comm)
 
     def __sub__(self,other):
-        return MPIVector(self.local_vec - other.local_vec,self.comm)
+        return MPIVector(self[:] - other[:],self.comm)
+    def __neg__(self):
+        return -1*self
 
     def __mul__(self,a):
         
@@ -20,11 +22,12 @@ class MPIVector():
 
     def dot(self,other):
         comm = self.comm
-        local_res = np.array([np.sum(self.local_vec[:]*other.local_vec[:])])
-        print local_res,comm.Get_rank()
+        local_res = np.array([np.sum(self[:]*other[:])])
+        #print local_res,comm.Get_rank()
         global_res = np.zeros(1)
         comm.Allreduce(local_res,global_res,op=MPI.SUM)
         return global_res[0]
+        
     def __str__(self):
         return str(self.local_vec)
     def __len__(self):
@@ -33,6 +36,36 @@ class MPIVector():
         return self.local_vec[i]
     def __setitem__(self,i,val):
         self.local_vec[i] = val
+    def __abs__(self):
+        return abs(self[:])
+
+    def copy(self):
+        return MPIVector(self.local_vec.copy(),self.comm)
+    
+    def global_length(self):
+        
+        local_length = np.zeros(1)
+        local_length[0] = len(self)
+        global_length = np.zeros(1)
+
+        self.comm.Allreduce(local_length,global_length,op=MPI.SUM)
+        return global_length[0]
+
+    def l2_norm(self):
+
+        l = self.global_length()
+        local_norm = np.zeros(1)
+        local_norm[0] = np.sum(self.local_vec**2)/l
+
+        global_norm = np.zeros(1)
+
+        self.comm.Allreduce(local_norm,global_norm,op=MPI.SUM)
+
+        return np.sqrt(global_norm[0])
+
+    
+
+
 def test_mpivec():
 
     comm = MPI.COMM_WORLD

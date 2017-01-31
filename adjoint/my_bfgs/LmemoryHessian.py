@@ -236,8 +236,8 @@ class NumpyLimMemoryHessian(InvertedHessian):
         
         
         
-        t = x - float(rhok * x.dot(sk)) * yk
-        t = self.matvec(t,k-1)
-        t = t - float(rhok * yk.dot(t)) * sk
-        t = t + float(rhok * x.dot(sk)) * sk
+        t = x - (float(rhok * x.dot(sk)) * yk)        
+        t = self.matvec(t,k-1)        
+        t = t - (float(rhok * yk.dot(t)) * sk)
+        t = t + (float(rhok * x.dot(sk)) * sk)
         return t

@@ -1,4 +1,5 @@
 from my_bfgs.lbfgs import Lbfgs
+from my_bfgs.splitLbfgs import SplitLbfgs
 from my_bfgs.my_vector import SimpleVector
 from penalty import partition_func
 from scipy.integrate import trapz
@@ -16,7 +17,7 @@ class MpiVectorOCP(OptimalControlProblem):
     def __init__(self,y0,yT,T,J,grad_J,parallel_J=None,parallel_grad_J=None,
                  Lbfgs_options=None,options=None):
         
-        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,Lbfgs_options,options)
 
         self.parallel_J=parallel_J
         self.parallel_grad_J = parallel_grad_J
@@ -131,17 +132,45 @@ class MpiVectorOCP(OptimalControlProblem):
             my_lam = np.array([p[0]-p_n])
             grad[-1] = p[0]-p_n
             
-        return grad
+        return MPIVector(grad,comm)
 
+    def parallel_penalty_solve(self,N,m,mu_list,tol_list=None,x0=None,Lbfgs_options=None):
 
+        comm = self.comm
+        rank = comm.Get_rank()
+        if x0==None:
+            x0= MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+            
+        #self.update_Lbfgs_options(Lbfgs_options)
+        Result = []
+        for i in range(len(mu_list)):
+
+            
+            
+            def J(u):
+                return self.parallel_penalty_functional(u,N,mu_list[i])
+            def grad_J(u):
+                return self.penalty_grad(u,N,m,mu_list[i])
+
+            solver = SplitLbfgs(J,grad_J,x0,options=self.Lbfgs_options,mpi=True)
+
+            res = solver.mpi_solve()
+            x0 = res.x
+            Result.append(res)
+
+        return Result
+
+            
+                
 
 class simpleMpiVectorOCP(MpiVectorOCP):
 
     def __init__(self,y0,yT,T,a,J,grad_J,parallel_J=None,parallel_grad_J=None,options=None):
 
-        MpiVectorOCP.__init__(self,y0,yT,T,J,grad_J,options=options,
+        MpiVectorOCP.__init__(self,y0,yT,T,J,grad_J,
                               parallel_J=parallel_J,
-                              parallel_grad_J=parallel_grad_J)
+                              parallel_grad_J=parallel_grad_J,
+                              options=options)
 
         self.a = a
 
@@ -172,7 +201,7 @@ def generate_problem(y0,yT,T,a):
         grad[0] = 0.5*dt*(u[0]) 
         grad[-1] = 0.5*dt*(u[-1]) + dt*p[-2]
         return grad
-        return dt*(u+p)
+        
 
     def parallel_J(u,y,yT,T,N,mu,comm):
         m = comm.Get_size()
@@ -324,8 +353,30 @@ def test_mpi_solvers():
             print grad-grads[len(grad):],rank,len(grad)
 
 
+def test_solve():
+    
+    y0 = 1
+    yT = 1
+    T =  1
+    a =  1
+
+    non_mpi, mpi_problem = generate_problem(y0,yT,T,a)
+    
+    comm = mpi_problem.comm
+    
+
+    N = 100
+    m = comm.Get_size()
+    rank = comm.Get_rank()
+
+
+    res = mpi_problem.parallel_penalty_solve(N,m,[1])
+
+    print res[0].niter
+    print
+    print res[0].x
     
 
 if __name__ =='__main__':
-    test_mpi_solvers()
-    
+    #test_mpi_solvers()
+    test_solve()

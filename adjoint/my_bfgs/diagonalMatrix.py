@@ -1,9 +1,9 @@
 import numpy as np
-
+from mpiVector import MPIVector
 
 class DiagonalMatrix():
 
-    def __init__(self,n,diag=None):
+    def __init__(self,n,diag=None,mpi=None):
         
         self.n = n
         if diag==None:
@@ -11,10 +11,26 @@ class DiagonalMatrix():
         else:
             self.diag = diag
 
-
+        if mpi!=None:
+            self.diag = MPIVector(self.diag,mpi)
     def __call__(self,x):
         
         return self.diag[:]*x[:]
+
+class DiagonalMpiMatrix():
+
+    def __init__(self,n,comm,diag=None):
+        
+        self.n = n
+        if diag==None:
+            self.diag = MPIVector(np.zeros(n) +1,comm)
+        else:
+            self.diag = MPIVector(diag,comm)
+
+        
+    def __call__(self,x):
+        
+        return self.diag*x
 
 
 if __name__ =='__main__':
