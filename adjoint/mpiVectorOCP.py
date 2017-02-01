@@ -163,16 +163,19 @@ class MpiVectorOCP(PararealOCP):
 
     def PC_maker4(self,N,m,comm,step=1):
         
-        rank = comm.Get_rank()
+        
         
         
         def pc(x):
-            
+
+            rank = comm.Get_rank()
             lam = np.zeros(m)
             loc_lam = np.zeros(1)
             loc_lam[0] = x[-1]
+            start = tuple(np.linspace(0,m-1,m))
+            length = tuple(np.zeros(m)+1)
 
-            comm.Allgatherv(lam,[loc_lam,tuple(np.ones(m)),tuple(np.linspace(0,m-1,m)),MPI.DOUBLE])
+            comm.Allgatherv(loc_lam,[lam,length,start,MPI.DOUBLE])
             lam = lam[1:]
             lam_pc = self.PC_maker2(N,m,step)            
             lam2 = lam_pc(lam)
@@ -181,7 +184,40 @@ class MpiVectorOCP(PararealOCP):
             return x
         return pc
 
+    def parallel_PPCLBFGSsolve(self,N,m,mu_list,tol_list=None,x0=None,options=None,scale=False):
+        dt=float(self.T)/N
+        comm = self.comm
+        rank = comm.Get_rank()
+        if x0==None:
+            x0 = MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+        
+        Result = []
+        PPC = self.PC_maker4(N,m,comm,step=1)
+
+        for i in range(len(mu_list)):
             
+            def J(u):
+                return self.parallel_penalty_functional(u,N,mu_list[i])
+            def grad_J(u):
+                return self.penalty_grad(u,N,m,mu_list[i])
+
+            self.update_Lbfgs_options(options)
+            Lbfgsopt = self.Lbfgs_options
+            if tol_list!=None:
+                try:
+                    opt = {'jtol':tol_list[i]}
+                    self.update_Lbfgs_options(opt)
+                    Lbfgsopt = self.Lbfgs_options
+                except:
+                    print 'no good tol_list'
+            
+            Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
+                                options=Lbfgsopt,ppc=PPC,mpi=True)
+            res = Solver.mpi_solve()
+            x0 = res.x
+            Result.append(res)
+
+        return Result
                 
 
 class simpleMpiVectorOCP(MpiVectorOCP):
@@ -424,7 +460,25 @@ def time_measure_test():
     t4 = time.time()
 
     print t1-t0,t4-t3,(t1-t0)/(t4-t3)
+
+def test_pppc():
+
+    y0 = 1
+    yT = 1
+    T =  1
+    a =  1
+
+    non_mpi, mpi_problem = generate_problem(y0,yT,T,a)
+    
+    comm = mpi_problem.comm
+    
+
+    N = 10000
+    m = comm.Get_size()
+    rank = comm.Get_rank()
+    res = mpi_problem.parallel_PPCLBFGSsolve(N,m,[1])
 if __name__ =='__main__':
     #test_mpi_solvers()
-    test_solve()
+    #test_solve()
     #time_measure_test()
+    test_pppc()

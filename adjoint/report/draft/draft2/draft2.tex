@@ -37,13 +37,13 @@ In this thesis we are only looking at optimal control problems with time-depende
 \underset{y\in Y,v\in V}{\text{min}} \ &J(y,v) \\
 \textit{Subject to:} \ &E(y,v)=0
 \end{align}
-Here $J: Y\times V\rightarrow\Re$ is the objective function that we want to minimize, while $E:Y\times V \rightarrow Z$, is an operator such that $\forall v \in V$, $\exists! y(V)\in Y$ that satisfies the state equation:
+Here $J: Y\times V\rightarrow\Re$ is the objective function that we want to minimize, while $E:Y\times V \rightarrow Z$, is an operator such that $\forall v \in V$, $\exists! y(v)\in Y$ that satisfies the state equation:
 \begin{align*}
 E(y(v),v)=0
 \end{align*}
 Replacing $y$ with $y(v)$ allows us to define the reduced problem:
 \begin{align}
-\underset{v\in V}{\text{min}} \ \hat J(y(v),v) \ \textit{Subject to:} \ E(y(v),v)=0 \label{reduced problem}
+\underset{v\in V}{\text{min}} \ \hat J(v)=\underset{v\in V}{\text{min}} \ J(y(v),v) \ \textit{Subject to:} \ E(y(v),v)=0 \label{reduced problem}
 \end{align}
 To find a solution to (\ref{reduced problem}), we need to be able to differentiate the objective function $\hat{J}$ with respect to the control $v$. There are different ways of doing that, but I will focus on the so called adjoint approach, which is the most computational effective way of calculating the gradient of $\hat{J}$.
 \subsubsection{The adjoint equation and the gradient}
