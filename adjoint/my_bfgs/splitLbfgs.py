@@ -107,7 +107,7 @@ class SplitLbfgs(LbfgsParent):
 
     def default_options(self):
 
-        ls = {"ftol": 1e-3, "gtol": 1-1e-12, "xtol": 0, "start_stp": 1}
+        ls = {"ftol": 1e-12, "gtol": 1-1e-12, "xtol": 0, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
                    "gtol"                   : 1e-4,
@@ -120,7 +120,7 @@ class SplitLbfgs(LbfgsParent):
                    "beta"                   : 1,
                    "return_data"            : False,
                    "scale_hessian"          : False, 
-                   "ignore xtol"            : False,}
+                   "ignore xtol"            : True,}
         
         return default
 

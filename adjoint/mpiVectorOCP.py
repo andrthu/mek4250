@@ -246,9 +246,7 @@ def generate_problem(y0,yT,T,a):
 
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
-
         I = trapz(u**2,t)
-
         return 0.5*(I + (y-yT)**2)
 
     def grad_J(u,p,dt):
@@ -287,13 +285,10 @@ def generate_problem(y0,yT,T,a):
             s[0] += 0.5*I 
         elif rank!=0:
             s[0] = 0.5*dt*np.sum(u[:-1]**2)
-            
-
             s[0] += 0.5*mu*(y[-1]-lam)**2
 
         else:
-            s[0] = 0.5*dt*np.sum(u[1:]**2)
-            
+            s[0] = 0.5*dt*np.sum(u[1:]**2)            
             s[0] += 0.5*0.5*dt*u[0]**2
             s[0] += 0.5*mu*(y[-1]-lam)**2
         
@@ -321,7 +316,6 @@ def generate_problem(y0,yT,T,a):
         else:
 
             grad = np.zeros(len(u))
-
             grad[:-2] = dt*(u[:-2]+p[:-2])
             grad[-2] = dt*0.5*u[-2] + dt*p[-2]
         return grad
@@ -462,7 +456,7 @@ def time_measure_test():
     print t1-t0,t4-t3,(t1-t0)/(t4-t3)
 
 def test_pppc():
-
+    import matplotlib.pyplot as plt
     y0 = 1
     yT = 1
     T =  1
@@ -473,11 +467,24 @@ def test_pppc():
     comm = mpi_problem.comm
     
 
-    N = 100
+    N = 1000
     m = comm.Get_size()
     rank = comm.Get_rank()
-    res = mpi_problem.parallel_PPCLBFGSsolve(N,m,[1])
-    res2 = mpi_problem.PPCLBFGSsolve(N,m,[1])
+    opt = {'jtol':1e-5}
+    tol_list = [1e-5]
+    res = mpi_problem.parallel_PPCLBFGSsolve(N,m,[N**2],tol_list=tol_list,options=opt)
+    res2 = mpi_problem.PPCLBFGSsolve(N,m,[N**2],options=opt)#[-1]
+    res3 =mpi_problem.solve(N,Lbfgs_options={'jtol':1e-10})
+    x = res[-1].x.gather_control()
+    if rank==0:
+
+        print res[0].niter,res[-1].niter, res2.niter,res3.niter
+        print x-res2.x
+        t = np.linspace(0,T,N+1)
+        plt.plot(t,x[:N+1])
+        plt.plot(t,res2.x[:N+1],'b--')
+        plt.plot(t,res3.x,'r--')
+        plt.show()
 if __name__ =='__main__':
     #test_mpi_solvers()
     #test_solve()
