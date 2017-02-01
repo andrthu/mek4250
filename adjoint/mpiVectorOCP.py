@@ -473,10 +473,11 @@ def test_pppc():
     comm = mpi_problem.comm
     
 
-    N = 10000
+    N = 100
     m = comm.Get_size()
     rank = comm.Get_rank()
     res = mpi_problem.parallel_PPCLBFGSsolve(N,m,[1])
+    res2 = mpi_problem.PPCLBFGSsolve(N,m,[1])
 if __name__ =='__main__':
     #test_mpi_solvers()
     #test_solve()
