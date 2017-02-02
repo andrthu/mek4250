@@ -23,7 +23,13 @@ class MpiVectorOCP(PararealOCP):
         self.parallel_J=parallel_J
         self.parallel_grad_J = parallel_grad_J
         self.comm = MPI.COMM_WORLD
+        
 
+    def initial_control2(self,N,m=1):
+        comm = self.comm
+        rank = comm.Get_rank()
+        return MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+        
     def parallel_ODE_penalty_solver(self,u,N,m):
         """
         Solving the state equation with partitioning
@@ -140,7 +146,7 @@ class MpiVectorOCP(PararealOCP):
         comm = self.comm
         rank = comm.Get_rank()
         if x0==None:
-            x0= MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+            x0= self.initial_control2(N,m=m)
             
         #self.update_Lbfgs_options(Lbfgs_options)
         Result = []
@@ -189,7 +195,7 @@ class MpiVectorOCP(PararealOCP):
         comm = self.comm
         rank = comm.Get_rank()
         if x0==None:
-            x0 = MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+            x0 = self.initial_control2(N,m=m)
         
         Result = []
         PPC = self.PC_maker4(N,m,comm,step=1)
@@ -470,14 +476,13 @@ def test_pppc():
     N = 1000
     m = comm.Get_size()
     rank = comm.Get_rank()
-    opt = {'jtol':1e-5}
-    tol_list = [1e-5]
-    res = mpi_problem.parallel_PPCLBFGSsolve(N,m,[N**2],tol_list=tol_list,options=opt)
+    opt = {'jtol':1e-4}
+    tol_list = [1e-6]
+    res = mpi_problem.parallel_PPCLBFGSsolve(N,m,[3*N**2],tol_list=tol_list,options=opt)
     res2 = mpi_problem.PPCLBFGSsolve(N,m,[N**2],options=opt)#[-1]
-    res3 =mpi_problem.solve(N,Lbfgs_options={'jtol':1e-10})
+    res3 =mpi_problem.solve(N,Lbfgs_options={'jtol':1e-6})
     x = res[-1].x.gather_control()
     if rank==0:
-
         print res[0].niter,res[-1].niter, res2.niter,res3.niter
         print x-res2.x
         t = np.linspace(0,T,N+1)

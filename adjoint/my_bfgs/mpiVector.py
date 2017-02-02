@@ -61,6 +61,17 @@ class MPIVector():
         self.comm.Allreduce(local_norm,global_norm,op=MPI.SUM)
 
         return np.sqrt(global_norm[0])
+    def linf_norm(self):
+
+        local_norm = np.zeros(1)
+        local_norm[0] = np.max(abs(self))
+        global_norm = np.zeros(1)
+
+        self.comm.Allreduce(local_norm,global_norm,op=MPI.MAX)
+        
+        return global_norm[0]
+
+        
 
     def gather_control(self):
         

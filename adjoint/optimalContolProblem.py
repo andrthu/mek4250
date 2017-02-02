@@ -155,6 +155,15 @@ class OptimalControlProblem():
         
         return self.initial_penalty(y,u,my,N,i) - G[i]
 
+    def initial_control(self,N,m=1):
+        """
+        Returns zero vector of control dimension.
+        
+        Default is control dimension equal to state equation 
+        """
+
+        return np.zeros(N+m)
+
 
     def adaptive_mu_update(self,mu,dt,m,last_iter):
         #return float(m)*100*mu/(last_iter)
@@ -391,7 +400,7 @@ class OptimalControlProblem():
         
         dt=float(self.T)/N
         if x0==None:
-            x0 = np.zeros(N+1)
+            x0 = self.initial_control(N)# np.zeros(N+1)
         if algorithm=='my_lbfgs':
             x0 = self.Vec(x0)
             
@@ -441,7 +450,7 @@ class OptimalControlProblem():
 
         dt=float(self.T)/N
         if x0==None:
-            x0 = np.zeros(N+m)
+            x0 = self.initial_control(N,m=m)#np.zeros(N+m)
         x = None
         if algorithm=='my_lbfgs':
             x0 = self.Vec(x0)
@@ -540,7 +549,7 @@ class OptimalControlProblem():
 
         dt=float(self.T)/N
         if x0==None:
-            x0 = self.Vec(np.zeros(N+m))
+            x0 = self.Vec(self.initial_control(N,m=m))
         x = None
         Result = []
 
@@ -730,7 +739,7 @@ class OptimalControlProblem():
         dt=float(self.T)/N
         if x0==None:
 
-            x0 = np.zeros(N+m)
+            x0 = self.initial_control(N,m=m)
 
         Result = []
 

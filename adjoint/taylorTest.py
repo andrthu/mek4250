@@ -11,7 +11,9 @@ from scipy.optimize import minimize
 from optimalContolProblem import OptimalControlProblem,Problem1
 from scipy import linalg
 
-
+from mpi4py import MPI
+from mpiVectorOCP import MpiVectorOCP,simpleMpiVectorOCP,generate_problem,local_u_size
+from my_bfgs.mpiVector import MPIVector
 from test_LbfgsPPC import GeneralPowerEndTermPCP,non_lin_problem
 from runge_kutta_OCP import RungeKuttaProblem
 
@@ -361,13 +363,65 @@ def runge_kutta_test():
     plt.plot(grad_fd,'r--')
     #plt.plot(grad2)
     plt.show()
+def taylor_test_mpi():
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 2
+    c =0.5
+
+
+    non_mpi, mpi_problem = generate_problem(y0,yT,T,a)
+    
+    comm = mpi_problem.comm
+    rank = comm.Get_rank()
+    m = comm.Get_size()
+    N = 100
+    mu =1
+    dt = float(T)/(N)
+    
+    h = MPIVector(100*np.random.random(local_u_size(N+1,m,rank)),comm)
+    
+    
+
+    J = lambda x: mpi_problem.parallel_penalty_functional(x,N,mu)
+    u = MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+    for i in range(8):
+        eps = 1./(10**i)
+        #print J(u+h*eps)-J(u),rank
+
+
+    def grad_J(x):
+        l = mpi_problem.parallel_adjoint_penalty_solver(x,N,m,mu)
+        return mpi_problem.penalty_grad(x,N,m,mu)
+
+    table = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
+             'rate2':['--'],'e v':[]}
+    eps_list = []
+    for i in range(9):
+        eps = 1./(10**i)
+        grad_val = abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
+        func_val = J(u+h*(eps))-J(u)
+        eps_list.append(eps)
+        table['J(u+v)-J(u)'].append(func_val)
+        table['J(u+v)-J(u)-dJ(u)v'].append(grad_val)
+        table['e v'].append(eps*max(h))
+        if i!=0:
+            table['rate1'].append(np.log(abs(table['J(u+v)-J(u)'][i-1]/table['J(u+v)-J(u)'][i]))/np.log(10))
+            table['rate2'].append(np.log(abs(table['J(u+v)-J(u)-dJ(u)v'][i-1]/table['J(u+v)-J(u)-dJ(u)v'][i]))/np.log(10))
+    
+    data = pd.DataFrame(table,index=eps_list)
+    if rank==0:
+        print data
+
 
 if __name__ == '__main__':
     #taylor_test_non_penalty()
     #taylor_penalty_test()
     #quad_end()
-    runge_kutta_test()
-
+    #runge_kutta_test()
+    taylor_test_mpi()
 """
 J(u+eh) = J(u) + O(e)
 

@@ -230,7 +230,7 @@ class SplitLbfgs(LbfgsParent):
              
             self.data.update(x,df1)
             x0=x.copy()
-            if rank==0:
+            if rank==1:
                 print 'max grad:', max(abs(self.data.dJ))
         return self.data
         

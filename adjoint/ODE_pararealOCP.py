@@ -148,10 +148,10 @@ class PararealOCP(OptimalControlProblem):
     def PPCLBFGSsolve(self,N,m,my_list,tol_list=None,x0=None,options=None,scale=False):
         dt=float(self.T)/N
         if x0==None:
-            x0 = np.zeros(N+m)
+            x0 = self.initial_control(N,m=m)
         
         result = []
-        PPC = self.PC_maker3(N,m,step=1)
+        PPC = self.PC_creator(N,m,step=1)
         if scale:
             scaler = {'m':m,'factor':1}
         else:
@@ -190,10 +190,10 @@ class PararealOCP(OptimalControlProblem):
                                tol_update=None):
         dt=float(self.T)/N
         if x0==None:
-            x0 = np.zeros(N+m)
+            x0 = self.initial_control(N,m=m)
         
         result = []
-        PPC = self.PC_maker3(N,m,step=1)
+        PPC = self.PC_creator(N,m,step=1)
         if scale:
             scaler = {'m':m,'factor':1}
         else:
@@ -243,15 +243,15 @@ class PararealOCP(OptimalControlProblem):
         
         return result
 
-
+    PC_creator = PC_maker3
 
     def PPCLBFGSsolve2(self,N,m,my_list,x0=None,options=None,scale=False):
         dt=float(self.T)/N
         if x0==None:
-            x0 = SimpleVector(np.zeros(N+m))
+            x0 = SimpleVector(x0 = self.initial_control(N,m=m))
         
         result = []
-        PPC = self.PC_maker3(N,m,step=1)
+        PPC = self.PC_creator(N,m,step=1)
         if scale:
             scaler = {'m':m,'factor':1}
         else:
