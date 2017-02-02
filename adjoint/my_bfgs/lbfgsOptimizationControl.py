@@ -12,6 +12,7 @@ class LbfgsOptimizationControl():
         self.J_func = J_f
         self.grad_J = grad_J
         self.length = len(x0)
+        self.lsiter = 0
 
         self.dJ = grad_J(x0)
         self.H = H

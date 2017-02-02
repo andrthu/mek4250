@@ -148,7 +148,7 @@ class MpiVectorOCP(PararealOCP):
         if x0==None:
             x0= self.initial_control2(N,m=m)
             
-        #self.update_Lbfgs_options(Lbfgs_options)
+        self.update_Lbfgs_options(Lbfgs_options)
         Result = []
         for i in range(len(mu_list)):
 

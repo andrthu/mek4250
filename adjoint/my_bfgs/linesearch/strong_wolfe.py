@@ -57,7 +57,7 @@ class StrongWolfeLineSearch(LineSearch):
         self.verify          = verify
         self.ignore_warnings = ignore_warnings
 
-    def search(self, phi, phi_dphi, phi_dphi0):
+    def search(self, phi, phi_dphi, phi_dphi0,return_steps=False):
         ''' Performs the line search on the function phi.
 
             phi must be a function [0, oo] -> R.
@@ -73,7 +73,7 @@ class StrongWolfeLineSearch(LineSearch):
         task = "START"
 
         f, g = phi_dphi0
-
+        num_steps = 0
         # Compute an estimate for the maximum step size
         if not self.stpmin:
             self.stpmin = 0.
@@ -87,7 +87,7 @@ class StrongWolfeLineSearch(LineSearch):
         #print stp
         while True:
             stp, task, isave, dsave = self.__csrch__(f, g, stp, task, isave, dsave, stpmax)
-
+            num_steps +=1
             if task in ("START", "FG"):
                 f, g = phi_dphi(stp)
             else:
@@ -109,7 +109,8 @@ class StrongWolfeLineSearch(LineSearch):
                 stp_fort = self.search_fortran(phi, phi_dphi, stpmax)
                 if stp_fort is not None and stp_fort != stp:
                     raise RuntimeError, "The line search verification failed!"
-
+            if return_steps == True:
+                return stp,num_steps
             return stp
 
     def search_fortran(self, phi, phi_dphi, stpmax):

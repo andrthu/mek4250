@@ -36,7 +36,7 @@ class SplitLbfgs(LbfgsParent):
         
         self.data = LbfgsOptimizationControl(self.x0,self.J,self.d_J,Hessian,scaler=self.scaler)
 
-    def do_linesearch(self,J,d_J,x,p):
+    def do_linesearch(self,J,d_J,x,p,return_steps=False):
         """
         Method that does a linesearch using the strong Wolfie condition
 
@@ -92,12 +92,21 @@ class SplitLbfgs(LbfgsParent):
             start_stp = ls_parm["start_stp"]
             
             ls = StrongWolfeLineSearch(ftol,gtol,xtol,start_stp,
-                                        ignore_warnings=False)
+                                       ignore_warnings=False)
              
             #ls = ArmijoLineSearch(ftol,gtol,xtol,start_stp)
-        alpha = ls.search(phi, phi_dphi, phi_dphi0)
+        alpha = ls.search(phi, phi_dphi, phi_dphi0,
+                          return_steps=return_steps)
 
-        
+        if return_steps:
+            #print alpha
+            num_steps = alpha[1]
+            alpha = alpha[0]
+            x_new=x.copy()
+            x_new=x_new+alpha*p
+    
+            return x_new, float(alpha),num_steps
+
         x_new=x.copy()
         x_new=x_new+alpha*p
     
@@ -107,7 +116,7 @@ class SplitLbfgs(LbfgsParent):
 
     def default_options(self):
 
-        ls = {"ftol": 1e-12, "gtol": 1-1e-12, "xtol": 0, "start_stp": 1}
+        ls = {"ftol": 1e-3, "gtol": 1-1e-3, "xtol": 0, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
                    "gtol"                   : 1e-4,
@@ -120,7 +129,8 @@ class SplitLbfgs(LbfgsParent):
                    "beta"                   : 1,
                    "return_data"            : False,
                    "scale_hessian"          : False, 
-                   "ignore xtol"            : True,}
+                   "ignore xtol"            : True,
+                   "count linesearch"       : True,}
         
         return default
 
@@ -176,7 +186,11 @@ class SplitLbfgs(LbfgsParent):
             p = H.matvec(-df0)
             if self.options['ignore xtol']:
                 try:
-                    x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
+                    if self.options['count linesearch']:
+                        x,alfa,ls_num = self.do_linesearch(self.J,self.d_J,x0,p,return_steps=True)
+                        self.data.lsiter += ls_num
+                    else:
+                        x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
                 except:
                    
                     return self.data
@@ -212,8 +226,12 @@ class SplitLbfgs(LbfgsParent):
             p = MPIVector(H.matvec(-df0),comm)
             #print p
             if self.options['ignore xtol']:
-                try:
-                    x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
+                try:                    
+                    if self.options['count linesearch']:
+                        x,alfa,ls_num = self.do_linesearch(self.J,self.d_J,x0,p,return_steps=True)
+                        self.data.lsiter += ls_num
+                    else:
+                        x,alfa = self.do_linesearch(self.J,self.d_J,x0,p)
                 except:
                    
                     return self.data
