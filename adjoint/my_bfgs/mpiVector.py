@@ -52,8 +52,8 @@ class MPIVector():
         global_length = np.zeros(1)
 
         self.comm.Allreduce(local_length,global_length,op=MPI.SUM)
-        self.length = global_length[0]
-        return global_length[0]
+        self.length = int(global_length[0])
+        return int(global_length[0])
 
     def l2_norm(self):
 

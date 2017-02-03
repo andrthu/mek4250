@@ -249,11 +249,11 @@ def get_speedup():
     rank = comm.Get_rank()
     
     t0 = time.time()
-    seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':20})
+    seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':50})
     t1 = time.time()
     comm.Barrier()
     t2 = time.time()
-    par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':30,'ignore xtol':True})
+    par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
     t3 = time.time()
     
     print 
@@ -310,5 +310,5 @@ def compare_seq_to_seq():
     
 if __name__ == '__main__':
     
-    #get_speedup()
-    compare_seq_to_seq()
+    get_speedup()
+    #compare_seq_to_seq()
