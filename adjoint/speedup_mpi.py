@@ -37,6 +37,24 @@ class GeneralPowerEndTermMPIOCP(simpleMpiVectorOCP):
         p = self.power
         return (y - self.yT)**(p-1)
 
+def interval_length_and_start(N,m,i):
+
+    q = N/m
+    r = N%m
+    
+    start = 0
+    end = 0
+    j = 0
+    while j <=i:
+        start = end
+
+        if r-j>0:
+            end +=q+1
+        else:
+            end += q
+        j+=1
+
+    return start,end
 
 def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
     
@@ -136,6 +154,76 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
             return grad
 
 
+        def parallel_J(u,y,yT,T,N,mu,comm):
+            m = comm.Get_size()
+            rank = comm.Get_rank()
+        
+        
+            dt = float(T)/N
+            
+            t_start,t_end = interval_length_and_start(N+1,m,rank)
+
+            t = dt*np.linspace(t_start,t_end-1,t_end-t_start)
+
+            if rank == m-1:
+                comm.send(u[-1],dest=rank-1)
+                lam = None
+            elif rank!=0:
+                lam = comm.recv(source=rank+1)
+                comm.send(u[-1],dest=rank-1)
+            else:
+                lam = comm.recv(source=rank+1)
+
+        
+            s = np.zeros(1)
+            if rank == m-1:
+                s[0] = ((y[-1]-yT)**p)/ float(p)
+            
+                I = dt*np.sum((u[:-2]-func(t[:-1]))**2)
+                I+= dt*0.5*(u[-2]-func(t[-1]))**2
+                s[0] += 0.5*I 
+            elif rank!=0:
+                s[0] = 0.5*dt*np.sum((u[:-1]-func(t[:]))**2)
+                s[0] += 0.5*mu*(y[-1]-lam)**2
+
+            else:
+                s[0] = 0.5*dt*np.sum((u[1:]-func(t[1:]))**2)            
+                s[0] += 0.5*0.5*dt*(u[0]-func(t[0]))**2
+                s[0] += 0.5*mu*(y[-1]-lam)**2
+        
+            S =np.zeros(1)
+            comm.Barrier()
+            comm.Allreduce(s,S,op=MPI.SUM)#,root=0)
+
+            return S[0]
+
+
+        def parallel_grad_J(u,p,dt,comm):
+
+            rank = comm.Get_rank()
+            m = comm.Get_size()
+            N = u.global_length()
+            t_start,t_end = interval_length_and_start(N+1-m,m,rank)
+
+            t = dt*np.linspace(t_start,t_end-1,t_end-t_start)
+            if rank ==0:
+
+                grad = np.zeros(len(u))
+                grad[1:] = dt*(u[1:] + p[:-1]-func(t[1:]))
+                grad[0] = 0.5*dt*(u[0]-func(t[0]))
+
+            elif rank!=m-1:
+                grad = np.zeros(len(u))
+
+                grad[:-1]=dt*(u[:-1]+p[:-1]-func(t))
+            else:
+
+                grad = np.zeros(len(u))
+                grad[:-2] = dt*(u[:-2]+p[:-2]-func(t[:-1]))
+                grad[-2] = dt*0.5*(u[-2]-func(t[-1])) + dt*p[-2]
+            return grad
+
+
 
     problem = GeneralPowerEndTermMPIOCP(y0,yT,T,a,p,J,grad_J,parallel_J=parallel_J,parallel_grad_J=parallel_grad_J)
 
@@ -154,27 +242,27 @@ def get_speedup():
     c = 0.5
 
     
-    problem = non_lin_problem(y0,yT,T,a,p,c=c)
+    problem = non_lin_problem(y0,yT,T,a,p,c=c,func=lambda x:x**2)
     comm = problem.comm
-    N = 1000000
+    N = 1000
     m = comm.Get_size()
     rank = comm.Get_rank()
     
     t0 = time.time()
-    seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':0})
+    seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':10})
     t1 = time.time()
     comm.Barrier()
     t2 = time.time()
-    par_res=problem.parallel_penalty_solve(N,m,[1],Lbfgs_options={'jtol':0,'maxiter':0})
+    par_res=problem.parallel_penalty_solve(N,m,[N],Lbfgs_options={'jtol':0,'maxiter':10,'ignore xtol':False})
     t3 = time.time()
     
     print 
-    print t1-t0,t3-t2,(t1-t0)/(t3-t2), seq_res.niter,par_res[0].niter,seq_res.lsiter,par_res[0].lsiter
+    print t1-t0,t3-t2,(t1-t0)/(t3-t2), seq_res.niter,par_res[-1].niter,seq_res.lsiter,par_res[-1].lsiter
 
-    x = par_res[0].x.gather_control()
+    x = par_res[-1].x.gather_control()
     if rank == 0:
         plt.plot(x[:N+1])
-        plt.plot(seq_res.x)
+        plt.plot(seq_res.x,'r--')
         plt.show()
 
 if __name__ == '__main__':

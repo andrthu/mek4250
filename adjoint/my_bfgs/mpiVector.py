@@ -6,6 +6,7 @@ class MPIVector():
     def __init__(self,vec,comm):
         self.local_vec = vec
         self.comm = comm
+        self.length = None
 
     def __add__(self,other):
         return MPIVector(self[:] + other[:],self.comm)
@@ -43,11 +44,15 @@ class MPIVector():
     
     def global_length(self):
         
+        if self.length!=None:
+            return self.length
+        
         local_length = np.zeros(1)
         local_length[0] = len(self)
         global_length = np.zeros(1)
 
         self.comm.Allreduce(local_length,global_length,op=MPI.SUM)
+        self.length = global_length[0]
         return global_length[0]
 
     def l2_norm(self):
