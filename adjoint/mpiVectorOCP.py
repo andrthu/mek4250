@@ -448,7 +448,7 @@ def time_measure_test():
     comm = mpi_problem.comm
     
 
-    N = 10000
+    N = 100000
     m = comm.Get_size()
     rank = comm.Get_rank()
     t0 = time.time()
@@ -493,5 +493,5 @@ def test_pppc():
 if __name__ =='__main__':
     #test_mpi_solvers()
     #test_solve()
-    #time_measure_test()
-    test_pppc()
+    time_measure_test()
+    #test_pppc()

@@ -242,18 +242,18 @@ def get_speedup():
     c = 0.5
 
     
-    problem = non_lin_problem(y0,yT,T,a,p,c=c,func=lambda x:x**2)
+    problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
     comm = problem.comm
-    N = 1000
+    N = 10000
     m = comm.Get_size()
     rank = comm.Get_rank()
     
     t0 = time.time()
-    seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':10})
+    seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':20})
     t1 = time.time()
     comm.Barrier()
     t2 = time.time()
-    par_res=problem.parallel_penalty_solve(N,m,[N],Lbfgs_options={'jtol':0,'maxiter':10,'ignore xtol':False})
+    par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':30,'ignore xtol':True})
     t3 = time.time()
     
     print 
@@ -263,8 +263,52 @@ def get_speedup():
     if rank == 0:
         plt.plot(x[:N+1])
         plt.plot(seq_res.x,'r--')
+        print max(abs(x[:N+1]-seq_res.x))
         plt.show()
 
+def compare_seq_to_seq():
+    
+    import matplotlib.pyplot as plt
+
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 4
+    c = 0.5
+
+    
+    problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
+    comm = problem.comm
+    rank = comm.Get_rank()
+    N = 1000
+
+    I = [35,36,37,38,39,50]
+    iter_res = []
+    legend = []
+    Res=[]
+    for i in I:
+        
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':i})
+        Res.append(seq_res)
+        if rank ==0:
+            legend.append(i)
+            plt.plot(seq_res.x)
+            iter_res.append(seq_res.niter)
+
+    
+    if rank ==0:
+        print iter_res
+        plt.legend(legend)
+        for i in range(len(Res)-1):
+            print max(abs(Res[i].x-Res[-1].x))
+        plt.show()
+
+        
+        
+    
+    
 if __name__ == '__main__':
     
-    get_speedup()
+    #get_speedup()
+    compare_seq_to_seq()
