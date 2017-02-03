@@ -6,6 +6,7 @@ from scipy.integrate import trapz
 from scipy.optimize import minimize
 import numpy as np
 import time
+import sys
 
 from mpi4py import MPI
 from optimalContolProblem import OptimalControlProblem, Problem1
@@ -447,8 +448,10 @@ def time_measure_test():
     
     comm = mpi_problem.comm
     
-
-    N = 100000
+    try:
+        N = int(sys.argv[1])
+    except:
+        N = 100000
     m = comm.Get_size()
     rank = comm.Get_rank()
     t0 = time.time()

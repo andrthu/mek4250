@@ -7,6 +7,7 @@ from scipy.integrate import trapz
 from scipy.optimize import minimize
 import numpy as np
 import time
+import sys
 
 from mpi4py import MPI
 from optimalContolProblem import OptimalControlProblem, Problem1
@@ -244,7 +245,10 @@ def get_speedup():
     
     problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
     comm = problem.comm
-    N = 10000
+    try:
+        N = int(sys.argv[1])
+    except:
+        N = 10000
     m = comm.Get_size()
     rank = comm.Get_rank()
     
@@ -302,7 +306,7 @@ def compare_seq_to_seq():
         plt.legend(legend)
         for i in range(len(Res)-1):
             print max(abs(Res[i].x-Res[-1].x))
-        plt.show()
+        #plt.show()
 
         
         
