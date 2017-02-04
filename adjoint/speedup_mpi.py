@@ -283,7 +283,7 @@ def compare_seq_to_seq():
     c = 0.5
 
     
-    problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
+    problem = non_lin_problem(y0,yT,T,a,p,c=c,func=lambda x:10*np.sin(3*np.pi*x))
     comm = problem.comm
     rank = comm.Get_rank()
     N = 1000
@@ -294,7 +294,7 @@ def compare_seq_to_seq():
     Res=[]
     for i in I:
         
-        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':i})
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':i-5})
         Res.append(seq_res)
         if rank ==0:
             legend.append(i)
@@ -307,7 +307,7 @@ def compare_seq_to_seq():
         plt.legend(legend)
         for i in range(len(Res)-1):
             print max(abs(Res[i].x-Res[-1].x))
-        #plt.show()
+        plt.show()
 
         
         
@@ -315,5 +315,5 @@ def compare_seq_to_seq():
     
 if __name__ == '__main__':
     
-    get_speedup()
-    #compare_seq_to_seq()
+    #get_speedup()
+    compare_seq_to_seq()
