@@ -258,7 +258,7 @@ def get_speedup():
     comm.Barrier()
     t2 = time.time()
     #par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
-    par_res.parallel_PPCLBFGSsolve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
+    par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
     t3 = time.time()
     
     print 
