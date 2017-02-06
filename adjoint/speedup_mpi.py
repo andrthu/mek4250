@@ -231,7 +231,7 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
     return problem
 
 
-def get_speedup():
+def get_speedup(task='both'):
     
     import matplotlib.pyplot as plt
 
@@ -252,25 +252,69 @@ def get_speedup():
     m = comm.Get_size()
     rank = comm.Get_rank()
     
-    t0 = time.time()
-    seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':50})
-    t1 = time.time()
-    comm.Barrier()
-    t2 = time.time()
-    #par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
-    par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
-    t3 = time.time()
-    
-    print 
-    print t1-t0,t3-t2,(t1-t0)/(t3-t2), seq_res.niter,par_res[-1].niter,seq_res.lsiter,par_res[-1].lsiter
 
-    x = par_res[-1].x.gather_control()
-    if rank == 0:
-        plt.plot(x[:N+1])
-        plt.plot(seq_res.x,'r--')
-        print max(abs(x[:N+1]-seq_res.x))
+    if task == 'both':
+        t0 = time.time()
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':50})
+        t1 = time.time()
+        comm.Barrier()
+        t2 = time.time()
+        #par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
+        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':0,'maxiter':50,'ignore xtol':True})
+        t3 = time.time()
+    
+        print 
+        print t1-t0,t3-t2,(t1-t0)/(t3-t2), seq_res.niter,par_res[-1].niter,seq_res.lsiter,par_res[-1].lsiter
+
+        x = par_res[-1].x.gather_control()
+        if rank == 0:
+            plt.plot(x[:N+1])
+            plt.plot(seq_res.x,'r--')
+            print max(abs(x[:N+1]-seq_res.x))
         plt.show()
 
+    elif task =='seq':
+        t0 = time.time()
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':50})
+        t1 = time.time()
+        #print t1-t0,seq_res.niter,seq_res.lsiter
+        if rank == 0:
+            out = open('outputDir/speedup_'+str(N)+'.txt','w')
+            out.write("seq: %f %d %d \n"%(t1-t0,seq_res.niter,seq_res.lsiter))
+
+
+            out.close()
+    elif task == 'par':
+        t2 = time.time()
+        #par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
+        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':0,'maxiter':50,'ignore xtol':True})
+        t3 = time.time()
+        if rank == 0:
+            out = open('outputDir/speedup_'+str(N)+'.txt','a')
+            out.write("par %d: %f %d %d \n"%(m,t3-t2,par_res[-1].niter,par_res[-1].lsiter))
+            out.close()
+
+        #print t3-t2,par_res[-1].niter,par_res[-1].lsiter
+
+
+def main():
+    
+    try:
+        
+        val = int(sys.argv[2])
+
+        if val == 0:
+            get_speedup('seq')
+        
+        else:
+            get_speedup('par')
+    except:
+        get_speedup()
+    """
+    out=open('outputDir/hei_test.txt','w')
+    out.write('hei \n hallo \n')
+    out.close()
+    """
 def compare_seq_to_seq():
     
     import matplotlib.pyplot as plt
@@ -315,5 +359,7 @@ def compare_seq_to_seq():
     
 if __name__ == '__main__':
     
+
+    main()
     #get_speedup()
-    compare_seq_to_seq()
+    #compare_seq_to_seq()
