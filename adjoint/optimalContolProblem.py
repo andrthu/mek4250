@@ -146,7 +146,7 @@ class OptimalControlProblem():
         """
         initial conditian for the adjoint equations, when partitioning in time
         """
-        return my*(y[i][-1]-u[N+1+i])
+        return my*(y[i][-1]-u[-m+i+1])
 
     def initial_lagrange(self,y,u,my,N,i,G):
         """
@@ -218,7 +218,7 @@ class OptimalControlProblem():
 
         y[0][0]=y0
         for i in range(1,m):
-            y[i][0] = u[N+i]
+            y[i][0] = u[-m+i]
 
         start=0
         for i in range(m):        
@@ -351,21 +351,44 @@ class OptimalControlProblem():
 
         return self.J(u,self.ODE_solver(u,N)[-1],self.yT,self.T)
 
+    
+        
+        
+
     def Penalty_Functional(self,u,N,m,my):
         """
         Reduced functional, that only depend on control u. Also adds
         penalty terms
         """
         y,Y = self.ODE_penalty_solver(u,N,m)
-
-        J_val = self.J(u[:N+1],y[-1][-1],self.yT,self.T)
+        Nc = len(u) -m
+        J_val = self.J(u[:Nc+1],y[-1][-1],self.yT,self.T)
 
         penalty = 0
 
         for i in range(m-1):
-            penalty = penalty + my*((y[i][-1]-u[N+1+i])**2)
+            penalty = penalty + my*((y[i][-1]-u[-m+1+i])**2)
         #print penalty
         return J_val + 0.5*penalty
+
+    def Gradient(self,u,N):
+        l = self.adjoint_solver(u,N)
+        dt = float(self.T)/N
+        return self.grad_J(u,l,dt)
+
+    def Penalty_Gradient(self,u,N,m,mu):
+
+        l,L = self.adjoint_penalty_solver(u,N,m,mu)
+        dt = float(T)/N
+        Nc = len(u) - m
+        g = np.zeros(len(u))
+            
+        g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt)
+
+        for j in range(m-1):
+            g[Nc+1+j]= l[j+1][0] - l[j][-1]
+                    
+        return g
 
 
     def generate_reduced_penalty(self,dt,N,m,my):
@@ -374,18 +397,20 @@ class OptimalControlProblem():
             return self.Penalty_Functional(u,N,m,my)
 
         def grad_J(u):
-
+            """
             l,L = self.adjoint_penalty_solver(u,N,m,my)
             
+            Nc = len(u) - m
             g = np.zeros(len(u))
             
-            g[:N+1]=self.grad_J(u[:N+1],L,dt)
+            g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt)
 
             for j in range(m-1):
-                g[N+1+j]= l[j+1][0] - l[j][-1]
+                g[Nc+1+j]= l[j+1][0] - l[j][-1]
                     
             return g
-
+            """
+            return self.Penalty_Gradient(u,N,m,my)
         return J,grad_J
     
     def solve(self,N,x0=None,Lbfgs_options=None,algorithm='my_lbfgs'):
@@ -408,8 +433,8 @@ class OptimalControlProblem():
             return self.Functional(u,N)
 
         def grad_J(u):
-            l = self.adjoint_solver(u,N)
-            return self.grad_J(u,l,dt)
+            #l = self.adjoint_solver(u,N)
+            return self.Gradient(u,N)#grad_J(u,l,dt)
        
         if algorithm=='my_lbfgs':
             self.update_Lbfgs_options(Lbfgs_options)
@@ -462,18 +487,19 @@ class OptimalControlProblem():
                 return self.Penalty_Functional(u,N,m,my_list[i])
 
             def grad_J(u):
-
+                return self.Penalty_Gradient(u,N,m,my_list[i])
+                """
                 l,L = self.adjoint_penalty_solver(u,N,m,my_list[i])
 
                 g = np.zeros(len(u))
-
-                g[:N+1]=self.grad_J(u[:N+1],L,dt)
+                Nc = len(u) - m
+                g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt)
 
                 for j in range(m-1):
-                    g[N+1+j]= l[j+1][0] - l[j][-1]
+                    g[Nc+1+j]= l[j+1][0] - l[j][-1]
                     
                 return g
-            
+                """
             #J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
             if algorithm=='my_lbfgs':
                 self.update_Lbfgs_options(Lbfgs_options)
