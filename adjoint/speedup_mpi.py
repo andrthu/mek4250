@@ -254,7 +254,7 @@ def get_speedup(task='both',name='speedup'):
     if m<5:
         mu_val =[N**2]
     else:
-        mu_val = [N]
+        mu_val = [N,N**2]
     if task == 'both':
         t0 = time.time()
         seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-10,'maxiter':50})
@@ -288,11 +288,12 @@ def get_speedup(task='both',name='speedup'):
             out.close()
     elif task == 'par':
         t2 = time.time()
-        par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':0,'maxiter':100,'ignore xtol':True})
-        #par_res=problem.parallel_PPCLBFGSsolve(N,m,mu_val,options={'jtol':0,'maxiter':100,'ignore xtol':True})
+        #par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':0,'maxiter':100,'ignore xtol':True})
+        par_res=problem.parallel_PPCLBFGSsolve(N,m,mu_val,options={'jtol':0,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
         if rank == 0:
-            out = open('outputDir/'+name+'_'+str(N)+'.txt','a')
+            
+            out = open('outputDir/'+name+'_'+str(int(N/m))+'.txt','a')
             out.write("par %d: %f %d %d \n"%(m,t3-t2,par_res[-1].niter,par_res[-1].lsiter))
             out.close()
 
@@ -301,6 +302,7 @@ def get_speedup(task='both',name='speedup'):
 
 def main():
     try:
+        
         sys.argv[3]
         name = 'weak_speedup'
     except:
@@ -313,7 +315,7 @@ def main():
             get_speedup(task='seq',name=name)
         
         else:
-            get_speedup(task='par'name=name)
+            get_speedup(task='par',name=name)
     except:
         get_speedup()
     """
