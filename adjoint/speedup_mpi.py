@@ -231,7 +231,7 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
     return problem
 
 
-def get_speedup(task='both'):
+def get_speedup(task='both',name='speedup'):
     
     import matplotlib.pyplot as plt
 
@@ -251,16 +251,18 @@ def get_speedup(task='both'):
         N = 10000
     m = comm.Get_size()
     rank = comm.Get_rank()
-    
-
+    if m<5:
+        mu_val =[N**2]
+    else:
+        mu_val = [N]
     if task == 'both':
         t0 = time.time()
-        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':100})
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-10,'maxiter':50})
         t1 = time.time()
         comm.Barrier()
         t2 = time.time()
-        #par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
-        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':0,'maxiter':100,'ignore xtol':True})
+        #par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
+        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N,1000*N**2],options={'jtol':1e-5,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
     
         print 
@@ -279,18 +281,18 @@ def get_speedup(task='both'):
         t1 = time.time()
         #print t1-t0,seq_res.niter,seq_res.lsiter
         if rank == 0:
-            out = open('outputDir/speedup_'+str(N)+'.txt','w')
+            out = open('outputDir/'+name+'_'+str(N)+'.txt','w')
             out.write("seq: %f %d %d \n"%(t1-t0,seq_res.niter,seq_res.lsiter))
 
 
             out.close()
     elif task == 'par':
         t2 = time.time()
-        par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':100,'ignore xtol':True})
-        #par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':0,'maxiter':100,'ignore xtol':True})
+        par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':0,'maxiter':100,'ignore xtol':True})
+        #par_res=problem.parallel_PPCLBFGSsolve(N,m,mu_val,options={'jtol':0,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
         if rank == 0:
-            out = open('outputDir/speedup_'+str(N)+'.txt','a')
+            out = open('outputDir/'+name+'_'+str(N)+'.txt','a')
             out.write("par %d: %f %d %d \n"%(m,t3-t2,par_res[-1].niter,par_res[-1].lsiter))
             out.close()
 
@@ -298,16 +300,20 @@ def get_speedup(task='both'):
 
 
 def main():
-    
+    try:
+        sys.argv[3]
+        name = 'weak_speedup'
+    except:
+        name = 'speedup'
     try:
         
         val = int(sys.argv[2])
 
         if val == 0:
-            get_speedup('seq')
+            get_speedup(task='seq',name=name)
         
         else:
-            get_speedup('par')
+            get_speedup(task='par'name=name)
     except:
         get_speedup()
     """
