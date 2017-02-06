@@ -255,12 +255,12 @@ def get_speedup(task='both'):
 
     if task == 'both':
         t0 = time.time()
-        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':50})
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':100})
         t1 = time.time()
         comm.Barrier()
         t2 = time.time()
         #par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
-        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':0,'maxiter':50,'ignore xtol':True})
+        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':0,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
     
         print 
@@ -275,7 +275,7 @@ def get_speedup(task='both'):
 
     elif task =='seq':
         t0 = time.time()
-        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':50})
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':100})
         t1 = time.time()
         #print t1-t0,seq_res.niter,seq_res.lsiter
         if rank == 0:
@@ -286,8 +286,8 @@ def get_speedup(task='both'):
             out.close()
     elif task == 'par':
         t2 = time.time()
-        #par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
-        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':0,'maxiter':50,'ignore xtol':True})
+        par_res=problem.parallel_penalty_solve(N,m,[N**2],Lbfgs_options={'jtol':0,'maxiter':100,'ignore xtol':True})
+        #par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':0,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
         if rank == 0:
             out = open('outputDir/speedup_'+str(N)+'.txt','a')
