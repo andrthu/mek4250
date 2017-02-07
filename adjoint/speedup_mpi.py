@@ -243,10 +243,17 @@ def get_speedup(task='both',name='speedup'):
     c = 0.5
     f = lambda x : 100*np.cos(5*np.pi*x)
     PROBLEM_NUMBER = 3
-
+    
+    try:
+        N = int(sys.argv[1])
+    except:
+        N = 10000
+        
     if PROBLEM_NUMBER==1:
         problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
+        mu_val = [N**2]
     elif PROBLEM_NUMBER == 2:
+        mu_val = [N**2]
         y0_2 = 24.6
         yT_2 = 170.9
         T_2 = 1.4
@@ -256,20 +263,13 @@ def get_speedup(task='both',name='speedup'):
         name = name + str(PROBLEM_NUMBER)
     elif PROBLEM_NUMBER == 3:
         p = 2
+        mu_val = [N**2]
         problem = non_lin_problem(y0,yT,T,a,p,c=c,func=f)
         name = name + str(PROBLEM_NUMBER)
         
     comm = problem.comm
-    try:
-        N = int(sys.argv[1])
-    except:
-        N = 10000
     m = comm.Get_size()
     rank = comm.Get_rank()
-    if m<5:
-        mu_val =[N**2]
-    else:
-        mu_val = [N,N**2]
     if task == 'both':
         t0 = time.time()
         seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-7,'maxiter':100})
@@ -293,7 +293,7 @@ def get_speedup(task='both',name='speedup'):
 
     elif task =='seq':
         t0 = time.time()
-        seq_res=problem.solve(N,Lbfgs_options={'jtol':0,'maxiter':100})
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-10,'maxiter':100})
         t1 = time.time()
         #print t1-t0,seq_res.niter,seq_res.lsiter
         if rank == 0:
@@ -305,11 +305,14 @@ def get_speedup(task='both',name='speedup'):
     elif task == 'par':
         t2 = time.time()
         #par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':0,'maxiter':100,'ignore xtol':True})
-        par_res=problem.parallel_PPCLBFGSsolve(N,m,mu_val,options={'jtol':0,'maxiter':100,'ignore xtol':True})
+        par_res=problem.parallel_PPCLBFGSsolve(N,m,mu_val,options={'jtol':1e-5,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
         if rank == 0:
-            
-            out = open('outputDir/'+name+'_'+str(int(N/m))+'.txt','a')
+            if name =='weak_speedup':
+                outputname = 'outputDir/'+name+'_'+str(int(N/m))+'.txt'
+            else:
+                outputname = 'outputDir/'+name+'_'+str(N)+'.txt'
+            out = open(outputname,'a')
             out.write("par %d: %f %d %d \n"%(m,t3-t2,par_res[-1].niter,par_res[-1].lsiter))
             out.close()
 
