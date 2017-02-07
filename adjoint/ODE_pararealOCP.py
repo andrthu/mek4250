@@ -79,11 +79,11 @@ class PararealOCP(OptimalControlProblem):
     def PC_maker3(self,N,m,step=1):      
 
         def pc(x):
-
+            Nc = len(x)-m
             lam_pc = self.PC_maker2(N,m,step)
-            lam = x.copy()[N+1:]
+            lam = x.copy()[Nc+1:]
             lam2 = lam_pc(lam)
-            x[N+1:]= lam2.copy()[:]
+            x[Nc+1:]= lam2.copy()[:]
             return x
         return pc
 
@@ -121,8 +121,9 @@ class PararealOCP(OptimalControlProblem):
 
         
         def pc(x):
+            Nc = len(x)-m
             S = np.zeros(m+1)
-            S[1:-1] = x[N+1:].copy()
+            S[1:-1] = x[Nc+1:].copy()
             #S[-1] = self.end_diff
             delta =self.adjoint_propogator(m,0,S)
 
@@ -137,7 +138,7 @@ class PararealOCP(OptimalControlProblem):
             for i in range(len(S)-1):
                 S[i+1] = S[i+1]+delta2[i+1]
             
-            x[N+1:]=S[1:-1]
+            x[Nc+1:]=S[1:-1]
             
             return x
         

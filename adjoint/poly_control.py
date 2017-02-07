@@ -30,6 +30,7 @@ class PolynomialControl(Problem1):
 
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
+        
         t = np.linspace(0,self.T,int(self.T/dt)+1)
         p = self.polynomial(u,t)
         return (y[i] +dt*p[j+1])/(1.-dt*a)
@@ -73,11 +74,11 @@ class PolynomialControl(Problem1):
     def Penalty_Gradient(self,u,N,m,mu):
 
         l,L = self.adjoint_penalty_solver(u,N,m,mu)
-        dt = float(T)/N
+        dt = float(self.T)/N
         Nc = len(u) - m
         g = np.zeros(len(u))
             
-        g[:Nc+1]=self.grad_J(u[:Nc+1],L,T,N,self.polynomial)
+        g[:Nc+1]=self.grad_J(u[:Nc+1],L,self.T,N,self.polynomial)
 
         for j in range(m-1):
             g[Nc+1+j]= l[j+1][0] - l[j][-1]
@@ -116,10 +117,12 @@ def create_poly_problem():
     
     res = problem.solve(N,Lbfgs_options={'ignore xtol':True})
     print res.x
-    res2 = problem.penalty_solve(N,2,[1,10,100])
+    res2 = problem.penalty_solve(N,2,[1,10,100,10000])
+    print res2[-1].x
     import matplotlib.pyplot as plt
     t = np.linspace(0,T,N+1)
     plt.plot(t,problem.polynomial(res.x,t))
+    plt.plot(t,problem.polynomial(res2[-1].x[:power+1],t))
     plt.show()
 if __name__ == '__main__':
     

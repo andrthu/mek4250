@@ -142,7 +142,7 @@ class OptimalControlProblem():
         """
         return y - self.yT
 
-    def initial_penalty(self,y,u,my,N,i):
+    def initial_penalty(self,y,u,my,N,i,m=1):
         """
         initial conditian for the adjoint equations, when partitioning in time
         """
@@ -153,7 +153,7 @@ class OptimalControlProblem():
         Same as above, when we use augmented Lagrange
         """
         
-        return self.initial_penalty(y,u,my,N,i) - G[i]
+        return self.initial_penalty(y,u,my,N,i,m) - G[i]
 
     def initial_control(self,N,m=1):
         """
@@ -219,11 +219,12 @@ class OptimalControlProblem():
         y[0][0]=y0
         for i in range(1,m):
             y[i][0] = u[-m+i]
-
+        
+        Nc = len(u)-m
         start=0
         for i in range(m):        
             for j in range(len(y[i])-1):
-                y[i][j+1] = self.ODE_update(y[i],u,j,start+j,dt)
+                y[i][j+1] = self.ODE_update(y[i],u[:Nc+1],j,start+j,dt)
             start = start + len(y[i]) - 1
             
 
@@ -294,7 +295,7 @@ class OptimalControlProblem():
             
         l[-1][-1] = self.initial_adjoint(y[-1][-1])
         for i in range(m-1):
-            l[i][-1]=init(self,y,u,my,N,i) #my*(y[i][-1]-u[N+1+i])
+            l[i][-1]=init(self,y,u,my,N,i,m) #my*(y[i][-1]-u[N+1+i])
             
         for i in range(m):
             for j in range(len(l[i])-1):
@@ -349,9 +350,7 @@ class OptimalControlProblem():
         Reduced functional, that only depend on control u 
         """
 
-        return self.J(u,self.ODE_solver(u,N)[-1],self.yT,self.T)
-
-    
+        return self.J(u,self.ODE_solver(u,N)[-1],self.yT,self.T)  
         
         
 
