@@ -263,21 +263,22 @@ def get_speedup(task='both',name='speedup'):
         name = name + str(PROBLEM_NUMBER)
     elif PROBLEM_NUMBER == 3:
         p = 2
-        mu_val = [N**2]
+        mu_val = [N]
         problem = non_lin_problem(y0,yT,T,a,p,c=c,func=f)
         name = name + str(PROBLEM_NUMBER)
+
         
     comm = problem.comm
     m = comm.Get_size()
     rank = comm.Get_rank()
     if task == 'both':
         t0 = time.time()
-        seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-7,'maxiter':100})
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-10,'maxiter':100})
         t1 = time.time()
         comm.Barrier()
         t2 = time.time()
         #par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
-        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':1e-7,'maxiter':100,'ignore xtol':True})
+        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N**2],options={'jtol':1e-10,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
     
         print 

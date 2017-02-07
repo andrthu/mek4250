@@ -17,7 +17,7 @@ class SplitLbfgs(LbfgsParent):
                              scale=scale)
 
         self.m = m
-
+        self.PRINT_GRAD = True
         mem_lim = self.options['mem_lim']
         
         beta = self.options["beta"]
@@ -116,7 +116,7 @@ class SplitLbfgs(LbfgsParent):
 
     def default_options(self):
 
-        ls = {"ftol": 1e-3, "gtol": 1-1e-1, "xtol": 0, "start_stp": 1}
+        ls = {"ftol": 1e-3, "gtol": 1-1e-1, "xtol": 0.1, "start_stp": 1}
         
         default = {"jtol"                   : 1e-4,
                    "gtol"                   : 1e-4,
@@ -208,7 +208,8 @@ class SplitLbfgs(LbfgsParent):
              
             self.data.update(x,df1)
             x0=x.copy()
-            print 'max grad:', max(abs(self.data.dJ))
+            if self.PRINT_GRAD:
+                print 'max grad:', max(abs(self.data.dJ))
         return self.data
 
         
@@ -249,7 +250,8 @@ class SplitLbfgs(LbfgsParent):
             self.data.update(x,df1)
             x0=x.copy()
             if rank==1:
-                print 'max grad:', max(abs(self.data.dJ))
+                if self.PRINT_GRAD:
+                    print 'max grad:', max(abs(self.data.dJ))
         return self.data
         
     def solve(self):
