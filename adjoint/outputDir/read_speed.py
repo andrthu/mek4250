@@ -41,12 +41,13 @@ def create_table(lines):
     
 def main():
     try: 
-        name = sys.argv[1]
+        names = sys.argv[1:]
     except:
         print 'Give file'
         return
-    lines = read_file(name)
-    print create_table(lines)
-
+    for name in names:
+        lines = read_file(name)
+        data = create_table(lines)
+        data.to_latex('latexTables/'+name[:-3]+'tex')
 if __name__ == '__main__':
     main()

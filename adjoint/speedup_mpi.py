@@ -242,7 +242,7 @@ def get_speedup(task='both',name='speedup'):
     p = 4
     c = 0.5
     f = lambda x : 100*np.cos(5*np.pi*x)
-    PROBLEM_NUMBER = 3
+    PROBLEM_NUMBER = 2
     
     try:
         N = int(sys.argv[1])
@@ -253,7 +253,7 @@ def get_speedup(task='both',name='speedup'):
         problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
         mu_val = [N**2]
     elif PROBLEM_NUMBER == 2:
-        mu_val = [N**2]
+        mu_val = [N]
         y0_2 = 24.6
         yT_2 = 170.9
         T_2 = 1.4
@@ -294,7 +294,7 @@ def get_speedup(task='both',name='speedup'):
 
     elif task =='seq':
         t0 = time.time()
-        seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-7,'maxiter':100})
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-10,'maxiter':100})
         t1 = time.time()
         #print t1-t0,seq_res.niter,seq_res.lsiter
         if rank == 0:
@@ -305,7 +305,7 @@ def get_speedup(task='both',name='speedup'):
             out.close()
     elif task == 'par':
         t2 = time.time()
-        #par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':0,'maxiter':100,'ignore xtol':True})
+        #par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':1e-5,'maxiter':100,'ignore xtol':True})
         par_res=problem.parallel_PPCLBFGSsolve(N,m,mu_val,options={'jtol':1e-5,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
         if rank == 0:
