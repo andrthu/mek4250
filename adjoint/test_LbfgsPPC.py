@@ -188,11 +188,13 @@ def compare_pc_and_nonpc_for_different_m():
              'non-pc err'      : ['--'],
              'non-penalty itr' : [res1['iteration']],}
 
-    table2 = {'pc itr'           : ['--'],
-             'non-pc itr'        : ['--'],
-             'scaled pc itr'     : ['--'],
-             'scaled non-pc itr' : ['--'],
-             'non-penalty itr'   : [res1['iteration']],}
+    table2 = {'pc itr'            : ['--'],
+              'non-pc itr'        : ['--'],
+              'scaled pc itr'     : ['--'],
+              'scaled non-pc itr' : ['--'],
+              'non-penalty itr'   : [res1['iteration']],
+              'scaled pc lsitr'   : ['--'],
+              'pc lsitr'          : [res1.lsiter],}
 
     t = np.linspace(0,T,N+1)
 
@@ -224,6 +226,8 @@ def compare_pc_and_nonpc_for_different_m():
         table2['scaled pc itr'].append(scaled_pc_res.niter)
         table2['scaled non-pc itr'].append(scaled_nonpc_res['iteration'])
         table2['non-penalty itr'].append('--')
+        table2['scaled pc lsitr'].append(pc_res.lsiter)
+        table2['pc lsitr'].append(scaled_pc_res.lsiter)
     data = pd.DataFrame(table,index=M)
     Order1 = ['non-penalty itr','non-pc itr','non-pc err','pc itr','pc err']
     data11 = data.reindex_axis(Order1, axis=1)
@@ -231,7 +235,7 @@ def compare_pc_and_nonpc_for_different_m():
     #data11.to_latex('report/draft/parareal/pc_itr_err.tex')
     
     data2 = pd.DataFrame(table2,index=M)
-    Order = ['non-penalty itr','non-pc itr','scaled non-pc itr','pc itr','scaled pc itr']
+    Order = ['non-penalty itr','non-pc itr','scaled non-pc itr','pc itr','scaled pc itr','pc lsitr','scaled pc lsitr']
     data3 = data2.reindex_axis(Order, axis=1)
     print data3
     #data3.to_latex('report/draft/parareal/scaled_nonScaled_iterations.tex')
@@ -713,8 +717,8 @@ if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    #compare_pc_and_nonpc_for_different_m()
-    pre_choosen_mu_test()
+    compare_pc_and_nonpc_for_different_m()
+    #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
     #jump_difference()

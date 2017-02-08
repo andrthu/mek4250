@@ -300,7 +300,7 @@ def generate_problem(y0,yT,T,a):
             s[0] += 0.5*mu*(y[-1]-lam)**2
         
         S =np.zeros(1)
-        comm.Barrier()
+        #comm.Barrier()
         comm.Allreduce(s,S,op=MPI.SUM)#,root=0)
 
         return S[0]

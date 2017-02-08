@@ -378,7 +378,7 @@ class OptimalControlProblem():
     def Penalty_Gradient(self,u,N,m,mu):
 
         l,L = self.adjoint_penalty_solver(u,N,m,mu)
-        dt = float(T)/N
+        dt = float(self.T)/N
         Nc = len(u) - m
         g = np.zeros(len(u))
             
