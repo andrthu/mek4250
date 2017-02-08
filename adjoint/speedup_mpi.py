@@ -293,7 +293,7 @@ def get_speedup(task='both',name='speedup'):
 
     elif task =='seq':
         t0 = time.time()
-        seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-10,'maxiter':100})
+        seq_res=problem.solve(N,Lbfgs_options={'jtol':1e-7,'maxiter':100})
         t1 = time.time()
         #print t1-t0,seq_res.niter,seq_res.lsiter
         if rank == 0:
@@ -308,7 +308,7 @@ def get_speedup(task='both',name='speedup'):
         par_res=problem.parallel_PPCLBFGSsolve(N,m,mu_val,options={'jtol':1e-5,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
         if rank == 0:
-            if name =='weak_speedup':
+            if name[0] =='w':
                 outputname = 'outputDir/'+name+'_'+str(int(N/m))+'.txt'
             else:
                 outputname = 'outputDir/'+name+'_'+str(N)+'.txt'
