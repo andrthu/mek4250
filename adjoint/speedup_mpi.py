@@ -253,7 +253,7 @@ def get_speedup(task='both',name='speedup'):
         problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
         mu_val = [N**2]
     elif PROBLEM_NUMBER == 2:
-        mu_val = [N]
+        mu_val = [np.sqrt(N)]
         y0_2 = 24.6
         yT_2 = 170.9
         T_2 = 1.4
@@ -278,7 +278,7 @@ def get_speedup(task='both',name='speedup'):
         comm.Barrier()
         t2 = time.time()
         #par_res=problem.parallel_penalty_solve(N,m,mu_val,Lbfgs_options={'jtol':0,'maxiter':50,'ignore xtol':True})
-        par_res=problem.parallel_PPCLBFGSsolve(N,m,[N],options={'jtol':1e-10,'maxiter':100,'ignore xtol':True})
+        par_res=problem.parallel_PPCLBFGSsolve(N,m,mu_val,options={'jtol':1e-10,'maxiter':100,'ignore xtol':True})
         t3 = time.time()
     
         print 
