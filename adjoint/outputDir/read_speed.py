@@ -48,6 +48,7 @@ def main():
     for name in names:
         lines = read_file(name)
         data = create_table(lines)
-        data.to_latex('latexTables/'+name[:-3]+'tex')
+        print data
+        #data.to_latex('latexTables/'+name[:-3]+'tex')
 if __name__ == '__main__':
     main()
