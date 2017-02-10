@@ -50,6 +50,8 @@ class OptimalControlProblem():
         
         self.Vec = self.options['Vector']
 
+        self.counter=np.zeros(2)
+
     def set_options(self,user_options,user_Lbfgs):
         """
         Method for setting options
@@ -427,11 +429,15 @@ class OptimalControlProblem():
             x0 = self.initial_control(N)# np.zeros(N+1)
         if algorithm=='my_lbfgs':
             x0 = self.Vec(x0)
-            
+        
+
+        initial_counter = self.counter.copy()
         def J(u):
+            self.counter[0]+=1
             return self.Functional(u,N)
 
         def grad_J(u):
+            self.counter[1]+=1
             #l = self.adjoint_solver(u,N)
             return self.Gradient(u,N)#grad_J(u,l,dt)
        
@@ -455,7 +461,7 @@ class OptimalControlProblem():
             #Y = self.ODE_solver(res.x,N)
             #plt.plot(Y)
             #plt.show()
-
+        res.add_FuncGradCounter(self.counter-initial_counter)
         return res
 
 
@@ -480,12 +486,16 @@ class OptimalControlProblem():
             x0 = self.Vec(x0)
         Result = []
 
+        initial_counter = self.counter.copy()
+
         for i in range(len(my_list)):
             
-            def J(u):                
+            def J(u):   
+                self.counter[0]+=1
                 return self.Penalty_Functional(u,N,m,my_list[i])
 
             def grad_J(u):
+                self.counter[1]+=1
                 return self.Penalty_Gradient(u,N,m,my_list[i])
                 """
                 l,L = self.adjoint_penalty_solver(u,N,m,my_list[i])
@@ -520,7 +530,7 @@ class OptimalControlProblem():
                 res = solver.normal_solve()
                 Result.append(res)
                 x0 = res['control']
-                print J(x0.array())
+                #print J(x0.array())
             elif algorithm=='my_steepest_decent':
 
                 self.update_SD_options(Lbfgs_options)
@@ -554,6 +564,7 @@ class OptimalControlProblem():
                 res = Solver.solve()
                 x0 = res.x.copy()
                 Result.append(res)
+        res.add_FuncGradCounter(self.counter-initial_counter)
         if len(Result)==1:
             return res
         else:
@@ -1054,7 +1065,7 @@ if __name__ == "__main__":
 
 
     opt =None# {"mem_lim":20}
-    res2 = problem.penalty_solve(N,m,[100],Lbfgs_options=opt,algorithm='my_lbfgs')
+    res2 = problem.penalty_solve(N,m,[100**2],Lbfgs_options=opt,algorithm='my_lbfgs')
     try:
         u2 = res2['control'].array()[:N+1]
     except:
@@ -1062,6 +1073,8 @@ if __name__ == "__main__":
 
     plot(t,u2,'r--')
     show()
+    print res1.counter(),res1.niter
+    print res2.counter(),res2.niter
     
 
     

@@ -13,6 +13,7 @@ class LbfgsOptimizationControl():
         self.grad_J = grad_J
         self.length = len(x0)
         self.lsiter = 0
+        self.counter = None
 
         self.dJ = grad_J(x0)
         self.H = H
@@ -65,9 +66,16 @@ class LbfgsOptimizationControl():
     
     def add_mu(self,mu):
         self.mu = mu
+
+    def add_FuncGradCounter(self,arr):
+        self.counter = FuncGradCounter(arr)
         
-
-
+class FuncGradCounter():
+    def __init__(self,arr):
+        self.nfunc = arr[0]
+        self.ngrad = arr[1]
+    def __call__(self):
+        return self.nfunc,self.ngrad
 
 
     
