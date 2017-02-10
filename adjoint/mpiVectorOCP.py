@@ -347,7 +347,7 @@ def local_u_size(n,m,i):
         if r>0:
             return q+1
         else:
-            q
+            return q
     else:
         if r-i>0:
             return q+2
@@ -493,8 +493,27 @@ def test_pppc():
         plt.plot(t,res2.x[:N+1],'b--')
         plt.plot(t,res3.x,'r--')
         plt.show()
+
+def find_error():
+    y0 = 1
+    yT = 1
+    T =  1
+    a =  1
+
+    non_mpi, mpi_problem = generate_problem(y0,yT,T,a)
+    
+    comm = mpi_problem.comm
+    m = comm.Get_size()
+    N = 11
+    mu = [1]
+    rank = comm.Get_rank()
+    u = MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+    #y = mpi_problem.parallel_ODE_penalty_solver(u,N,m)
+    print u,rank
+    
 if __name__ =='__main__':
     #test_mpi_solvers()
     #test_solve()
-    time_measure_test()
+    #time_measure_test()
     #test_pppc()
+    find_error()
