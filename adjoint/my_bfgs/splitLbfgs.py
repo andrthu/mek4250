@@ -80,7 +80,7 @@ class SplitLbfgs(LbfgsParent):
             return f,float(djs)
         
         
-        phi_dphi0 = J(x),float(p.dot(d_J(x)))
+        phi_dphi0 = J(x),float(p.dot(self.data.dJ))
         
         
         if self.options["line_search"]=="strong_wolfe":
