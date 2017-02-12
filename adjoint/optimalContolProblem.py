@@ -394,7 +394,8 @@ class OptimalControlProblem():
 
     def generate_reduced_penalty(self,dt,N,m,my):
 
-        def J(u):                
+        def J(u):      
+            self.counter[0]+=1
             return self.Penalty_Functional(u,N,m,my)
 
         def grad_J(u):
@@ -411,6 +412,7 @@ class OptimalControlProblem():
                     
             return g
             """
+            self.counter[1]+=1
             return self.Penalty_Gradient(u,N,m,my)
         return J,grad_J
     
