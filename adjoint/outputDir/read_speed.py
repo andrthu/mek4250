@@ -10,11 +10,12 @@ def read_file(filename):
     speed_file.close()
 
     return lines
-def create_table(lines):
+def create_table(lines,with_iter=True):
     
-    
-    table = {'time':[],'iter':[],'ls iter':[],'speedup':[]}
-
+    if with_iter:
+        table = {'time':[],'iter':[],'ls iter':[],'speedup':[]}
+    else:
+        table = {'time':[],'speedup':[]}
     index = []
     
     first_line = lines[0].split()
@@ -22,8 +23,9 @@ def create_table(lines):
     index.append(1)
     seq_time =float(first_line[1]) 
     table['time'].append(float(first_line[1]))
-    table['iter'].append(int(first_line[2]))
-    table['ls iter'].append(int(first_line[3]))
+    if with_iter:
+        table['iter'].append(int(first_line[2]))
+        table['ls iter'].append(int(first_line[3]))
     table['speedup'].append(1)
     
     for line in lines[1:]:
@@ -32,22 +34,28 @@ def create_table(lines):
         index.append(line_list[1])
         par_time = float(line_list[2])
         table['time'].append(par_time)
-        table['iter'].append(int(line_list[3]))
-        table['ls iter'].append(int(line_list[4]))
+        if with_iter:
+            table['iter'].append(int(line_list[3]))
+            table['ls iter'].append(int(line_list[4]))
         table['speedup'].append(seq_time/par_time)
+    #print table
     data = pd.DataFrame(table,index=index)
-    
     return data
     
 def main():
-    try: 
-        names = sys.argv[1:]
+    try:
+        if sys.argv[1] == '0':
+            names = sys.argv[2:]
+            with_iter = False
+        else:
+            names = sys.argv[1:]
+            with_iter = True
     except:
         print 'Give file'
         return
     for name in names:
         lines = read_file(name)
-        data = create_table(lines)
+        data = create_table(lines,with_iter=with_iter)
         print data
         #data.to_latex('latexTables/'+name[:-3]+'tex')
 if __name__ == '__main__':
