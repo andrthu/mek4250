@@ -24,11 +24,12 @@ class MpiVectorOCP(PararealOCP):
         self.parallel_J=parallel_J
         self.parallel_grad_J = parallel_grad_J
         self.comm = MPI.COMM_WORLD
-        
+        self.rank = self.comm.Get_rank()
+        self.m = self.comm.Get_size()
 
     def initial_control2(self,N,m=1):
         comm = self.comm
-        rank = comm.Get_rank()
+        rank = self.rank
         return MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
         
     def parallel_ODE_penalty_solver(self,u,N,m):
@@ -42,7 +43,7 @@ class MpiVectorOCP(PararealOCP):
         
         comm = self.comm
         
-        rank = comm.Get_rank()
+        rank = self.rank
         
         T = self.T        
         dt = float(T)/N
@@ -51,6 +52,7 @@ class MpiVectorOCP(PararealOCP):
         if rank == 0:
             y[0] = self.y0     
             j_help = 0
+
         else:
             y[0] = u[-1]        #### OBS!!!! ####
             j_help = -1
@@ -64,8 +66,8 @@ class MpiVectorOCP(PararealOCP):
 
         comm = self.comm
 
-        m = comm.Get_size()
-        rank = comm.Get_rank()
+        m = self.m
+        rank = self.rank
         y = self.parallel_ODE_penalty_solver(u,N,m)
 
         return self.parallel_J(u,y,self.yT,self.T,N,mu,comm)
@@ -90,7 +92,7 @@ class MpiVectorOCP(PararealOCP):
         dt = float(T)/N
         yT = self.yT
         
-        rank = comm.Get_rank()
+        rank = self.rank
         
         l = interval_partition(N+1,m,rank)#partition_func(N+1,m)
         y= self.parallel_ODE_penalty_solver(u,N,m)
@@ -118,7 +120,7 @@ class MpiVectorOCP(PararealOCP):
     def penalty_grad(self,u,N,m,mu):
 
         comm = self.comm
-        rank = comm.Get_rank()
+        rank = self.rank
         p = self.parallel_adjoint_penalty_solver(u,N,m,mu)           
 
             
@@ -145,7 +147,7 @@ class MpiVectorOCP(PararealOCP):
     def parallel_penalty_solve(self,N,m,mu_list,tol_list=None,x0=None,Lbfgs_options=None):
 
         comm = self.comm
-        rank = comm.Get_rank()
+        rank = self.rank
         if x0==None:
             x0= self.initial_control2(N,m=m)
         initial_counter = self.counter.copy()
@@ -178,7 +180,7 @@ class MpiVectorOCP(PararealOCP):
         
         def pc(x):
 
-            rank = comm.Get_rank()
+            rank = self.rank
             lam = np.zeros(m)
             loc_lam = np.zeros(1)
             loc_lam[0] = x[-1]
@@ -197,7 +199,7 @@ class MpiVectorOCP(PararealOCP):
     def parallel_PPCLBFGSsolve(self,N,m,mu_list,tol_list=None,x0=None,options=None,scale=False):
         dt=float(self.T)/N
         comm = self.comm
-        rank = comm.Get_rank()
+        rank = self.rank
         if x0==None:
             x0 = self.initial_control2(N,m=m)
         

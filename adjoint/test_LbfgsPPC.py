@@ -726,7 +726,7 @@ def count_grad_func_eval():
 
     problem = non_lin_problem(y0,yT,T,a,p,c=c,func=f)
     
-    N = 10000
+    N = 1000
     seq_res = problem.solve(N,Lbfgs_options={'jtol':1e-7})
 
     m = [1,2,3,4,5,6,10]

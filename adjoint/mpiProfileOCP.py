@@ -1,5 +1,6 @@
 import cProfile,pstats
-from test_LbfgsPPC import non_lin_problem
+from my_bfgs.mpiVector import MPIVector
+from mpiVectorOCP import generate_problem,local_u_size
 import sys
 import numpy as np
 def main():
@@ -9,12 +10,15 @@ def main():
     a  = 0.9
     p = 2
     c = 0.5
-    problem = non_lin_problem(y0,yT,T,a,p,c=c)
-    N = 1000000
-    m = 1
+    _,problem = generate_problem(y0,yT,T,a)
+    N = 100000000
+    
+    rank=problem.comm.Get_rank()
+    comm=problem.comm
+    m = comm.Get_size()
     opt = {'jtol':0,'maxiter':100,'ignore xtol':True}
-    u = np.zeros(N+m)+1
-    problem.Penalty_Gradient(u,N,m,1)
+    u = MPIVector(np.zeros(local_u_size(N+1,m,rank))+1,comm)
+    problem.parallel_penalty_functional(u,N,1)
     #problem.Gradient(u,N)
     #problem.Functional(u,N)
     #problem.Penalty_Functional(u,N,m,1)
@@ -23,13 +27,13 @@ def main():
     #problem.penalty_solve(N,m,[N**2],Lbfgs_options=opt)
     
 def look():
-    stats = pstats.Stats("lbfgsppcProfile.prof")
+    stats = pstats.Stats("profmpi.prof")
     stats.sort_stats("cumtime")
-    stats.print_stats(20)
+    stats.print_stats(30)
 def find():
     pr = cProfile.Profile()
     res = pr.run("main()")
-    pr.dump_stats("lbfgsppcProfile.prof")
+    pr.dump_stats("profmpi.prof")
     
 if __name__ == '__main__':
     try:

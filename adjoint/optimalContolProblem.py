@@ -224,9 +224,10 @@ class OptimalControlProblem():
         
         Nc = len(u)-m
         start=0
+        u_send = u[:Nc+1]
         for i in range(m):        
             for j in range(len(y[i])-1):
-                y[i][j+1] = self.ODE_update(y[i],u[:Nc+1],j,start+j,dt)
+                y[i][j+1] = self.ODE_update(y[i],u_send,j,start+j,dt)
             start = start + len(y[i]) - 1
             
 
