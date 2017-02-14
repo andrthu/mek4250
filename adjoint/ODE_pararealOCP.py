@@ -157,6 +157,7 @@ class PararealOCP(OptimalControlProblem):
             scaler = {'m':m,'factor':1}
         else:
             scaler = None
+        initial_counter = self.counter.copy()
         for i in range(len(my_list)):
         
             J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
@@ -179,8 +180,9 @@ class PararealOCP(OptimalControlProblem):
                 res.rescale()
             x0=res.x
             
-                
+            res.add_FuncGradCounter(self.counter-initial_counter)
             result.append(res)
+
         if len(result)==1:
             return res
         else:

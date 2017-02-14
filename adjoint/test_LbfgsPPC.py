@@ -713,13 +713,53 @@ def look_at_gradient():
         print big,small,max(abs(pen_grad[N+1:])),err,mu
     
     plt.show()
+
+def count_grad_func_eval():
+    import matplotlib.pyplot as plt
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 2
+    c = 0.5
+    f = lambda x : 100*np.cos(5*np.pi*x)
+
+    problem = non_lin_problem(y0,yT,T,a,p,c=c,func=f)
+    
+    N = 10000
+    seq_res = problem.solve(N,Lbfgs_options={'jtol':1e-7})
+
+    m = [1,2,3,4,5,6,10]
+    fu,gr = seq_res.counter()
+    table = {'niter':[seq_res.niter],'grad':[gr],'func':[fu],'lsiter':[seq_res.lsiter],'err':['--']}
+
+    for i in range(1,len(m)):
+        
+        res = problem.PPCLBFGSsolve(N,m[i],[N],tol_list=[1e-5,1e-6])#,options={'jtol':1e-8})
+        #res = res[-1]
+        fu,gr = res.counter()
+        
+        rel_err = max(abs(res.x[1:N]-seq_res.x[1:-1]))/max(abs(seq_res.x))
+        table['niter'].append(res.niter)
+        table['grad'].append(gr)
+        table['func'].append(fu)
+        table['lsiter'].append(res.lsiter)
+        table['err'].append(rel_err)
+        plt.plot(res.x[:N+1])
+    data = pd.DataFrame(table,index=m)
+    print data
+    #print seq_res.counter(), seq_res.niter,seq_res.lsiter
+    plt.plot(seq_res.x,'--r')
+    plt.show()
+
 if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    compare_pc_and_nonpc_for_different_m()
+    #compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
     #jump_difference()
     #look_at_gradient()
+    count_grad_func_eval()

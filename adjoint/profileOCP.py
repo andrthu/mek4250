@@ -41,4 +41,7 @@ if __name__ == '__main__':
     #"""
     
    
-    
+"""    
+python -m cProfile -o lbfgsppcProfile.prof profileOCP.py
+python profileOCP.py 0
+"""
