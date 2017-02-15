@@ -39,11 +39,13 @@ def find():
 if __name__ == '__main__':
     try:
         sys.argv[1] 
-        look()
+        
     except:
         
         print 'lel'
         main()
+
+    look()
     #"""
     #pr = cProfile.Profile()
     #foo = main()

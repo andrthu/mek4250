@@ -41,7 +41,7 @@ class MpiVectorOCP(PararealOCP):
         * N: Number of discritization points
         """
         
-        comm = self.comm
+        
         
         rank = self.rank
         
@@ -52,16 +52,20 @@ class MpiVectorOCP(PararealOCP):
         if rank == 0:
             y[0] = self.y0     
             j_help = 0
-
+            u = u.local_vec.copy()
         else:
             y[0] = u[-1]        #### OBS!!!! ####
             j_help = -1
-        u = u.local_vec.copy()
+            u = u.local_vec.copy()
+            u_h = np.zeros(len(u)+1)
+            u_h[1:]=u[:]
+            u=u_h
+            
         
         y_len = len(y)
         
         for j in range(y_len-1):
-            y[j+1] = self.ODE_update(y,u,j,j+j_help,dt)
+            y[j+1] = self.ODE_update(y,u,j,j,dt)#self.ODE_update(y,u,j,j+j_help,dt)
         
         return y
 
@@ -145,8 +149,8 @@ class MpiVectorOCP(PararealOCP):
             my_lam = np.array([p[0]-p_n])
             grad[-1] = p[0]-p_n
             
-        return MPIVector(grad,comm)
-
+        #return MPIVector(grad,comm)
+        return grad
     def parallel_penalty_solve(self,N,m,mu_list,tol_list=None,x0=None,Lbfgs_options=None):
 
         comm = self.comm

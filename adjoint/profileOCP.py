@@ -10,7 +10,7 @@ def main():
     a  = 0.9
     p = 2
     c = 0
-    problem,_ = generate_problem(y0,yT,T,a)
+    problem = generate_problem(y0,yT,T,a)[1]
     N = 2500000
     m = 1
     opt = {'jtol':0,'maxiter':100,'ignore xtol':True}
