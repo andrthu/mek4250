@@ -56,11 +56,13 @@ class MpiVectorOCP(PararealOCP):
         else:
             y[0] = u[-1]        #### OBS!!!! ####
             j_help = -1
-        u = u.local_vec
-
-        for j in range(len(y)-1):            
+        u = u.local_vec.copy()
+        
+        y_len = len(y)
+        
+        for j in range(y_len-1):
             y[j+1] = self.ODE_update(y,u,j,j+j_help,dt)
-
+        
         return y
 
     def parallel_penalty_functional(self,u,N,mu):
@@ -247,7 +249,7 @@ class simpleMpiVectorOCP(MpiVectorOCP):
     
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
-        return (y[i] +dt*u[j+1])/(1.-dt*a)
+        return (y[i]+dt*u[j+1])/(1.-dt*a)
 
     def adjoint_update(self,l,y,i,dt):
         a = self.a

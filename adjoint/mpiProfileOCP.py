@@ -18,7 +18,8 @@ def main():
     m = comm.Get_size()
     opt = {'jtol':0,'maxiter':100,'ignore xtol':True}
     u = MPIVector(np.zeros(local_u_size(N+1,m,rank))+1,comm)
-    problem.parallel_penalty_functional(u,N,1)
+    problem.penalty_grad(u,N,m,1)
+    #problem.parallel_penalty_functional(u,N,1)
     #problem.Gradient(u,N)
     #problem.Functional(u,N)
     #problem.Penalty_Functional(u,N,m,1)
@@ -28,7 +29,7 @@ def main():
     
 def look():
     stats = pstats.Stats("profmpi.prof")
-    stats.sort_stats("cumtime")
+    stats.sort_stats("tottime")
     stats.print_stats(30)
 def find():
     pr = cProfile.Profile()
@@ -40,8 +41,9 @@ if __name__ == '__main__':
         sys.argv[1] 
         look()
     except:
+        
+        print 'lel'
         main()
-    
     #"""
     #pr = cProfile.Profile()
     #foo = main()

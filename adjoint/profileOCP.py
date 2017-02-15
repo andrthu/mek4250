@@ -1,5 +1,6 @@
 import cProfile,pstats
-from test_LbfgsPPC import non_lin_problem
+from my_bfgs.mpiVector import MPIVector
+from mpiVectorOCP import generate_problem,local_u_size
 import sys
 import numpy as np
 def main():
@@ -8,14 +9,14 @@ def main():
     T  = 1
     a  = 0.9
     p = 2
-    c = 0.5
-    problem = non_lin_problem(y0,yT,T,a,p,c=c)
-    N = 1000000
+    c = 0
+    problem,_ = generate_problem(y0,yT,T,a)
+    N = 2500000
     m = 1
     opt = {'jtol':0,'maxiter':100,'ignore xtol':True}
     u = np.zeros(N+m)+1
-    problem.Penalty_Gradient(u,N,m,1)
-    #problem.Gradient(u,N)
+    #problem.Penalty_Gradient(u,N,m,1)
+    problem.Gradient(u,N)
     #problem.Functional(u,N)
     #problem.Penalty_Functional(u,N,m,1)
     #problem.PPCLBFGSsolve(N,m,[N,N**2])
@@ -24,8 +25,8 @@ def main():
     
 def look():
     stats = pstats.Stats("lbfgsppcProfile.prof")
-    stats.sort_stats("cumtime")
-    stats.print_stats(20)
+    stats.sort_stats("tottime")
+    stats.print_stats(30)
 def find():
     pr = cProfile.Profile()
     res = pr.run("main()")

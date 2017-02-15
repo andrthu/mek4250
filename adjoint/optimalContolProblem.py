@@ -191,9 +191,7 @@ class OptimalControlProblem():
         T = self.T
         if y0==None:
             y0 = self.y0
-        dt = float(T)/N
-        
-        
+        dt = float(T)/N        
         
         y = np.zeros(N+1)
         y[0]=y0
@@ -956,7 +954,7 @@ class Problem1(OptimalControlProblem):
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
         #return (y[i] +dt*u[j+1])/(1.-dt*a)
-        return (y[i] +dt*u[j+1])/(1.-dt*a)
+        return (y[i]+dt*u[j+1])/(1.-dt*a)
 
     def adjoint_update(self,l,y,i,dt):
         a = self.a
