@@ -56,6 +56,7 @@ class MpiVectorOCP(PararealOCP):
         else:
             y[0] = u[-1]        #### OBS!!!! ####
             j_help = -1
+        u = u.local_vec
 
         for j in range(len(y)-1):            
             y[j+1] = self.ODE_update(y,u,j,j+j_help,dt)

@@ -11,7 +11,7 @@ def main():
     p = 2
     c = 0.5
     _,problem = generate_problem(y0,yT,T,a)
-    N = 100000000
+    N = 10000000
     
     rank=problem.comm.Get_rank()
     comm=problem.comm
@@ -52,6 +52,6 @@ if __name__ == '__main__':
     
    
 """    
-python -m cProfile -o lbfgsppcProfile.prof profileOCP.py
-python profileOCP.py 0
+mpiexec -n 4 python -m cProfile -o profmpi.prof mpiProfileOCP.py
+python mpiProfileOCP.py 0
 """
