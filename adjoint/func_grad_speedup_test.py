@@ -27,7 +27,7 @@ def test_func(N,K,problem,pproblem,name='funcSpeed'):
         u = np.zeros(N+test_m)+1
         for i in range(K):
             t0 = time.time()
-            problem.Functional(u,N)#Penalty_Functional(u,N,10,10)
+            pproblem.Functional(u,N)#Penalty_Functional(u,N,10,10)
             t1 = time.time()
             vals.append(t1-t0)
         val = min(vals)
@@ -83,7 +83,7 @@ def test_grad(N,K,problem,pproblem,name='gradSpeed'):
         vals = []
         for i in range(K):
             t0 = time.time()
-            problem.Gradient(u,N)
+            pproblem.Gradient(u,N)
             t1 = time.time()
             vals.append(t1-t0)
         val = min(vals)
