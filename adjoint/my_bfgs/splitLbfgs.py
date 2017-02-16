@@ -71,7 +71,7 @@ class SplitLbfgs(LbfgsParent):
             Derivative of above function
             """
             x_new = x.copy()
-            print dir(x_new),dir(alpha*p)
+            
             x_new = x_new + (alpha*p)
         
             f = J(x_new)
@@ -79,7 +79,7 @@ class SplitLbfgs(LbfgsParent):
         
             return f,float(djs)
         
-        
+        print type(x.local_vec),type(p.local_vec),type(self.data.dJ.local_vec)
         phi_dphi0 = J(x),float(p.dot(self.data.dJ))
         
         
@@ -224,7 +224,8 @@ class SplitLbfgs(LbfgsParent):
         while self.mpi_check_convergence()==0:
             
             df0 = self.data.dJ.copy()
-            p = MPIVector(H.matvec(-df0),comm)
+            p = H.matvec(-df0)
+            print type(p)
             #print p
             if self.options['ignore xtol']:
                 try:                    

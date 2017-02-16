@@ -10,10 +10,10 @@ class MPIVector():
 
     def __add__(self,other):
         #print type(self.local_vec),type(other.local_vec)
-        return MPIVector(self.local_vec + other.local_vec,self.comm)
+        return MPIVector(self.local_vec.copy() + other.local_vec.copy(),self.comm)
 
     def __sub__(self,other):
-        return MPIVector(self.local_vec - other[:],self.comm)
+        return MPIVector(self.local_vec.copy() - other.local_vec.copy(),self.comm)
         #return self[:] - other[:]
     def __neg__(self):
         return -1*self
@@ -25,7 +25,13 @@ class MPIVector():
 
     def dot(self,other):
         comm = self.comm
-        local_res = np.array([np.sum(self.local_vec[:]*other.local_vec[:])])
+        a = self.local_vec
+        b = other.local_vec
+        print type(a),type(b),'ha'
+        x = a.dot(b)
+        print type(x.local_vec),'he'
+        local_res = np.array([self.local_vec.dot(other.local_vec)])
+        print local_res
         global_res = np.zeros(1)
         comm.Allreduce(local_res,global_res,op=MPI.SUM)
         return global_res[0]
@@ -39,7 +45,7 @@ class MPIVector():
     def __setitem__(self,i,val):
         self.local_vec[i] = val
     def __abs__(self):
-        return abs(self[:])
+        return abs(self.local_vec)
 
     def copy(self):
         return MPIVector(self.local_vec.copy(),self.comm)
