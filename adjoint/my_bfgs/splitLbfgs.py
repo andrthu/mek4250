@@ -71,8 +71,8 @@ class SplitLbfgs(LbfgsParent):
             Derivative of above function
             """
             x_new = x.copy()
-        
-            x_new = x_new + alpha*p
+            print dir(x_new),dir(alpha*p)
+            x_new = x_new + (alpha*p)
         
             f = J(x_new)
             djs = p.dot(d_J(x_new))

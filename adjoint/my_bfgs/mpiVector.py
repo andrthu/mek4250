@@ -9,22 +9,23 @@ class MPIVector():
         self.length = None
 
     def __add__(self,other):
-        return MPIVector(self[:] + other[:],self.comm)
+        #print type(self.local_vec),type(other.local_vec)
+        return MPIVector(self.local_vec + other.local_vec,self.comm)
 
     def __sub__(self,other):
-        return MPIVector(self[:] - other[:],self.comm)
+        return MPIVector(self.local_vec - other[:],self.comm)
         #return self[:] - other[:]
     def __neg__(self):
         return -1*self
 
     def __mul__(self,a):
-        
-        return MPIVector(a*self.local_vec,self.comm)
+        v = self.local_vec.copy()*a
+        return MPIVector(v,self.comm)
     __rmul__=__mul__
 
     def dot(self,other):
         comm = self.comm
-        local_res = np.array([np.sum(self[:]*other[:])])
+        local_res = np.array([np.sum(self.local_vec[:]*other.local_vec[:])])
         global_res = np.zeros(1)
         comm.Allreduce(local_res,global_res,op=MPI.SUM)
         return global_res[0]
