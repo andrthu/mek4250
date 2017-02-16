@@ -726,8 +726,8 @@ def count_grad_func_eval():
 
     problem = non_lin_problem(y0,yT,T,a,p,c=c,func=f)
     
-    N = 1000
-    seq_res = problem.solve(N,Lbfgs_options={'jtol':1e-7})
+    N = 100000
+    seq_res = problem.solve(N,Lbfgs_options={'jtol':1e-10})
 
     m = [1,2,3,4,5,6,10]
     fu,gr = seq_res.counter()
@@ -735,8 +735,8 @@ def count_grad_func_eval():
 
     for i in range(1,len(m)):
         
-        res = problem.PPCLBFGSsolve(N,m[i],[N],tol_list=[1e-5,1e-6])#,options={'jtol':1e-8})
-        #res = res[-1]
+        res = problem.PPCLBFGSsolve(N,m[i],[N,N**2],tol_list=[1e-5,1e-6])#,options={'jtol':1e-8})
+        res = res[-1]
         fu,gr = res.counter()
         
         rel_err = max(abs(res.x[1:N]-seq_res.x[1:-1]))/max(abs(seq_res.x))

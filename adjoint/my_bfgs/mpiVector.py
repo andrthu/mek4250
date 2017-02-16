@@ -13,6 +13,7 @@ class MPIVector():
 
     def __sub__(self,other):
         return MPIVector(self[:] - other[:],self.comm)
+        #return self[:] - other[:]
     def __neg__(self):
         return -1*self
 

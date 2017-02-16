@@ -11,21 +11,21 @@ def main():
     p = 2
     c = 0
     problem = generate_problem(y0,yT,T,a)[1]
-    N = 2500000
+    N = 250000
     m = 1
-    opt = {'jtol':0,'maxiter':100,'ignore xtol':True}
+    opt = {'jtol':0,'maxiter':10,'ignore xtol':True}
     u = np.zeros(N+m)+1
     #problem.Penalty_Gradient(u,N,m,1)
-    problem.Gradient(u,N)
+    #problem.Gradient(u,N)
     #problem.Functional(u,N)
     #problem.Penalty_Functional(u,N,m,1)
     #problem.PPCLBFGSsolve(N,m,[N,N**2])
-    #problem.solve(N,Lbfgs_options=opt)
+    problem.solve(N,Lbfgs_options=opt)
     #problem.penalty_solve(N,m,[N**2],Lbfgs_options=opt)
     
 def look():
     stats = pstats.Stats("lbfgsppcProfile.prof")
-    stats.sort_stats("tottime")
+    stats.sort_stats("cumtime")
     stats.print_stats(30)
 def find():
     pr = cProfile.Profile()

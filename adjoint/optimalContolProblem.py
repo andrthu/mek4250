@@ -953,7 +953,6 @@ class Problem1(OptimalControlProblem):
     #"""
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
-        #return (y[i] +dt*u[j+1])/(1.-dt*a)
         return (y[i]+dt*u[j+1])/(1.-dt*a)
 
     def adjoint_update(self,l,y,i,dt):

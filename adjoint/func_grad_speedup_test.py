@@ -127,7 +127,7 @@ def test_grad(N,K,problem,pproblem,name='gradSpeed'):
             #out = open('outputDir/gradientSpeed/'+name+'_'+str(N)+'.txt','a')
             #out.write('par %d: %f %f \n'%(m,min_time,max_time))
             #out.close()
-def read_temp_time(name,m,seq,rank):
+def read_temp_time(name,m,seq,rank,solve=False):
     if rank==0:
         temp_time_file = open('temp_time.txt','r')
         time_vals = temp_time_file.readlines()
@@ -138,18 +138,99 @@ def read_temp_time(name,m,seq,rank):
                 vals.append(float(l))
 
         min_val = min(vals)
+
+        if solve:
+            if seq:
+                info = open('temp_info.txt','r')
+                info_vals = info.readlines()
+                vals2 = []
+                for line in info_vals:
+                    line_list = line.split()
+                    for l in line_list:
+                        vals2.append(int(l))
+                seq_string = 'seq: %f %d %d %d %d\n'%(min_val,vals2[0],vals2[1],vals2[2],vals2[3])
+            else:
+                info = open('temp_info.txt','r')
+                info_vals = info.readlines()
+                vals2 = []
+                for line in info_vals:
+                    line_list = line.split()
+                    for l in line_list:
+                        vals2.append(int(l))
+                par_string = 'par %d: %f %d %d %d %d \n'%(m,min_val,vals2[0],vals2[1],vals2[2],vals2[3])
+        else:
+            seq_string = 'seq: %f \n'%min_val
+            par_string = 'par %d: %f \n'%(m,min_val)
+
         if seq:
             print 
             out = open(name,'w')
-            out.write('seq: %f \n'%min_val)
+            out.write(seq_string)
             out.close()
         else:
             out=open(name,'a')
-            out.write('par %d: %f \n'%(m,min_val))
+            out.write(par_string)
             out.close()
         temp_time_file.close()
     return
+
+def test_solve(N,problem,pproblem,name='solveSpeed'):
+    comm = pproblem.comm
+    m = comm.Get_size()
+    rank = comm.Get_rank()
     
+    if m == 1:
+        
+        t0 = time.time()
+        res = pproblem.solve(N)
+        t1=time.time()
+        val = t1-t0
+        np.save('seq_sol',res.x)
+        temp1 = open('temp_time.txt','a')
+        temp1.write('%f ' %val)
+        temp1.close()
+        
+        fu,gr=res.counter()
+
+        temp2 = open('temp_info.txt','w')
+        temp2.write('%d %d %d %d'%(int(fu),int(gr),res.niter,res.lsiter))
+        temp2.close()
+
+    else:
+        mu_list = [m*N]
+        comm.Barrier()
+        t0 = time.time()
+        res = pproblem.parallel_penalty_solve(N,m,mu_list)
+        res=res[-1]
+        t1 = time.time()
+        comm.Barrier()
+        loc_time = np.zeros(1)
+        loc_time[0] = t1-t0
+        if rank == 0:
+            time_vec = np.zeros(m)
+        else:
+            time_vec = None
+        loc_size = tuple(np.zeros(m)+1)
+        loc_start = tuple(np.linspace(0,m-1,m))
+        comm.Gatherv(loc_time,[time_vec,loc_size,loc_start,MPI.DOUBLE])
+
+        if rank==0:
+
+            min_time = min(time_vec)
+            
+            time_saver = open('temp_time.txt','a')
+            time_saver.write('%f ' %min_time)
+            time_saver.close()
+
+            fu,gr=res.counter()
+            
+            info_file = open('temp_info.txt','w')
+            info_file.write('%d %d %d %d'%(int(fu),int(gr),res.niter,res.lsiter))
+            info_file.close()
+
+
+
+
 def main():
     
     y0 = 1
@@ -189,6 +270,32 @@ def main():
         test_grad(N,K,problem,pproblem)
     else:
         test_func(N,K,problem,pproblem)
+def main2():
+    y0 = 1
+    yT = 1
+    T = 1
+    a = 1
+    problem,pproblem=generate_problem(y0,yT,T,a)
+    try:
+        N = int(sys.argv[1])
+    except:
+        N = 1000
+    
+    
+    comm=pproblem.comm
+    m = comm.Get_size()
+    rank = comm.Get_rank()
+    if sys.argv[3] == '0':
+        if m ==1:
+            seq = True
+        else:
+            seq =False
+        read_temp_time('outputDir/solveSpeed/sSpeed_'+str(N)+'.txt',m,seq,rank,solve=True)
+        return
+    test_solve(N,problem,pproblem,name='solveSpeed')
+    
+
+
 if __name__ == '__main__':
-    main()
-        
+    #main()
+    main2()

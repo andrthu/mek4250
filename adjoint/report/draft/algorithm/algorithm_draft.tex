@@ -58,5 +58,12 @@ To solve the constrained problem (\ref{constrained reduced}), we will use the pe
 \hat J_{\mu}(v,\Lambda) = \hat J(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2
 \end{align}
 If we now minimize $\hat{J}_{\mu}$ with respect to $(v,\Lambda)$, while letting $\mu$ tend to infinity, we hope that the solution will satisfy the conditions (\ref{Extra constraints}), while also minimizing the actual problem (\ref{constrained reduced}). the algorithmic framework of this reads:
-
+\begin{align*}
+1: \ &\textit{Choose} \ \mu_0,\tau_0>0 \ \textit{and intial control} \ (v^0,\Lambda^0) \\
+2: \ &\textit{for $k=1,2,...$: } \\
+&2.1:\textit{Find} \ (v^k,\Lambda^k) \ \textit{s.t.} \ \parallel\nabla \hat J_{\mu_{k-1}}(v^k,\Lambda^k)\parallel<\tau_{k-1} \\
+&2.2:\textit{If STOPP CRITERION satisfied end algorithm} \\
+&2.3:\textit{Choose new} \ \tau_k\in(0,\tau_{k-1}),\ \mu_k\in(\mu_{k-1},\infty) 
+\end{align*}
+The parts of the above framework, that still needs special attention, is how we find $(v^k,\Lambda^k)$ in each iteration, how we update $\mu_k$ and $\tau_k$ and choosing an adequate stopping criteria. 
 \end{document}

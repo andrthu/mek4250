@@ -11,14 +11,15 @@ def main():
     p = 2
     c = 0.5
     _,problem = generate_problem(y0,yT,T,a)
-    N = 10000000
+    N = 500000
     
     rank=problem.comm.Get_rank()
     comm=problem.comm
     m = comm.Get_size()
-    opt = {'jtol':0,'maxiter':100,'ignore xtol':True}
-    u = MPIVector(np.zeros(local_u_size(N+1,m,rank))+1,comm)
-    problem.penalty_grad(u,N,m,1)
+    opt = {'jtol':0,'maxiter':10,'ignore xtol':True}
+    problem.parallel_penalty_solve(N,m,[1],Lbfgs_options=opt)
+    #u = MPIVector(np.zeros(local_u_size(N+1,m,rank))+1,comm)
+    #problem.penalty_grad(u,N,m,1)
     #problem.parallel_penalty_functional(u,N,1)
     #problem.Gradient(u,N)
     #problem.Functional(u,N)
@@ -29,7 +30,7 @@ def main():
     
 def look():
     stats = pstats.Stats("profmpi.prof")
-    stats.sort_stats("tottime")
+    stats.sort_stats("cumtime")
     stats.print_stats(30)
 def find():
     pr = cProfile.Profile()
@@ -39,13 +40,12 @@ def find():
 if __name__ == '__main__':
     try:
         sys.argv[1] 
-        
+        look()
     except:
-        
-        print 'lel'
+        print 'main'
         main()
 
-    look()
+    
     #"""
     #pr = cProfile.Profile()
     #foo = main()

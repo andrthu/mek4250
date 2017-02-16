@@ -54,6 +54,7 @@ def main():
         print 'Give file'
         return
     for name in names:
+        print name
         lines = read_file(name)
         data = create_table(lines,with_iter=with_iter)
         print data

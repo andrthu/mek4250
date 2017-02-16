@@ -38,11 +38,8 @@ class MpiVectorOCP(PararealOCP):
 
         Arguments:
         * u: the control
-        * N: Number of discritization points
-        """
-        
-        
-        
+        * N: Number of discritization points       
+        """ 
         rank = self.rank
         
         T = self.T        
@@ -149,8 +146,8 @@ class MpiVectorOCP(PararealOCP):
             my_lam = np.array([p[0]-p_n])
             grad[-1] = p[0]-p_n
             
-        #return MPIVector(grad,comm)
-        return grad
+        return MPIVector(grad,comm)
+        #return grad
     def parallel_penalty_solve(self,N,m,mu_list,tol_list=None,x0=None,Lbfgs_options=None):
 
         comm = self.comm
