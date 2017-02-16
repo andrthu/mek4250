@@ -17,7 +17,7 @@ class SplitLbfgs(LbfgsParent):
                              scale=scale)
 
         self.m = m
-        self.PRINT_GRAD = True
+        self.PRINT_GRAD = False
         mem_lim = self.options['mem_lim']
         
         beta = self.options["beta"]

@@ -180,9 +180,9 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
     rank = comm.Get_rank()
     
     if m == 1:
-        
+        opt = {'jtol':1e-8}
         t0 = time.time()
-        res = pproblem.solve(N)
+        res = pproblem.solve(N,Lbfgs_options=opt)
         t1=time.time()
         val = t1-t0
         np.save('seq_sol',res.x)
