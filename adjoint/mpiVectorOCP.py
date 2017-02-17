@@ -209,12 +209,14 @@ class MpiVectorOCP(PararealOCP):
         
         Result = []
         PPC = self.PC_maker4(N,m,comm,step=1)
-
+        initial_counter = self.counter.copy()
         for i in range(len(mu_list)):
             
             def J(u):
+                self.counter[0]+=1
                 return self.parallel_penalty_functional(u,N,mu_list[i])
             def grad_J(u):
+                self.counter[1]+=1
                 return self.penalty_grad(u,N,m,mu_list[i])
 
             self.update_Lbfgs_options(options)
@@ -231,6 +233,7 @@ class MpiVectorOCP(PararealOCP):
                                 options=Lbfgsopt,ppc=PPC,mpi=True)
             res = Solver.mpi_solve()
             x0 = res.x
+            res.add_FuncGradCounter(self.counter-initial_counter)
             Result.append(res)
 
         return Result

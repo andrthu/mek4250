@@ -180,7 +180,7 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
     rank = comm.Get_rank()
     
     if m == 1:
-        opt = {'jtol':1e-8}
+        opt = {'jtol':1e-10}
         t0 = time.time()
         res = pproblem.solve(N,Lbfgs_options=opt)
         t1=time.time()
@@ -197,13 +197,14 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         temp2.close()
 
     else:
-        mu_list = [m*N]
+        opt = {'jtol':1e-5}
+        mu_list = [N]
         comm.Barrier()
         t0 = time.time()
-        res = pproblem.parallel_penalty_solve(N,m,mu_list)
-        res=res[-1]
+        res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-3,1e-4])#,Lbfgs_options=opt)
         t1 = time.time()
         comm.Barrier()
+        res=res[-1]
         loc_time = np.zeros(1)
         loc_time[0] = t1-t0
         if rank == 0:
