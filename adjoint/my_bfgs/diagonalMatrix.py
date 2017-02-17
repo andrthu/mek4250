@@ -30,8 +30,9 @@ class DiagonalMpiMatrix():
         
     def __call__(self,x):
         
-        return self.diag*x
-
+        y=self.diag*x.local_vec
+        #print type(y.local_vec.local_vec)
+        return y
 
 if __name__ =='__main__':
     n =10

@@ -11,12 +11,12 @@ def main():
     p = 2
     c = 0.5
     _,problem = generate_problem(y0,yT,T,a)
-    N = 5000
+    N = 5000000
     
     rank=problem.comm.Get_rank()
     comm=problem.comm
     m = comm.Get_size()
-    opt = {'jtol':0,'maxiter':10,'ignore xtol':False}
+    opt = {'jtol':0,'maxiter':5,'ignore xtol':True}
     problem.parallel_penalty_solve(N,m,[1],Lbfgs_options=opt)
     #u = MPIVector(np.zeros(local_u_size(N+1,m,rank))+1,comm)
     #problem.penalty_grad(u,N,m,1)
@@ -38,12 +38,17 @@ def find():
     pr.dump_stats("profmpi.prof")
     
 if __name__ == '__main__':
+    
     try:
         sys.argv[1] 
-        look()
+        A = True
     except:
         print 'main'
         main()
+        A = False
+
+    if A:
+        look()
 
     
     #"""
