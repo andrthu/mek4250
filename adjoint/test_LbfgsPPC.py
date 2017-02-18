@@ -752,6 +752,23 @@ def count_grad_func_eval():
     plt.plot(seq_res.x,'--r')
     plt.show()
 
+
+def split_test():
+
+    y0 = 3.2
+    yT = 1.5
+    T  = 1
+    a  = 0.9
+    p = 2
+    c = 0.5
+    f = lambda x : 100*np.cos(5*np.pi*x)
+
+    problem = non_lin_problem(y0,yT,T,a,p,c=c,func=f)
+    
+    SplitLbfgs(J,grad_J,x0.array(),options=self.Lbfgs_options)
+
+    
+
 if __name__ == '__main__':
     #test1()
     #test2()
