@@ -765,7 +765,15 @@ def split_test():
 
     problem = non_lin_problem(y0,yT,T,a,p,c=c,func=f)
     
-    SplitLbfgs(J,grad_J,x0.array(),options=self.Lbfgs_options)
+    N = 1000
+    m = 10
+    mu = 10
+
+    J = lambda x : problem.Penalty_Functional(x,N,m,mu)
+    grad_j = lambda x : problem.Penalty_Gradient(x,N,m,mu)
+        
+    
+    SplitLbfgs(J,grad_J,np.zeros(N+m),options=problem.Lbfgs_options)
 
     
 
