@@ -766,16 +766,19 @@ def split_test():
     problem = non_lin_problem(y0,yT,T,a,p,c=c,func=f)
     
     N = 1000
-    m = 10
-    mu = 10
-
+    m = 3
+    mu = 1
+    res = problem.solve(N)
+    import matplotlib.pyplot as plt
+    plt.plot(res.x)
+    plt.show()
     J = lambda x : problem.Penalty_Functional(x,N,m,mu)
-    grad_j = lambda x : problem.Penalty_Gradient(x,N,m,mu)
+    grad_J = lambda x : problem.Penalty_Gradient(x,N,m,mu)
         
     
-    SplitLbfgs(J,grad_J,np.zeros(N+m),options=problem.Lbfgs_options)
+    solver = SplitLbfgs(J,grad_J,np.zeros(N+m),m=m,options=problem.Lbfgs_options)
 
-    
+    res = solver.solve2()
 
 if __name__ == '__main__':
     #test1()
@@ -787,4 +790,5 @@ if __name__ == '__main__':
     #test_adaptive_ppc()
     #jump_difference()
     #look_at_gradient()
-    count_grad_func_eval()
+    #count_grad_func_eval()
+    split_test()

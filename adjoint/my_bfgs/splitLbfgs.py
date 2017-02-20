@@ -17,7 +17,7 @@ class SplitLbfgs(LbfgsParent):
                              scale=scale)
 
         self.m = m
-        self.PRINT_GRAD = False
+        self.PRINT_GRAD = True
         mem_lim = self.options['mem_lim']
         
         beta = self.options["beta"]
@@ -80,8 +80,8 @@ class SplitLbfgs(LbfgsParent):
             return f,float(djs)
         
         
-        phi_dphi0 = J(x),float(p.dot(self.data.dJ))
-        
+        #phi_dphi0 = J(x),float(p.dot(self.data.dJ))
+        phi_dphi0 = J(x),float(p.dot(d_J(x)))
         
         if self.options["line_search"]=="strong_wolfe":
             ls_parm = self.options["line_search_options"]
@@ -300,15 +300,16 @@ class SplitLbfgs(LbfgsParent):
         return self.data
 
     def solve2(self):
-        
+
+        import matplotlib.pyplot as plt
         n = self.data.length
         m = self.m
         N = n-m
         x0 = self.data.x.copy()
 
         mem_lim = self.options['mem_lim']
-        H1 = NumpyLimMemoryHessian(np.identity(N+1),mem_lim,beta=1)
-        H2 = NumpyLimMemoryHessian(np.identity(m-1),mem_lim,beta=1)
+        H1 = NumpyLimMemoryHessian(DiagonalMatrix(N+1),mem_lim,beta=1)
+        H2 = NumpyLimMemoryHessian(DiagonalMatrix(m-1),mem_lim,beta=1)
 
         dl0 = self.data.dJ.copy()[N+1:]
         dl1 = np.zeros(m-1)
@@ -319,22 +320,22 @@ class SplitLbfgs(LbfgsParent):
         while self.check_convergence()==0:
 
             v,lamda =self.split_control(self.data.x,N,m)
-
-            p1 = H2.matvec(-dl0)           
-
-            p_lamda,lamda_J,lamda_grad = self.get_lamda_grad(x0,N,m,v,lamda)
             
-            lamda1,alpha = self.do_linesearch(lamda_J,lamda_grad,lamda,p1)
+            
 
-            sl = lamda1-lamda
-
+            
+            #self.data.split_update(N,v,lamda1)
             p_v,v_J,v_grad = self.get_v_grad(x0,N,m,v,lamda)
             p2 = H1.matvec(-dv0)
             v1,alpha = self.do_linesearch(v_J,v_grad,v,p2)
             
             sv = v1-v
+            p1 = -dl0#H2.matvec(-dl0)           
+
+            p_lamda,lamda_J,lamda_grad = self.get_lamda_grad(x0,N,m,v,lamda)
             
-            
+            lamda1,alpha = self.do_linesearch(lamda_J,lamda_grad,lamda,p1)
+            sl = lamda1-lamda
             self.data.split_update(N,v1,lamda1)
             df1 = self.data.dJ.copy()
             dl1[:] = df1[N+1:]
@@ -343,11 +344,14 @@ class SplitLbfgs(LbfgsParent):
             H2.update(dl1-dl0,sl)
             H1.update(dv1-dv0,sv)
             
-            
+            plt.plot(self.data.x[:N+1])
+            print self.data.x[N+1:]
+            plt.show()
             x0[:]  = self.data.x[:]
             dl0[:] = dl1[:]
             dv0[:] = dv1[:]
-            
+            if self.PRINT_GRAD:
+                print 'max grad:', max(abs(self.data.dJ))
         
         return self.data
 
