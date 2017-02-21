@@ -251,7 +251,7 @@ def get_speedup(task='both',name='speedup'):
         
     if PROBLEM_NUMBER==1:
         problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
-        mu_val = [1]
+        mu_val = [1,10,100,N]
     elif PROBLEM_NUMBER == 2:
         mu_val = [np.sqrt(N)]
         y0_2 = 24.6

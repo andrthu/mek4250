@@ -26,6 +26,7 @@ class MpiVectorOCP(PararealOCP):
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
         self.m = self.comm.Get_size()
+        self.local_end = 0
 
     def initial_control2(self,N,m=1):
         comm = self.comm
@@ -63,7 +64,7 @@ class MpiVectorOCP(PararealOCP):
         
         for j in range(y_len-1):
             y[j+1] = self.ODE_update(y,u,j,j,dt)#self.ODE_update(y,u,j,j+j_help,dt)
-        
+        self.local_end = y[-1]
         return y
 
     def parallel_penalty_functional(self,u,N,mu):
@@ -175,6 +176,9 @@ class MpiVectorOCP(PararealOCP):
             
             res.add_FuncGradCounter(self.counter-initial_counter)
             Result.append(res)
+            val =self.find_jump_diff(res.x)
+            if self.rank == 0:
+                print 'jump diff:',val
         return Result
 
     def PC_maker4(self,N,m,comm,step=1):
@@ -235,9 +239,39 @@ class MpiVectorOCP(PararealOCP):
             x0 = res.x
             res.add_FuncGradCounter(self.counter-initial_counter)
             Result.append(res)
-
+            val = self.find_jump_diff(res.x)
+            if self.rank==0:
+                print 'jump diff:',val
         return Result
-                
+
+    def find_jump_diff(self,x):
+        
+        comm = self.comm
+        rank = self.rank
+        m = self.m
+        if rank == 0:
+            my_lam = np.array([0])
+            comm.send(self.local_end,dest=1)
+            my_diff =np.array(0)
+            all_diff = np.zeros(m)
+        elif rank!= m-1:
+            nab_end = comm.recv(source=rank-1)
+            comm.send(self.local_end,dest=rank+1)
+
+            my_diff = np.array(nab_end-x[-1])
+            all_diff = np.zeros(m)
+        else:
+            nab_end= comm.recv(source=rank-1)
+            my_diff = np.array(nab_end-x[-1])
+            all_diff = np.zeros(m)
+
+        start = tuple(np.linspace(0,m-1,m))
+        length = tuple(np.zeros(m)+1)
+
+        comm.Allgatherv(my_diff,[all_diff,length,start,MPI.DOUBLE])
+
+        return max(abs(all_diff))
+
 
 class simpleMpiVectorOCP(MpiVectorOCP):
 
