@@ -67,4 +67,13 @@ This now allows us to write up the gradient as follows:
 \end{align}
 Evaluating the gradient for a control variable $v\in V$ typically requires us to solve both the state and adjoint equation, and then inserting the solutions into the expression for the gradient.
 \subsubsection{Time dependent differential equations}
+The time dependent differential equation constraints that I will use will generally be on the form:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	\frac{\partial }{\partial t}y+Ay = Bv\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align}
 \end{document}
