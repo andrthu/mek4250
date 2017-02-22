@@ -131,6 +131,31 @@ def test2():
     #data.to_latex('report/consitency_tables/different_N_meql'+str(m)+'.tex')
     print '||u||: ', seq_norm
 
+
+def jump_diff_test():
+
+    y0=3.3
+    yT=10
+    T=1
+    a=10.4
+
+    problem = lin_problem(y0,yT,T,a)
+
+    N = 1000
+
+    M = [2,3,4,5,6,10,20]
+    
+    jumps = []
+    for m in M:
+        
+        jumps2 = []
+        res = problem.penalty_solve(N,m,[np.sqrt(N),N,N**2,N**3])
+
+        for i in range(len(res)):
+            jumps2.append(res[i].jump_diff)
+        jumps.append(jumps2)
+    print jumps
 if __name__ == '__main__':
     #test(1000)
-    test2()
+    #test2()
+    jump_diff_test()

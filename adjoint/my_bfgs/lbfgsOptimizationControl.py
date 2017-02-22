@@ -21,6 +21,7 @@ class LbfgsOptimizationControl():
         self.scaler = scaler
         #self.vec = vec
         self.mu = None
+        self.jump_diff = None
 
         self.niter = 0
         

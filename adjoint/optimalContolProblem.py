@@ -52,6 +52,8 @@ class OptimalControlProblem():
 
         self.counter=np.zeros(2)
 
+        self.jump_diff = 0
+
     def set_options(self,user_options,user_Lbfgs):
         """
         Method for setting options
@@ -243,6 +245,12 @@ class OptimalControlProblem():
             Y[start:start+len(y[i])-1] = y[i][1:]
             start = start + len(y[i]) - 1
         #"""
+
+        diff_vals = np.zeros(m-1)
+        for i in range(m-1):
+            diff_vals = y[i+1][0]-y[i][-1]
+
+        self.jump_diff = np.max(abs(diff_vals))
         return y,Y
 
     def adjoint_solver(self,u,N,l0=None):
@@ -529,7 +537,7 @@ class OptimalControlProblem():
                     solver = SplitLbfgs(J,grad_J,x0.array(),options=self.Lbfgs_options)
                 #res = solver.solve()
                 res = solver.normal_solve()
-                Result.append(res)
+                
                 x0 = res['control']
                 #print J(x0.array())
             elif algorithm=='my_steepest_decent':
@@ -548,7 +556,7 @@ class OptimalControlProblem():
                                                lambda x: x,options=SDopt)
                     res = Solver.split_solve(m)
                 x0 = res.x.copy()
-                Result.append(res)
+                
             elif algorithm=='slow_steepest_decent':
                 self.update_SD_options(Lbfgs_options)
                 SDopt = self.SD_options
@@ -556,7 +564,7 @@ class OptimalControlProblem():
                                         options=SDopt)
                 res = Solver.solve()
                 x0 = res.x.copy()
-                Result.append(res)
+                
                 
             elif algorithm == 'split_lbfgs':
                 self.update_Lbfgs_options(Lbfgs_options)
@@ -564,7 +572,9 @@ class OptimalControlProblem():
 
                 res = Solver.solve()
                 x0 = res.x.copy()
-                Result.append(res)
+            res.jump_diff=self.jump_diff
+            Result.append(res)
+            print 'jump diff:',self.jump_diff
         res.add_FuncGradCounter(self.counter-initial_counter)
         if len(Result)==1:
             return res
@@ -1065,7 +1075,8 @@ if __name__ == "__main__":
 
 
     opt =None# {"mem_lim":20}
-    res2 = problem.penalty_solve(N,m,[100**2],Lbfgs_options=opt,algorithm='my_lbfgs')
+    res2 = problem.penalty_solve(N,m,[100**2,1000**2],Lbfgs_options=opt,algorithm='my_lbfgs')[-1]
+    print res2.jump_diff
     try:
         u2 = res2['control'].array()[:N+1]
     except:
