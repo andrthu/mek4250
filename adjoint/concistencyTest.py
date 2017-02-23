@@ -140,21 +140,35 @@ def jump_diff_test():
     a=10.4
 
     problem = lin_problem(y0,yT,T,a)
-
+    import matplotlib.pyplot as plt
     N = 1000
 
     M = [2,3,4,5,6,10,20]
-    
+    res1 = problem.solve(N,Lbfgs_options={'jtol':1e-6})
+    plt.plot(res1.x,'r--')
     jumps = []
+    errors = []
+    table = {'err':[],'jump':[],'iter':[]}
     for m in M:
         
         jumps2 = []
-        res = problem.penalty_solve(N,m,[np.sqrt(N),N,N**2,N**3])
-
+        errors2 = []
+        res = problem.penalty_solve(N,m,[N**2],tol_list=[1,1e-1],Lbfgs_options={'jtol':1e-1})
+        res = [res]
         for i in range(len(res)):
             jumps2.append(res[i].jump_diff)
+            errors2.append(max(abs(res[i].x[:N+1]-res1.x))/max(abs(res1.x)))
+        errors.append(errors2)
         jumps.append(jumps2)
-    print jumps
+        table['err'].append(errors2)
+        table['jump'].append(jumps2)
+        table['iter'].append(res[-1].counter())
+        plt.plot(res[-1].x[:N+1])
+    data = pd.DataFrame(table)
+    print res1.counter()
+    print data
+    plt.show()
+    #print jumps
 if __name__ == '__main__':
     #test(1000)
     #test2()
