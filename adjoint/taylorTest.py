@@ -418,10 +418,10 @@ def taylor_test_mpi():
 
 if __name__ == '__main__':
     #taylor_test_non_penalty()
-    #taylor_penalty_test()
+    taylor_penalty_test()
     #quad_end()
     #runge_kutta_test()
-    taylor_test_mpi()
+    #taylor_test_mpi()
 """
 J(u+eh) = J(u) + O(e)
 

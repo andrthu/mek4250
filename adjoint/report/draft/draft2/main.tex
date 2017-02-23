@@ -1,0 +1,62 @@
+\documentclass[a4paper, 12pt, titlepage, twoside, openright]{report}
+
+%\documentclass{article}
+
+
+% includes
+\usepackage[a4paper]{geometry}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{amsmath,amsfonts,amssymb,amsthm, gensymb}
+\usepackage{color, array, threeparttable}
+\usepackage[utf8]{inputenc}
+\usepackage{subcaption}
+\usepackage{tikz}
+\renewcommand{\arraystretch}{1.2}
+
+
+
+%\usepackage{masterfrontpage}
+
+\long\def\/*#1*/{}
+
+% settings
+%\input{settings}
+
+% definitions
+%\input{definitions}
+
+%\usepackage[backend=biber, style=verbose-trad2, citestyle=numeric]{biblatex}
+
+%\usepackage[CS, 60]{masterfrontpage}
+
+%\title{Overskrift}
+%\subtitle{Valgfri underoverskrift}
+%\author{Guttorm Kvaal}
+
+\begin{document}
+
+%\masterfrontpage
+
+%\setcounter{page}{0}
+
+%\include{front}
+%\newpage \void            % manually set even page
+
+\tableofcontents
+
+\include{Chapters/intro}
+\include{Chapters/math}
+\include{Chapters/ODEparareal}
+\include{Chapters/method}
+\include{Chapters/implementation}
+\include{Chapters/experiments}
+%\include{references}
+
+%\bibliography{references} 
+%\bibliographystyle{ieeetr}
+
+
+\appendix
+
+\end{document}
