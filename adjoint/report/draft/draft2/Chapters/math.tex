@@ -131,13 +131,19 @@ The methods are iterative and generate a sequence $\{x^k\}$ that hopefully will 
 2. &\textit{Choose step length $\alpha_k$} \\
 3. &\textit{Set $x^{k+1}=x^k + \alpha_kp_k$} 
 \end{align*}
-What separates different line search methods, is how one chooses direction $p_k$ and step length $\alpha_k$.
-\\
-\\
-The steepest descent method is the simplest line search method that exists, and is  
+What separates different line search methods, is how one chooses direction $p_k$ and step length $\alpha_k$. How to choose a good step length is generally a more difficult question than how to choose the search direction. One way of finding a good search length, are the so called Wolfe conditions. These are as follows:
 \begin{align*}
-x^{k+1} = x^k - \alpha \nabla J(x^k)
-\end{align*}  
+f(x^k + \alpha_kp_k)&\leq f(x^k) + c_1\alpha_k\nabla f(x^k)\cdot p_k \\
+\nabla f(x^k + \alpha_kp_k) \cdot p_k &\geq c_2 \nabla f(x^k)\cdot p_k
+\end{align*}
+Here we use constants $0<c_1<c_2<1$. The first Wolfe condition ensures that the decrease in function value is proportional to both step length and direction. The second condition is that the gradient of $f$ at $x^k + \alpha_kp_k$, should be less steep than at $x^k$. If we can find a step length that satisfies these conditions we will use it. How to actually find a step length that satisfies the Wolfe conditions is quite involved, and I will therefore not go into this topic any further. Instead I will mention a couple of line search methods that will be used later in the thesis, starting with steepest descent.
+\\
+\\
+The steepest descent method is a very simple line search method, where the step length $p_k$ is set to the negative gradient direction at point $x^k$, i.e $p_k = -\nabla f(x^k)$. This gives us the following update for each iteration:
+\begin{align*}
+x^{k+1} = x^k - \alpha_k \nabla J(x^k)
+\end{align*} 
+%Need to cite stuff here
 \subsection{BFGS and L-BFGS}
 \begin{align*}
 x^{k+1} = x^k + \alpha H^{k}\nabla J(x^k)
