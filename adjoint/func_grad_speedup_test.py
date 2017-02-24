@@ -197,11 +197,11 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         temp2.close()
 
     else:
-        opt = {'jtol':1e-5}
+        opt = {'jtol':1./N}
         mu_list = [N]
         comm.Barrier()
         t0 = time.time()
-        res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-3,1e-4])#,Lbfgs_options=opt)
+        res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1./N])#,Lbfgs_options=opt)
         t1 = time.time()
         comm.Barrier()
         res=res[-1]

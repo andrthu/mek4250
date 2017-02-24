@@ -248,7 +248,7 @@ class OptimalControlProblem():
 
         diff_vals = np.zeros(m-1)
         for i in range(m-1):
-            diff_vals = y[i+1][0]-y[i][-1]
+            diff_vals = (y[i+1][0]-y[i][-1])/max(abs(y[i+1][0]),abs(y[i][-1]))
 
         self.jump_diff = np.max(abs(diff_vals))
         return y,Y

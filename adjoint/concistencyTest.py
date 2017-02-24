@@ -138,10 +138,10 @@ def jump_diff_test(y0=3.3,yT=10,T=1,a=10.4):
 
     problem = lin_problem(y0,yT,T,a)
     import matplotlib.pyplot as plt
-    N = 1000
+    N = 100000
 
-    M = [2,3,4,5,6,10,20]
-    res1 = problem.solve(N,Lbfgs_options={'jtol':1e-4})
+    M = [2,3,4,5,6]
+    res1 = problem.solve(N,Lbfgs_options={'jtol':1e-5})
     plt.plot(res1.x,'r--')
     jumps = []
     errors = []
@@ -150,7 +150,7 @@ def jump_diff_test(y0=3.3,yT=10,T=1,a=10.4):
         
         jumps2 = []
         errors2 = []
-        res = problem.penalty_solve(N,m,[N**2],tol_list=[1e-1,1e-5],Lbfgs_options={'jtol':1e-1})
+        res = problem.penalty_solve(N,m,[N],tol_list=[1e-5,1e-5],Lbfgs_options={'jtol':1e-1})
         res = [res]
         for i in range(len(res)):
             jumps2.append(res[i].jump_diff)
@@ -169,4 +169,4 @@ def jump_diff_test(y0=3.3,yT=10,T=1,a=10.4):
 if __name__ == '__main__':
     #test(1000)
     #test2()
-    jump_diff_test(y0=-4,a=10,yT=30)
+    jump_diff_test(y0=1,a=1,yT=1)
