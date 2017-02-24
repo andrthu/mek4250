@@ -125,6 +125,13 @@ Line search methods are algorithms that help us solve problems of the type:
 \begin{align*}
 \min_x f(x)
 \end{align*}
+The methods are iterative and generate a sequence $\{x^k\}$ that hopefully will converge to a solution. This means that an initial guess $x^0$ is required. The k-th iteration in the algorithm can be described in the following way:
+\begin{align*}
+1. &\textit{Choose direction $p_k$} \\
+2. &\textit{Choose step length $\alpha_k$} \\
+3. &\textit{Set $x^{k+1}=x^k + \alpha_kp_k$} 
+\end{align*}
+What separates different line search methods, is how one chooses direction $p_k$ and step length $\alpha_k$.
 \\
 \\
 The steepest descent method is the simplest line search method that exists, and is  
