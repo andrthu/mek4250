@@ -123,7 +123,7 @@ Deriving and solving the adjoint equation gives us a way of evaluating the gradi
 \subsection{Line search methods and steepest descent}
 Line search methods are algorithms that help us solve problems of the type: 
 \begin{align*}
-\min_x f(x)
+\min_x f(x), \ f:\mathbb{R}^n\longrightarrow\mathbb{R}
 \end{align*}
 The methods are iterative and generate a sequence $\{x^k\}$ that hopefully will converge to a solution. This means that an initial guess $x^0$ is required. The k-th iteration in the algorithm can be described in the following way:
 \begin{align*}
@@ -143,7 +143,17 @@ The steepest descent method is a very simple line search method, where the step 
 \begin{align*}
 x^{k+1} = x^k - \alpha_k \nabla J(x^k)
 \end{align*} 
-%Need to cite stuff here
+The problem with steepest descent is that it converges quite slowly. This fact we get from the following theorem given in (CITE Numerical optimization Wright)
+\begin{theorem}
+Assume that $f:\mathbb{R}^n\longrightarrow\mathbb{R}$ is twice continuously differentiable, that the steepest decent method converge to a point $x^*$, and that the Hessian of $f$ at this point, $\nabla^2 f(x^*)$ is positive definite. Then the following holds:
+\begin{align*}
+f(x^{k+1})-f(x^*) \leq (\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1})^2 f(x^{k})-f(x^*)
+\end{align*}  
+Here $\lambda_1\leq\cdots\leq \lambda_n$ denotes the eigenvalues of $\nabla^2 f(x^*)$.
+\end{theorem}   
+\begin{proof}
+CITE: Numerical optimization Wright
+\end{proof}
 \subsection{BFGS and L-BFGS}
 \begin{align*}
 x^{k+1} = x^k + \alpha H^{k}\nabla J(x^k)
