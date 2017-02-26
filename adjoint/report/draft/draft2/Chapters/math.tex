@@ -155,6 +155,19 @@ Here $\lambda_1\leq\cdots\leq \lambda_n$ denotes the eigenvalues of $\nabla^2 f(
 CITE: Numerical optimization Wright
 \end{proof}
 \subsection{BFGS and L-BFGS}
+Since steepest has slow convergence, one usually uses faster line search methods to solve numerical optimization problems. One alternative is Newtons method, that includes the inverse Hessian in the search direction, i.e:
+\begin{align*}
+x^{k+1} = x^k + \alpha \nabla^2 f(x^k)^{-1}\nabla f(x^k)
+\end{align*}
+The problem with this method is that we need to evaluate the inverse Hessian, which often is computationally expensive procedure. An alternative to the newton method is so called quasi-Newton methods, which try to approximate the Hessian, by using information from the previous iterates. One such method is the BFGS method, which approximates the inverse Hessian. This is done usinb the following formula:
+\begin{align*}
+H^{k+1} &= (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_k) + S_k\cdot S_k \\
+S_k &= x^{k+1}-x^{k} \\
+Y_k &= \nabla f(x^{k+1})-\nabla f(x^{k})\\
+\rho_k &= \frac{1}{Y_k\cdot S_k} \\
+H^0&=\beta\mathbbold{1}
+\end{align*}
+
 \begin{align*}
 x^{k+1} = x^k + \alpha H^{k}\nabla J(x^k)
 \end{align*} 
