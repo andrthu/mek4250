@@ -136,7 +136,7 @@ def test_order():
     plt.plot(t,yn,'b--')
     leg = ['exact','euler']
     error = [np.max(abs(ye-yn))]
-    stop = int(np.ceil(np.log(1./N)/np.log(1./M))+1)
+    stop = int(np.ceil(np.log(1./N)/np.log(1./M))+1) +10
     
     for k in range(1,stop):
         y = parareal_solver(y0,a,T,M,N,order=k)

@@ -1,7 +1,7 @@
 \chapter{Parallel in time ODE solver methods}
-The process of resolving time dependent differential equation in temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the simple fact that the solution of such equation at every time $T$ depends on the solution at times $t<T$, and it is therefore very difficult to partition the solution process into independent tasks that can be run in parallel. However the so called parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution} makes it possible parallelize differential equations in time. 
-\subsection{The parareal scheme}
-The parareal scheme is used to parallelize differential equations in temporal direction, by decomposing the time interval $I=[0,T]$. The equation looks like the following:
+The process of resolving time dependent differential equation in temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the simple fact that the solution of such equation at every time $T$ depends on the solution at times $t<T$, and it is therefore very difficult to partition the solution process into independent tasks that can be run in parallel. However the so called parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution} makes it possible parallelize differential equations in time. Before I describe parareal, I will introduce an example equation and decompose it together with the time interval.
+\section{Decomposing the time interval}
+The parareal scheme is used to parallelize differential equations in temporal direction, by decomposing the time interval $I=[0,T]$. An example of a time dependent differential equation that on this interval is:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -19,13 +19,13 @@ Decomposing the interval $I$, means dividing the interval into $N$ subintervals 
 	\end{array}
 \right.	
 \end{align}
-Here $\lambda^0=u_0$. If the $\lambda$s are known, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the previous intervals, and need to be calculated by solving the equation. The parareal scheme is a way of dealing with this.
-\section{The parareal scheme} 
-The parareal scheme finds the $\lambda$s, by solving the equation on the entire interval using an implicit euler scheme on a very course resolution, and then using this numerical solution $Y$ at the decomposed interval boundaries $\{T^n\}_{n=1}^{N-1}$ as $\lambda$s, for the real solver $y$. We can then repeat this process, by propagating the jumps $S^n=y^{n-1}(T^n)-Y^n$ using the course scheme. This creates an iteration, that looks like this:
+Here $\lambda^0=u_0$. If $\Lambda=(\lambda_0,..,\lambda_{N-1})$ are known values, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the previous intervals, and need to be calculated by solving the equation. The parareal scheme is a way of getting around this.
+\section{Parareal scheme}
+The parareal scheme finds $\Lambda$, by solving the equation on the entire interval using an implicit euler scheme on a very coarse resolution, and then using this numerical solution at the decomposed interval boundaries $\{T^n\}_{n=1}^{N-1}$ as $\lambda$s, for the real solver $y$. We can then repeat this process, by propagating the jumps $S^n=y^{n-1}(T^n)-\lambda^n$ using the coarse scheme. This creates an iteration, that looks like this:
 \begin{align*}
-&(i) \ \textit{Set $S^n_k = y_k^{n-1}(T^n)-Y_k^n$} \\
-&(ii) \ \textit{Propogate the jumps with the couarse scheme $\delta_k$ using (\ref{propagator})} \\
-&(iii) \ \textit{Update $Y_{k+1}^n=y_k^{n-1}(T^n) + \delta_k^n$}
+&(i) \ \textit{Set $S^n_k = y_k^{n-1}(T^n)-\lambda_k^n$} \\
+&(ii) \ \textit{Propogate the jumps with the coarse scheme $\delta_k$ using (\ref{propagator})} \\
+&(iii) \ \textit{Update $\lambda_{k+1}^n=y_k^{n-1}(T^n) + \delta_k^n$}
 \end{align*} 
 \\
 \\
@@ -42,8 +42,8 @@ If we discretize (\ref{ODE_eks}) using implicit euler, we get:
 \begin{align}
 \left\{
      \begin{array}{lr}
-		\frac{Y^{n+1}-Y^{n}}{\Delta T}+aY^{n+1}=0  \\
-		Y^0=y_0
+		\frac{\lambda^{n+1}-\lambda^{n}}{\Delta T}+a\lambda^{n+1}=0  \\
+		\lambda^0=y_0
 	\end{array}
 \right.	\label{couarse_euler}
 \end{align}
@@ -52,11 +52,11 @@ Notice that the interval $I$, is discretized using the same time difference as t
 \left\{
      \begin{array}{lr}
 		\frac{\partial y^n}{\partial t}(t)=-ay^n(t) \ 				\textit{on $[T_n,T_{n+1}]$} \\
-		y(T_n)=Y^n
+		y(T_n)=\lambda^n
 	\end{array}
 \right. \label{interval_eqs}
 \end{align}
-We can now solve (\ref{interval_eqs}) independently either exactly or using some numerical scheme. So if we first solve (\ref{couarse_euler}) and then (\ref{interval_eqs}), and define $Y_1^n=Y^n$, $y_1^n(t)=y^n(t)$, we can set an initial jump $S_1^n=y_1^{n-1}(T^n)-Y_1^n$ and start the iterative jump propagation process. Lets now specify, whet is meant by \textit{propagate the jumps with the course scheme}:
+We can now solve (\ref{interval_eqs}) independently either exactly or using some numerical scheme. So if we first solve (\ref{couarse_euler}) and then (\ref{interval_eqs}), and define $\lambda_1^n=\lambda^n$, $y_1^n(t)=y^n(t)$, we can set an initial jump $S_1^n=y_1^{n-1}(T^n)-\lambda_1^n$ and start the iterative jump propagation process. Lets now specify, whet is meant by \textit{propagate the jumps with the coarse scheme}:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -64,4 +64,100 @@ We can now solve (\ref{interval_eqs}) independently either exactly or using some
 		\delta_k^0=0
 	\end{array}
 \right. \label{propagator}
+\end{align}
+\section{Pararal as optimal control problem}
+An alternative formulation of the parareal scheme for our simple ODE example (\ref{ODE_eks}), that will be important to us later, is given in \cite{maday2002parareal}. Here the authors first define a function $\bold F_{\Delta T}(\omega)$, which is the evaluation at $\Delta T$ of the solution of the equation:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\partial y}{\partial t}(t)+ay=0  \\
+		y(0)=\omega
+	\end{array} 
+\right. \label{F_operator}
+\end{align}
+Using $\bold F_{\Delta T}(\omega)$ we can define the following constrained optimization problem:
+\begin{align*}
+&\min_{\Lambda}\hat{J}(\Lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n}) \\
+&\textit{Subject to } \ y_{n-1}(T_{n}) = \bold F_{\Delta T}(\lambda_{n-1}) \ n=1,...,N-1
+\end{align*}
+The solution to the above problem can then be stated as $\lambda_n = \bold{F}_{\Delta T}(\lambda_{n-1})$. This is a system of equations, and on matrix form it can be written as:
+\begin{align}
+  \left[ \begin{array}{cccc}
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T} & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T} & \mathbbold{1}  \\
+   \end{array}  \right] 
+   \left[ \begin{array}{c}
+   \lambda_0 \\
+   \lambda_1 \\
+   \cdots \\
+   \lambda_{N-1} \\
+   \end{array}  \right] =
+   \left[ \begin{array}{c}
+   y^0 \\
+   0 \\
+   \cdots \\
+   0 \\
+   \end{array}  \right]
+\end{align}
+Or just simply:
+\begin{align}
+M \ \Lambda \ = \ H \label{vir_mat_sys}
+\end{align}
+Resolving (\ref{vir_mat_sys}) is equivalent with solving our ODE (\ref{ODE_eks}) sequentially, which we do not want to do. The idea of \cite{maday2002parareal} is then to define a coarse version of $\bold{F}_{\Delta T}$, and use it to formulate a parareal iteration. We define the coarse solver using implicit Euler:
+ \begin{align}
+\frac{\bold{G}_{\Delta T}(\omega) -\omega }{\Delta T } + A \bold{G}_{\Delta T}(\omega) = 0
+\end{align}  
+We then define the following iterative process to find the $\lambda$s:
+\begin{align}
+\lambda_{n+1}^{k+1} = \bold{G}_{\Delta T}(\lambda_{n}^{k+1}) + \bold{F}_{\Delta T}(\lambda_{n}^{k})-\bold{G}_{\Delta T}(\lambda_{n}^{k})
 \end{align} 
+On matrix form this looks like:
+\begin{align}
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k) \label{matrix_iter1}
+\end{align}
+The matrix $\bar{M}$ is the $\bold{G}_{\Delta T}$ version of $M$, i.e:
+\begin{align}
+\bar{M} = \left[ \begin{array}{cccc}
+   I & 0 & \cdots & 0 \\  
+   -\bold{G}_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-\bold{G}_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-\bold{G}_{\Delta T} & I   \\
+   \end{array}  \right]
+\end{align}
+\section{Properties of parareal}
+\subsection{Error estimates}
+According to \cite{lions2001resolution} we have the following error estimate for the parareal scheme of (\ref{ODE_eks}):
+\begin{gather*}
+\forall \ n,0\leq n\leq N-1 \\ |Y_k^n-y(T^n)| + \max_{t\in[T^N,T^{n+1}]}|y_k^n(t)-y(t)| \leq c_k\Delta T^k
+\end{gather*} 
+This suggest that the max norm difference between exact and parareal solution looks like this:
+\begin{align*}
+\max_{t\in[0,T]}|y_k(t)-y(t)| \leq C_k\Delta T^k
+\end{align*}
+The error estimate for a first order scheme, like implicit euler, we know looks like this:
+\begin{align*}
+\max_{t\in[0,T]}|y_{\Delta t}(t)-y(t)| \leq C\Delta t
+\end{align*}
+It would then be reasonable that the number of iterations for the parareal scheme needed to reach the same error as the fine first order solver, would be:
+\begin{align*}
+k\approx\frac{\log(\Delta t)}{\log(\Delta T)}
+\end{align*}
+This assumes that the constants $C_k$ and $C$ are similar. This is a reasonable assumption, since these constants depend on the parameters of the equation (\ref{ODE_eks}). 
+\\
+\\
+To illustrate this lets try to solve a version of (\ref{ODE_eks}) using an implicit euler scheme and parareal with a fine implicit euler solver. I will use  the parameters $a=1.3$, $T=1$ and $y_0= 3.52$. The fine resolution will be held constant at $\Delta t=\frac{1}{10000}$. I then calculated how many propagation iterations I needed to to reduce the max-norm error to below $\Delta t$ for different time interval decompositions $N$. Table follows below:
+ \begin{center}
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+     & $\frac{\log(\Delta t)}{\log(\Delta T)}$&iterations  & $\max_{t\in[0,T]}|y_k(t)-y(t)|$   \\ \hline
+    $N=1$ &0 & 1& 8.416625e-5 	\\ \hline
+    $N=2$ &13.3 &2& 8.416625e-5 	\\ \hline
+    $N=5$ &5.7&4& 8.416625e-5	\\ \hline
+    $N=10$ &4&4& 8.399513e-5	\\ \hline
+    $N=25$ &2.8&3& 	8.737827e-5\\ \hline
+    $N=100$ &2&2&	6.302522e-5\\ \hline
+    \end{tabular}
+\end{center}
+Notice that for two intervals, the expected number of iterations is $13$, however with $N=2$, we get the same error as the one interval solution in only two iterations. The reason for this, is that doing $N$ iterations of the parareal scheme when using $N$ time decompositions, is the same as solving the equation without any decompositions. 
