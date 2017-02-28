@@ -49,16 +49,15 @@ To find an expression for $y'(v,\Lambda)^*$ we differentiate the state equation 
 DE(y(v,\Lambda),v,\Lambda)=0 &\Rightarrow E_y(y(v,\Lambda),v,\Lambda)y'(v,\Lambda)=-E_v(y(v,\Lambda),v,\Lambda)- E_{\Lambda}(y(v,\Lambda),v,\Lambda)\\ &\Rightarrow y'(v)=-E_y(y(v,\Lambda),v,\Lambda)^{-1}((E_v(y(v,\Lambda),v,\Lambda)+E_{\Lambda}(y(v,\Lambda),v,\Lambda)) \\ &\Rightarrow y'(v,\Lambda)^* = -(E_v(y(v,\Lambda),v,\Lambda)^*+E_{\Lambda}(y(v,\Lambda),v,\Lambda)^*)E_y(y(v,\Lambda),v,\Lambda)^{-*}
 \end{align*}
 Inserting the above expression for $ y'(v,\Lambda)^*$ into the gradient yields:
-\begin{align*}
+\begin{align}
 \hat J_{\mu}'(v,\Lambda) &=-(E_v^*+E_{\Lambda}^*)E_y^{-*}\frac{\partial}{\partial y} J_{\mu} + (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu} \\
-&=-(E_v^*+E_{\Lambda}^*)p+ (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu}
-\end{align*}
+&=-(E_v^*+E_{\Lambda}^*)p+ (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu} \label{pen_abs_grad}
+\end{align}
 Where $p$ is the solution of the adjoint equation:
 \begin{align*}
 E_y^*p=\frac{\partial}{\partial y}J_mu
 \end{align*} 
 Notice that the state equation $E$ in actuality is several equations defined separately on the each of the decomposed subintervals. The result of this will be that the adjoint equation also will be several equations defined on each interval. To see this clearly I will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
-
 \subsection{Deriving adjoint for simple problem}
 Let us first remember what the example optimal control problem with ODE constraints looked like:
 \begin{align*}
@@ -109,12 +108,12 @@ E_y^i=L_y^i[\cdot,\phi]=(\cdot,-(\frac{\partial}{\partial t} + \alpha - \delta_{
 \end{align*}
 Lets differentiate $\hat J_{\mu}$:
 \begin{align*}
-J_y = \delta_{T_{N}}(y_n(T_{N})-y_T) + \mu \sum_{i=1}^{N-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
+\frac{\partial}{\partial y} \hat J_{\mu}= \delta_{T_{N}}(y_n(T_{N})-y_T) + \mu \sum_{i=1}^{N-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
 \end{align*}
 Since $y$ really is a collection of functions, we can differentiate $\hat J_{\mu}$ with respect to $y_i$. This gives us:
 \begin{align*}
-J_{y_N} &= \delta_{T_{N}}(y_n(T_{N})-y_T) \\
-J_{y_i} &= \mu\delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) \ i\neq N
+\frac{\partial}{\partial y_N}\hat J_{\mu}&= \delta_{T_{N}}(y_n(T_{N})-y_T) \\
+\frac{\partial}{\partial y_i}\hat J_{\mu} &= \mu\delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) \ i\neq N
 \end{align*}
 We will now find the adjoint equations, by finding the adjoint of the $E_y^i$s. This is done as above, by inserting two functions $v$, $w$ into $L_y^i[v,w]$, and then moving the derivative form $w$ to $v$.
 \begin{align*}
@@ -174,13 +173,13 @@ E_{\lambda_{i-1}}^i &= L_{y_{i-1}}^i[\cdot,\phi] = -(\cdot,\delta_{T_{i-1}}\phi)
 \end{align*}
 Notice that both of these forms are symmetric, and we therefore don't need to do more work to find their adjoints, they are however derived from the weak formulation, and it might therefore be easier to translate these forms to their strong counterpart:
 \begin{align*}
-E_v -1 \\
+E_v &=-1 \\
 E_{\lambda_{i-1}}^i &= -\delta_{T_{i-1}}
 \end{align*}
 Then lets differentiate $\hat J_{\mu}$:
 \begin{align*}
-J_v &= v \\
-J_{\lambda} &= - \mu \sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)
+\frac{\partial}{\partial v}\hat J_{\mu} &= v \\
+\frac{\partial}{\partial \Lambda}\hat J_{\mu} &= - \mu \sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)
 \end{align*}
 Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directional derivative:
 \begin{align*}
@@ -191,3 +190,293 @@ Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directio
 \end{align*} 
 Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, that the gradient has the form we stated above.
 \end{proof} 
+\section{Parareal preconditioner}
+Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. In order to make things run faster, we will include the parareal preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. To understand the preconditioner, we need to remember the second formulation of the parareal scheme defined in chapter 2.
+\subsection{Virtual problem}
+The virtual problem is the optimal control problem:
+\begin{align*}
+&\min_{\Lambda}\hat{J}(\Lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n}) \\
+&\textit{Subject to } \ y_{n-1}(T_{n}) = \bold F_{\Delta T}(\lambda_{n-1}) \ n=1,...,N-1
+\end{align*}
+Where $\bold F_{\Delta T}$ is the function defined in (\ref{F_operator}). In chapter 2 I explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1}$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
+\begin{align*}
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)
+\end{align*}
+Where $M$ and $\bar{M}$ are matrix representation of the fine and course resolution of the equation systems $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1}$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1}$:
+\begin{align*}
+M = \left[ \begin{array}{cccc}
+   I & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T} & I   \\
+   \end{array}  \right],
+\bar{M} = \left[ \begin{array}{cccc}
+   I & 0 & \cdots & 0 \\  
+   -\bold{G}_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-\bold{G}_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-\bold{G}_{\Delta T} & I   \\
+   \end{array}  \right]
+\end{align*}
+Solving the system (\ref{vir_mat_sys}), solves the the problem $\hat{J}(\Lambda)=0$. What we are usually interested in, is solving $\hat{J}'(\Lambda)=0$. From (\ref{penalty grad}), we know that: $$\hat{J}'(\Lambda) = \{p_n(T_n)-p_{n-1}(T_n)\}_{n=1}^{N-1}$$ We also see that the adjoint equations (\ref{adjoints}) can be used to define $\bold{F}_{\Delta T}^*(\omega)$ as we did in (\ref{F_operator}). It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
+\begin{align}
+M^* \ M \ \Lambda \ = \ M^* \ H \label{vir_grad_sys}
+\end{align}
+where 
+\begin{align}
+M^*= \left[ \begin{array}{cccc}
+   I & -\bold{F}_{\Delta T}^* & 0 & 0 \\  
+   0 & I & -\bold{F}_{\Delta T}^* & \cdots \\ 
+   \cdots &0 & I  & -\bold{F}_{\Delta T}^* \\
+   0 &\cdots &\cdots & I   \\
+   \end{array}  \right]
+\end{align}
+The reason we see by moving $M^*H$ to the left hand side of (\ref{vir_grad_sys}) and writing out what $M^*( \ M \ \Lambda-H)$ yields. Firstly:
+\begin{align}
+M \ \Lambda - H = \left( \begin{array}{c}
+	\lambda_0 -y_0 \\
+	\lambda_1 - \bold{F}_{\Delta T}(\lambda_0)\\
+	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) \\
+	\cdots \\
+	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
+	\end{array} \right)
+\end{align}
+Then:
+\begin{align}
+M^*\left( \begin{array}{c}
+	\lambda_0-y_0 \\
+	\lambda_1 - \bold{F}_{\Delta T}(\lambda_0)\\
+	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) \\
+	\cdots \\
+	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
+	\end{array} \right) &=
+	\left( \begin{array}{c}
+	\lambda_0-y_0 -\bold{F}_{\Delta T}^*(\lambda_1 -\bold{F}_{\Delta T}(\lambda_0))\\
+	\lambda_1 -\bold{F}_{\Delta T}(\lambda_0) -\bold{F}_{\Delta T}^*(\lambda_2 - \bold{F}_{\Delta T}(\lambda_1))\\
+	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) -\bold{F}_{\Delta T}^*(\lambda_3 - \bold{F}_{\Delta T}(\lambda_2))\\
+	\cdots \\
+	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
+	\end{array} \right)
+	\\
+	&=\left( \begin{array}{c}
+	\lambda_0-y_0 - p_0(T_0)\\
+	p_0(T_1)-p_1(T_1)\\
+	p_1(T_2)-p_2(T_2)\\
+	\cdots \\
+	p_{N-2}(T_{N-1})-p_{N-1}(T_{N-1}) \\
+	p_{N-1}(T_n)
+	\end{array} \right)
+\end{align}
+When you look at the last vector, you recognise the gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices.
+\\
+\\ 
+One could then solve the system (\ref{vir_grad_sys}), using an iteration as in (\ref{matrix_iter1}), but with $\bar{M}^{-1}\bar{M}^{-*}$ instead of $\bar{M}^{-1}$. \cite{maday2002parareal} then propose $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for solving the original penalized control problem (\ref{OC_PPDE}-\ref{penalty_func}) when using the gradient method. 
+\subsection{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian}
+If you define the vector x as:
+\begin{align}
+x= \left( \begin{array}{c}  
+   \lambda_1 - y_0(T_1) \\ 
+   \lambda_2 - y_1(T_2) \\
+   \cdots  \\
+   \lambda_{N-1} -y_{N-2}(T_{N-1})  \\
+   \end{array}  \right)
+\end{align} 
+We can then formulate the problem (\ref{viritual} - \ref{virtual_func}) as 
+\begin{align}
+\min_{y,\lambda} J(y,\lambda) &= x^*x \label{vector_J}\\ 
+\textit{Subject to:} \ y_{n-1}(T_n) &= \bold{F}_{\Delta T}(\lambda_{n-1}) \ n =1,...,N-1 
+\end{align}
+We can reduce $J$ to only depend on $\Lambda$ by inserting an expression for $y_{n-1}(T_n)$ into (\ref{vector_J}). Firstly we see that:
+\begin{align}
+\left( \begin{array}{c}
+   y_0(T_1) \\  
+   y_1(T_2) \\ 
+   \cdots  \\
+   y_{N-1}(T_N)  \\
+   \end{array}  \right)= 
+   \left[ \begin{array}{cccc}  
+   0 & 0 & \cdots & 0 \\ 
+   \bold{F}_{\Delta T}&0 & 0  & \cdots \\
+   0 &  \bold{F}_{\Delta T}&0 & \cdots \\
+   0 &\cdots &\bold{F}_{\Delta T}& 0   \\
+   \end{array}  \right]
+   \left( \begin{array}{c}
+   \lambda_1 \\  
+   \lambda_2 \\ 
+   \cdots  \\
+   \lambda_{N-1}  \\
+   \end{array}  \right) + 
+   \left( \begin{array}{c}
+   \bold{F}_{\Delta T}(y_0)\\  
+   0\\ 
+   \cdots  \\
+   0  \\
+   \end{array}  \right)
+\end{align}
+and when we insert this into $x$, we get:
+\begin{align}
+\hat{x} = \left[ \begin{array}{cccc}
+   I & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T} & I & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T} & I  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T} & I   \\
+   \end{array}  \right]
+   \left( \begin{array}{c}
+   \lambda_1 \\  
+   \lambda_2 \\ 
+   \cdots  \\
+   \lambda_{N-1}  \\
+   \end{array}  \right) -
+   \left( \begin{array}{c}
+   \bold{F}_{\Delta T}(y_0)\\  
+   0\\ 
+   \cdots  \\
+   0  \\
+   \end{array}  \right)
+\end{align}
+or:
+\begin{align}
+\hat{x} &= M \left( \begin{array}{c}
+   \lambda_1 \\  
+   \lambda_2 \\ 
+   \cdots  \\
+   \lambda_{N-1}  \\
+   \end{array}  \right) -
+   \left( \begin{array}{c}
+   \bold{F}_{\Delta T}(y_0)\\  
+   0\\ 
+   \cdots  \\
+   0  \\
+   \end{array}  \right) \\
+   & = M \Lambda -\left( \begin{array}{c}
+   y_0\\  
+   0\\ 
+   \cdots  \\
+   0  \\
+   \end{array}  \right) \\
+   &=M \Lambda-b
+\end{align}
+This allows us to write up the reduced functional $\hat{J}$, that only depends on $\Lambda$:
+\begin{align*}
+\hat{J}(\Lambda)&= \hat{x}^*\hat{x} =
+(M  \Lambda -b)^*(M  \Lambda -b) \\
+&= (M  \Lambda)^*(M  \Lambda) - (M  \Lambda)^*b-b^*(M  \Lambda) + b^*b \\
+&=\Lambda^*M^*M  \Lambda - 2\Lambda^*M^*b + b^*b
+\end{align*}
+We can now easily find the gradient of $\hat{J}$, and it simply looks like this:
+\begin{align*}
+\nabla\hat{J}(\Lambda) = 2 M^*M\Lambda - 2M^*b
+\end{align*}
+Notice that setting $\nabla\hat{J}(\Lambda)=0$ gives us the system (\ref{vir_grad_sys}). Moreover, we see that the Hessian $\nabla^2 \hat{J}$ of $\hat{J}$, is
+\begin{align}
+\nabla^2 \hat{J}(\Lambda) = 2 M^*M
+\end{align}
+This means that the matrix $\bar{M}^{-1}\bar{M}^{-*}$ is an approximation of the inverse Hessian $\nabla^2 \hat{J}$. As mentioned above, \cite{maday2002parareal} solves the problem (\ref{OC_PPDE}-\ref{penalty_func}), using the gradient method:
+\begin{align}
+(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho\nabla\hat{J}(v^{k},\Lambda^{k}) \label{gradient_method}
+\end{align}
+They then propose a preconditioner $Q$ for (\ref{gradient_method}), i.e:
+\begin{align}
+(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho Q\nabla\hat{J}(v^{k},\Lambda^{k}) 
+\end{align}
+where Q is:
+\begin{align}
+Q = \left[ \begin{array}{cc}
+	I & 0 \\
+	0 & \bar{M}^{-1}\bar{M}^{-*} \\
+	\end{array} \right] \label{PC}
+\end{align}
+One could then imagine, that $Q$ is an approximation of the inverse Hessian of $\hat{J}$, atleast for the $\Lambda$ part of the control.
+\subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
+Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
+\begin{align}
+\left[ \begin{array}{cccc}
+   I & 0 & 0 & 0 \\  
+   -\bold{G}_{\Delta T} & I & 0 & 0 \\ 
+   0 &-\bold{G}_{\Delta T} & I  & 0 \\
+   0 &0 &-\bold{G}_{\Delta T} & I   \\
+   \end{array}  \right]
+   \left( \begin{array}{c}
+   x_0 \\
+   x_1 \\
+   x_2 \\
+   x_3 \\
+   \end{array} \right) =
+   \left( \begin{array}{c}
+   y_0 \\
+   y_1 \\
+   y_2 \\
+   y_3 \\
+   \end{array} \right)	
+\end{align}  
+If we apply $\bar{M}$ to $x$, we get:
+\begin{align}
+\left( \begin{array}{c}
+   x_0 \\
+   x_1 -\bold{G}_{\Delta T}(x_0) \\
+   x_2 -\bold{G}_{\Delta T}(x_1)\\
+   x_3 -\bold{G}_{\Delta T}(x_2)\\
+   \end{array} \right) =
+   \left( \begin{array}{c}
+   y_0 \\
+   y_1 \\
+   y_2 \\
+   y_3 \\
+   \end{array} \right)
+\end{align}
+This yields the following solution:
+\begin{align*}
+x_0 &=y_0 \\
+x_1 &=y_1 + \bold{G}_{\Delta T}(y_0) \\
+x_2 &=y_2 + \bold{G}_{\Delta T}(y_1 + \bold{G}_{\Delta T}(y_0)) \\
+x_3 &=y_3 + \bold{G}_{\Delta T}(y_2 + \bold{G}_{\Delta T}(y_1 + \bold{G}_{\Delta T}(y_0))) 
+\end{align*}
+To better see the connection with \cite{lions2001resolution}, note that we can solve the above system with the propagation technique, i.e. define a $\delta$ and solve:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\delta^{n+1} -\delta^n }{\Delta T } + A\delta^{n+1} = \frac{y^n}{\Delta T} \\
+		\delta^0 = 0
+	\end{array} \right.
+\end{align} 
+Then the solution of the system would be 
+\begin{align*}
+x_0 &=y_0 +\delta^0\\
+x_1 &=y_1 + \delta^1 \\
+x_2 &=y_2 +\delta^2\\
+x_3 &=y_3 + \delta^3 
+\end{align*}
+For $\bar{M}^{*}$, the system $\bar{M}^{*}x=y$, has a solution that looks similar:
+\begin{align*}
+x_0 &=y_0 +\bold{G}_{\Delta T}^*(y_1 + \bold{G}_{\Delta T}^*(y_2 + \bold{G}_{\Delta T}^*(y_ 3)))\\
+x_1 &=y_1 + \bold{G}_{\Delta T}^*(y_2 + \bold{G}_{\Delta T}^*(y_ 3))\\
+x_2 &=y_2 + \bold{G}_{\Delta T}^*(y_ 3) \\
+x_3 &=y_3 
+\end{align*}
+The propagator for the adjoint system would look like this:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+		\frac{\delta^{n-1} -\delta^n }{\Delta T } + A^*\delta^{n-1} = \frac{y^n}{\Delta T} \\
+		\delta^{N-1} = 0
+	\end{array} \right.
+\end{align} 
+The solution would then again be:
+\begin{align*}
+x_0 &=y_0 +\delta^0\\
+x_1 &=y_1 + \delta^1 \\
+x_2 &=y_2 +\delta^2\\
+x_3 &=y_3 + \delta^3 
+\end{align*}
+The above setting is quite general. Lets consider an example where we want to use the parareal preconditioner on an optimal control problem with a time domain $I=[0,T]$ decomposed into four sub-intervals $[T_0,T_1], [T_1,T_2], [T_2,T_3]$ and $[T_3,T_4]$. To enforce continuity at the overlapping boundaries, we need three variables $\lambda_1,\lambda_2$ and $\lambda_3$, that represents the initial condition of the state equation at $T_1,T_2$ and $T_3$. We then add quadratic penalty terms to our functional, and the gradient of our new functional $J(v,\Lambda)$, would then have three components $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$. These are the components of the gradient that we wish to use (\ref{PC}) on. As far as I understand it, applying $\bar{M}^{*}\bar{M}$ to $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$, means first to resolve this system:
+\begin{align*}
+\bar{J_{\lambda_1}} &=J_{\lambda_1} +\bold{G}_{\Delta T}^*(J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3} + \bold{G}_{\Delta T}^*(0)))\\
+\bar{J_{\lambda_2}} &=J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3} + \bold{G}_{\Delta T}^*(0))\\
+\bar{J_{\lambda_3}} &=J_{\lambda_3} + \bold{G}_{\Delta T}^*(0) \\
+\end{align*} 
+Then you apply the forward system:
+\begin{align*}
+\bar{\bar{J_{\lambda_1}}}&=\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0) \\
+\bar{\bar{J_{\lambda_2}}}&=\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)) \\
+\bar{\bar{J_{\lambda_3}}}&=\bar{J_{\lambda_3}} + \bold{G}_{\Delta T}(\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)))
+\end{align*} 
+The $\Lambda$ part of the gradient is then updated to be $\bar{\bar{J_{\lambda_1}}}, \bar{\bar{J_{\lambda_2}}},\bar{\bar{J_{\lambda_3}}}$. Notice that I in the last line of the adjoint system use $\bold{G}_{\Delta T}^*(0)$, and that I in the first line in the forward system use $\bold{G}_{\Delta T}(0)$. The zeros here represent information at time $T_0=0$ and $T_4=T$. At these times, I really have no information relating to the $\Lambda$ part of the gradient of $J$. I am therefore forced to choose zero.
