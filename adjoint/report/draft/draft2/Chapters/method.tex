@@ -1,2 +1,193 @@
 \chapter{Parareal BFGS preconditioner}
-The penalty method 
+In the previous chapter we saw that the parareal scheme gave us an opportunity to parallelize time dependent differential equation in their temporal direction. In this chapter we will look at how we can parallelize optimal control problems with time dependent differential equation constraints in temporal direction.  
+\section{Optimal control problem with time-dependent DE constraints on decomposed time interval}
+Before we start to decompose the time interval, let us again write up the general problem that we want to solve:
+\begin{align}
+\underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v) \\
+\textit{Subject to:} \ &E(y(t),v)=0 \ t\in [0,T] \label{initial problem}
+\end{align}
+To introduce parallelism, we decompose $I=[0,T]$ into $N$ subintervals $I_i=[T_{i-1},T_i]$, with $T_0=0$ and $T_N=T$. To be able to solve the differential equation $E$ on each interval $I_i$, we need intermediate initial conditions $y(T_i)=\lambda_i$ for $i=1,...,N-1$. This means that instead of finding $y$ by solving $E$ on the entire time domain $I$, we can now find $y$ by solving $E$ separately on on each subinterval $I_i$. the problem (\ref{initial problem}) now reads:
+\begin{align}
+\underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v) \\
+\textit{Subject to:} \ &E^i(y^i(t),v)=0 \ t\in [T_{i-1},T_i] \ \forall i \label{decomposed problem}
+\end{align} 
+Since we want the state $y$ to be continuous, we also need the following conditions:
+\begin{align}
+y^{i-1}(T_i)=y^i(T_i)=\lambda_i \ \ i=1,..,N-1 \label{Extra constraints}
+\end{align} 
+Both the problems (\ref{initial problem}) and (\ref{decomposed problem}) are constrained problems, and before we try to solve them we want to reduce them to unconstrained problems. In the original setting this can easily be done if we assume that each control variable $v$ corresponds to a unique solution $y$ of the state equation $E$. We can then define a reduced objective function $\hat{J}(v)$, and minimize it with respect to $v$, i.e solve the unconstrained problem:
+\begin{align*}
+\underset{v\in V}{\text{min}} \ \hat J(v)
+\end{align*} 
+Assuming that the decomposed state equations also can be uniquely resolved $\forall v$, we can again define a reduced objective function  $\hat{J}$. However because of the extra conditions (\ref{Extra constraints}) the reduction of (\ref{decomposed problem}) still produces a constrained problem:
+\begin{align}
+&\underset{v\in V}{\text{min}} \ \hat J(v) \\
+&y^{i-1}(T_i)=\lambda_i \ \ \forall i \label{constrained reduced}
+\end{align} 
+\section{The penalty method}
+To solve the constrained problem (\ref{constrained reduced}), we will use the penalty method, which transforms constrained problems into a series of unconstrained problems by incorporating the constraints into the functional. Incorporating the constraints means penalizing not satisfying the constraints. To use the penalty method on (\ref{constrained reduced}) we first introduce the initial conditions to the decomposed state equations as variables $\Lambda = (\lambda_1,..,\lambda_{n-1})^T$, and then define the penalized objective function $\hat J_{\mu}$:
+\begin{align}
+\hat J_{\mu}(v,\Lambda) = \hat J(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2
+\end{align}
+If we now minimize $\hat{J}_{\mu}$ with respect to $(v,\Lambda)$, while letting $\mu$ tend to infinity, we hope that the solution will satisfy the conditions (\ref{Extra constraints}), while also minimizing the actual problem (\ref{constrained reduced}). the algorithmic framework of this reads:
+\begin{align*}
+1: \ &\textit{Choose} \ \mu_0,\tau_0>0 \ \textit{and intial control} \ (v^0,\Lambda^0) \\
+2: \ &\textit{for $k=1,2,...$: } \\
+&2.1:\textit{Find} \ (v^k,\Lambda^k) \ \textit{s.t.} \ \parallel\nabla \hat J_{\mu_{k-1}}(v^k,\Lambda^k)\parallel<\tau_{k-1} \\
+&2.2:\textit{If STOPP CRITERION satisfied end algorithm} \\
+&2.3:\textit{Choose new} \ \tau_k\in(0,\tau_{k-1}),\ \mu_k\in(\mu_{k-1},\infty) 
+\end{align*}
+The parts of the above framework, that still needs special attention, is how we find $(v^k,\Lambda^k)$ in each iteration, how we update $\mu_k$ and $\tau_k$ and choosing an adequate stopping criteria. Finding the the optimal control  for each iteration is done in the normal way, namely we derive the gradient and use some optimization algorithm to find $(v^k,\Lambda^k)$. Lets therefore differentiate the penalized objective function.
+\subsection{The gradient of the penalized objective function}
+To find the gradient we start by differentiating $\hat J_{\mu}(v,\Lambda)$:
+\begin{align*}
+\hat J_{\mu}'(v,\Lambda) &= DJ_{\mu}(y(v,\Lambda),v,\Lambda) \\
+&= y'(v,\Lambda)^*\frac{\partial}{\partial y} J_{\mu}(y(v,\Lambda),v,\Lambda) + (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu}(y(v,\Lambda),v,\Lambda)
+\end{align*} 
+To find an expression for $y'(v,\Lambda)^*$ we differentiate the state equation $E$:
+\begin{align*}
+DE(y(v,\Lambda),v,\Lambda)=0 &\Rightarrow E_y(y(v,\Lambda),v,\Lambda)y'(v,\Lambda)=-E_v(y(v,\Lambda),v,\Lambda)- E_{\Lambda}(y(v,\Lambda),v,\Lambda)\\ &\Rightarrow y'(v)=-E_y(y(v,\Lambda),v,\Lambda)^{-1}((E_v(y(v,\Lambda),v,\Lambda)+E_{\Lambda}(y(v,\Lambda),v,\Lambda)) \\ &\Rightarrow y'(v,\Lambda)^* = -(E_v(y(v,\Lambda),v,\Lambda)^*+E_{\Lambda}(y(v,\Lambda),v,\Lambda)^*)E_y(y(v,\Lambda),v,\Lambda)^{-*}
+\end{align*}
+Inserting the above expression for $ y'(v,\Lambda)^*$ into the gradient yields:
+\begin{align*}
+\hat J_{\mu}'(v,\Lambda) &=-(E_v^*+E_{\Lambda}^*)E_y^{-*}\frac{\partial}{\partial y} J_{\mu} + (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu} \\
+&=-(E_v^*+E_{\Lambda}^*)p+ (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu}
+\end{align*}
+Where $p$ is the solution of the adjoint equation:
+\begin{align*}
+E_y^*p=\frac{\partial}{\partial y}J_mu
+\end{align*} 
+Notice that the state equation $E$ in actuality is several equations defined separately on the each of the decomposed subintervals. The result of this will be that the adjoint equation also will be several equations defined on each interval. To see this clearly I will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
+
+\subsection{Deriving adjoint for simple problem}
+Let us first remember what the example optimal control problem with ODE constraints looked like:
+\begin{align*}
+J(y,v) = \frac{1}{2}\int_0^T|v(t)|^2dt + \frac{\alpha}{2}|y(T)-y^T|^2 
+\end{align*}
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	y'(t)+\alpha y(t) = v(t) \ t\in(0,T)\\
+       	y(0)=y_0
+     \end{array}
+   \right.
+\end{align*}
+We can now decompose the interval $[0,T]$ into $N$ subintervals $\{[T_{i-1},T_{i}]\}_{i=1}^{N}$, and then define the above state equation on each interval, which forces us to penalize the objective function. The decomposed state equations will look like:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	\frac{\partial}{\partial t} y^i(t)+\alpha y^i(t) = v(t) \ t\in(T_{i-1},T_{i})\\
+       	y^i(T_{i-1})=\lambda_{i-1}
+     \end{array}
+   \right. \label{decomp_E}
+\end{align}
+The reduced penalized objective function will be given as:
+\begin{align}
+\hat J_{\mu}(v,\Lambda) = \frac{1}{2}\int_0^T|v(t)|^2dt + \frac{\alpha}{2}|y(T)-y^T|^2 + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2 \label{penalty_func}
+\end{align}
+\begin{theorem}
+The adjoint equation of problem (\ref{exs_J}-\ref{exs_E}) on interval $[T_{N-1},T_N]$ is:
+\begin{align*}
+-\frac{\partial }{\partial t}p_N &=\alpha p_N  \\
+p_N(T_{N}) &= y_N(T_{N})-y_T
+\end{align*}
+On $[T_{i-1},T_i]$ the adjoint equation is:
+\begin{align*}
+-\frac{\partial }{\partial t}p_i &=p_i  \\
+p_i(T_{i}) &= \mu(y_{i}(T_{i})-\lambda_{i} )
+\end{align*}
+\end{theorem} 
+\begin{proof}
+Lets begin as we did for the non-penalty approach, by writing up the weak formulation of the state equations:
+\begin{gather*}
+\textit{Find $y_i \in L^2(T_{i-1},T_i)$ such that }\\
+L^i[y_i,\phi] = \int_{T_{i-1}}^{T_{i}}-y_i(t)(\phi'(t) +\alpha \phi(t))+v(t)\phi(t)dt -\lambda_{i-1}\phi(T_{i-1})+ y_i(T_i)\phi(T_i) =0\\ \forall \ \phi \in C^{\infty}((T_{i-1},T_{i}))
+\end{gather*} 
+To find the adjoint equations we want to differentiate the $E^i$s and the functional $\hat J_{\mu}$ with respect to $y$. To make notation easier, let $(\cdot,\cdot)_i$ be $L^2$ inner product of the interval $[T_{i-1},T_i]$. 
+\begin{align*}
+E_y^i=L_y^i[\cdot,\phi]=(\cdot,-(\frac{\partial}{\partial t} + \alpha - \delta_{T_i})\phi)_i 
+\end{align*}
+Lets differentiate $\hat J_{\mu}$:
+\begin{align*}
+J_y = \delta_{T_{N}}(y_n(T_{N})-y_T) + \mu \sum_{i=1}^{N-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
+\end{align*}
+Since $y$ really is a collection of functions, we can differentiate $\hat J_{\mu}$ with respect to $y_i$. This gives us:
+\begin{align*}
+J_{y_N} &= \delta_{T_{N}}(y_n(T_{N})-y_T) \\
+J_{y_i} &= \mu\delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) \ i\neq N
+\end{align*}
+We will now find the adjoint equations, by finding the adjoint of the $E_y^i$s. This is done as above, by inserting two functions $v$, $w$ into $L_y^i[v,w]$, and then moving the derivative form $w$ to $v$.
+\begin{align*}
+E_y^i&=L_y^i[v,w]=\int_{T_{i-1}}^{T_i}-v(t)(w'(t)+\alpha w(t))dt + v(T_i)w(T_i) \\
+&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-\alpha v(t))dt + v(T_i)w(T_i)-v(T_i)w(T_i) +v(T_{i-1})w(T_{i-1}) \\
+&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-\alpha v(t))dt + v(T_{i-1})w(T_{i-1}) \\
+&=(L_y^i)^*[w,v]
+\end{align*}
+this means that $(E_y^i)^*=(L_y^i)^*[\cdot,\psi]$. The weak form of the adjoint equations is then found, by setting setting $(L_y^i)^*[p,\psi]=(J_{y_i},\psi)_i$. This gives to cases:
+\\
+\\
+$i=N$ case:
+\begin{align*}
+&\textit{Find $p_N \in L^2(T_{N-1},T_N)$ such that }\forall \ \psi \in C^{\infty}((T_{N-1},T_N)) \\
+&\int_{T_N-1}^{T_N}p_N(t)\psi'(t)-\alpha p_N(t)\psi(t)dt +p_N(T_{N-1})\psi(T_{N-1})
+= (y(T_N)-y^T)\psi(T_N)\ 
+\end{align*}
+$i\neq N$ cases:
+\begin{align*}
+&\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
+&\int_{T_i-1}^{T_i}p_i(t)\psi'(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i-1})\psi(T_{i-1})
+= \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
+\end{align*}
+If we want to go back to the strong formulation, we do partial integration, and get:
+\\
+\\
+ $i=N$ case:
+\begin{align*}
+&\textit{Find $p_N \in L^2(T_{N-1},T_N)$ such that }\forall \ \psi \in C^{\infty}((T_{N-1},T_N)) \\
+&\int_{T_N-1}^{T_N}-p_N'(t)\psi(t)-\alpha p_N(t)\psi(t)dt +p_N(T_{N})\psi(T_{N})
+= (y(T_N)-y^T)\psi(T_N)\ 
+\end{align*}
+$i\neq N$ cases:
+\begin{align*}
+&\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
+&\int_{T_i-1}^{T_i}-p_i('t)\psi(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
+= \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
+\end{align*}
+This gives us the ODEs we wanted.
+\end{proof}
+With the adjont equations we can find the gradient.
+\begin{theorem}
+The gradient of (\ref{penalty_func}), $\hat J_{\mu}'$, with respect to the control $(v,(\lambda_1,...,\lambda_{N-1}))$ is:
+\begin{align*}
+\hat J_{\mu}'(v,\lambda) = (v+p,p_{2}(T_1) -p_{1}(T_1),..., p_{N}(T_{N-1}) -p_{N}(T_{N-1}))
+\end{align*} 
+and the directional derivative with respect to $L^2$-norm in direction $(s,l)$ is:
+\begin{align*}
+\langle \hat J_{\mu}'(v,\lambda), (s,l)\rangle = \int_0^T (v+p)s \ dt +\sum_{i=1}^{N-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
+\end{align*}
+\end{theorem}
+\begin{proof}
+If we first find $E_v^*$, $E_{\lambda}^*$, $J_v$ and $J_{\lambda}$ find the gradient by simply inserting these expression into (\ref{pen_abs_grad}). We can begin with the $E$ terms:
+\begin{align*}
+E_v &= L_v[\cdot,\phi] = -(\cdot,\phi) \\
+E_{\lambda_{i-1}}^i &= L_{y_{i-1}}^i[\cdot,\phi] = -(\cdot,\delta_{T_{i-1}}\phi)_i
+\end{align*}
+Notice that both of these forms are symmetric, and we therefore don't need to do more work to find their adjoints, they are however derived from the weak formulation, and it might therefore be easier to translate these forms to their strong counterpart:
+\begin{align*}
+E_v -1 \\
+E_{\lambda_{i-1}}^i &= -\delta_{T_{i-1}}
+\end{align*}
+Then lets differentiate $\hat J_{\mu}$:
+\begin{align*}
+J_v &= v \\
+J_{\lambda} &= - \mu \sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)
+\end{align*}
+Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directional derivative:
+\begin{align*}
+\langle \hat J_{\mu}'(v,\lambda), (s,l)\rangle&=\langle -(E_v+E_{\lambda})p, (s,l)\rangle + \langle J_v+J_{\lambda}, (s,l)\rangle \\
+&= \langle (p+\sum_{i=1}^{N-1} \delta_{T_i}p_{i+1}) , (s,l)\rangle+ \int_0^T us \ dt - \mu \sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)l_i\\
+&=\int_0^T (v+p)s \ dt +\sum_{i=1}^{N-1}(p_{i+1}(T_i) -\mu(y_{i}(T_i)-\lambda_i) )l_i \\
+&= \int_0^T (v+p)s \ dt +\sum_{i=1}^{N-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
+\end{align*} 
+Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, that the gradient has the form we stated above.
+\end{proof} 
