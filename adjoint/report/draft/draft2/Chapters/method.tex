@@ -86,15 +86,23 @@ The reduced penalized objective function will be given as:
 \end{align}
 \begin{theorem}
 The adjoint equation of problem (\ref{exs_J}-\ref{exs_E}) on interval $[T_{N-1},T_N]$ is:
-\begin{align*}
--\frac{\partial }{\partial t}p_N &=\alpha p_N  \\
-p_N(T_{N}) &= y_N(T_{N})-y_T
-\end{align*}
+\begin{align}
+\left\{
+     \begin{array}{lr}
+	-\frac{\partial }{\partial t}p_N =\alpha p_N  \\
+	p_N(T_{N}) = y_N(T_{N})-y_T
+	\end{array}
+   \right. \label{end adjoint}
+\end{align}
 On $[T_{i-1},T_i]$ the adjoint equation is:
-\begin{align*}
--\frac{\partial }{\partial t}p_i &=p_i  \\
-p_i(T_{i}) &= \mu(y_{i}(T_{i})-\lambda_{i} )
-\end{align*}
+\begin{align}
+\left\{
+     \begin{array}{lr}
+	-\frac{\partial }{\partial t}p_i =p_i  \\
+	p_i(T_{i}) = \mu(y_{i}(T_{i})-\lambda_{i} )
+	\end{array}
+   \right. \label{exs_adjoint}
+\end{align}
 \end{theorem} 
 \begin{proof}
 Lets begin as we did for the non-penalty approach, by writing up the weak formulation of the state equations:
@@ -157,9 +165,9 @@ This gives us the ODEs we wanted.
 With the adjont equations we can find the gradient.
 \begin{theorem}
 The gradient of (\ref{penalty_func}), $\hat J_{\mu}'$, with respect to the control $(v,(\lambda_1,...,\lambda_{N-1}))$ is:
-\begin{align*}
-\hat J_{\mu}'(v,\lambda) = (v+p,p_{2}(T_1) -p_{1}(T_1),..., p_{N}(T_{N-1}) -p_{N}(T_{N-1}))
-\end{align*} 
+\begin{align}
+\hat J_{\mu}'(v,\lambda) = (v+p,p_{2}(T_1) -p_{1}(T_1),..., p_{N}(T_{N-1}) -p_{N}(T_{N-1})) \label{penalty grad}
+\end{align} 
 and the directional derivative with respect to $L^2$-norm in direction $(s,l)$ is:
 \begin{align*}
 \langle \hat J_{\mu}'(v,\lambda), (s,l)\rangle = \int_0^T (v+p)s \ dt +\sum_{i=1}^{N-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
@@ -194,15 +202,15 @@ Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, 
 Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. In order to make things run faster, we will include the parareal preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. To understand the preconditioner, we need to remember the second formulation of the parareal scheme defined in chapter 2.
 \subsection{Virtual problem}
 The virtual problem is the optimal control problem:
-\begin{align*}
-&\min_{\Lambda}\hat{J}(\Lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n}) \\
-&\textit{Subject to } \ y_{n-1}(T_{n}) = \bold F_{\Delta T}(\lambda_{n-1}) \ n=1,...,N-1
-\end{align*}
-Where $\bold F_{\Delta T}$ is the function defined in (\ref{F_operator}). In chapter 2 I explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1}$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
+\begin{align}
+&\min_{\Lambda}\hat{J}(\Lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n}) \label{virtual_func} \\
+&\textit{Subject to } \ y_{n-1}(T_{n}) = \bold F_{\Delta T}(\lambda_{n-1}) \ n=1,...,N-1 \label{virtual}
+\end{align}
+Where $\bold F_{\Delta T}$ is the function defined in (\ref{F_operator}). In chapter 3 I explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
 \begin{align*}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)
 \end{align*}
-Where $M$ and $\bar{M}$ are matrix representation of the fine and course resolution of the equation systems $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1}$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1}$:
+Where $M$ and $\bar{M}$ are matrix representation of the fine and course resolution of the equation systems $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1})$:
 \begin{align*}
 M = \left[ \begin{array}{cccc}
    I & 0 & \cdots & 0 \\  
@@ -217,7 +225,7 @@ M = \left[ \begin{array}{cccc}
    0 &\cdots &-\bold{G}_{\Delta T} & I   \\
    \end{array}  \right]
 \end{align*}
-Solving the system (\ref{vir_mat_sys}), solves the the problem $\hat{J}(\Lambda)=0$. What we are usually interested in, is solving $\hat{J}'(\Lambda)=0$. From (\ref{penalty grad}), we know that: $$\hat{J}'(\Lambda) = \{p_n(T_n)-p_{n-1}(T_n)\}_{n=1}^{N-1}$$ We also see that the adjoint equations (\ref{adjoints}) can be used to define $\bold{F}_{\Delta T}^*(\omega)$ as we did in (\ref{F_operator}). It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
+As mentioned, solving the system (\ref{vir_mat_sys}), solves the the problem $\hat{J}(\Lambda)=0$. However, we can only do this because we know that the optimal value of the problem is $0$. What we normally have to do when we want to solve optimal control problems, is solving $\hat{J}'(\Lambda)=0$. From (\ref{penalty grad}), we know that: $$\hat{J}'(\Lambda) = \{p_n(T_n)-p_{n-1}(T_n)\}_{n=1}^{N-1}$$ We also see that the adjoint equations (\ref{exs_adjoint}) can be used to define $\bold{F}_{\Delta T}^*(\omega)$ as we did in (\ref{F_operator}). It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
 \begin{align}
 M^* \ M \ \Lambda \ = \ M^* \ H \label{vir_grad_sys}
 \end{align}
@@ -230,7 +238,7 @@ M^*= \left[ \begin{array}{cccc}
    0 &\cdots &\cdots & I   \\
    \end{array}  \right]
 \end{align}
-The reason we see by moving $M^*H$ to the left hand side of (\ref{vir_grad_sys}) and writing out what $M^*( \ M \ \Lambda-H)$ yields. Firstly:
+The reason we see by moving $M^*H$ to the left hand side of (\ref{vir_grad_sys}) and writing out what $M^*( \ M \ \Lambda-H)$ means. Firstly:
 \begin{align}
 M \ \Lambda - H = \left( \begin{array}{c}
 	\lambda_0 -y_0 \\
@@ -269,7 +277,7 @@ M^*\left( \begin{array}{c}
 When you look at the last vector, you recognise the gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices.
 \\
 \\ 
-One could then solve the system (\ref{vir_grad_sys}), using an iteration as in (\ref{matrix_iter1}), but with $\bar{M}^{-1}\bar{M}^{-*}$ instead of $\bar{M}^{-1}$. \cite{maday2002parareal} then propose $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for solving the original penalized control problem (\ref{OC_PPDE}-\ref{penalty_func}) when using the gradient method. 
+One could then solve the system (\ref{vir_grad_sys}), using an iteration as in (\ref{matrix_iter1}), but with $\bar{M}^{-1}\bar{M}^{-*}$ instead of $\bar{M}^{-1}$. \cite{maday2002parareal} then propose $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for solving the original penalized control problem (\ref{decomp_E}-\ref{penalty_func}) when using the gradient method. 
 \subsection{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian}
 If you define the vector x as:
 \begin{align}
@@ -280,7 +288,7 @@ x= \left( \begin{array}{c}
    \lambda_{N-1} -y_{N-2}(T_{N-1})  \\
    \end{array}  \right)
 \end{align} 
-We can then formulate the problem (\ref{viritual} - \ref{virtual_func}) as 
+We can then formulate the problem ( \ref{virtual_func}-\ref{viritual}) as 
 \begin{align}
 \min_{y,\lambda} J(y,\lambda) &= x^*x \label{vector_J}\\ 
 \textit{Subject to:} \ y_{n-1}(T_n) &= \bold{F}_{\Delta T}(\lambda_{n-1}) \ n =1,...,N-1 
