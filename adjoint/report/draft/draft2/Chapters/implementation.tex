@@ -31,7 +31,7 @@ where $p$ is the solution of the adjoint equation:
    \right. \label{adjoint}
 \end{align}
 We now want to discretize (\ref{equation}-\ref{adjoint}), so we can solve the problem numerically. What we particularly want, is an expression for the gradient. 
-\subsection{Finite difference}
+\subsection{Finite difference schemes for state and adjoint equations}
 Before I state what the numerical gradient will be for the implicit end explicit Euler schemes, I will write up these schemes for our equations (\ref{equation}) and (\ref{adjoint}). First the implicit for the state equation:
 \begin{align}
 \frac{y^k-y^{k-1}}{\Delta t} &= \alpha y^{k} + v^{k} \\
@@ -56,10 +56,20 @@ p^{k-1} &=p^k(1 +\Delta t\alpha)\label{E_adjoint}
 \end{align}
 With these formulas in mind lets find the numerical gradient of our example problem.
 \subsection{Numerical gradient}
-\begin{theorem}
-Discretizing the adjoint and state equation using the implicit Euler finite difference scheme, and evaluating the integral in the functional using the trapezoid rule, means that the numerical gradient will look like the following:
+Now that we have discretized both the domain and the equations, we are forced to also evaluate the objective function (\ref{problem}) numerically. Since integration is involved in (\ref{problem}), we need to choose a numerical integration rule. The easiest way of integrating a vectorized function $x_{\Delta t} = (x_0,x_1,...,x_n)$ is the so called trapezoid rule defined as:
 \begin{align}
-\nabla J_{\Delta t}(v_{\Delta t}) = Mv_{\Delta t} + Bp_{\Delta t} \label{num_grad}
+trapz(x_{\Delta t})=\Delta t\frac{x_0+x_n}{2} +\sum_{i=1}^{n-1} \Delta t x_i \label{trap}
+\end{align}
+Using the trapezoid rule, we can define a discretized version of the objective function (\ref{problem}):
+\begin{align}
+\hat J_{\Delta t}(v_{\Delta t})&=\frac{1}{2} trapz(v_{\Delta t}^2)+ \frac{1}{2}(y_n-y^T)^2 \\
+&=\Delta t\frac{v_0^2+v_n^2}{4} + \frac{1}{2}\sum_{i=1}^{n-1} \Delta t v_i^2 + \frac{1}{2}(y_n-y^T)^2 \label{disc f}
+\end{align}
+The hope is now that the gradient of the above defined numerical objective function is somehow related to the gradient of the continuous objective function stated in (\ref{gradiant}). The next result shows that this is indeed the case. 
+\begin{theorem}
+If the implicit Euler finite difference scheme is used to evaluate the numerical objective function (\ref{disc f}), the gradient $\nabla \hat J_{\Delta t}$ of (\ref{disc f}) will be given as:
+\begin{align}
+\nabla \hat J_{\Delta t}(v_{\Delta t}) = Mv_{\Delta t} + Bp_{\Delta t} \label{num_grad}
 \end{align}
 where $M$ and $B$ are the matrices:
 \begin{align*}
@@ -78,13 +88,13 @@ M=\left[ \begin{array}{cccc}
 \end{align*}
 If one instead uses the explicit Euler finite difference scheme on the differential equations, the gradient will instead look like:
 \begin{align*}
-\nabla J_{\Delta t}(v_{\Delta t}) = Mv_{\Delta t} + B^*p_{\Delta t}
+\nabla \hat J_{\Delta t}(v_{\Delta t}) = Mv_{\Delta t} + B^*p_{\Delta t}
 \end{align*}
 \end{theorem}
 \begin{proof}
-Let us start with the $Mv$ term of the gradient. This term comes from the integral $\int_0^T v(t)^2dt$, which we evaluate using the trapezoid rule, which looks as the following:
+Let us start with the $Mv$ term of the gradient. This term comes from the integral $\int_0^T v(t)^2dt$, which we evaluate using the trapezoid rule. We can actually rewrite this term so that it depends on $M$:
 \begin{align*}
-\int_0^T v(t)^2dt \approx \Delta t\frac{v_0^2+v_n^2}{2} + \sum_{i=1}^{n-1} \Delta t v_i^2 = v^*Mv
+trapz(v_{\Delta t}^2)=  \Delta t\frac{v_0^2+v_n^2}{2} + \sum_{i=1}^{n-1} \Delta t v_i^2 = v^*Mv
 \end{align*} 
 The function $f(v)=\frac{1}{2} v^*Mv$ obviously has $Mv$ as gradient. The second term of the gradient comes from the second term of the functional, namely $g(v)=\frac{1}{2}(y^n -y^T)^2$. To differentiate $g$ with respect to the i'th component of $v$, we will apply the chain rule multiple times. Lets first demonstrate by calculating $\frac{\partial g}{\partial v_n}$, in a setting where we have used implicit euler to solve the equations:
 \begin{align*}
@@ -147,7 +157,7 @@ yielded the following:
 \bottomrule
 \end{tabular}
 \section{Discretizing the decomposed time-domain}
-Decomposing the time interval $I=[0,T]$ into $N$ equally sized subintervals $I_i=[T_i,T_{i+1}]$, and solving the state and adjoint equations separately on each subinterval, allows our algorithm to be run in parallel. Decomposing $I$ is simple in the continuous case, however in practice we are solving these equations numerically, and in the discrete case, partitioning $I$ is more involved. To explain how we decompose $I$ in the discrete case, lets look at how to do it for the state equation. Define a differential equation $F$:
+Decomposing the time interval $I=[0,T]$ into $N$ equally sized subintervals $I_i=[T_i,T_{i+1}]$, and solving the state and adjoint equations separately on each subinterval, is what allows our algorithm to be run in parallel. Decomposing $I$ is simple in the continuous case, however we are solving these equations numerically, and in the discrete case, partitioning $I$ is more involved. To explain how we decompose $I$ in the discrete case, lets look at how to do it for a general differential equation $F$:
 \begin{align*}
 \left\{
      \begin{array}{lr}
@@ -209,3 +219,62 @@ Here the $\delta$s are conditional functions defined as:
    \right.	
 \end{align*} 
 We now have a way of decomposing the discrete time interval, and therefore also a way of partitioning the finite difference solver of the state equation in temporal direction. However both when we want try to find the gradient in a penalized optimal control problem, or when we just want to parallelize solving a differential equation using the parareal scheme, some communication between the processes is required. 
+\subsection{Numerical gradient of penalized example problem}
+Let us restate the decomposed example ODE, and the penalized objective function defined in (\ref{decomp_E}-\ref{penalty_func})
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	\frac{\partial}{\partial t} y^i(t)+\alpha y^i(t) = v(t) \ t\in(T_{i-1},T_{i})\\
+       	y^i(T_{i-1})=\lambda_{i-1}
+     \end{array}
+   \right. \label{decomp_E2}
+\end{align}
+\begin{align}
+\hat J_{\mu}(v,\Lambda) = \frac{1}{2}\int_0^T|v(t)|^2dt + \frac{\alpha}{2}|y(T)-y^T|^2 + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2 \label{penalty_func2}
+\end{align}
+Let us also remember the gradient of (\ref{penalty_func2}) stated in (\ref{penalty grad})
+\begin{align}
+\hat J_{\mu}'(v,\lambda) = (v+p,p_{2}(T_1) -p_{1}(T_1),..., p_{N}(T_{N-1}) -p_{N}(T_{N-1})) \label{penalty grad2}
+\end{align}
+We now want to write up the numerical version of (\ref{penalty_func2}) and (\ref{penalty grad2}), as we did for the non-penalized problem. Discretizing the decomposed ODEs is straight forward, however the solution of the state and adjoint equations now consists of independent solution $y_{\Delta t}^i$ and $p_{\Delta t}^i$ on each subinterval $I_{\Delta t}^i$, where 
+\begin{align*}
+y_{\Delta t}^i &= (y_{k_{i-1}}^i,y_{k_{i-1}+1}^i,...,y_{k_{i}}^i) \ \text{and} \\
+p_{\Delta t}^i &= (p_{k_{i-1}}^i,p_{k_{i-1}+1}^i,...,p_{k_{i}}^i)
+\end{align*} 
+One problem with $y_{\Delta t}^i$ and $p_{\Delta t}^i$ existing independently on each interval, is that we get an overlap on all the subinterval boundaries, which have the potential of complicating the penalized numerical objective function and its gradient. It turns out that for our example problem this problem only arises in the gradient. We can therefore quite simply write up the penalized numerical objective function:
+\begin{align}
+\hat J_{\mu,\Delta t}(v_{\Delta t})&=\frac{1}{2} trapz(v_{\Delta t}^2)+ \frac{1}{2}(y_n^{N}-y^T)^2 +\frac{\mu }{2}\sum_{i=1}^{N} (y_{k_i}^{i}-\lambda_i)^2\\
+&=\Delta t\frac{v_0^2+v_n^2}{4} + \frac{1}{2}\sum_{i=1}^{n-1} \Delta t v_i^2 + \frac{1}{2}(y_n^N-y^T)^2+\frac{\mu }{2}\sum_{i=1}^{N} (y_{k_i}^{i}-\lambda_i)^2 \label{pen disc f}
+\end{align}
+\begin{theorem}
+The gradient of (\ref{pen disc f}), $\hat J_{\mu,\Delta t}:\mathbb{R}^{N+m}\rightarrow\mathbb{R}$ consists of two parts. The second part $ \nabla\hat J_{\mu,\Delta t}(\Lambda)\in\mathbb{R}^{m-1}$ dealing with the penalty part of the control is independent of the choice of finite difference scheme, and is given by:
+\begin{align}
+\nabla\hat J_{\mu,\Delta t}(\Lambda) = (p_{k_1}^{2}-p_{k_1}^{1},p_{k_2}^{3}-p_{k_2}^{2},...,p_{N}^{k_{N-1}}-p_{N-1}^{k_{N-1}})
+\end{align} 
+The first part $ \nabla\hat J_{\mu,\Delta t}(v_{\Delta t})\in\mathbb{R}^{N+1}$, which is connected to $v_{\Delta t}$, depend on the finite difference scheme used to discretize the adjoint and state equations. If we use the Implicit Euler scheme to evaluate (\ref{pen disc f}), the $v_{\Delta t}$ part of the gradient will be:
+\begin{align}
+\nabla\hat J_{\mu,\Delta t}(v_{\Delta t})= Mv_{\Delta t} + (Bp_{\Delta t}^1,Bp_{\Delta t}^2,...,Bp_{\Delta t}^N)
+\end{align}
+where $M$ and $B$ are the matrices:
+\begin{align*}
+M=\left[ \begin{array}{cccc}
+   \frac{1}{2}\Delta t & 0 & \cdots & 0 \\  
+   0& \Delta t & 0 & \cdots \\ 
+   0 &0 & \Delta t  & \cdots \\
+   0 &\cdots &0 & \frac{1}{2}\Delta t   \\
+   \end{array}  \right] 
+,B = \left[ \begin{array}{cccc}
+   0& 0 & \cdots & 0 \\  
+   \Delta t& 0 & 0 & \cdots \\ 
+   0 & \Delta t& 0  & \cdots \\
+   0 &\cdots & \Delta t& 0   \\
+   \end{array}  \right] 
+\end{align*}
+If one instead uses the explicit Euler finite difference scheme on the differential equations, the gradient will instead look like:
+\begin{align}
+\nabla\hat J_{\mu,\Delta t}(v_{\Delta t})= Mv_{\Delta t} + (B^*p_{\Delta t}^1,B^*p_{\Delta t}^2,...,B^*p_{\Delta t}^N)
+\end{align}
+\end{theorem}
+\begin{proof}
+ere we go
+\end{proof}
