@@ -243,7 +243,7 @@ p_{\Delta t}^i &= (p_{k_{i-1}}^i,p_{k_{i-1}+1}^i,...,p_{k_{i}}^i)
 \end{align*} 
 One problem with $y_{\Delta t}^i$ and $p_{\Delta t}^i$ existing independently on each interval, is that we get an overlap on all the subinterval boundaries, which have the potential of complicating the penalized numerical objective function and its gradient. It turns out that for our example problem this problem only arises in the gradient. We can therefore quite simply write up the penalized numerical objective function:
 \begin{align}
-\hat J_{\mu,\Delta t}(v_{\Delta t})&=\frac{1}{2} trapz(v_{\Delta t}^2)+ \frac{1}{2}(y_n^{N}-y^T)^2 +\frac{\mu }{2}\sum_{i=1}^{N} (y_{k_i}^{i}-\lambda_i)^2\\
+\hat J_{\mu,\Delta t}(v_{\Delta t},\Lambda)&=\frac{1}{2} trapz(v_{\Delta t}^2)+ \frac{1}{2}(y_n^{N}-y^T)^2 +\frac{\mu }{2}\sum_{i=1}^{N} (y_{k_i}^{i}-\lambda_i)^2\\
 &=\Delta t\frac{v_0^2+v_n^2}{4} + \frac{1}{2}\sum_{i=1}^{n-1} \Delta t v_i^2 + \frac{1}{2}(y_n^N-y^T)^2+\frac{\mu }{2}\sum_{i=1}^{N} (y_{k_i}^{i}-\lambda_i)^2 \label{pen disc f}
 \end{align}
 \begin{theorem}
@@ -253,9 +253,9 @@ The gradient of (\ref{pen disc f}), $\hat J_{\mu,\Delta t}:\mathbb{R}^{N+m}\righ
 \end{align} 
 The first part $ \nabla\hat J_{\mu,\Delta t}(v_{\Delta t})\in\mathbb{R}^{N+1}$, which is connected to $v_{\Delta t}$, depend on the finite difference scheme used to discretize the adjoint and state equations. If we use the Implicit Euler scheme to evaluate (\ref{pen disc f}), the $v_{\Delta t}$ part of the gradient will be:
 \begin{align}
-\nabla\hat J_{\mu,\Delta t}(v_{\Delta t})= Mv_{\Delta t} + (Bp_{\Delta t}^1,Bp_{\Delta t}^2,...,Bp_{\Delta t}^N)
+\nabla\hat J_{\mu,\Delta t}(v_{\Delta t})= Mv_{\Delta t} + (B^1p_{\Delta t}^1,B^2p_{\Delta t}^2,...,B^Np_{\Delta t}^N)
 \end{align}
-where $M$ and $B$ are the matrices:
+where $M\in \mathbb{R}^{(n+1)\times (n+1)}$ and $B^i\in \mathbb{R}^{n^i\times (n^i-1)}$ are the matrices defined below, and $n^i=k_i-k_{i-1}$ are the length of vector $p_{\Delta t}$.
 \begin{align*}
 M=\left[ \begin{array}{cccc}
    \frac{1}{2}\Delta t & 0 & \cdots & 0 \\  
@@ -263,18 +263,48 @@ M=\left[ \begin{array}{cccc}
    0 &0 & \Delta t  & \cdots \\
    0 &\cdots &0 & \frac{1}{2}\Delta t   \\
    \end{array}  \right] 
-,B = \left[ \begin{array}{cccc}
-   0& 0 & \cdots & 0 \\  
-   \Delta t& 0 & 0 & \cdots \\ 
+,B^i = \left[ \begin{array}{cccc}  
+   \Delta t& 0 & \cdots & 0 \\ 
    0 & \Delta t& 0  & \cdots \\
    0 &\cdots & \Delta t& 0   \\
    \end{array}  \right] 
 \end{align*}
 If one instead uses the explicit Euler finite difference scheme on the differential equations, the gradient will instead look like:
 \begin{align}
-\nabla\hat J_{\mu,\Delta t}(v_{\Delta t})= Mv_{\Delta t} + (B^*p_{\Delta t}^1,B^*p_{\Delta t}^2,...,B^*p_{\Delta t}^N)
+\nabla\hat J_{\mu,\Delta t}(v_{\Delta t})= Mv_{\Delta t} + (\bar B^1p_{\Delta t}^1,\bar B^2p_{\Delta t}^2,...,\bar B^Np_{\Delta t}^N)
 \end{align}
+where $\bar B^i\in \mathbb{R}^{n^i\times (n^i-1)}$ is the matrix:
+\begin{align*}
+\bar B^i = \left[ \begin{array}{cccc}  
+   0 &\Delta t& 0 & \cdots  \\ 
+   0 &0 & \Delta t  & \cdots \\
+   0 &\cdots &  0& \Delta t   \\
+   \end{array}  \right] 
+\end{align*}
 \end{theorem}
 \begin{proof}
-ere we go
+Let us begin with the $\Lambda$ part of the gradient. We find each component by differentiating $\hat J_{\mu,\Delta t} $ with respect to $\lambda_i$, for $i=1,...,N-1$. It turns out there are two cases, namely $i=N-1$ and $i\neq N-1$, these cases are however quite similar, so I will only do the $i\neq N-1$ case. For each $i=1,...,N-2$, there are only two terms in $\hat J_{\mu,\Delta t} $ that depend on $\lambda_i$, and these are $\lambda_i$ it self and $y_{k_{i+1}}^{i+1}$. With this in mind lets start to differentiate $\hat J_{\mu,\Delta t} $.
+\begin{align*}
+\frac{\partial\hat J_{\mu,\Delta t}}{\partial \lambda_i}(v_{\Delta t},\Lambda) &=-\mu (y_{k_i}^i-\lambda_i) +\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})\frac{\partial y_{k_{i+1}}^{i+1}}{\partial \lambda_i}  \\
+&=\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})(\frac{1}{1-\alpha\Delta t})^{k_{i+1}-k_i} -\mu (y_{k_i}^i-\lambda_i)
+\end{align*}
+To get the $(\frac{1}{1-\alpha\Delta t})^{k_{i+1}-k_i}$ term I used the chain rule on $\frac{\partial y_{k_{i+1}}^{i+1}}{\partial \lambda_i}$ and the implicit Euler scheme for our particular equation given in (\ref{I_state}). The next step is done by noticing that the terms $\mu (y_{k_i}^i-\lambda_i)$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})$ are the initial conditions of the $i$th and $i+1$th adjoint equations, which means that $\mu (y_{k_i}^i-\lambda_i)=p_{k_i}^{i}$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})=p_{k_{i+1}}^{i+1}$. Inserting this we get:
+\begin{align*}
+\frac{\partial\hat J_{\mu,\Delta t}}{\partial \lambda_i}(v_{\Delta t},\Lambda) &=p_{k_{i+1}}^{i+1}(\frac{1}{1-\alpha\Delta t})^{k_{i+1}-k_i} -p_{k_i}^{i} \\
+&= p_{k_{i}}^{i+1}-p_{k_i}^{i}
+\end{align*}
+The last step is done by utilizing the implicit Euler scheme for our adjoint equation (\ref{I_adjoint}).
+\\
+\\
+The $v_{\Delta t}$ part of the gradient is almost equal to the non-penalized gradient, the only difference being that the adjoint now is defined separately on each subinterval and not on the entire time interval $[0,T]$. We can again divide the functional (\ref{pen disc f}) into two parts, the integral over $v_{\Delta t}$ , $f(v_{\Delta t})=\frac{1}{2} trapz(v_{\Delta t}^2)=v_{\Delta t}^*Mv_{\Delta t}$ and 
+\begin{align*}
+g(v_{\Delta t}) = \frac{1}{2}(y_n^N-y^T)^2+\frac{\mu }{2}\sum_{i=1}^{N} (y_{k_i}^{i}-\lambda_i)^2
+\end{align*} 
+As for the non-penalized gradient, the derivative of the $f$ term is quite easily seen to be $Mv_{\Delta t}$, the problems start when we want to differentiate $g$ with respect to a specific component $v_k$ in $v_{\Delta t}$. If we are using the implicit Euler scheme to dicretize the state and adjoint equations, the $k$th component of $v_{\Delta t}$ only affects the solution of one of the $i$ state equations. If $k\in \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, $v_k$ is used to find $y_{\Delta t}^i$, which means that the only term in $g$, that depend on $v_k$, is  $\frac{\mu }{2}(y_{k_i}^{i}-\lambda_i)^2$ if $i\neq N$, or $\frac{1}{2}(y_n^N-y^T)^2$ if $i=N$. If we now assume that $i\neq N$ and $k\in \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, we can differentiate $g$ with respect to $v_k$:
+\begin{align*}
+\frac{\partial g}{\partial v_k} &=\mu( y_{k_i}^{i}-\lambda_i) (\prod_{l=k+1}^{k_{i+1}}\frac{\partial y_{l}}{\partial y_{l-1}}) \frac{\partial y_k}{\partial v_{k}} = \frac{p_{k_i}^i}{(1-\alpha\Delta t)^{k_{i}-k}}\frac{\Delta t}{1-\alpha\Delta t} \\
+&= \frac{p_{k_i}^i\Delta t}{(1-\alpha\Delta t)^{k_i-k+1}}=\Delta t p_{k-1}^i
+\end{align*}
+The numerical gradient restricted to $ \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, will then be $B^ip_{\Delta t}^i$, which exactly what we claimed.
 \end{proof}
+\subsection{Verifying the penalized numerical gradient using the Taylor test}
