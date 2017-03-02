@@ -101,8 +101,8 @@ def taylor_test_non_penalty():
         table['J(u+v)-J(u)-dJ(u)v'].append(grad_val)
         table['e v'].append(eps*max(h))
         if i!=0:
-            table['rate1'].append(np.log(table['J(u+v)-J(u)'][i-1]/table['J(u+v)-J(u)'][i])/np.log(10))
-            table['rate2'].append(np.log(table['J(u+v)-J(u)-dJ(u)v'][i-1]/table['J(u+v)-J(u)-dJ(u)v'][i])/np.log(10))
+            table['rate1'].append(np.log(abs(table['J(u+v)-J(u)'][i-1]/table['J(u+v)-J(u)'][i]))/np.log(10))
+            table['rate2'].append(np.log(abs(table['J(u+v)-J(u)-dJ(u)v'][i-1]/table['J(u+v)-J(u)-dJ(u)v'][i]))/np.log(10))
     print
     
     for i in range(10):
@@ -112,7 +112,7 @@ def taylor_test_non_penalty():
         #print max(abs(grad_fd[:]-grad[:]))
     
     data2 = pd.DataFrame(table,index=eps_list)
-    data2.to_latex('report/draft/discertizedProblem/taylorTest1.tex')
+    #data2.to_latex('report/draft/discertizedProblem/taylorTest1.tex')
     
     print data2
     
@@ -132,9 +132,9 @@ def taylor_test_non_penalty():
 
 def taylor_penalty_test():
     y0 = 3.2
-    yT = 100.5
+    yT = 1.5
     T  = 1
-    a  = 10.9
+    a  = .9
     p = 2
     c =0.5
 
@@ -142,13 +142,14 @@ def taylor_penalty_test():
     #problem = non_lin_problem(y0,yT,T,a,p,c=c)
     N = 100
     dt = 1./(N)
-    m = 2
+    m = 10
     my = 1
     
 
     J,grad_J = problem.generate_reduced_penalty(dt,N,m,my)
     h = 100*np.random.random(N+m)
-    u = np.zeros(N+m) 
+    u = np.zeros(N+m) +1
+    """
     for i in range(10):
 
         print abs(J(u+h/(10**i))-J(u))
@@ -160,12 +161,32 @@ def taylor_penalty_test():
         eps = 1./(10**i)
         print abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
     print
-
+    """
     for i in range(10):
         eps = 1./(10**i)
         grad_fd = finite_diff(J,u,eps)
         grad = grad_J(u)
-        print max(abs(grad_fd[:]-grad[:]))
+        #print max(abs(grad_fd[:]-grad[:]))
+    
+    table = {'J(v+w)-J(v)':[],'J(v+w)-J(v)-dJ(v)w':[],'rate1':['--'],
+             'rate2':['--'],'e w':[]}
+    eps_list = []
+    for i in range(9):
+        eps = 1./(10**i)
+        grad_val = abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
+        func_val = J(u+h*(eps))-J(u)
+        eps_list.append(eps)
+        table['J(v+w)-J(v)'].append(func_val)
+        table['J(v+w)-J(v)-dJ(v)w'].append(grad_val)
+        table['e w'].append(eps*max(h))
+        if i!=0:
+            table['rate1'].append(np.log(abs(table['J(v+w)-J(v)'][i-1]/table['J(v+w)-J(v)'][i]))/np.log(10))
+            table['rate2'].append(np.log(abs(table['J(v+w)-J(v)-dJ(v)w'][i-1]/table['J(v+w)-J(v)-dJ(v)w'][i]))/np.log(10))
+    print
+    data2 = pd.DataFrame(table,index=eps_list)
+    data2.to_latex('report/draft/discertizedProblem/penalty_taylorTest.tex')
+    
+    print data2
     
     import matplotlib.pyplot as plt
     
