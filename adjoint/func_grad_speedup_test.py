@@ -185,7 +185,7 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         res = pproblem.solve(N,Lbfgs_options=opt)
         t1=time.time()
         val = t1-t0
-        np.save('seq_sol',res.x)
+        np.save('outputDir/vectorOut/seq_sol',res.x)
         temp1 = open('temp_time.txt','a')
         temp1.write('%f ' %val)
         temp1.close()
@@ -228,6 +228,7 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
             info_file = open('temp_info.txt','w')
             info_file.write('%d %d %d %d'%(int(fu),int(gr),res.niter,res.lsiter))
             info_file.close()
+        np.save('outputDir/vectorOut/par_sol_'+str(rank),res.x.local_vec)
 
 
 
