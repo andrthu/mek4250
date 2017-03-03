@@ -15,6 +15,8 @@ from parallelOCP import interval_partition,v_comm_numbers
 from ODE_pararealOCP import PararealOCP
 from mpiVectorOCP import MpiVectorOCP,simpleMpiVectorOCP,generate_problem,local_u_size
 
+pre_chosen_itr = {500000:[12,11,9,14,16],}
+
 def test_func(N,K,problem,pproblem,name='funcSpeed'):
     comm = pproblem.comm
     m = comm.Get_size()
@@ -233,8 +235,12 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         par 5: 31.024316 84 84 15 66 
         par 6: 33.121180 104 104 17 55 
         """
-        itr_list = [12,11,9,14,16]
-        opt = {'jtol':1e-10,'maxiter':itr_list[m-2]}
+        try:
+            
+            itr_list = pre_chosen_itr[N]
+            opt = {'jtol':1e-10,'maxiter':itr_list[m-2]}
+        except:
+            opt = {'jtol':1e-10}
         mu_list = [N]
         comm.Barrier()
         t0 = time.time()

@@ -29,7 +29,7 @@ To solve the constrained problem (\ref{constrained reduced}), we will use the pe
 \begin{align}
 \hat J_{\mu}(v,\Lambda) = \hat J(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2
 \end{align}
-If we now minimize $\hat{J}_{\mu}$ with respect to $(v,\Lambda)$, while letting $\mu$ tend to infinity, we hope that the solution will satisfy the conditions (\ref{Extra constraints}), while also minimizing the actual problem (\ref{constrained reduced}). the algorithmic framework of this reads:
+If we now minimize $\hat{J}_{\mu}$ with respect to $(v,\Lambda)$, while letting $\mu$ tend to infinity, we hope that the solution will satisfy the conditions (\ref{Extra constraints}), while also minimizing the actual problem (\ref{constrained reduced}). The algorithmic framework of this reads:
 \begin{align*}
 1: \ &\textit{Choose} \ \mu_0,\tau_0>0 \ \textit{and intial control} \ (v^0,\Lambda^0) \\
 2: \ &\textit{for $k=1,2,...$: } \\
@@ -55,7 +55,7 @@ Inserting the above expression for $ y'(v,\Lambda)^*$ into the gradient yields:
 \end{align}
 Where $p$ is the solution of the adjoint equation:
 \begin{align*}
-E_y^*p=\frac{\partial}{\partial y}J_mu
+E_y^*p=\frac{\partial}{\partial y}J_{\mu}
 \end{align*} 
 Notice that the state equation $E$ in actuality is several equations defined separately on the each of the decomposed subintervals. The result of this will be that the adjoint equation also will be several equations defined on each interval. To see this clearly I will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
 \subsection{Deriving adjoint for simple problem}
@@ -157,7 +157,7 @@ If we want to go back to the strong formulation, we do partial integration, and 
 $i\neq N$ cases:
 \begin{align*}
 &\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
-&\int_{T_i-1}^{T_i}-p_i('t)\psi(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
+&\int_{T_i-1}^{T_i}-p_i'(t)\psi(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
 = \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
 \end{align*}
 This gives us the ODEs we wanted.
@@ -203,8 +203,8 @@ Parallelizing the solution process of optimal control problems with time depende
 \subsection{Virtual problem}
 The virtual problem is the optimal control problem:
 \begin{align}
-&\min_{\Lambda}\hat{J}(\Lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n}) \label{virtual_func} \\
-&\textit{Subject to } \ y_{n-1}(T_{n}) = \bold F_{\Delta T}(\lambda_{n-1}) \ n=1,...,N-1 \label{virtual}
+&\min_{\Lambda}\hat{J}(\Lambda) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i}) \label{virtual_func} \\
+&\textit{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
 \end{align}
 Where $\bold F_{\Delta T}$ is the function defined in (\ref{F_operator}). In chapter 3 I explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
 \begin{align*}
@@ -225,7 +225,7 @@ M = \left[ \begin{array}{cccc}
    0 &\cdots &-\bold{G}_{\Delta T} & I   \\
    \end{array}  \right]
 \end{align*}
-As mentioned, solving the system (\ref{vir_mat_sys}), solves the the problem $\hat{J}(\Lambda)=0$. However, we can only do this because we know that the optimal value of the problem is $0$. What we normally have to do when we want to solve optimal control problems, is solving $\hat{J}'(\Lambda)=0$. From (\ref{penalty grad}), we know that: $$\hat{J}'(\Lambda) = \{p_n(T_n)-p_{n-1}(T_n)\}_{n=1}^{N-1}$$ We also see that the adjoint equations (\ref{exs_adjoint}) can be used to define $\bold{F}_{\Delta T}^*(\omega)$ as we did in (\ref{F_operator}). It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
+As mentioned, solving the system (\ref{vir_mat_sys}), solves the the problem $\hat{J}(\Lambda)=0$. However, we can only do this because we know that the optimal value of the problem is $0$. What we normally have to do when we want to solve optimal control problems, is solving $\hat{J}'(\Lambda)=0$. From (\ref{penalty grad}), we know that: $$\hat{J}'(\Lambda) = \{p_i(T_i)-p_{i-1}(T_i)\}_{i=1}^{N-1}$$ We also see that the adjoint equations (\ref{exs_adjoint}) can be used to define $\bold{F}_{\Delta T}^*(\omega)$ as we did in (\ref{F_operator}). It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
 \begin{align}
 M^* \ M \ \Lambda \ = \ M^* \ H \label{vir_grad_sys}
 \end{align}
@@ -291,9 +291,9 @@ x= \left( \begin{array}{c}
 We can then formulate the problem ( \ref{virtual_func}-\ref{viritual}) as 
 \begin{align}
 \min_{y,\lambda} J(y,\lambda) &= x^*x \label{vector_J}\\ 
-\textit{Subject to:} \ y_{n-1}(T_n) &= \bold{F}_{\Delta T}(\lambda_{n-1}) \ n =1,...,N-1 
+\textit{Subject to:} \ y_{i-1}(T_i) &= \bold{F}_{\Delta T}(\lambda_{i-1}) \ i =1,...,N-1 
 \end{align}
-We can reduce $J$ to only depend on $\Lambda$ by inserting an expression for $y_{n-1}(T_n)$ into (\ref{vector_J}). Firstly we see that:
+We can reduce $J$ to only depend on $\Lambda$ by inserting an expression for $y_{i-1}(T_i)$ into (\ref{vector_J}). Firstly we see that:
 \begin{align}
 \left( \begin{array}{c}
    y_0(T_1) \\  
@@ -464,7 +464,7 @@ The propagator for the adjoint system would look like this:
 \begin{align}
 \left\{
      \begin{array}{lr}
-		\frac{\delta^{n-1} -\delta^n }{\Delta T } + A^*\delta^{n-1} = \frac{y^n}{\Delta T} \\
+		\frac{\delta^{i-1} -\delta^i }{\Delta T } + A^*\delta^{i-1} = \frac{y^i}{\Delta T} \\
 		\delta^{N-1} = 0
 	\end{array} \right.
 \end{align} 
