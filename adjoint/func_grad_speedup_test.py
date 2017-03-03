@@ -14,8 +14,17 @@ from my_bfgs.mpiVector import MPIVector
 from parallelOCP import interval_partition,v_comm_numbers
 from ODE_pararealOCP import PararealOCP
 from mpiVectorOCP import MpiVectorOCP,simpleMpiVectorOCP,generate_problem,local_u_size
+"""
+seq: 2.430924 20 21 4 20
+par 2: 2.188750 29 29 5 23 0.000011
+par 3: 2.635693 49 49 8 36 0.000020
+par 4: 1.409685 34 34 7 29 0.000032
+par 5: 2.398173 38 38 8 32 0.000043
+par 6: 2.449859 74 74 19 53 0.000053
 
-pre_chosen_itr = {500000:[12,11,9,14,16],}
+"""
+pre_chosen_itr = {500000:[12,11,9,14,16],
+                  50000:[4,7,6,7,18]}
 
 def test_func(N,K,problem,pproblem,name='funcSpeed'):
     comm = pproblem.comm
