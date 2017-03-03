@@ -10,12 +10,15 @@ def read_file(filename):
     speed_file.close()
 
     return lines
-def create_table(lines,with_iter=True,with_iter2=False):
+def create_table(lines,with_iter=True,with_iter2=False,with_norm=False):
     
     if with_iter:
         table = {'time':[],'iter':[],'ls iter':[],'speedup':[]}
     elif with_iter2:
         table = {'time':[],'iter':[],'ls iter':[],'speedup':[],'gr':[],'fu':[]}
+    elif with_norm:
+        table = {'time':[],'iter':[],'ls iter':[],'speedup':[],'gr':[],'fu':[],'norm':[]}
+        with_iter2 =True
     else:
         table = {'time':[],'speedup':[]}
     index = []
@@ -33,11 +36,13 @@ def create_table(lines,with_iter=True,with_iter2=False):
         table['ls iter'].append(int(first_line[5]))
         table['gr'].append(int(first_line[3]))
         table['fu'].append(int(first_line[2]))
+        if with_norm:
+            table['norm'].append('--')
     table['speedup'].append(1)
     
     for line in lines[1:]:
         line_list = line.split()
-        #print line_list
+        #print line_list 
         index.append(line_list[1])
         par_time = float(line_list[2])
         table['time'].append(par_time)
@@ -49,6 +54,8 @@ def create_table(lines,with_iter=True,with_iter2=False):
             table['ls iter'].append(int(line_list[6]))
             table['gr'].append(int(line_list[4]))
             table['fu'].append(int(line_list[3]))
+            if with_norm:
+                table['norm'].append(float(line_list[7]))
         table['speedup'].append(seq_time/par_time)
     #print table
     data = pd.DataFrame(table,index=index)
@@ -59,22 +66,30 @@ def main():
         if sys.argv[1] == '0':
             names = sys.argv[2:]
             with_iter = False
-            with_iter2=False
+            with_iter2 = False
+            with_norm =False
         elif sys.argv[1] == '1':
             names = sys.argv[2:]
-            with_iter =False
-            with_iter2=True                                    
+            with_iter = False
+            with_iter2 = True
+            with_norm = False
+        elif sys.argv[1] == '2':
+            names = sys.argv[2:]
+            with_iter = False
+            with_iter2 = False
+            with_norm =True
         else:
             names = sys.argv[1:]
             with_iter = True
             with_iter2 = False
+            with_norm =False
     except:
         print 'Give file'
         return
     for name in names:
         print name
         lines = read_file(name)
-        data = create_table(lines,with_iter=with_iter,with_iter2=with_iter2)
+        data = create_table(lines,with_iter=with_iter,with_iter2=with_iter2,with_norm=with_norm)
         print data
         #data.to_latex('latexTables/'+name[:-3]+'tex')
 if __name__ == '__main__':

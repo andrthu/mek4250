@@ -23,6 +23,7 @@ while [  $COUNTER -lt 7 ]; do
 	let COUNTER2=COUNTER2+1;
     done
     mpiexec -n $COUNTER -mca btl ^openib python func_grad_speedup_test.py $N 1 0 $val;
+    mpiexec -n $COUNTER -mca btl ^openib python func_grad_speedup_test.py $N 1 2 $val;
     let COUNTER=COUNTER+1;
     echo "new $COUNTER"
     let COUNTER2=0;

@@ -10,11 +10,12 @@ class MPIVector():
         
     def __add__(self,other):
         #print type(self.local_vec),type(other.local_vec)
-        return MPIVector(self.local_vec + other.local_vec,self.comm)
+        #return MPIVector(self.local_vec + other.local_vec,self.comm)
+        return MPIVector(self[:]+other[:],self.comm)  
 
     def __sub__(self,other):
-        return MPIVector(self.local_vec - other.local_vec,self.comm)
-        #return self[:] - other[:]
+        #return MPIVector(self.local_vec - other.local_vec,self.comm)
+        return MPIVector(self[:] - other[:],self.comm)  
     def __neg__(self):
         return -1*self
 
