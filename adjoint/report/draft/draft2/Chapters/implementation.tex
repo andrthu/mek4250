@@ -440,3 +440,4 @@ S &= \frac{T_s}{T_p} = \frac{O(n)}{O(\frac{n}{N}) + O(\log N) + O(L)} \\
 &=\frac{1}{\frac{1}{N} + \frac{\log N}{n}+\frac{L}{n}} = \frac{1}{\frac{1}{N} +\frac{L}{n}}
 \end{align*}
 If $L$ is independent of $n$, the speedup for gradient evaluation is $O(N)$, like it is for function evaluation, however if $L$ is dependent on $n$ this not the case, and we would instead get speedup $S=O(\frac{n}{L(n)})$. In a case where the control for example is the source term in the state equation, we would actually get $S=O(1)$, which is really bad, and we would not expect any improvement when using parallel, at least for large $n$ values.
+\section{Consistency test}
