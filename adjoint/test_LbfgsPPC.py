@@ -549,10 +549,10 @@ def jump_difference():
     a  = 0.9
     p = 2
     
-    problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 10*np.sin(np.pi*2*x))
+    problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 0*x)#10*np.sin(np.pi*2*x))
 
-    N = 100
-    m = 2
+    N = 1000
+    m = 10
     part_start,_,_,_ = v_comm_numbers(N+1,m)
     
     dt = float(T)/N
@@ -788,7 +788,7 @@ if __name__ == '__main__':
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    #jump_difference()
+    jump_difference()
     #look_at_gradient()
     #count_grad_func_eval()
-    split_test()
+    #split_test()

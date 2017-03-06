@@ -167,6 +167,6 @@ def jump_diff_test(y0=3.3,yT=10,T=1,a=10.4):
     plt.show()
     #print jumps
 if __name__ == '__main__':
-    #test(1000)
+    test(100000)
     #test2()
-    jump_diff_test(y0=1,a=1,yT=1)
+    #jump_diff_test(y0=1,a=1,yT=1)
