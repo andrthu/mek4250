@@ -394,7 +394,7 @@ Each process can now solve its adjoint equation locally, and we can start to act
 6. \ &\nabla \hat J_{\mu} = \textbf{Gather}(\nabla \hat J^i,p_{i+1}(T_i) - p_{i}(T_i))
 \end{align*}
 \section{Analysing parallel performance}
-Now that we what type of communication is involved in objective function evaluation and gradient computation, we can try to model the expected performance of the two algorithms. One way to measure performance of algorithms is to at their execution times. Therefore lets define $T_s$ as execution time of sequential algorithm, and $T_p$ as parallel algorithm execution time. Let us also define the speedup $S=\frac{T_s}{T_p}$. Since we for now only are modelling performance we do not actually calculate the execution times, but we do know that the run time of the algorithms are related to the size of the problem, namely the number of time-steps $n$. The last thing we need before we start our performance analysis, is a way to model communication between two processes. One way of modelling the communication time $T_c$ for sending a message of size $m$ between to processes, is proposed in \cite{grama2003introduction} as:
+Now that we know what type of communication is involved in objective function evaluation and gradient computation, we can try to model the expected performance of the two algorithms. One way to measure performance of algorithms is to look at their execution times. Therefore lets define $T_s$ as execution time of the sequential algorithm, and $T_p$ as parallel algorithm execution time. Let us also define the speedup $S=\frac{T_s}{T_p}$. Since we for now only are modelling performance we do not actually calculate the execution times, but we do know that the run time of the algorithms are related to the size of the problem, namely the number of time-steps $n$. The last thing we need before we start our performance analysis, is a way to model communication between two processes. One way of modelling the communication time $T_c$ for sending a message of size $m$ between to processes, is proposed in \cite{grama2003introduction} as:
 \begin{align*}
 T_c = T_l + mT_w
 \end{align*} 
@@ -404,7 +404,7 @@ The function evaluation consists of solving the state equation, which requires $
 \begin{align*}
 T_s = O(n)
 \end{align*}
-For our parallel algorithm we also solve the state equation and apply the functional, but since we divide the time steps equally to each process, solving the state equation and applying the functional only requires $O(\frac{n}{N})$ operations. Since we also have penalty terms in our functional we also get an extra $O(N)$ operations. Now for the communication. We are doing two communication steps one is sharing the $\lambda$s between process neighbours, and the other is reducing the local function values into one global function value. The send and receive time is given by $T_c = T_l + \textit{dim}(\lambda_i)T_w$, which requires $O(1)$ operations, while the reduction time $T_{red}$ can be modelled as:
+For our parallel algorithm we also solve the state equation and apply the functional, but since we divide the time steps equally between all processes, solving the state equation and applying the functional only requires $O(\frac{n}{N})$ operations. Since we also have penalty terms in our functional we get additional $O(N)$ operations. Now for the communication. We are doing two communication steps one is sharing the $\lambda$s between process neighbours, and the other is reducing the local function values into one global function value. The send and receive time is given by $T_c = T_l + \textit{dim}(\lambda_i)T_w$, which requires $O(1)$ operations, while the reduction time $T_{red}$ can be modelled as:
 \begin{align*}
 T_{red} &= \log N (T_l+T_w) \\
 &= O(\log N)
@@ -421,7 +421,7 @@ S &= \frac{T_s}{T_p} = \frac{O(n)}{O(\frac{n}{N}) +O(N)} \\
 \end{align*}
 This is an optimal speedup.
 \subsection{Gradient speedup}
-When we calculate the objective function gradient sequentially, we solve both the state and adjoint equations. Still the required operations is still in the order of number of time-steps, i.e:
+When we calculate the objective function gradient sequentially, we solve both the state and adjoint equations. Still the required operations are still in the order of number of time-steps, i.e:
 \begin{align*}
 T_s = O(n)
 \end{align*}
@@ -439,5 +439,5 @@ Again we find speedup by dividing $T_s$ by $T_p$:
 S &= \frac{T_s}{T_p} = \frac{O(n)}{O(\frac{n}{N}) + O(\log N) + O(L)} \\
 &=\frac{1}{\frac{1}{N} + \frac{\log N}{n}+\frac{L}{n}} = \frac{1}{\frac{1}{N} +\frac{L}{n}}
 \end{align*}
-If $L$ is independent of $n$, the speedup for gradient evaluation is $O(N)$, like it is for function evaluation, however if $L$ is dependent on $n$ this not the case, and we would instead get speedup $S=O(\frac{n}{L(n)})$. In a case where the control for example is the source term in the state equation, we would actually get $S=O(1)$, which is really bad, and we would not expect any improvement when using parallel, at least for large $n$ values.
+If $L$ is independent of $n$, the speedup for gradient evaluation is $O(N)$, like it is for function evaluation, however if $L$ is dependent on $n$, this is not the case, and we would instead get speedup $S=O(\frac{n}{L(n)})$. In a case where the control for example is the source term in the state equation, we would actually get $S=O(1)$, which is really bad, and we would not expect any improvement when using parallel, at least for large $n$ values. There is however a way to get around this problem, which is store both the gradient and the control locally, which means that you never have to do a gather call. If this is done, and if a solution spread between all processes is accepted, the speedup for gradient evaluation will be $O(N)$.
 \section{Consistency test}
