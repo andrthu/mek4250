@@ -70,6 +70,9 @@ class LbfgsOptimizationControl():
 
     def add_FuncGradCounter(self,arr):
         self.counter = FuncGradCounter(arr)
+    def mpi_grad_norm(self):
+        return self.dJ.l2_norm()
+        
         
 class FuncGradCounter():
     def __init__(self,arr):
