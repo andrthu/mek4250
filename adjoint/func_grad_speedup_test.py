@@ -22,11 +22,18 @@ par 4: 1.409685 34 34 7 29 0.000032
 par 5: 2.398173 38 38 8 32 0.000043
 par 6: 2.449859 74 74 19 53 0.000053
 
+par 2: 10.091356 31 31 5 25 0.000003
+par 3: 17.255771 41 41 7 30 0.000006
+par 4: 5.731002 35 36 9 35 0.000008
+par 5: 18.140212 66 66 9 36 0.000011
+par 6: 4.984034 45 45 10 34 0.000013
+
 """
 pre_chosen_itr = {500000:[12,11,9,14,16],
                   50000:[4,7,6,7,18],
                   100000:[4,5,6,7,8],
-                  1000000:[17,3,15,16,19]}
+                  1000000:[17,3,15,10,19],
+                  200000:[4,6,8,8,9]}
 
 def test_func(N,K,problem,pproblem,name='funcSpeed'):
     comm = pproblem.comm
@@ -176,6 +183,9 @@ def read_temp_time(name,m,seq,rank,solve=False):
                 elif len(vals2)==5:
                     par_string = 'par %d: %f %d %d %d %d %f\n'%(m,min_val,int(vals2[0]),int(vals2[1]),
                                                                 int(vals2[2]),int(vals2[3]),float(vals2[4]))
+                elif len(vals2)==6:
+                    par_string = 'par %d: %f %d %d %d %d %f %e\n'%(m,min_val,int(vals2[0]),int(vals2[1]),
+                                                                   int(vals2[2]),int(vals2[3]),float(vals2[4]),float(vals2[5]))
         else:
             seq_string = 'seq: %f \n'%min_val
             par_string = 'par %d: %f \n'%(m,min_val)
@@ -261,6 +271,7 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         res=res[-1]
         loc_time = np.zeros(1)
         loc_time[0] = t1-t0
+        grad_norm = res.mpi_grad_norm()
         if rank == 0:
             time_vec = np.zeros(m)
         else:
@@ -281,7 +292,7 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
             fu,gr=res.counter()
             norm = read_vector(m)
             info_file = open('temp_info.txt','w')
-            info_file.write('%d %d %d %d %f'%(int(fu),int(gr),res.niter,res.lsiter,norm))
+            info_file.write('%d %d %d %d %f %e'%(int(fu),int(gr),res.niter,res.lsiter,norm,grad_norm))
             info_file.close()
         
 
