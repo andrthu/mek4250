@@ -60,7 +60,7 @@ def test_func(N,K,problem,pproblem,name='funcSpeed'):
     else:
         
         mu = 10
-        u = MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+        u = MPIVector(np.zeros(local_u_size(N+1,m,rank))+1,comm)
         Max_time=[]
         Min_time=[]
         for i in range(K):
@@ -114,7 +114,7 @@ def test_grad(N,K,problem,pproblem,name='gradSpeed'):
         #out.close()
     else:
         mu = 10
-        u = MPIVector(np.zeros(local_u_size(N+1,m,rank)),comm)
+        u = MPIVector(np.zeros(local_u_size(N+1,m,rank))+1,comm)
         Max_time=[]
         Min_time=[]
         for i in range(K):                    
@@ -378,5 +378,5 @@ def main2():
 
 
 if __name__ == '__main__':
-    #main()
-    main2()
+    main()
+    #main2()
