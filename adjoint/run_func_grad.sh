@@ -8,7 +8,7 @@ else
     N=$1;
     K=1;
 fi
-val=1;
+val=0;
 while [ $(($K-$COUNTER2)) -gt 0 ]; do
     mpiexec -n 1 -mca btl ^openib python func_grad_speedup_test.py $N 1 1 $val;
     let COUNTER2=COUNTER2+1;
