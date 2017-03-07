@@ -542,7 +542,7 @@ def test_adaptive_ppc():
     plt.show()
 
 def jump_difference():
-
+    import sys
     y0 = 3.2
     yT = 1.5
     T  = 1
@@ -550,18 +550,21 @@ def jump_difference():
     p = 2
     
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 0*x)#10*np.sin(np.pi*2*x))
-
-    N = 1000
-    m = 10
+    try:
+        N = int(sys.argv[1])
+        m = int(sys.argv[2])
+    except:
+        N = 100
+        m = 2
     part_start,_,_,_ = v_comm_numbers(N+1,m)
     
     dt = float(T)/N
 
-    seq_opt = {'jtol':0,'maxiter':40}
+    seq_opt = {'jtol':0,'maxiter':50}
     opt = {'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True,'maxiter':40}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
-    table = {'\fraq{J(v_mu)-J(v)}{J(v)}':[],'||v_mu-v||':[],'jumps':[],'\fraq{Jmu(v_mu)-Jmu(v)}{Jmu(v)}':[] }
+    table = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
 
     t = np.linspace(0,T,N+1)
     y_seq = problem.ODE_solver(res['control'].array(),N)
@@ -625,10 +628,10 @@ def jump_difference():
         f_val2 = problem.Functional(res2[i].x[:N+1],N)
         print res2[i].niter,(f_val2-val1)/val1,all_jump_diff[i][0],err
 
-        table['\fraq{J(v_mu)-J(v)}{J(v)}'].append((f_val2-val1)/val1)
+        table['J(vmu)-J(v)/J(v)'].append((f_val2-val1)/val1)
         table['||v_mu-v||'].append(err)
         table['jumps'].append(all_jump_diff[i][0])
-        table['\fraq{Jmu(v_mu)-Jmu(v)}{Jmu(v)}'].append((f_val1-val1)/val1)
+        table['Jmu(v_mu)-Jmu(v)/Jmu(v)'].append((f_val1-val1)/val1)
 
         s+=res2[i].niter
     print all_jump_diff

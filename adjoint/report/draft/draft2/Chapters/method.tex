@@ -24,7 +24,7 @@ Assuming that the decomposed state equations also can be uniquely resolved $\for
 &\underset{v\in V}{\text{min}} \ \hat J(v) \\
 &y^{i-1}(T_i)=\lambda_i \ \ \forall i \label{constrained reduced}
 \end{align} 
-\section{The penalty method}
+\section{The penalty method} \label{penalty_sec}
 To solve the constrained problem (\ref{constrained reduced}), we will use the penalty method, which transforms constrained problems into a series of unconstrained problems by incorporating the constraints into the functional. Incorporating the constraints means penalizing not satisfying the constraints. To use the penalty method on (\ref{constrained reduced}) we first introduce the initial conditions to the decomposed state equations as variables $\Lambda = (\lambda_1,..,\lambda_{n-1})^T$, and then define the penalized objective function $\hat J_{\mu}$:
 \begin{align}
 \hat J_{\mu}(v,\Lambda) = \hat J(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2
@@ -37,7 +37,18 @@ If we now minimize $\hat{J}_{\mu}$ with respect to $(v,\Lambda)$, while letting 
 &2.2:\textit{If STOPP CRITERION satisfied end algorithm} \\
 &2.3:\textit{Choose new} \ \tau_k\in(0,\tau_{k-1}),\ \mu_k\in(\mu_{k-1},\infty) 
 \end{align*}
-The parts of the above framework, that still needs special attention, is how we find $(v^k,\Lambda^k)$ in each iteration, how we update $\mu_k$ and $\tau_k$ and choosing an adequate stopping criteria. Finding the the optimal control  for each iteration is done in the normal way, namely we derive the gradient and use some optimization algorithm to find $(v^k,\Lambda^k)$. Lets therefore differentiate the penalized objective function.
+Assuming that we have a solution $v$ minimizing $\hat J$, one would hope that the iterates $\{v^k\}$ from the penalty method converges to the solution of the non-penalized problem, i.e:
+\begin{align*}
+\lim_{k\rightarrow \infty} v^k =v
+\end{align*}
+From \cite{nocedal2006numerical} we get a result that deals with this:
+\begin{theorem}
+Assume $v^k$ is the exact global minimizer of $J_{\mu_k}$, then each limit point of the sequence $\{v^k\}$ is a solution of the problem (\ref{initial problem}).
+\end{theorem}
+\begin{proof}
+\cite{nocedal2006numerical}
+\end{proof}
+The above result shows us that penalty algorithm framework actually produces a solution to the original problem. There are however parts of the above framework, that still needs special attention, namely how we find $(v^k,\Lambda^k)$ in each iteration, how we update $\mu_k$ and $\tau_k$ and choosing an adequate stopping criteria. Finding the the optimal control  for each iteration is done in the normal way, by deriving the gradient and using some optimization algorithm to find $(v^k,\Lambda^k)$. Lets therefore differentiate the penalized objective function.
 \subsection{The gradient of the penalized objective function}
 To find the gradient we start by differentiating $\hat J_{\mu}(v,\Lambda)$:
 \begin{align*}

@@ -1,0 +1,281 @@
+\chapter{Verification}
+\section{Taylor test}
+A good way to test whether a proposed gradient of functional actually is the correct gradient, is to use the Taylor test. The test is as its name implies connected with Taylor expansions of a function, or more precisely the following two observations:
+\begin{align*}
+|J(v+\epsilon w)-J(v)| &= O(\epsilon) \\
+|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w| &= O(\epsilon^2)
+\end{align*}
+Here $w$ is a random direction in the same space as $v$, while $\epsilon$ is some constant. 
+\\
+\\
+The test is carried out, by evaluating $D=|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w|$ for decreasing $\epsilon$s, and if $D$ approaches 0 at 2nd order rate, we consider the test as passed.
+\subsection{Verifying the numerical gradient using the Taylor test}
+I will now use the Taylor test on the numerical gradient (\ref{num_grad}) that we get when solving the following problem:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	y'(t)=0.9y(t) +v(t), \ t \in (0,1)\\
+       	   y(0)=3.2
+     \end{array}
+   \right. 
+\end{align}
+\begin{align}
+J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2
+\end{align}
+I then discretize in time using $\Delta t=\frac{1}{100}$, and I set $v_i=1 \ \forall i$, while $w_i$ are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
+\begin{align*}
+D_1(\epsilon) &= |J(v+\epsilon w)-J(v)|\\
+D_2(\epsilon) &=|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|
+\end{align*} 
+yielded the following:
+\\
+ \begin{tabular}{lrrrll}
+\toprule
+{} $\epsilon$&  $D_1$ &  $D_2$ &        $||\epsilon w||_{l_{\infty}}$ &    $ \log(\frac{D_1(10\epsilon)}{D_1(\epsilon)})$ &    $ \log(\frac{D_2(10\epsilon)}{D_2(\epsilon)})$ \\
+\midrule
+1.000000e+00 &  5956.494584 &        5.244487e+03 &  99.987417 &       -- &       -- \\
+1.000000e-01 &   123.645671 &        5.244487e+01 &   9.998742 &  1.68281 &        2 \\
+1.000000e-02 &     7.644529 &        5.244487e-01 &   0.999874 &  1.20883 &        2 \\
+1.000000e-03 &     0.717253 &        5.244487e-03 &   0.099987 &  1.02768 &        2 \\
+1.000000e-04 &     0.071253 &        5.244487e-05 &   0.009999 &  1.00287 &        2 \\
+1.000000e-05 &     0.007121 &        5.244489e-07 &   0.001000 &  1.00029 &        2 \\
+1.000000e-06 &     0.000712 &        5.244760e-09 &   0.000100 &  1.00003 &  1.99998 \\
+1.000000e-07 &     0.000071 &        5.255194e-11 &   0.000010 &        1 &  1.99914 \\
+\bottomrule
+\end{tabular}
+\subsection{Verifying the penalized numerical gradient using the Taylor test}
+I will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the following problem:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	y'(t)=0.9y(t) +v(t), \ t \in (0,1)\\
+       	   y(0)=3.2
+     \end{array}
+   \right. 
+\end{align}
+\begin{align}
+J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2
+\end{align}
+I then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and I set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
+\begin{align*}
+D_1(\epsilon) &= |J(v+\epsilon w)-J(v)|\\
+D_2(\epsilon) &=|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|
+\end{align*} 
+yielded the following:
+\\
+\begin{tabular}{lrrrll}
+\toprule
+{}$\epsilon$&  $D_1$ &  $D_2$ &        $||\epsilon w||_{l_{\infty}}$ &    $ \log(\frac{D_1(10\epsilon)}{D_1(\epsilon)})$ &    $ \log(\frac{D_2(10\epsilon)}{D_2(\epsilon)})$  \\
+\midrule
+1.000000e+00 &  1.080513e+04 &        1.076907e+04 &  9.771288e+01 &       -- &       -- \\
+1.000000e-01 &  1.112972e+02 &        1.076907e+02 &  9.771288e+00 &  1.98715 &        2 \\
+1.000000e-02 &  1.437558e+00 &        1.076907e+00 &  9.771288e-01 &  1.88886 &        2 \\
+1.000000e-03 &  4.683423e-02 &        1.076907e-02 &  9.771288e-02 &  1.48706 &        2 \\
+1.000000e-04 &  3.714207e-03 &        1.076907e-04 &  9.771288e-03 &   1.1007 &        2 \\
+1.000000e-05 &  3.617285e-04 &        1.076907e-06 &  9.771288e-04 &  1.01148 &        2 \\
+1.000000e-06 &  3.607593e-05 &        1.076908e-08 &  9.771288e-05 &  1.00117 &        2 \\
+1.000000e-07 &  3.606624e-06 &        1.076979e-10 &  9.771288e-06 &  1.00012 &  1.99997 \\
+1.000000e-08 &  3.606527e-07 &        1.086074e-12 &  9.771288e-07 &  1.00001 &  1.99635 \\
+\bottomrule
+\end{tabular}
+\section{Verifying function and gradient evaluation speedup}
+In the previous sections I have derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if my implementation is able to achieve the theoretical speedup for our example problem. The spesific problem I will do the test on, will be:
+\begin{align*}
+J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 
+\end{align*}
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	y'(t)+y(t) = v(t) \ t\in(0,1)\\
+       	y(0)=1
+     \end{array}
+   \right. 
+\end{align*}
+Available to me, is a computer with 6 cores, so I will do gradient and function evaluation for $N=1,2,...,6$ decompositions, for different time step sizes $\Delta t$. For each combination of $N$ and $\Delta t$, I will run the function and gradient evaluations ten times, and then choose the the smallest execution time produced by the ten runs. The speedup is then calculated by dividing the sequential execution time by the parallel execution time. Below follows tables showing runtime and speedup for both gradient and function evaluation for different $\Delta t$s and $N$s. All evaluations are done with control input $v=1$ and $\lambda_i=1$.  
+\\
+\begin{center}
+$\Delta t=10^{-2}$\\
+\begin{tabular}{lrr}
+\toprule
+{} $N$&   function speedup &      function time \\
+\midrule
+1:  &  1.000000 &  0.000196 \\
+2: &  0.946860 &  0.000207 \\
+3: &  0.780876 &  0.000251 \\
+4: &  0.642623 &  0.000305 \\
+5: &  0.544444 &  0.000360 \\
+6: &  0.427948 &  0.000458 \\
+\bottomrule
+\end{tabular}
+\begin{tabular}{lrr}
+\toprule
+{} &  gradient speedup &     gradient time \\
+\midrule
+1:  &  1.000000 &  0.000217 \\
+2: &  0.875000 &  0.000248 \\
+3: &  0.753472 &  0.000288 \\
+4: &  0.632653 &  0.000343 \\
+5: &  0.547980 &  0.000396 \\
+6: &  0.480088 &  0.000452 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{center}
+$\Delta t=10^{-3}$\\
+\begin{tabular}{lrr}
+\toprule
+{}$N$ &  function speedup &     function time \\
+\midrule
+1:  &  1.000000 &  0.000974 \\
+2: &  1.699825 &  0.000573 \\
+3: &  1.887597 &  0.000516 \\
+4: &  1.940239 &  0.000502 \\
+5: &  1.800370 &  0.000541 \\
+6: &  1.702797 &  0.000572 \\
+\bottomrule
+\end{tabular}
+\begin{tabular}{lrr}
+\toprule
+{} &  gradient speedup &    gradient time \\
+\midrule
+1:  &  1.000000 &  0.001541 \\
+2: &  1.671367 &  0.000922 \\
+3: &  2.096599 &  0.000735 \\
+4: &  2.293155 &  0.000672 \\
+5: &  2.331316 &  0.000661 \\
+6: &  2.334848 &  0.000660 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{center}
+$\Delta t=10^{-4}$\\
+\begin{tabular}{lrr}
+\toprule
+{} $N$&  function speedup &    function  time \\
+\midrule
+1:  &  1.000000 &  0.008877 \\
+2: &  1.983687 &  0.004475 \\
+3: &  2.838823 &  0.003127 \\
+4: &  3.582324 &  0.002478 \\
+5: &  4.267788 &  0.002080 \\
+6: &  4.519857 &  0.001964 \\
+\bottomrule
+\end{tabular}
+\begin{tabular}{lrr}
+\toprule
+{} &  gradient speedup &     gradient time \\
+\midrule
+1:  &  1.000000 &  0.015016 \\
+2: &  1.946843 &  0.007713 \\
+3: &  2.816204 &  0.005332 \\
+4: &  3.677688 &  0.004083 \\
+5: &  4.457109 &  0.003369 \\
+6: &  4.978780 &  0.003016 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{center}
+$\Delta t=10^{-5}$\\
+\begin{tabular}{lrr}
+\toprule
+{}$N$ &  function speedup &    function  time \\
+\midrule
+1:  &  1.000000 &  0.087484 \\
+2: &  2.006606 &  0.043598 \\
+3: &  2.888595 &  0.030286 \\
+4: &  3.913222 &  0.022356 \\
+5: &  4.848102 &  0.018045 \\
+6: &  5.425028 &  0.016126 \\
+\bottomrule
+\end{tabular}
+\begin{tabular}{lrr}
+\toprule
+{} &  gradient speedup &     gradient time \\
+\midrule
+1:  &  1.000000 &  0.154841 \\
+2: &  2.046537 &  0.075660 \\
+3: &  2.971198 &  0.052114 \\
+4: &  4.003025 &  0.038681 \\
+5: &  4.921368 &  0.031463 \\
+6: &  5.755101 &  0.026905 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{center}
+$\Delta t=10^{-6}$\\
+\begin{tabular}{lrr}
+\toprule
+{} $N$&  function speedup &    function time \\
+\midrule
+1:  &  1.000000 &  0.867973 \\
+2: &  1.977376 &  0.438952 \\
+3: &  2.917517 &  0.297504 \\
+4: &  3.801797 &  0.228306 \\
+5: &  4.674438 &  0.185685 \\
+6: &  5.331202 &  0.162810 \\
+\bottomrule
+\end{tabular}
+\begin{tabular}{lrr}
+\toprule
+{} &  gradient speedup &    gradient time \\
+\midrule
+1:  &  1.000000 &  1.504033 \\
+2: &  1.943738 &  0.773784 \\
+3: &  2.937054 &  0.512089 \\
+4: &  3.928148 &  0.382886 \\
+5: &  4.766144 &  0.315566 \\
+6: &  5.651349 &  0.266137 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{center}
+$\Delta t=10^{-7}$\\
+\begin{tabular}{lrr}
+\toprule
+{}$N$ &  function speedup &      time \\
+\midrule
+1:  &  1.000000 &  8.350907 \\
+2: &  1.987960 &  4.200743 \\
+3: &  2.847662 &  2.932549 \\
+4: &  3.812545 &  2.190376 \\
+5: &  4.647839 &  1.796729 \\
+6: &  5.479447 &  1.524042 \\
+\bottomrule
+\end{tabular}
+\begin{tabular}{lrr}
+\toprule
+{} &  gradient speedup &     gradient  time \\
+\midrule
+1:  &  1.000000 &  14.930247 \\
+2: &  2.064043 &   7.233497 \\
+3: &  2.966254 &   5.033368 \\
+4: &  3.866428 &   3.861509 \\
+5: &  4.833081 &   3.089178 \\
+6: &  5.744552 &   2.599027 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{center}
+$\Delta t=10^{-8}$\\
+\begin{tabular}{lrr}
+\toprule
+{} $N$&  function speedup &      function time \\
+\midrule
+1:  &  1.000000 &  87.568009 \\
+2: &  2.129080 &  41.129505 \\
+3: &  2.988265 &  29.303966 \\
+4: &  4.125267 &  21.227233 \\
+5: &  4.824215 &  18.151763 \\
+6: &  5.735492 &  15.267741 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\section{Consistency}
+When we introduced the penalty method in section \ref{penalty_sec}, we also presented a result showing that the iterates $\{v^k\}$ stemming from the penalty algorithmic framework converged towards the solution of the non-penalized problem $v$. We can write this up as:
+\begin{align*}
+\lim_{k\rightarrow\infty} v^k = v 
+\end{align*}  
+An alternative way of looking at this, is to let $v^{\mu}$ be the minimizer of $\hat J_{\mu}$, and instead the above limit as:
+\begin{align*}
+\lim_{\mu\rightarrow\infty} v^{\mu} = v 
+\end{align*}

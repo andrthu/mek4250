@@ -112,50 +112,7 @@ Using the same approach, we can find an expression for $\frac{\partial g(v)}{\pa
 \end{align*}
 since $v_0$ is not part of the scheme, $\frac{\partial g(v)}{\partial v_0}=0$. If we now write up the gradient of $g(v)$ on matrix form, you get $\nabla g(v) = Bp$. The expression for the gradient in the case where we use the explicit Euler scheme can be found in a similar fashion. 
 \end{proof}
-\subsection{Taylor test}
-A good way to test whether a proposed gradient of functional actually is the correct gradient, is to use the Taylor test. The test is as its name implies connected with Taylor expansions of a function, or more precisely the following two observations:
-\begin{align*}
-|J(v+\epsilon w)-J(v)| &= O(\epsilon) \\
-|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w| &= O(\epsilon^2)
-\end{align*}
-Here $w$ is a random direction in the same space as $v$, while $\epsilon$ is some constant. 
-\\
-\\
-The test is carried out, by evaluating $D=|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w|$ for decreasing $\epsilon$s, and if $D$ approaches 0 at 2nd order rate, we consider the test as passed.
-\subsection{Verifying the numerical gradient using the Taylor test}
-I will now use the Taylor test on the numerical gradient (\ref{num_grad}) that we get when solving the following problem:
-\begin{align}
-\left\{
-     \begin{array}{lr}
-       	y'(t)=0.9y(t) +v(t), \ t \in (0,1)\\
-       	   y(0)=3.2
-     \end{array}
-   \right. 
-\end{align}
-\begin{align}
-J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2
-\end{align}
-I then discretize in time using $\Delta t=\frac{1}{100}$, and I set $v_i=1 \ \forall i$, while $w_i$ are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
-\begin{align*}
-D_1(\epsilon) &= |J(v+\epsilon w)-J(v)|\\
-D_2(\epsilon) &=|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|
-\end{align*} 
-yielded the following:
-\\
- \begin{tabular}{lrrrll}
-\toprule
-{} $\epsilon$&  $D_1$ &  $D_2$ &        $||\epsilon w||_{l_{\infty}}$ &    $ \log(\frac{D_1(10\epsilon)}{D_1(\epsilon)})$ &    $ \log(\frac{D_2(10\epsilon)}{D_2(\epsilon)})$ \\
-\midrule
-1.000000e+00 &  5956.494584 &        5.244487e+03 &  99.987417 &       -- &       -- \\
-1.000000e-01 &   123.645671 &        5.244487e+01 &   9.998742 &  1.68281 &        2 \\
-1.000000e-02 &     7.644529 &        5.244487e-01 &   0.999874 &  1.20883 &        2 \\
-1.000000e-03 &     0.717253 &        5.244487e-03 &   0.099987 &  1.02768 &        2 \\
-1.000000e-04 &     0.071253 &        5.244487e-05 &   0.009999 &  1.00287 &        2 \\
-1.000000e-05 &     0.007121 &        5.244489e-07 &   0.001000 &  1.00029 &        2 \\
-1.000000e-06 &     0.000712 &        5.244760e-09 &   0.000100 &  1.00003 &  1.99998 \\
-1.000000e-07 &     0.000071 &        5.255194e-11 &   0.000010 &        1 &  1.99914 \\
-\bottomrule
-\end{tabular}
+
 \section{Discretizing the decomposed time-domain}
 Decomposing the time interval $I=[0,T]$ into $N$ equally sized subintervals $I_i=[T_i,T_{i+1}]$, and solving the state and adjoint equations separately on each subinterval, is what allows our algorithm to be run in parallel. Decomposing $I$ is simple in the continuous case, however we are solving these equations numerically, and in the discrete case, partitioning $I$ is more involved. To explain how we decompose $I$ in the discrete case, lets look at how to do it for a general differential equation $F$:
 \begin{align*}
@@ -307,41 +264,6 @@ As for the non-penalized gradient, the derivative of the $f$ term is quite easil
 \end{align*}
 The numerical gradient restricted to $ \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, will then be $B^ip_{\Delta t}^i$, which exactly what we claimed.
 \end{proof}
-\subsection{Verifying the penalized numerical gradient using the Taylor test}
-I will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the following problem:
-\begin{align}
-\left\{
-     \begin{array}{lr}
-       	y'(t)=0.9y(t) +v(t), \ t \in (0,1)\\
-       	   y(0)=3.2
-     \end{array}
-   \right. 
-\end{align}
-\begin{align}
-J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2
-\end{align}
-I then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and I set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
-\begin{align*}
-D_1(\epsilon) &= |J(v+\epsilon w)-J(v)|\\
-D_2(\epsilon) &=|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|
-\end{align*} 
-yielded the following:
-\\
-\begin{tabular}{lrrrll}
-\toprule
-{}$\epsilon$&  $D_1$ &  $D_2$ &        $||\epsilon w||_{l_{\infty}}$ &    $ \log(\frac{D_1(10\epsilon)}{D_1(\epsilon)})$ &    $ \log(\frac{D_2(10\epsilon)}{D_2(\epsilon)})$  \\
-\midrule
-1.000000e+00 &  1.080513e+04 &        1.076907e+04 &  9.771288e+01 &       -- &       -- \\
-1.000000e-01 &  1.112972e+02 &        1.076907e+02 &  9.771288e+00 &  1.98715 &        2 \\
-1.000000e-02 &  1.437558e+00 &        1.076907e+00 &  9.771288e-01 &  1.88886 &        2 \\
-1.000000e-03 &  4.683423e-02 &        1.076907e-02 &  9.771288e-02 &  1.48706 &        2 \\
-1.000000e-04 &  3.714207e-03 &        1.076907e-04 &  9.771288e-03 &   1.1007 &        2 \\
-1.000000e-05 &  3.617285e-04 &        1.076907e-06 &  9.771288e-04 &  1.01148 &        2 \\
-1.000000e-06 &  3.607593e-05 &        1.076908e-08 &  9.771288e-05 &  1.00117 &        2 \\
-1.000000e-07 &  3.606624e-06 &        1.076979e-10 &  9.771288e-06 &  1.00012 &  1.99997 \\
-1.000000e-08 &  3.606527e-07 &        1.086074e-12 &  9.771288e-07 &  1.00001 &  1.99635 \\
-\bottomrule
-\end{tabular}
 \section{Communication without shared memory}
 If we assume that we are solving our optimal control problem in parallel on processes that do not share any memory, there will have to be communication between the processes. The parts of the algorithm that we are parallelizing using the penalty method, is the evaluation of the objective function and its gradient for a given control variable $v$. The function evaluation requires us to solve the state equation, while we to calculate the gradient need both the solution of the state and adjoint equation. the required communication between the processes are different for function and gradient evaluation, so I will describe them separately. However they both share the same starting point, which I explain below.
 \\
@@ -440,4 +362,3 @@ S &= \frac{T_s}{T_p} = \frac{O(n)}{O(\frac{n}{N}) + O(\log N) + O(L)} \\
 &=\frac{1}{\frac{1}{N} + \frac{\log N}{n}+\frac{L}{n}} = \frac{1}{\frac{1}{N} +\frac{L}{n}}
 \end{align*}
 If $L$ is independent of $n$, the speedup for gradient evaluation is $O(N)$, like it is for function evaluation, however if $L$ is dependent on $n$, this is not the case, and we would instead get speedup $S=O(\frac{n}{L(n)})$. In a case where the control for example is the source term in the state equation, we would actually get $S=O(1)$, which is really bad, and we would not expect any improvement when using parallel, at least for large $n$ values. There is however a way to get around this problem, which is store both the gradient and the control locally, which means that you never have to do a gather call. If this is done, and if a solution spread between all processes is accepted, the speedup for gradient evaluation will be $O(N)$.
-\section{Consistency test}

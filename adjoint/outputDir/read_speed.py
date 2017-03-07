@@ -91,6 +91,6 @@ def main():
         lines = read_file(name)
         data = create_table(lines,with_iter=with_iter,with_iter2=with_iter2,with_norm=with_norm)
         print data
-        #data.to_latex('latexTables/'+name[:-3]+'tex')
+        data.to_latex('latexTables/'+name[:-3]+'tex')
 if __name__ == '__main__':
     main()
