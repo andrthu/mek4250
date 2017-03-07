@@ -638,9 +638,10 @@ def jump_difference():
     print
     #print all_state_diff2
     print float(T)/N
+    print val1
     data = pd.DataFrame(table,index = mu_list)
 
-    #data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'.tex')
+    data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'_2.tex')
     print data
     plt.show()
     plt.plot(t,res['control'].array(),'r--')

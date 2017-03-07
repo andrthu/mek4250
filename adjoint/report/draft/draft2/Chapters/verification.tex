@@ -276,6 +276,52 @@ When we introduced the penalty method in section \ref{penalty_sec}, we also pres
 \lim_{k\rightarrow\infty} v^k = v 
 \end{align*}  
 An alternative way of looking at this, is to let $v^{\mu}$ be the minimizer of $\hat J_{\mu}$, and instead the above limit as:
-\begin{align*}
-\lim_{\mu\rightarrow\infty} v^{\mu} = v 
-\end{align*}
+\begin{align}
+\lim_{\mu\rightarrow\infty} v^{\mu} = v \label{mu con}
+\end{align}
+The interpretation of the above limit, is that solving the penalized problem with an ever increasing penalty parameter $\mu$ should result in a solution that is getting closer and closer to the solution of the non-penalized problem. This would mean that the penalty algorithm is consistent, since it produces the same solution as the ordinary problem. It might therefore be worth checking our implementation of the penalized problem actually has the property (\ref{mu con}). The particular problem, that I will do the consistency test with, is: 
+\begin{align}
+&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1.5)^2 \label{con J} \\
+&\left\{
+     \begin{array}{lr}
+       	y'(t)+0.9y(t) = v(t) \ t\in(0,1)\\
+       	y(0)=3.2
+     \end{array}
+   \right. \label{con E}
+\end{align}
+Then set the timestep to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of decomposed subintervals. Solving problem (\ref{con J}-\ref{con E}) for increasing $\mu$ values then yielded the following results:
+\\
+\begin{tabular}{lrrrr}
+\toprule 
+{} $\mu$&  $\frac{J(v_{\mu})-J(v)}{J(v)}$ &  $\frac{J_{\mu}(v_{\mu})-J_{\mu}(v)}{J_{\mu}(v)}$ &         jumps &    $||v_{\mu}-v||$ \\
+\midrule
+1.000000e+02 &      1.156696e-04 &            -6.364173e-03 &  2.592979e-02 &  6.364176e-03 \\
+2.000000e+02 &      2.910231e-05 &            -3.192244e-03 &  1.300628e-02 &  3.192246e-03 \\
+5.000000e+02 &      4.674259e-06 &            -1.279348e-03 &  5.212496e-03 &  1.279349e-03 \\
+1.000000e+03 &      1.170061e-06 &            -6.400835e-04 &  2.607916e-03 &  6.400839e-04 \\
+5.000000e+03 &      4.685038e-08 &            -1.280823e-04 &  5.218505e-04 &  1.280826e-04 \\
+7.000000e+03 &      2.390506e-08 &            -9.149070e-05 &  3.727640e-04 &  9.152407e-05 \\
+2.000000e+04 &      2.928726e-09 &            -3.202365e-05 &  1.304752e-04 &  3.205430e-05 \\
+2.000000e+05 &      2.929008e-11 &            -3.202457e-06 &  1.304789e-05 &  3.207249e-06 \\
+3.000000e+05 &      1.302587e-11 &            -2.134974e-06 &  8.698604e-06 &  2.179186e-06 \\
+4.000000e+05 &      7.331416e-12 &            -1.601231e-06 &  6.523956e-06 &  1.900841e-06 \\
+5.000000e+05 &      4.686680e-12 &            -1.280985e-06 &  5.219167e-06 &  1.280626e-06 \\
+6.000000e+05 &      3.256551e-12 &            -1.067488e-06 &  4.349307e-06 &  1.066490e-06 \\
+1.000000e+06 &      1.171837e-12 &            -6.404931e-07 &  2.609585e-06 &  6.415835e-07 \\
+1.000000e+07 &      1.436812e-14 &            -6.404934e-08 &  2.609587e-07 &  2.877539e-07 \\
+2.000000e+07 &      7.016988e-15 &            -3.202467e-08 &  1.304793e-07 &  2.418182e-07 \\
+1.000000e+08 &      2.338996e-15 &            -6.404934e-09 &  2.609587e-08 &  2.344486e-07 \\
+1.000000e+11 &      5.012134e-15 &            -6.400495e-12 &  2.605338e-11 &  2.344486e-07 \\
+1.000000e+12 &      4.009707e-15 &            -6.365411e-13 &  2.607248e-12 &  2.344486e-07 \\
+1.000000e+13 &      1.002427e-15 &            -6.348703e-14 &  2.646772e-13 &  1.906306e-07 \\
+1.000000e+14 &      1.837783e-15 &            -5.346277e-15 &  2.708944e-14 &  1.906306e-07 \\
+1.000000e+16 &      2.004854e-15 &             9.355984e-15 &  3.108624e-15 &  1.906306e-07 \\
+\bottomrule
+\end{tabular}
+
+
+
+
+
+
+
