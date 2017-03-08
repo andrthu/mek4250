@@ -75,7 +75,7 @@ Let us first remember what the example optimal control problem with ODE constrai
 &J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \\
 &\left\{
      \begin{array}{lr}
-       	y'(t)+\alpha y(t) = v(t) \ t\in(0,T)\\
+       	y'(t)+a y(t) = v(t) \ t\in(0,T)\\
        	y(0)=y_0
      \end{array}
    \right.
@@ -84,7 +84,7 @@ We can now decompose the interval $[0,T]$ into $N$ subintervals $\{[T_{i-1},T_{i
 \begin{align}
 \left\{
      \begin{array}{lr}
-       	\frac{\partial}{\partial t} y^i(t)+\alpha y^i(t) = v(t) \ t\in(T_{i-1},T_{i})\\
+       	\frac{\partial}{\partial t} y^i(t)+a y^i(t) = v(t) \ t\in(T_{i-1},T_{i})\\
        	y^i(T_{i-1})=\lambda_{i-1}
      \end{array}
    \right. \label{decomp_E}
@@ -98,8 +98,8 @@ The adjoint equation of problem (\ref{exs_J}-\ref{exs_E}) on interval $[T_{N-1},
 \begin{align}
 \left\{
      \begin{array}{lr}
-	-\frac{\partial }{\partial t}p_N =\alpha p_N  \\
-	p_N(T_{N}) = y_N(T_{N})-y_T
+	-\frac{\partial }{\partial t}p_N =a p_N  \\
+	p_N(T_{N}) = \alpha( y_N(T_{N})-y_T)
 	\end{array}
    \right. \label{end adjoint}
 \end{align}
@@ -107,7 +107,7 @@ On $[T_{i-1},T_i]$ the adjoint equation is:
 \begin{align}
 \left\{
      \begin{array}{lr}
-	-\frac{\partial }{\partial t}p_i =p_i  \\
+	-\frac{\partial }{\partial t}p_i =ap_i  \\
 	p_i(T_{i}) = \mu(y_{i}(T_{i})-\lambda_{i} )
 	\end{array}
    \right. \label{exs_adjoint}
@@ -117,26 +117,26 @@ On $[T_{i-1},T_i]$ the adjoint equation is:
 Lets begin as we did for the non-penalty approach, by writing up the weak formulation of the state equations:
 \begin{gather*}
 \textit{Find $y_i \in L^2(T_{i-1},T_i)$ such that }\\
-L^i[y_i,\phi] = \int_{T_{i-1}}^{T_{i}}-y_i(t)(\phi'(t) +\alpha \phi(t))+v(t)\phi(t)dt -\lambda_{i-1}\phi(T_{i-1})+ y_i(T_i)\phi(T_i) =0\\ \forall \ \phi \in C^{\infty}((T_{i-1},T_{i}))
+L^i[y_i,\phi] = \int_{T_{i-1}}^{T_{i}}-y_i(t)(\phi'(t) +a \phi(t))+v(t)\phi(t)dt -\lambda_{i-1}\phi(T_{i-1})+ y_i(T_i)\phi(T_i) =0\\ \forall \ \phi \in C^{\infty}((T_{i-1},T_{i}))
 \end{gather*} 
 To find the adjoint equations we want to differentiate the $E^i$s and the functional $\hat J_{\mu}$ with respect to $y$. To make notation easier, let $(\cdot,\cdot)_i$ be $L^2$ inner product of the interval $[T_{i-1},T_i]$. 
 \begin{align*}
-E_y^i=L_y^i[\cdot,\phi]=(\cdot,-(\frac{\partial}{\partial t} + \alpha - \delta_{T_i})\phi)_i 
+E_y^i=L_y^i[\cdot,\phi]=(\cdot,-(\frac{\partial}{\partial t} + a - \delta_{T_i})\phi)_i 
 \end{align*}
 Lets differentiate $\hat J_{\mu}$:
 \begin{align*}
-\frac{\partial}{\partial y} \hat J_{\mu}= \delta_{T_{N}}(y_n(T_{N})-y_T) + \mu \sum_{i=1}^{N-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
+\frac{\partial}{\partial y} \hat J_{\mu}= \alpha\delta_{T_{N}}(y_n(T_{N})-y_T) + \mu \sum_{i=1}^{N-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
 \end{align*}
 Since $y$ really is a collection of functions, we can differentiate $\hat J_{\mu}$ with respect to $y_i$. This gives us:
 \begin{align*}
-\frac{\partial}{\partial y_N}\hat J_{\mu}&= \delta_{T_{N}}(y_n(T_{N})-y_T) \\
+\frac{\partial}{\partial y_N}\hat J_{\mu}&= \alpha\delta_{T_{N}}(y_n(T_{N})-y_T) \\
 \frac{\partial}{\partial y_i}\hat J_{\mu} &= \mu\delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) \ i\neq N
 \end{align*}
 We will now find the adjoint equations, by finding the adjoint of the $E_y^i$s. This is done as above, by inserting two functions $v$, $w$ into $L_y^i[v,w]$, and then moving the derivative form $w$ to $v$.
 \begin{align*}
-E_y^i&=L_y^i[v,w]=\int_{T_{i-1}}^{T_i}-v(t)(w'(t)+\alpha w(t))dt + v(T_i)w(T_i) \\
-&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-\alpha v(t))dt + v(T_i)w(T_i)-v(T_i)w(T_i) +v(T_{i-1})w(T_{i-1}) \\
-&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-\alpha v(t))dt + v(T_{i-1})w(T_{i-1}) \\
+E_y^i&=L_y^i[v,w]=\int_{T_{i-1}}^{T_i}-v(t)(w'(t)+a w(t))dt + v(T_i)w(T_i) \\
+&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-av(t))dt + v(T_i)w(T_i)-v(T_i)w(T_i) +v(T_{i-1})w(T_{i-1}) \\
+&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-a v(t))dt + v(T_{i-1})w(T_{i-1}) \\
 &=(L_y^i)^*[w,v]
 \end{align*}
 this means that $(E_y^i)^*=(L_y^i)^*[\cdot,\psi]$. The weak form of the adjoint equations is then found, by setting setting $(L_y^i)^*[p,\psi]=(J_{y_i},\psi)_i$. This gives to cases:
@@ -145,13 +145,13 @@ this means that $(E_y^i)^*=(L_y^i)^*[\cdot,\psi]$. The weak form of the adjoint 
 $i=N$ case:
 \begin{align*}
 &\textit{Find $p_N \in L^2(T_{N-1},T_N)$ such that }\forall \ \psi \in C^{\infty}((T_{N-1},T_N)) \\
-&\int_{T_N-1}^{T_N}p_N(t)\psi'(t)-\alpha p_N(t)\psi(t)dt +p_N(T_{N-1})\psi(T_{N-1})
-= (y(T_N)-y^T)\psi(T_N)\ 
+&\int_{T_N-1}^{T_N}p_N(t)\psi'(t)-a p_N(t)\psi(t)dt +p_N(T_{N-1})\psi(T_{N-1})
+= \alpha(y(T_N)-y^T)\psi(T_N)\ 
 \end{align*}
 $i\neq N$ cases:
 \begin{align*}
 &\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
-&\int_{T_i-1}^{T_i}p_i(t)\psi'(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i-1})\psi(T_{i-1})
+&\int_{T_i-1}^{T_i}p_i(t)\psi'(t)-a p_i(t)\psi(t)dt +p_i(T_{i-1})\psi(T_{i-1})
 = \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
 \end{align*}
 If we want to go back to the strong formulation, we do partial integration, and get:
@@ -160,13 +160,13 @@ If we want to go back to the strong formulation, we do partial integration, and 
  $i=N$ case:
 \begin{align*}
 &\textit{Find $p_N \in L^2(T_{N-1},T_N)$ such that }\forall \ \psi \in C^{\infty}((T_{N-1},T_N)) \\
-&\int_{T_N-1}^{T_N}-p_N'(t)\psi(t)-\alpha p_N(t)\psi(t)dt +p_N(T_{N})\psi(T_{N})
-= (y(T_N)-y^T)\psi(T_N)\ 
+&\int_{T_N-1}^{T_N}-p_N'(t)\psi(t)-a p_N(t)\psi(t)dt +p_N(T_{N})\psi(T_{N})
+= \alpha(y(T_N)-y^T)\psi(T_N)\ 
 \end{align*}
 $i\neq N$ cases:
 \begin{align*}
 &\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
-&\int_{T_i-1}^{T_i}-p_i'(t)\psi(t)-\alpha p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
+&\int_{T_i-1}^{T_i}-p_i'(t)\psi(t)-a p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
 = \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
 \end{align*}
 This gives us the ODEs we wanted.

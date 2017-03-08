@@ -156,7 +156,7 @@ def test3():
 
     
     problem = non_lin_problem(y0,yT,T,a,p)
-    N = 800
+    N = 1000
     m = 3
     res1 = problem.solve(N)
     
@@ -170,18 +170,19 @@ def compare_pc_and_nonpc_for_different_m():
     yT = 1.5
     T  = 1
     a  = 0.9
-    p = 4
+    p = 2
 
 
     
     problem = non_lin_problem(y0,yT,T,a,p)
-    N = 800
-    M = [1,2,4,8,16,32,64]
+    N = 1000
+    M = [1,2,3,4,5,6,8,16,32,64]
     
-    res1 = problem.solve(N)
-
+    res1 = problem.solve(N,Lbfgs_options={'jtol':1e-6})
+    t = np.linspace(0,T,N+1)
+    res1_norm = l2_norm(res1.x,t)
     mu = 5
-
+    """
     table = {'pc itr'          : ['--'],
              'non-pc itr'      : ['--'],
              'pc err'          : ['--'],
@@ -194,51 +195,77 @@ def compare_pc_and_nonpc_for_different_m():
               'scaled non-pc itr' : ['--'],
               'non-penalty itr'   : [res1['iteration']],
               'scaled pc lsitr'   : ['--'],
-              'pc lsitr'          : [res1.lsiter],}
+              'pc fugr'          : [res1.lsiter],}
+    """
+    table = {'pc fu'          : ['--'],
+             'non-pc fu'      : ['--'],
+             'pc err'          : ['--'],
+             'non-pc err'      : ['--'],
+             'non-penalty itr' : [res1['iteration']],}
 
-    t = np.linspace(0,T,N+1)
+    table2 = {#'pc fu'          : [res1.counter()[0]],
+              #'non-pc fu'      : [res1.counter()[0]],
+              'pc fugr'        : [res1.counter()[1]+res1.counter()[0]],
+              'npc fugr'       : [res1.counter()[1]+res1.counter()[0]],
+              'pc err'         : ['--'],
+              'non-pc err'     : ['--'],
+              'ideal pc-S'     : [1],
+              'ideal non-pc-S' : [1],}
+
+   
 
     res2 = []
     res3 = []
-    opt = {'maxiter':500,'scale_factor':1,'mem_lim':10,'scale_hessian':True}
+    opt = {'mem_lim':10,'jtol':1e-6}
+    fu_gr_sum = res1.counter()[0]+res1.counter()[1]
     for m in M[1:]:
 
-        scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
-        scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
-        pc_res = problem.PPCLBFGSsolve(N,m,[m*mu])
-        nonpc_res = problem.penalty_solve(N,m,[m*mu])#,Lbfgs_options={'maxiter':200})
-
-
+        #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
+        #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
+        pc_res = problem.PPCLBFGSsolve(N,m,[10*N],options=opt)
+        nonpc_res = problem.penalty_solve(N,m,[10*N],Lbfgs_options=opt)
+        
+        pc_fugr = pc_res.counter()
+        npc_fugr = nonpc_res.counter()
+        
         res2.append(pc_res)
         res3.append(nonpc_res)
-    
-        err1 = l2_diff_norm(res1['control'].array(),pc_res.x[:N+1],t)
-        err2 = l2_diff_norm(res1['control'].array(),nonpc_res['control'].array()[:N+1],t)
+        
+        S1 = float(fu_gr_sum)/((pc_fugr[0]+pc_fugr[1])/float(m))
+        S2 = float(fu_gr_sum)/((npc_fugr[0]+npc_fugr[1])/float(m))
+        err1 = l2_diff_norm(res1['control'].array(),pc_res.x[:N+1],t)/res1_norm
+        err2 = l2_diff_norm(res1['control'].array(),nonpc_res['control'].array()[:N+1],t)/res1_norm
 
-        table['pc itr'].append(pc_res.niter)
-        table['non-pc itr'].append(nonpc_res['iteration'])
+        table['pc fu'].append(pc_res.niter)
+        table['non-pc fu'].append(nonpc_res['iteration'])
         table['pc err'].append(err1)
         table['non-pc err'].append(err2)
         table['non-penalty itr'].append('--')
         
-        table2['pc itr'].append(pc_res.niter)
-        table2['non-pc itr'].append(nonpc_res['iteration'])
-        table2['scaled pc itr'].append(scaled_pc_res.niter)
-        table2['scaled non-pc itr'].append(scaled_nonpc_res['iteration'])
-        table2['non-penalty itr'].append('--')
-        table2['scaled pc lsitr'].append(pc_res.lsiter)
-        table2['pc lsitr'].append(scaled_pc_res.lsiter)
+        #table2['pc fu'].append(pc_fugr[0])
+        #table2['non-pc fu'].append(npc_fugr[0])
+        #table2['scaled pc itr'].append(scaled_pc_res.niter)
+        #table2['scaled non-pc itr'].append(scaled_nonpc_res['iteration'])
+        #table2['non-penalty itr'].append('--')
+        #table2['scaled pc lsitr'].append(pc_res.lsiter)
+        table2['pc fugr'].append(pc_fugr[1]+pc_fugr[0])
+        table2['npc fugr'].append(npc_fugr[1]+npc_fugr[0])
+        table2['pc err'].append(err1)
+        table2['non-pc err'].append(err2)
+        table2['ideal pc-S'].append(S1)
+        table2['ideal non-pc-S'].append(S2)
     data = pd.DataFrame(table,index=M)
-    Order1 = ['non-penalty itr','non-pc itr','non-pc err','pc itr','pc err']
+    Order1 = ['non-penalty itr','non-pc fu','non-pc err','pc fu','pc err']
     data11 = data.reindex_axis(Order1, axis=1)
     print data11
     #data11.to_latex('report/draft/parareal/pc_itr_err.tex')
     
     data2 = pd.DataFrame(table2,index=M)
-    Order = ['non-penalty itr','non-pc itr','scaled non-pc itr','pc itr','scaled pc itr','pc lsitr','scaled pc lsitr']
+    #Order = ['non-penalty itr','non-pc fu','scaled non-pc fu','pc fu','scaled pc itr','pc fugr','scaled pc lsitr']
+    Order = ['pc fugr','npc fugr','pc err','non-pc err','ideal pc-S','ideal non-pc-S']
     data3 = data2.reindex_axis(Order, axis=1)
     print data3
-    #data3.to_latex('report/draft/parareal/scaled_nonScaled_iterations.tex')
+    data3.to_latex('report/draft/parareal/scaled_nonScaled_iterations_'+str(N)+'.tex')
 
 
     plt.figure()
@@ -663,8 +690,8 @@ def jump_difference():
 
 
 def l2_norm(u,t=None):
-    return max(abs(u))
-    #return np.sqrt(trapz(u**2,t))
+    #return max(abs(u))
+    return np.sqrt(trapz(u**2,t))
     
 def look_at_gradient():
 
@@ -788,11 +815,11 @@ if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    #compare_pc_and_nonpc_for_different_m()
+    compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    jump_difference()
+    #jump_difference()
     #look_at_gradient()
     #count_grad_func_eval()
     #split_test()

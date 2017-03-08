@@ -41,6 +41,8 @@ yielded the following:
 1.000000e-07 &     0.000071 &        5.255194e-11 &   0.000010 &        1 &  1.99914 \\
 \bottomrule
 \end{tabular}
+\\
+\\
 The above table clearly shows that $J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and my implementation of it are correct. Let us then check if this is also the case for the penalized problem.
 \subsection{Verifying the penalized numerical gradient using the Taylor test}
 I will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the following problem:
@@ -75,6 +77,8 @@ yielded the following:
 1.000000e-08 &  3.606527e-07 &        1.086074e-12 &  9.771288e-07 &  1.00001 &  1.99635 \\
 \bottomrule
 \end{tabular}
+\\
+\\
 Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate, meaning that the penalized numerical gradient also passes the Taylor test.
 \section{Verifying function and gradient evaluation speedup}
 In the previous sections I have derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if my implementation is able to achieve the theoretical speedup for our example problem. The spesific problem I will do the test on, will be:
@@ -314,5 +318,7 @@ Then set the timestep to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of 
 1.000000e+16 &      2.004854e-15 &             9.355984e-15 &  3.108624e-15 &  1.375728e-08 \\
 \bottomrule
 \end{tabular}
+\\
+\\
 What we need to note about the above results, is that while difference in function value and state equation jump approach machine precision, the relative norm difference $\frac{||v_{\mu}-v||}{||v||}$ does not hit machine precision. The explanation of this is that all the terms in our functional are squared, and a difference of $10^{-8}$ is therefore actually quite close to machine precision, when you square it. The jump differences are also squared, however the $\mu$ penalty counter balances this for these terms.
 

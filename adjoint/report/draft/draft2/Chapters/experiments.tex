@@ -1,2 +1,20 @@
 \chapter{Experiments}
-Try to get speed up
+In this chapter I will through experiments investigate what speedup one might get by using the algorithm for parallelizing optimal control problems with  time dependent DE constraints in temporal direction, introduced in previous chapters. Unlike the parallel performance of gradient and objective function evaluation, the parallel performance of our overall algorithm is difficult to model since it depends on the number of gradient and function evaluations that are necessary in the sequential and parallel algorithms.  
+\section{L-BFGS with and without parareal preconditioner}
+\begin{tabular}{lrrllrr}
+\toprule
+{} &  pc fugr &  npc fugr &       pc err &   non-pc err &  ideal pc-S &  ideal non-pc-S \\
+\midrule
+1  &     31.0 &      31.0 &           -- &           -- &    1.000000 &        1.000000 \\
+2  &     37.0 &      37.0 &   0.00027766 &   0.00027766 &    1.675676 &        1.675676 \\
+3  &     55.0 &      55.0 &  0.000358143 &  0.000324047 &    1.690909 &        1.690909 \\
+4  &     61.0 &      65.0 &  0.000359398 &  0.000207032 &    2.032787 &        1.907692 \\
+5  &     65.0 &      71.0 &  0.000279559 &  0.000279684 &    2.384615 &        2.183099 \\
+6  &     63.0 &      77.0 &  0.000501682 &  0.000352778 &    2.952381 &        2.415584 \\
+8  &    137.0 &     133.0 &  0.000498978 &  0.000499069 &    1.810219 &        1.864662 \\
+16 &     77.0 &     779.0 &   0.00110429 &   0.00108333 &    6.441558 &        0.636714 \\
+32 &     95.0 &    1097.0 &   0.00225308 &   0.00224816 &   10.442105 &        0.904284 \\
+64 &     73.0 &    2021.0 &   0.00455414 &   0.00455295 &   27.178082 &        0.981692 \\
+\bottomrule
+\end{tabular}
+

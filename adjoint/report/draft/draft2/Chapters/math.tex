@@ -49,60 +49,60 @@ Our state equation $E(y,v)$ will be a simple linear first order equation with th
 \begin{align}
 \left\{
      \begin{array}{lr}
-       	y'(t)+\alpha y(t) = v(t) \ t\in(0,T)\\
+       	y'(t)+ay(t) = v(t) \ t\in(0,T)\\
        	y(0)=y_0
      \end{array}
    \right. \label{exs_E}
 \end{align}
-Equation (\ref{exs_E}) has solution $y(t) = e^{-\alpha t}(C(y_0)+\int_0^te^{\alpha\tau}v(\tau)d\tau)$, and is therefore uniquely solvable for every integrable $v$. This means that we can reduce the objective function. Let us now state and derive the adjoint and gradient expression for the above defined problem: 
+Equation (\ref{exs_E}) has solution $y(t) = e^{-a t}(C(y_0)+\int_0^te^{a\tau}v(\tau)d\tau)$, and is therefore uniquely solvable for every integrable $v$. This means that we can reduce the objective function. Let us now state and derive the adjoint and gradient expression for the above defined problem: 
 \begin{theorem}
 The adjoint equation of the problem (\ref{exs_J}-\ref{exs_E}) is:
 \begin{align*}     
--p'(t) &= \alpha p(t) \\
-p(T) &= y(T)-y^T     
+-p'(t) &= ap(t) \\
+p(T) &= \alpha(y(T)-y^T)     
 \end{align*}
 \end{theorem}
 \begin{proof}
 Before we calculate the different terms used to derive the adjoint equation, we want to fit our ODE into an expression $E$. We do this by writing up the weak formulation of the equation:
 \begin{gather*}
 \textit{Find $y \in L^2$ such that}\\
-L[y,\phi] = \int_0^T-y(t)\phi'(t)-\alpha y(t)\phi(t)dt -y_0\phi(0)+y(T)\phi(T)-\int_0^Tv(t)\phi(t)=0\\ \forall \ \phi \in C^{\infty}((0,T))
+L[y,\phi] = \int_0^T-y(t)\phi'(t)-ay(t)\phi(t)dt -y_0\phi(0)+y(T)\phi(T)-\int_0^Tv(t)\phi(t)=0\\ \forall \ \phi \in C^{\infty}((0,T))
 \end{gather*}
 To derive the adjoint we need $E_y$ and $J_y$. For $E_y$ we define $(\cdot,\cdot)$ to be the $L^2$ inner product over $(0,T)$. This gives us:
 \begin{align*}
-E_y=L_y[\cdot,\phi]=(\cdot,(\frac{\partial}{-\partial t} - \alpha + \delta_T)\phi)  
+E_y=L_y[\cdot,\phi]=(\cdot,(\frac{\partial}{-\partial t} - a + \delta_T)\phi)  
 \end{align*}
 Lets be more thorough with $J_y$, which is the right hand side in the adjoint equation.
 \begin{align*}
-J_y(y(v),v) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tv^2dt + \frac{1}{2}(y(T)-y^T)^2) \\ &= \frac{\partial}{\partial y} \frac{1}{2}(y(T)-y^T)^2 \\
-&= \frac{\partial}{\partial y}\frac{1}{2}(\int_0^T \delta_T(y-y^T)dt)^2 \\
-&= \delta_T\int_0^T \delta_T(y(t)-y^T)dt \\
-&= \delta_T(y(T)-y^T)
+J_y(y(v),v) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tv^2dt + \frac{\alpha}{2}(y(T)-y^T)^2) \\ &= \frac{\partial}{\partial y} \frac{\alpha}{2}(y(T)-y^T)^2 \\
+&= \frac{\partial}{\partial y}\frac{\alpha}{2}(\int_0^T \delta_T(y-y^T)dt)^2 \\
+&= \alpha\delta_T\int_0^T \delta_T(y(t)-y^T)dt \\
+&= \alpha\delta_T(y(T)-y^T)
 \end{align*}
-We have $E_y=(\cdot,(-\frac{\partial}{\partial t} - \alpha + \delta_T)\phi)$, but for the adjoint equation we need to find $E_y^*$.
+We have $E_y=(\cdot,(-\frac{\partial}{\partial t} - a + \delta_T)\phi)$, but for the adjoint equation we need to find $E_y^*$.
 To derive the adjoint of $E_y$, we will insert two functions $v$ and $w$ into $L_y[v,w]$, and try to change the places of $v$ and $w$.
 \begin{align*}
-E_y&=L_y[v,w]=\int_0^T-v(t)(w'(t)+\alpha w(t))dt + v(T)w(T) \\
-&=\int_0^Tw(t)(v'(t)-\alpha v(t))dt + v(T)w(T)-v(T)w(T) +v(0)w(0) \\
-&=\int_0^Tw(t)(v'(t)-\alpha v(t))dt+v(0)w(0) \\
+E_y&=L_y[v,w]=\int_0^T-v(t)(w'(t)+aw(t))dt + v(T)w(T) \\
+&=\int_0^Tw(t)(v'(t)-av(t))dt + v(T)w(T)-v(T)w(T) +v(0)w(0) \\
+&=\int_0^Tw(t)(v'(t)-a v(t))dt+v(0)w(0) \\
 &=L_y^*[w,v]=E_y^*
 \end{align*}
 If we multiply $J_y$ with a test function $\psi$ and set $L_y^*[p,\psi]=(J_y,\psi)$, we get the following equation:
 \begin{align*}
 &\textit{Find $p$ such that}\\
-&\int_0^Tp(t)\psi'(t)-\alpha p(t)\psi(t)dt + p(0)\psi(0)= (y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
+&\int_0^Tp(t)\psi'(t)-a p(t)\psi(t)dt + p(0)\psi(0)= \alpha(y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
 \end{align*}
 If we then do partial integration, we get:
 \begin{align*}
 &\textit{Find $p$ such that}\\
-&\int_0^T(-p'(t)-\alpha p(t))\psi(t)dt +p(T)\psi(T)= (y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
+&\int_0^T(-p'(t)-ap(t))\psi(t)dt +p(T)\psi(T)= \alpha(y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
 \end{align*}
 Using this we get the strong formulation:
 \begin{align*}
    \left\{
      \begin{array}{lr}
-       -p'(t) = \alpha p(t) \\
-       p(T) = y(T)-y^T
+       -p'(t) = ap(t) \\
+       p(T) = \alpha( y(T)-y^T)
      \end{array}
    \right.
 \end{align*}
