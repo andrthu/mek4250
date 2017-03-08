@@ -1,5 +1,5 @@
 \chapter{Parallel in time ODE solver methods}
-The process of resolving time dependent differential equation in temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the simple fact that the solution of such equation at every time $T$ depends on the solution at times $t<T$, and it is therefore very difficult to partition the solution process into independent tasks that can be run in parallel. However the so called parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution} makes it possible parallelize differential equations in time. Before I describe parareal, I will introduce an example equation and decompose it together with the time interval.
+The process of resolving time dependent differential equation in temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the simple fact that the solution of such equation at every time $T$ depends on the solution at times $t<T$, and it is therefore very difficult to partition the solution process into independent tasks that can be run in parallel. However the so called parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution} makes it possible to parallelize differential equations in time. Before I describe parareal, I will introduce an example equation and decompose it together with the time interval.
 \section{Decomposing the time interval}
 The parareal scheme is used to parallelize differential equations in temporal direction, by decomposing the time interval $I=[0,T]$. An example of a time dependent differential equation that on this interval is:
 \begin{align}
@@ -65,7 +65,7 @@ We can now solve (\ref{interval_eqs}) independently either exactly or using some
 	\end{array}
 \right. \label{propagator}
 \end{align}
-\section{Pararal as optimal control problem}
+\section{Pararal as an optimal control problem}
 An alternative formulation of the parareal scheme for our simple ODE example (\ref{ODE_eks}), that will be important to us later, is given in \cite{maday2002parareal}. Here the authors first define a function $\bold F_{\Delta T}(\omega)$, which is the evaluation at $\Delta T$ of the solution of the equation:
 \begin{align}
 \left\{

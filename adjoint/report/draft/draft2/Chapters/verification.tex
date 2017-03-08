@@ -1,6 +1,6 @@
 \chapter{Verification}
 \section{Taylor test}
-A good way to test whether a proposed gradient of functional actually is the correct gradient, is to use the Taylor test. The test is as its name implies connected with Taylor expansions of a function, or more precisely the following two observations:
+A good way to test whether a proposed gradient of a function actually is the correct gradient, is to use the Taylor test. The test is as its name implies connected with Taylor expansions of a function, or more precisely the following two observations:
 \begin{align*}
 |J(v+\epsilon w)-J(v)| &= O(\epsilon) \\
 |J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w| &= O(\epsilon^2)
@@ -12,15 +12,13 @@ The test is carried out, by evaluating $D=|J(v+\epsilon w)-J(v)-\epsilon\nabla J
 \subsection{Verifying the numerical gradient using the Taylor test}
 I will now use the Taylor test on the numerical gradient (\ref{num_grad}) that we get when solving the following problem:
 \begin{align}
-\left\{
+&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2\\
+&\left\{
      \begin{array}{lr}
        	y'(t)=0.9y(t) +v(t), \ t \in (0,1)\\
        	   y(0)=3.2
      \end{array}
    \right. 
-\end{align}
-\begin{align}
-J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2
 \end{align}
 I then discretize in time using $\Delta t=\frac{1}{100}$, and I set $v_i=1 \ \forall i$, while $w_i$ are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
 \begin{align*}
@@ -43,18 +41,17 @@ yielded the following:
 1.000000e-07 &     0.000071 &        5.255194e-11 &   0.000010 &        1 &  1.99914 \\
 \bottomrule
 \end{tabular}
+The above table clearly shows that $J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and my implementation of it are correct. Let us then check if this is also the case for the penalized problem.
 \subsection{Verifying the penalized numerical gradient using the Taylor test}
 I will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the following problem:
 \begin{align}
-\left\{
+&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2\\
+&\left\{
      \begin{array}{lr}
        	y'(t)=0.9y(t) +v(t), \ t \in (0,1)\\
        	   y(0)=3.2
      \end{array}
    \right. 
-\end{align}
-\begin{align}
-J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2
 \end{align}
 I then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and I set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
 \begin{align*}
@@ -78,13 +75,12 @@ yielded the following:
 1.000000e-08 &  3.606527e-07 &        1.086074e-12 &  9.771288e-07 &  1.00001 &  1.99635 \\
 \bottomrule
 \end{tabular}
+Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate, meaning that the penalized numerical gradient also passes the Taylor test.
 \section{Verifying function and gradient evaluation speedup}
 In the previous sections I have derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if my implementation is able to achieve the theoretical speedup for our example problem. The spesific problem I will do the test on, will be:
 \begin{align*}
-J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 
-\end{align*}
-\begin{align*}
-\left\{
+&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
+&\left\{
      \begin{array}{lr}
        	y'(t)+y(t) = v(t) \ t\in(0,1)\\
        	y(0)=1
@@ -275,7 +271,7 @@ When we introduced the penalty method in section \ref{penalty_sec}, we also pres
 \begin{align*}
 \lim_{k\rightarrow\infty} v^k = v 
 \end{align*}  
-An alternative way of looking at this, is to let $v^{\mu}$ be the minimizer of $\hat J_{\mu}$, and instead the above limit as:
+An alternative way of looking at this, is to let $v^{\mu}$ be the minimizer of $\hat J_{\mu}$, and instead write the above limit as:
 \begin{align}
 \lim_{\mu\rightarrow\infty} v^{\mu} = v \label{mu con}
 \end{align}
@@ -289,39 +285,34 @@ The interpretation of the above limit, is that solving the penalized problem wit
      \end{array}
    \right. \label{con E}
 \end{align}
-Then set the timestep to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of decomposed subintervals. Solving problem (\ref{con J}-\ref{con E}) for increasing $\mu$ values then yielded the following results:
+Then set the timestep to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of decomposed subintervals. I solved problem (\ref{con J}-\ref{con E}) for increasing $\mu$ values, and looked different ways to compare the the solutions $v$ and $v^{\mu}$. I compared the function value these controls gave for both the penalized and non-penalized objective function, and the relative difference between $v$ and $v^{\mu}$ in numerical $L^2$-norm. I also looked at the maximal jump difference in the decomposed state equation for each penalized control solution. The results were as follows:
 \\
 \begin{tabular}{lrrrr}
 \toprule 
-{} $\mu$&  $\frac{J(v_{\mu})-J(v)}{J(v)}$ &  $\frac{J_{\mu}(v_{\mu})-J_{\mu}(v)}{J_{\mu}(v)}$ &         jumps &    $||v_{\mu}-v||$ \\
+{} $\mu$&  $\frac{J(v_{\mu})-J(v)}{J(v)}$ &  $\frac{J_{\mu}(v_{\mu})-J_{\mu}(v)}{J_{\mu}(v)}$ &         $\sup_i\{y_{k_i}^i-y_{k_i}^{i+1}\}$ &    $\frac{||v_{\mu}-v||}{||v||}$ \\
 \midrule
-1.000000e+02 &      1.156696e-04 &            -6.364173e-03 &  2.592979e-02 &  6.364176e-03 \\
-2.000000e+02 &      2.910231e-05 &            -3.192244e-03 &  1.300628e-02 &  3.192246e-03 \\
-5.000000e+02 &      4.674259e-06 &            -1.279348e-03 &  5.212496e-03 &  1.279349e-03 \\
-1.000000e+03 &      1.170061e-06 &            -6.400835e-04 &  2.607916e-03 &  6.400839e-04 \\
-5.000000e+03 &      4.685038e-08 &            -1.280823e-04 &  5.218505e-04 &  1.280826e-04 \\
-7.000000e+03 &      2.390506e-08 &            -9.149070e-05 &  3.727640e-04 &  9.152407e-05 \\
-2.000000e+04 &      2.928726e-09 &            -3.202365e-05 &  1.304752e-04 &  3.205430e-05 \\
-2.000000e+05 &      2.929008e-11 &            -3.202457e-06 &  1.304789e-05 &  3.207249e-06 \\
-3.000000e+05 &      1.302587e-11 &            -2.134974e-06 &  8.698604e-06 &  2.179186e-06 \\
-4.000000e+05 &      7.331416e-12 &            -1.601231e-06 &  6.523956e-06 &  1.900841e-06 \\
-5.000000e+05 &      4.686680e-12 &            -1.280985e-06 &  5.219167e-06 &  1.280626e-06 \\
-6.000000e+05 &      3.256551e-12 &            -1.067488e-06 &  4.349307e-06 &  1.066490e-06 \\
-1.000000e+06 &      1.171837e-12 &            -6.404931e-07 &  2.609585e-06 &  6.415835e-07 \\
-1.000000e+07 &      1.436812e-14 &            -6.404934e-08 &  2.609587e-07 &  2.877539e-07 \\
-2.000000e+07 &      7.016988e-15 &            -3.202467e-08 &  1.304793e-07 &  2.418182e-07 \\
-1.000000e+08 &      2.338996e-15 &            -6.404934e-09 &  2.609587e-08 &  2.344486e-07 \\
-1.000000e+11 &      5.012134e-15 &            -6.400495e-12 &  2.605338e-11 &  2.344486e-07 \\
-1.000000e+12 &      4.009707e-15 &            -6.365411e-13 &  2.607248e-12 &  2.344486e-07 \\
-1.000000e+13 &      1.002427e-15 &            -6.348703e-14 &  2.646772e-13 &  1.906306e-07 \\
-1.000000e+14 &      1.837783e-15 &            -5.346277e-15 &  2.708944e-14 &  1.906306e-07 \\
-1.000000e+16 &      2.004854e-15 &             9.355984e-15 &  3.108624e-15 &  1.906306e-07 \\
+1.000000e+02 &      1.156696e-04 &            -6.364173e-03 &  2.592979e-02 &  4.354868e-03 \\
+2.000000e+02 &      2.910231e-05 &            -3.192244e-03 &  1.300628e-02 &  2.184385e-03 \\
+5.000000e+02 &      4.674259e-06 &            -1.279348e-03 &  5.212496e-03 &  8.754310e-04 \\
+1.000000e+03 &      1.170061e-06 &            -6.400835e-04 &  2.607916e-03 &  4.379957e-04 \\
+5.000000e+03 &      4.685038e-08 &            -1.280823e-04 &  5.218505e-04 &  8.764416e-05 \\
+7.000000e+03 &      2.390506e-08 &            -9.149070e-05 &  3.727640e-04 &  6.260540e-05 \\
+2.000000e+04 &      2.928726e-09 &            -3.202365e-05 &  1.304752e-04 &  2.191336e-05 \\
+2.000000e+05 &      2.929008e-11 &            -3.202457e-06 &  1.304789e-05 &  2.191569e-06 \\
+3.000000e+05 &      1.302587e-11 &            -2.134974e-06 &  8.698604e-06 &  1.461772e-06 \\
+4.000000e+05 &      7.331416e-12 &            -1.601231e-06 &  6.523956e-06 &  1.097020e-06 \\
+5.000000e+05 &      4.686680e-12 &            -1.280985e-06 &  5.219167e-06 &  8.766907e-07 \\
+6.000000e+05 &      3.256551e-12 &            -1.067488e-06 &  4.349307e-06 &  7.307433e-07 \\
+1.000000e+06 &      1.171837e-12 &            -6.404931e-07 &  2.609585e-06 &  4.384698e-07 \\
+1.000000e+07 &      1.436812e-14 &            -6.404934e-08 &  2.609587e-07 &  4.724119e-08 \\
+2.000000e+07 &      7.016988e-15 &            -3.202467e-08 &  1.304793e-07 &  2.669496e-08 \\
+1.000000e+08 &      2.338996e-15 &            -6.404934e-09 &  2.609587e-08 &  2.382013e-08 \\
+1.000000e+11 &      5.012134e-15 &            -6.400495e-12 &  2.605338e-11 &  2.378564e-08 \\
+1.000000e+12 &      4.009707e-15 &            -6.365411e-13 &  2.607248e-12 &  2.378561e-08 \\
+1.000000e+13 &      1.002427e-15 &            -6.348703e-14 &  2.646772e-13 &  1.375728e-08 \\
+1.000000e+14 &      1.837783e-15 &            -5.346277e-15 &  2.708944e-14 &  1.375728e-08 \\
+1.000000e+16 &      2.004854e-15 &             9.355984e-15 &  3.108624e-15 &  1.375728e-08 \\
 \bottomrule
 \end{tabular}
-
-
-
-
-
-
+What we need to note about the above results, is that while difference in function value and state equation jump approach machine precision, the relative norm difference $\frac{||v_{\mu}-v||}{||v||}$ does not hit machine precision. The explanation of this is that all the terms in our functional are squared, and a difference of $10^{-8}$ is therefore actually quite close to machine precision, when you square it. The jump differences are also squared, however the $\mu$ penalty counter balances this for these terms.
 

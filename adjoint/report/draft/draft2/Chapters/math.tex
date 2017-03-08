@@ -43,7 +43,7 @@ Evaluating the gradient for a control variable $v\in V$ typically requires us to
 \section{Example problem}
 To better understand the adjoint approach to gradient evaluation of the reduced objective function, I will define a simple optimal control problem with ODE constraints, and derive its adjoint equation and gradient. The problem will also be used later to test the implementation. In our example both the state $y$ and the control $v$ will be functions on an interval $[0,T]$. This allows us to define the objective function:
 \begin{align}
-J(y,v) = \frac{1}{2}\int_0^T|v(t)|^2dt + \frac{\alpha}{2}|y(T)-y^T|^2 \label{exs_J}
+J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \label{exs_J}
 \end{align}
 Our state equation $E(y,v)$ will be a simple linear first order equation with the control as a source term:
 \begin{align}
@@ -127,7 +127,7 @@ Since $L_v[\cdot,\phi]$ is symmetric, $E_v^*=E_v$, and strongly formulated, $E_v
 \end{align*} 
 \end{proof}
 \section{Optimization algorithms}
-Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here I will only mention line search methods that are useful to me in my thesis. These are the steepest descent method, the BFGS and related L-BFGS methods.  
+Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here I will only mention line search methods that are useful to me in my thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
 \subsection{Line search methods and steepest descent}
 Line search methods are algorithms that help us solve problems of the type: 
 \begin{align*}
@@ -163,7 +163,7 @@ Here $\lambda_1\leq\cdots\leq \lambda_n$ denotes the eigenvalues of $\nabla^2 f(
 Given in \cite{nocedal2006numerical}
 \end{proof}
 \subsection{BFGS and L-BFGS}
-Since steepest has slow convergence, one usually uses faster line search methods to solve numerical optimization problems. One alternative is Newtons method, that includes the inverse Hessian in the search direction, i.e:
+Since steepest descent has slow convergence, one usually uses faster line search methods to solve numerical optimization problems. One alternative is Newtons method, that includes the inverse Hessian in the search direction, i.e:
 \begin{align*}
 x^{k+1} = x^k + \alpha \nabla^2 f(x^k)^{-1}\nabla f(x^k)
 \end{align*}

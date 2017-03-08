@@ -34,7 +34,7 @@ class GeneralPowerEndTermPCP(SimplePpcProblem):
 
 
 def l2_diff_norm(u1,u2,t):
-    return max(abs(u1-u2))
+    #return max(abs(u1-u2))
     return np.sqrt(trapz((u1-u2)**2,t))
 
 def test1():
