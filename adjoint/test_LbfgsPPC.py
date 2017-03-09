@@ -165,7 +165,7 @@ def test3():
     print res1['iteration'],res2['iteration'],res3['iteration']
 
 def compare_pc_and_nonpc_for_different_m():
-
+    import sys
     y0 = 3.2
     yT = 1.5
     T  = 1
@@ -175,13 +175,20 @@ def compare_pc_and_nonpc_for_different_m():
 
     
     problem = non_lin_problem(y0,yT,T,a,p)
-    N = 1000
+    try:
+        N = int(sys.argv[1])
+        mu = np.sqrt(N)
+        #tol = 
+    except:
+        N = 1000
+        mu = 10*N
+
     M = [1,2,3,4,5,6,8,16,32,64]
     
-    res1 = problem.solve(N,Lbfgs_options={'jtol':1e-6})
+    res1 = problem.solve(N,Lbfgs_options={'jtol':1e-7})
     t = np.linspace(0,T,N+1)
     res1_norm = l2_norm(res1.x,t)
-    mu = 5
+    
     """
     table = {'pc itr'          : ['--'],
              'non-pc itr'      : ['--'],
@@ -222,8 +229,8 @@ def compare_pc_and_nonpc_for_different_m():
 
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
-        pc_res = problem.PPCLBFGSsolve(N,m,[10*N],options=opt)
-        nonpc_res = problem.penalty_solve(N,m,[10*N],Lbfgs_options=opt)
+        pc_res = problem.PPCLBFGSsolve(N,m,[mu],options=opt)
+        nonpc_res = problem.penalty_solve(N,m,[mu],Lbfgs_options=opt)
         
         pc_fugr = pc_res.counter()
         npc_fugr = nonpc_res.counter()

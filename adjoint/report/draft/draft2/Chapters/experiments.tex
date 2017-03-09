@@ -44,4 +44,6 @@ Since The point of this test is to compare the effectiveness of the parareal pre
 64 &     73.0 &    2021.0 &   0.00455414 &   0.00455295 &   27.178082 &        0.981692 \\
 \bottomrule
 \end{tabular}
-
+\\
+\\
+There are several things of note about the above results. First off we see that the normed difference in control between sequential and parallel solution lies in the range from $3\cdot 10^{-4}$ to $4\cdot 10^{-3}$, and that it gets bigger when we increase $N$. Also of note about the norm difference, is that for each $N$, the preconditioned and unpreconditioned solvers seems to produce roughly the same error. When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=1,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned case solver get speedup for all decopmositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is consistently less then half of $N$.

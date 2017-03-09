@@ -272,12 +272,14 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         except:
             opt = {'jtol':1e-7}
         mu_list = [N]
-        comm.Barrier()
-        t0 = time.time()
-        res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-10,1e-10],options=opt)
-        t1 = time.time()
-        comm.Barrier()
-        res=res[-1]
+        if name=='solveSpeed':
+            comm.Barrier()
+            t0 = time.time()
+            res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-10,1e-10],options=opt)
+            t1 = time.time()
+            comm.Barrier()
+            res=res[-1]
+        elif name=='solveSpeed_ord'
         loc_time = np.zeros(1)
         loc_time[0] = t1-t0
         grad_norm = res.mpi_grad_norm()
