@@ -9,17 +9,11 @@ Here $J: Y\times V\rightarrow\mathbb{R}$ is the objective function that we want 
 \begin{align*}
 E(y(v),v)=0
 \end{align*}
-The first question we need to ask ourself, is under what conditions does the above problem even have solution. According to \cite{hinze2008optimization}, the following conditions are sufficient for the control problem to have a unique solution:
-\begin{align*}
-1. &\textit{Condition 1} \\
-2. &\textit{Condition 2} \\
-3. &\textit{Condition 3} \\
-\end{align*}  
-Replacing $y$ with $y(v)$ allows us to define the reduced problem:
+The first question we need to ask ourself, is under what conditions does the above problem even have solution. This is a complicated question that we will look into when we have defined our example problem. Instead let us assume for now that a solution exists, and try to derive a way to find it. If we replace $y$ with $y(v)$ we can define the reduced problem:
 \begin{align}
 \underset{v\in V}{\text{min}} \ \hat J(v)=\underset{v\in V}{\text{min}} \ J(y(v),v) \ \textit{Subject to:} \ E(y(v),v)=0 \label{reduced problem}
 \end{align}
-To find a solution to (\ref{reduced problem}), we need to be able to differentiate the objective function $\hat{J}$ with respect to the control $v$. There are different ways of doing that, but I will focus on the so called adjoint approach, which is the most computational effective way of calculating the gradient of $\hat{J}$.
+The problem (\ref{reduced problem}) is called the reduced problem because we in reality have moved the differential equation constraints into the function, and by doing so transformed the constrained problem into an unconstrained one. Since we really just want to find the minimum of a function, it is only natural, that to solve (\ref{reduced problem}), we need to be able to differentiate the objective function $\hat{J}$ with respect to the control $v$. There are different ways of doing that, but I will focus on the so called adjoint approach, which is the most computational effective way of calculating the gradient of $\hat{J}$.
 \subsection{The adjoint equation and the gradient}
 To find the gradient $\hat{J}'(v)$, lets start by differentiating $\hat J$:
 \begin{align*}
@@ -54,7 +48,19 @@ Our state equation $E(y,v)$ will be a simple linear first order equation with th
      \end{array}
    \right. \label{exs_E}
 \end{align}
-Equation (\ref{exs_E}) has solution $y(t) = e^{-a t}(C(y_0)+\int_0^te^{a\tau}v(\tau)d\tau)$, and is therefore uniquely solvable for every integrable $v$. This means that we can reduce the objective function. Let us now state and derive the adjoint and gradient expression for the above defined problem: 
+Before we derive the adjoint and gradient of the reduced version of the above problem, I want to return to the question of existence of solution. To achive this, I will write up a general result from \cite{hinze2008optimization} about linear quadratic problems, which also includes problem (\ref{exs_J}-\ref{exs_E}).
+\begin{theorem}
+The linear quadratic optimization problems, that can be written on the form:
+\begin{align*}
+&\underset{y\in Y,v\in V}{\text{min}}J(y,v) = \frac{1}{2}||Qy-q||_H^2 + \frac{\alpha}{2}||v||_V^2 \\
+\textit{Subject to:} \ Ay + Bv = g
+\end{align*}
+Where H,V are Hilbert spaces, Y,Z are Banach spaces, $q\in H$, $g\in Z$ and $A:Y\rightarrow Z$, $B:V\rightarrow Z$ and $Q:Y\rightarrow H$ are bounded linear operators. If $\alpha>0$, the above written problem has a unique solution pair $(y,v)\in Y\times V$.
+\end{theorem}   
+\begin{proof}
+See \cite{hinze2008optimization}
+\end{proof}
+It is obvious, that the objective function (\ref{exs_J}) of our example problem fits into the setting of the above theorem, and since the equation (\ref{exs_E}) has solution $y(t) = e^{-a t}(C(y_0)+\int_0^te^{a\tau}v(\tau)d\tau)$, and is uniquely solvable for every integrable $v$, it is clear that problem (\ref{exs_J}-\ref{exs_E}) is a linear quadratic optimization problem. Knowing this, we can safely continue by stating and deriving the adjoint and gradient expression for our example problem (\ref{exs_J}-\ref{exs_E}): 
 \begin{theorem}
 The adjoint equation of the problem (\ref{exs_J}-\ref{exs_E}) is:
 \begin{align*}     

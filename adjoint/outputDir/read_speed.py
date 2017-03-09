@@ -66,8 +66,8 @@ def create_table(lines,with_iter=True,with_iter2=False,with_norm=False,ideal_S=F
             if with_norm:
                 table['norm'].append(float(line_list[7]))
         elif ideal_S:
-            table['L'].append(int(first_line[4])+int(first_line[3]))
-            table['S2'].append(int(line_list[1][:-1])*seq_fugr/(int(first_line[4])+int(first_line[3])))
+            table['L'].append(int(line_list[4])+int(line_list[3]))
+            table['S2'].append(int(line_list[1][:-1])*seq_fugr/(int(line_list[4])+int(line_list[3])))
             table['norm'].append(float(line_list[7]))
             table['f'].append(float(line_list[9]))
         table['speedup'].append(seq_time/par_time)
@@ -116,6 +116,6 @@ def main():
         data = create_table(lines,with_iter=with_iter,with_iter2=with_iter2,
                             with_norm=with_norm,ideal_S=ideal_S)
         print data
-        #data.to_latex('latexTables/'+name[:-3]+'tex')
+        data.to_latex('latexTables/'+name[:-3]+'tex')
 if __name__ == '__main__':
     main()

@@ -47,3 +47,59 @@ Since The point of this test is to compare the effectiveness of the parareal pre
 \\
 \\
 There are several things of note about the above results. First off we see that the normed difference in control between sequential and parallel solution lies in the range from $3\cdot 10^{-4}$ to $4\cdot 10^{-3}$, and that it gets bigger when we increase $N$. Also of note about the norm difference, is that for each $N$, the preconditioned and unpreconditioned solvers seems to produce roughly the same error. When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=1,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned case solver get speedup for all decopmositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is consistently less then half of $N$.
+\section{Some speedup results}
+\begin{align*}
+&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
+&\left\{
+     \begin{array}{lr}
+       	y'(t)+y(t) = v(t) \ t\in(0,1)\\
+       	y(0)=1
+     \end{array}
+   \right. 
+\end{align*}
+$\Delta t = \frac{1}{100000}$
+\\
+\begin{tabular}{lrrllrr}
+\toprule
+{} $N$&   L &        $\hat S$ &          $J(v)-J(v_N)$ &    $||v-v_N||_{l^2}$ &   speedup &      time \\
+\midrule
+1:  &  43 &  1.000000 &           -- &       -- &  1.000000 &  4.948604 \\
+2: &  49 &  1.755102 &  1.49099e-10 &    6e-06 &  1.349916 &  3.665862 \\
+3: &  55 &  2.345455 &  6.32732e-10 &  1.1e-05 &  1.732804 &  2.855836 \\
+4: &  61 &  2.819672 &  1.44678e-09 &  1.6e-05 &  2.083327 &  2.375337 \\
+5: &  67 &  3.208955 &  2.62965e-09 &  2.1e-05 &  2.263943 &  2.185834 \\
+6: &  61 &  4.229508 &   4.1827e-09 &  2.7e-05 &  2.877279 &  1.719890 \\
+\bottomrule
+\end{tabular}
+\\
+$\Delta t = \frac{1}{200000}$
+\\
+\begin{tabular}{lrrllrr}
+\toprule
+{} $N$&   L &        $\hat S$ &          $J(v)-J(v_N)$ &    $||v-v_N||_{l^2}$&speedup &       time \\
+\midrule
+1:  &  45 &  1.000000 &           -- &       -- &  1.000000 &  10.199495 \\
+2: &  51 &  1.764706 &  3.76222e-11 &    3e-06 &  1.322927 &   7.709792 \\
+3: &  61 &  2.213115 &  1.58185e-10 &    6e-06 &  1.580280 &   6.454233 \\
+4: &  71 &  2.535211 &  3.61721e-10 &    8e-06 &  1.802585 &   5.658261 \\
+5: &  73 &  3.082192 &  6.57328e-10 &  1.1e-05 &  2.147440 &   4.749607 \\
+6: &  69 &  3.913043 &  1.04562e-09 &  1.3e-05 &  2.374901 &   4.294703 \\
+\bottomrule
+\end{tabular}
+\\
+\\
+$\Delta t = \frac{1}{1000000}$
+\\
+\\
+\begin{tabular}{lrrllrr}
+\toprule
+{} $N$&   L &        $\hat S$ &          $J(v)-J(v_N)$ &    $||v-v_N||_{l^2}$&speedup &       time \\
+\midrule
+1:  &   51 &  1.000000 &           -- &       -- &  1.000000 &  56.968187 \\
+2: &   97 &  1.051546 &  1.45061e-12 &    1e-06 &  0.871757 &  65.348693 \\
+3: &   37 &  4.135135 &  1.19209e-07 &  0.00041 &  2.995382 &  19.018671 \\
+4: &   95 &  2.147368 &  1.43499e-11 &    2e-06 &  1.538004 &  37.040329 \\
+5: &   83 &  3.072289 &  4.19647e-11 &    5e-06 &  2.098120 &  27.152017 \\
+6: &  115 &  2.660870 &  4.21117e-11 &    3e-06 &  1.780952 &  31.987489 \\
+\bottomrule
+\end{tabular}
