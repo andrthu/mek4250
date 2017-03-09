@@ -80,7 +80,7 @@ yielded the following:
 \\
 \\
 Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate, meaning that the penalized numerical gradient also passes the Taylor test.
-\section{Verifying function and gradient evaluation speedup}
+\section{Verifying function and gradient evaluation speedup} \label{ver S sec}
 In the previous sections I have derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if my implementation is able to achieve the theoretical speedup for our example problem. The spesific problem I will do the test on, will be:
 \begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\

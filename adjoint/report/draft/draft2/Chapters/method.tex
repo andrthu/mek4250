@@ -207,7 +207,7 @@ Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directio
 \end{align*} 
 Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, that the gradient has the form we stated above.
 \end{proof} 
-\section{Parareal preconditioner}
+\section{Parareal preconditioner} \label{pc sec}
 Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. In order to make things run faster, we will include the parareal preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. To understand the preconditioner, we need to remember the second formulation of the parareal scheme defined in chapter 3.
 \subsection{Virtual problem}
 The virtual problem is the optimal control problem:
