@@ -268,9 +268,9 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         try:
             
             itr_list = pre_chosen_itr[N]
-            opt = {'jtol':1e-10,'maxiter':itr_list[m-2]}
+            opt = {'jtol':1e-7,'maxiter':itr_list[m-2]}
         except:
-            opt = {'jtol':1e-10}
+            opt = {'jtol':1e-7}
         mu_list = [N]
         comm.Barrier()
         t0 = time.time()
@@ -378,5 +378,5 @@ def main2():
 
 
 if __name__ == '__main__':
-    main()
-    #main2()
+    #main()
+    main2()
