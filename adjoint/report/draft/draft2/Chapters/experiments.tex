@@ -46,8 +46,9 @@ Since The point of this test is to compare the effectiveness of the parareal pre
 \end{tabular}
 \\
 \\
-There are several things of note about the above results. First off we see that the normed difference in control between sequential and parallel solution lies in the range from $3\cdot 10^{-4}$ to $4\cdot 10^{-3}$, and that it gets bigger when we increase $N$. Also of note about the norm difference, is that for each $N$, the preconditioned and unpreconditioned solvers seems to produce roughly the same error. When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=1,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned case solver get speedup for all decopmositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is consistently less then half of $N$.
-\section{Some speedup results}
+There are several things of note about the above results. First off we see that the normed difference in control between sequential and parallel solution lies in the range from $3\cdot 10^{-4}$ to $4\cdot 10^{-3}$, and that it gets bigger when we increase $N$. Also of note about the norm difference, is that for each $N$, the preconditioned and unpreconditioned solvers seems to produce roughly the same error. When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=1,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned case solver get speedup for all decompositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is consistently less then half of $N$.
+\section{Speedup results for $N=1,...,6$}
+In the previous section we measured the effectiveness of the parareal preconditioner using the ideal speedup (\ref{ideal S}), for a quite large time step $\Delta t =10^{-3}$. From section \ref{ver S sec}, we know that we need smaller time steps than that to get any benefit from the parallelization. This means that if we want to get actual wall clock time speedup, we need to use smaller time steps. Let us again write up the version of the example problem that we want to solve for this experiment:
 \begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
 &\left\{
@@ -57,11 +58,18 @@ There are several things of note about the above results. First off we see that 
      \end{array}
    \right. 
 \end{align*}
-$\Delta t = \frac{1}{100000}$
+This time I only use the preconditioned solver, but now we also measure the execution time so that it is possible to calculate the speedup. The time measurement is done by running each solver ten times and choosing the lowest time. Also included in the results is the number of function and gradient evaluations L, for each decomposition, the ideal speedup $\hat S$, the relative difference in function value and between sequential and parallel solutions and the relative $l^2$-norm difference in control between sequential and parallel solutions. I used the same strict end criteria for the L-BFGS iteration on all solvers:
+\begin{align*}
+||\nabla J||<10^{-10}
+\end{align*}
+I choose to solve the penalized problem using only one penalty iteration setting the penalty parameter $\mu=\frac{1}{\Delta t}$. Finally I did the experiments using $\Delta t =10^{-5},0.5(10^{-5}),10^{-6}$. The results follow below:
+\\
+\\
+$\Delta t = 10^{-5}$
 \\
 \begin{tabular}{lrrllrr}
 \toprule
-{} $N$&   L &        $\hat S$ &          $J(v)-J(v_N)$ &    $||v-v_N||_{l^2}$ &   speedup &      time \\
+{} $N$&   L &        $\hat S$ &          $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&   speedup &      time \\
 \midrule
 1:  &  43 &  1.000000 &           -- &       -- &  1.000000 &  4.948604 \\
 2: &  49 &  1.755102 &  1.49099e-10 &    6e-06 &  1.349916 &  3.665862 \\
@@ -72,11 +80,15 @@ $\Delta t = \frac{1}{100000}$
 \bottomrule
 \end{tabular}
 \\
-$\Delta t = \frac{1}{200000}$
+\\
+When comparing the ideal speedup $\hat S$ with the actual achieved wall clock speedup in the above results, we see that the ideal speedup is a lot higher. We do however notice that both ideal and actual speedup increase for larger $N$, which indicates that they might be somewhat related.
+\\
+\\
+$\Delta t = 0.5(10^{-5})$
 \\
 \begin{tabular}{lrrllrr}
 \toprule
-{} $N$&   L &        $\hat S$ &          $J(v)-J(v_N)$ &    $||v-v_N||_{l^2}$&speedup &       time \\
+{} $N$&   L &        $\hat S$ &         $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&speedup &       time \\
 \midrule
 1:  &  45 &  1.000000 &           -- &       -- &  1.000000 &  10.199495 \\
 2: &  51 &  1.764706 &  3.76222e-11 &    3e-06 &  1.322927 &   7.709792 \\
@@ -88,12 +100,12 @@ $\Delta t = \frac{1}{200000}$
 \end{tabular}
 \\
 \\
-$\Delta t = \frac{1}{1000000}$
+$\Delta t = 10^{-6}$
 \\
 \\
 \begin{tabular}{lrrllrr}
 \toprule
-{} $N$&   L &        $\hat S$ &          $J(v)-J(v_N)$ &    $||v-v_N||_{l^2}$&speedup &       time \\
+{} $N$&   L &        $\hat S$ &          $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&speedup &       time \\
 \midrule
 1:  &   51 &  1.000000 &           -- &       -- &  1.000000 &  56.968187 \\
 2: &   97 &  1.051546 &  1.45061e-12 &    1e-06 &  0.871757 &  65.348693 \\
@@ -103,3 +115,6 @@ $\Delta t = \frac{1}{1000000}$
 6: &  115 &  2.660870 &  4.21117e-11 &    3e-06 &  1.780952 &  31.987489 \\
 \bottomrule
 \end{tabular}
+\\
+\\
+For $\Delta t = 0.5(10^{-5})$ and $\Delta t = 10^{-6}$, the results are a bit disappointing, however we do continue to see the a relation between ideal and actual speedup, which justifies the use of $\hat S$ as a measure of effectiveness for our algorithm. 

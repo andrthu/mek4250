@@ -1,3 +1,16 @@
 \chapter{Introduction}
-
-This is an introduction
+\section{Project description}
+Title:
+Parareal in time algorithm for optimal control with PDE constraints
+\\
+\\
+Description:
+\\
+\\
+In optimal control with PDE constraints, we want to optimize a functional F(y(u),u) with respect to a control u and the solution to our PDE y, that depends on the control u. This problem arises in many applications such as variational data assimilation, sensitivity analysis, goal-based error estimation and more(www.dolfin-adjoint.org).
+\\
+\\
+To minimize the functional one needs to find its gradient. Evaluating the gradient at a given control, requires solving the state equation forward in time and then the adjoint equation backwards in time. One way of parallelizing this procedure, is to partition the time interval, and then solve the equation independently on each interval. Since the equations evolve in time, the solution on each time interval depend on the previous time intervals. It is necessary to enforce this dependence in our parallel machinery. The penalty approach achieves this, by adding penalty terms to our original functional, that enforces continuity between the time intervals. We then minimize the penalized functional multiple times, increasing the penalty for non-continuity for each iteration.
+\\
+\\
+This Msc project aims at implementing an efficient parallelization of the functional gradient evaluation, using the penalty approach. The implementation will be done in a dolfin-adjoint setting, and we want to test the algorithm on a real problem.  
