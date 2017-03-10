@@ -124,12 +124,35 @@ def taylor_test_non_penalty():
     import matplotlib.pyplot as plt
 
 
+    fig = plt.figure()
+
+    ax1 = fig.add_subplot(221)
+    ax1.plot(grad)
+    ax1.set_title('numerical gradient')
+    ax2= fig.add_subplot(222)
+    ax2.set_title('start of gradient')
+    ax2.plot(np.linspace(0,4,5),grad[:5])
+    ax3 = fig.add_subplot(223)
+    ax3.set_title('end of gradient')
+    ax3.plot(np.linspace(96,100,5),grad[-5:])
+    ax4 =  fig.add_subplot(224)
+    ax4.plot(grad)
+    ax4.plot(grad_fd,'r--')
+    ax4.set_title('finite difference gradient')
+    ax4.legend(['num grad','fd grad'])
+    plt.show()
+    fig.savefig('report/draft/draft2/num_grad.png')
+    
+    """
     #grad2 = grad_J2(u)
     plt.plot(grad)
     plt.plot(grad_fd,'r--')
     #plt.plot(grad2)
-    #plt.show()
-
+    plt.legend(['num grad','finite diff grad'])
+    plt.xlabel('gradient index')
+    plt.ylabel('gradient value')
+    plt.show()
+    """
 def taylor_penalty_test():
     y0 = 3.2
     yT = 1.5
@@ -438,8 +461,8 @@ def taylor_test_mpi():
 
 
 if __name__ == '__main__':
-    #taylor_test_non_penalty()
-    taylor_penalty_test()
+    taylor_test_non_penalty()
+    #taylor_penalty_test()
     #quad_end()
     #runge_kutta_test()
     #taylor_test_mpi()

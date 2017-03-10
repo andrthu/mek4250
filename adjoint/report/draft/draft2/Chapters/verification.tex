@@ -44,6 +44,11 @@ yielded the following:
 \\
 \\
 The above table clearly shows that $J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and my implementation of it are correct. Let us then check if this is also the case for the penalized problem.
+\begin{figure}[h]
+\includegraphics[scale=0.5]{num_grad.png}
+\caption{Plots showing the gradient, with focus on the two ends. Also included is a plot with a finite difference approximation to the gradient.}
+\centering
+\end{figure}
 \subsection{Verifying the penalized numerical gradient using the Taylor test}
 I will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the following problem:
 \begin{align}
