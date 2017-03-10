@@ -75,7 +75,7 @@ Let us first remember what the example optimal control problem with ODE constrai
 &J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \\
 &\left\{
      \begin{array}{lr}
-       	y'(t)+a y(t) = v(t) \ t\in(0,T)\\
+       	y'(t)=a y(t) + v(t) \ t\in(0,T)\\
        	y(0)=y_0
      \end{array}
    \right.
@@ -84,7 +84,7 @@ We can now decompose the interval $[0,T]$ into $N$ subintervals $\{[T_{i-1},T_{i
 \begin{align}
 \left\{
      \begin{array}{lr}
-       	\frac{\partial}{\partial t} y^i(t)+a y^i(t) = v(t) \ t\in(T_{i-1},T_{i})\\
+       	\frac{\partial}{\partial t} y^i(t)=a y^i(t) + v(t) \ t\in(T_{i-1},T_{i})\\
        	y^i(T_{i-1})=\lambda_{i-1}
      \end{array}
    \right. \label{decomp_E}
@@ -208,7 +208,7 @@ Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directio
 Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, that the gradient has the form we stated above.
 \end{proof} 
 \section{Parareal preconditioner} \label{pc sec}
-Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. In order to make things run faster, we will include the parareal preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. To understand the preconditioner, we need to remember the second formulation of the parareal scheme defined in chapter 3.
+Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. In order to make things run faster, we will include the parareal preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. To understand the preconditioner, we need to remember the second formulation of the parareal scheme defined in chapter \ref{parareal_chap}.
 \subsection{Virtual problem}
 The virtual problem is the optimal control problem:
 \begin{align}
@@ -497,3 +497,6 @@ Then you apply the forward system:
 \bar{\bar{J_{\lambda_3}}}&=\bar{J_{\lambda_3}} + \bold{G}_{\Delta T}(\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)))
 \end{align*} 
 The $\Lambda$ part of the gradient is then updated to be $\bar{\bar{J_{\lambda_1}}}, \bar{\bar{J_{\lambda_2}}},\bar{\bar{J_{\lambda_3}}}$. Notice that I in the last line of the adjoint system use $\bold{G}_{\Delta T}^*(0)$, and that I in the first line in the forward system use $\bold{G}_{\Delta T}(0)$. The zeros here represent information at time $T_0=0$ and $T_4=T$. At these times, I really have no information relating to the $\Lambda$ part of the gradient of $J$. I am therefore forced to choose zero.
+\\
+\\
+Since we are only using out course solver use $\bold{G}_{\Delta T}$ on the inner points of the interval $I=[0,T]$, when we are applying the inverse of $\bar{M}^{*}$ and $\bar{M}$ on the $\Lambda$ part of the gradient, the course model is only used on the interval $[T_1,T_{N-1}]$. This means that we are not using the first and last parts $[0,T_1]$ and $[T_{N-1},T]$ of $I$. A consequence of this is that it refining our course solver for each interval $\bold{G}_{\Delta T}$, has little effect since $[0,T_1]$ and $[T_{N-1},T]$ have length $\Delta T$, and when we are not using these intervals the course solver has a natural built in error of $\Delta T$, even if we use a finer resolution on $[T_1,T_{N-1}]$. 

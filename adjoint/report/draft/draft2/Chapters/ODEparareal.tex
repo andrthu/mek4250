@@ -1,4 +1,4 @@
-\chapter{Parallel in time ODE solver methods}
+\chapter{Parallel in time ODE solver methods} \label{parareal_chap}
 The process of resolving time dependent differential equation in temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the simple fact that the solution of such equation at every time $T$ depends on the solution at times $t<T$, and it is therefore very difficult to partition the solution process into independent tasks that can be run in parallel. However the so called parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution} makes it possible to parallelize differential equations in time. Before I describe parareal, I will introduce an example equation and decompose it together with the time interval.
 \section{Decomposing the time interval}
 The parareal scheme is used to parallelize differential equations in temporal direction, by decomposing the time interval $I=[0,T]$. An example of a time dependent differential equation that on this interval is:

@@ -212,12 +212,30 @@ def taylor_penalty_test():
     print data2
     
     import matplotlib.pyplot as plt
-    
+    fig = plt.figure()
+
+    ax1 = fig.add_subplot(211)
+    ax1.plot(grad[:N+1])
+    ax1.plot(grad_fd[:N+1],'r--')
+    ax1.set_title('Control part of gradient')
+    ax1.legend(['num grad','fd grad'])
+    ax1.set_ylabel('Gradient value')
+
+    ax4 =  fig.add_subplot(212)
+    ax4.plot(grad[N+1:])
+    ax4.plot(grad_fd[N+1:],'r--')
+    ax4.set_title('Lambda part of gradient')
+    ax4.set_ylabel('Gradient value')
+    ax4.set_xlabel('index')
+    ax4.legend(['num grad','fd grad'],loc=4)
+    plt.show()
+    fig.savefig('report/draft/draft2/pen_num_grad.png')
+    """
     plt.plot(grad)
     plt.plot(grad_fd,'r--')
     
     plt.show()
-    
+    """
 def quad_end():
     y0 = 3.2
     yT = 1.5
@@ -461,8 +479,8 @@ def taylor_test_mpi():
 
 
 if __name__ == '__main__':
-    taylor_test_non_penalty()
-    #taylor_penalty_test()
+    #taylor_test_non_penalty()
+    taylor_penalty_test()
     #quad_end()
     #runge_kutta_test()
     #taylor_test_mpi()

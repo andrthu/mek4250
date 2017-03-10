@@ -45,9 +45,9 @@ yielded the following:
 \\
 The above table clearly shows that $J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and my implementation of it are correct. Let us then check if this is also the case for the penalized problem.
 \begin{figure}[h]
-\includegraphics[scale=0.5]{num_grad.png}
 \caption{Plots showing the gradient, with focus on the two ends. Also included is a plot with a finite difference approximation to the gradient.}
 \centering
+\includegraphics[scale=0.5]{num_grad.png}
 \end{figure}
 \subsection{Verifying the penalized numerical gradient using the Taylor test}
 I will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the following problem:
@@ -85,8 +85,13 @@ yielded the following:
 \\
 \\
 Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate, meaning that the penalized numerical gradient also passes the Taylor test.
+\begin{figure}[h]
+\caption{Plots showing the $\Lambda$ and control part of the numerical gradient found using formula (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) and finite difference}
+\centering
+\includegraphics[scale=0.5]{pen_num_grad.png}
+\end{figure}
 \section{Verifying function and gradient evaluation speedup} \label{ver S sec}
-In the previous sections I have derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if my implementation is able to achieve the theoretical speedup for our example problem. The spesific problem I will do the test on, will be:
+In \ref{analysis sec} I derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if my implementation is able to achieve the theoretical speedup for our example problem. The specific problem I will do the test on, will be:
 \begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
 &\left\{
@@ -104,7 +109,7 @@ $\Delta t=10^{-2}$\\
 \toprule
 {} $N$&   function speedup &      function time \\
 \midrule
-1:  &  1.000000 &  0.000196 \\
+1: &  1.000000 &  0.000196 \\
 2: &  0.946860 &  0.000207 \\
 3: &  0.780876 &  0.000251 \\
 4: &  0.642623 &  0.000305 \\
@@ -116,7 +121,7 @@ $\Delta t=10^{-2}$\\
 \toprule
 {} &  gradient speedup &     gradient time \\
 \midrule
-1:  &  1.000000 &  0.000217 \\
+1: &  1.000000 &  0.000217 \\
 2: &  0.875000 &  0.000248 \\
 3: &  0.753472 &  0.000288 \\
 4: &  0.632653 &  0.000343 \\
@@ -131,7 +136,7 @@ $\Delta t=10^{-3}$\\
 \toprule
 {}$N$ &  function speedup &     function time \\
 \midrule
-1:  &  1.000000 &  0.000974 \\
+1: &  1.000000 &  0.000974 \\
 2: &  1.699825 &  0.000573 \\
 3: &  1.887597 &  0.000516 \\
 4: &  1.940239 &  0.000502 \\
@@ -143,7 +148,7 @@ $\Delta t=10^{-3}$\\
 \toprule
 {} &  gradient speedup &    gradient time \\
 \midrule
-1:  &  1.000000 &  0.001541 \\
+1: &  1.000000 &  0.001541 \\
 2: &  1.671367 &  0.000922 \\
 3: &  2.096599 &  0.000735 \\
 4: &  2.293155 &  0.000672 \\
@@ -158,7 +163,7 @@ $\Delta t=10^{-4}$\\
 \toprule
 {} $N$&  function speedup &    function  time \\
 \midrule
-1:  &  1.000000 &  0.008877 \\
+1: &  1.000000 &  0.008877 \\
 2: &  1.983687 &  0.004475 \\
 3: &  2.838823 &  0.003127 \\
 4: &  3.582324 &  0.002478 \\
@@ -170,7 +175,7 @@ $\Delta t=10^{-4}$\\
 \toprule
 {} &  gradient speedup &     gradient time \\
 \midrule
-1:  &  1.000000 &  0.015016 \\
+1: &  1.000000 &  0.015016 \\
 2: &  1.946843 &  0.007713 \\
 3: &  2.816204 &  0.005332 \\
 4: &  3.677688 &  0.004083 \\
@@ -185,7 +190,7 @@ $\Delta t=10^{-5}$\\
 \toprule
 {}$N$ &  function speedup &    function  time \\
 \midrule
-1:  &  1.000000 &  0.087484 \\
+1: &  1.000000 &  0.087484 \\
 2: &  2.006606 &  0.043598 \\
 3: &  2.888595 &  0.030286 \\
 4: &  3.913222 &  0.022356 \\
@@ -197,7 +202,7 @@ $\Delta t=10^{-5}$\\
 \toprule
 {} &  gradient speedup &     gradient time \\
 \midrule
-1:  &  1.000000 &  0.154841 \\
+1: &  1.000000 &  0.154841 \\
 2: &  2.046537 &  0.075660 \\
 3: &  2.971198 &  0.052114 \\
 4: &  4.003025 &  0.038681 \\
@@ -212,7 +217,7 @@ $\Delta t=10^{-6}$\\
 \toprule
 {} $N$&  function speedup &    function time \\
 \midrule
-1:  &  1.000000 &  0.867973 \\
+1: &  1.000000 &  0.867973 \\
 2: &  1.977376 &  0.438952 \\
 3: &  2.917517 &  0.297504 \\
 4: &  3.801797 &  0.228306 \\
@@ -224,7 +229,7 @@ $\Delta t=10^{-6}$\\
 \toprule
 {} &  gradient speedup &    gradient time \\
 \midrule
-1:  &  1.000000 &  1.504033 \\
+1: &  1.000000 &  1.504033 \\
 2: &  1.943738 &  0.773784 \\
 3: &  2.937054 &  0.512089 \\
 4: &  3.928148 &  0.382886 \\
@@ -239,7 +244,7 @@ $\Delta t=10^{-7}$\\
 \toprule
 {}$N$ &  function speedup &      time \\
 \midrule
-1:  &  1.000000 &  8.350907 \\
+1: &  1.000000 &  8.350907 \\
 2: &  1.987960 &  4.200743 \\
 3: &  2.847662 &  2.932549 \\
 4: &  3.812545 &  2.190376 \\
@@ -251,7 +256,7 @@ $\Delta t=10^{-7}$\\
 \toprule
 {} &  gradient speedup &     gradient  time \\
 \midrule
-1:  &  1.000000 &  14.930247 \\
+1: &  1.000000 &  14.930247 \\
 2: &  2.064043 &   7.233497 \\
 3: &  2.966254 &   5.033368 \\
 4: &  3.866428 &   3.861509 \\
@@ -266,7 +271,7 @@ $\Delta t=10^{-8}$\\
 \toprule
 {} $N$&  function speedup &      function time \\
 \midrule
-1:  &  1.000000 &  87.568009 \\
+1: &  1.000000 &  87.568009 \\
 2: &  2.129080 &  41.129505 \\
 3: &  2.988265 &  29.303966 \\
 4: &  4.125267 &  21.227233 \\
@@ -275,6 +280,7 @@ $\Delta t=10^{-8}$\\
 \bottomrule
 \end{tabular}
 \end{center}
+In all parallel algorithms there will be overhead, which means that for small problems parallelization does not produce any improvement in execution time. This is reflected in the above results, where we for $\Delta t = 10^{-2}$ see an increased execution time when running function and gradient evaluation in parallel. For $\Delta t = 10^{-3}$ and $\Delta t = 10^{-4}$ we see only a modest speedup, that is significantly lower than the expected speedup from section \ref{analysis sec}. For $\Delta t \leq 10^{-5}$, however we see speedup results in line with what we expect from the theory.  
 \section{Consistency}
 When we introduced the penalty method in section \ref{penalty_sec}, we also presented a result showing that the iterates $\{v^k\}$ stemming from the penalty algorithmic framework converged towards the solution of the non-penalized problem $v$. We can write this up as:
 \begin{align*}
@@ -284,17 +290,17 @@ An alternative way of looking at this, is to let $v^{\mu}$ be the minimizer of $
 \begin{align}
 \lim_{\mu\rightarrow\infty} v^{\mu} = v \label{mu con}
 \end{align}
-The interpretation of the above limit, is that solving the penalized problem with an ever increasing penalty parameter $\mu$ should result in a solution that is getting closer and closer to the solution of the non-penalized problem. This would mean that the penalty algorithm is consistent, since it produces the same solution as the ordinary problem. It might therefore be worth checking our implementation of the penalized problem actually has the property (\ref{mu con}). The particular problem, that I will do the consistency test with, is: 
+The interpretation of the above limit, is that solving the penalized problem with an ever increasing penalty parameter $\mu$ should result in a solution that is getting closer and closer to the solution of the non-penalized problem. This would mean that the penalty algorithm is consistent, since it produces the same solution as the ordinary non-decomposed problem. It might therefore be worth checking if our implementation of the penalized problem actually has the property (\ref{mu con}). The particular problem, that I will do the consistency test on, is: 
 \begin{align}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1.5)^2 \label{con J} \\
 &\left\{
      \begin{array}{lr}
-       	y'(t)+0.9y(t) = v(t) \ t\in(0,1)\\
+       	y'(t)=0.9y(t) + v(t) \ t\in(0,1)\\
        	y(0)=3.2
      \end{array}
    \right. \label{con E}
 \end{align}
-Then set the timestep to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of decomposed subintervals. I solved problem (\ref{con J}-\ref{con E}) for increasing $\mu$ values, and looked different ways to compare the the solutions $v$ and $v^{\mu}$. I compared the function value these controls gave for both the penalized and non-penalized objective function, and the relative difference between $v$ and $v^{\mu}$ in numerical $L^2$-norm. I also looked at the maximal jump difference in the decomposed state equation for each penalized control solution. The results were as follows:
+Then I set the time step to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of decomposed subintervals. I solved problem (\ref{con J}-\ref{con E}) for increasing $\mu$ values, and looked at different ways to compare the the solutions $v$ and $v^{\mu}$. I compared the function value these controls gave for both the penalized and non-penalized objective function, and the relative difference between $v$ and $v^{\mu}$ in numerical $L^2$-norm. I also looked at the maximal jump difference in the decomposed state equation for each penalized control solution. The results were as follows:
 \\
 \begin{tabular}{lrrrr}
 \toprule 

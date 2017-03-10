@@ -9,7 +9,7 @@ Here $J: Y\times V\rightarrow\mathbb{R}$ is the objective function that we want 
 \begin{align*}
 E(y(v),v)=0
 \end{align*}
-The first question we need to ask ourself, is under what conditions does the above problem even have solution. This is a complicated question that we will look into when we have defined our example problem. Instead let us assume for now that a solution exists, and try to derive a way to find it. If we replace $y$ with $y(v)$ we can define the reduced problem:
+The first question we need to ask ourself, is under what conditions does the above problem even have a solution. This is a complicated question that we will look into when we have defined our example problem. Instead let us assume for now that a solution exists, and try to derive a way to find it. If we replace $y$ with $y(v)$ we can define the reduced problem:
 \begin{align}
 \underset{v\in V}{\text{min}} \ \hat J(v)=\underset{v\in V}{\text{min}} \ J(y(v),v) \ \textit{Subject to:} \ E(y(v),v)=0 \label{reduced problem}
 \end{align}
@@ -19,7 +19,7 @@ To find the gradient $\hat{J}'(v)$, lets start by differentiating $\hat J$:
 \begin{align*}
 \hat{J}'(v) = DJ(y(v),v) = y'(v)^*J_y(y(v),v) + J_v(y(v),v)
 \end{align*}
-The problematic term in the above expression, is $y'(v)^*$. To calcualte this we need to differentiate the state equation:
+The problematic term in the above expression, is $y'(v)^*$. To calculate this we need to differentiate the state equation:
 \begin{align*}
 DE(y(v),v)=0 &\Rightarrow E_y(y(v),v)y'(v)=-E_v(y(v),v) \\ &\Rightarrow y'(v)=-E_y(y(v),v)^{-1}E_v(y(v),v) \\ &\Rightarrow y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}
 \end{align*}
@@ -43,24 +43,24 @@ Our state equation $E(y,v)$ will be a simple linear first order equation with th
 \begin{align}
 \left\{
      \begin{array}{lr}
-       	y'(t)+ay(t) = v(t) \ t\in(0,T)\\
+       	y'(t)=ay(t) + v(t) \ t\in(0,T)\\
        	y(0)=y_0
      \end{array}
    \right. \label{exs_E}
 \end{align}
-Before we derive the adjoint and gradient of the reduced version of the above problem, I want to return to the question of existence of solution. To achive this, I will write up a general result from \cite{hinze2008optimization} about linear quadratic problems, which also includes problem (\ref{exs_J}-\ref{exs_E}).
+Before we derive the adjoint and gradient of the reduced version of the above problem, I want to return to the question of solvability. To achieve this, I will write up a general result from \cite{hinze2008optimization} about linear quadratic problems, which also includes problem (\ref{exs_J}-\ref{exs_E}).
 \begin{theorem}
 The linear quadratic optimization problems, that can be written on the form:
 \begin{align*}
 &\underset{y\in Y,v\in V}{\text{min}}J(y,v) = \frac{1}{2}||Qy-q||_H^2 + \frac{\alpha}{2}||v||_V^2 \\
-\textit{Subject to:} \ Ay + Bv = g
+&\textit{Subject to:} \ Ay + Bv = g
 \end{align*}
 Where H,V are Hilbert spaces, Y,Z are Banach spaces, $q\in H$, $g\in Z$ and $A:Y\rightarrow Z$, $B:V\rightarrow Z$ and $Q:Y\rightarrow H$ are bounded linear operators. If $\alpha>0$, the above written problem has a unique solution pair $(y,v)\in Y\times V$.
 \end{theorem}   
 \begin{proof}
 See \cite{hinze2008optimization}
 \end{proof}
-It is obvious, that the objective function (\ref{exs_J}) of our example problem fits into the setting of the above theorem, and since the equation (\ref{exs_E}) has solution $y(t) = e^{-a t}(C(y_0)+\int_0^te^{a\tau}v(\tau)d\tau)$, and is uniquely solvable for every integrable $v$, it is clear that problem (\ref{exs_J}-\ref{exs_E}) is a linear quadratic optimization problem. Knowing this, we can safely continue by stating and deriving the adjoint and gradient expression for our example problem (\ref{exs_J}-\ref{exs_E}): 
+It is obvious, that the objective function (\ref{exs_J}) of our example problem fits into the setting of the above theorem, and since the equation (\ref{exs_E}) has solution $y(t) = e^{a t}(C(y_0)+\int_0^te^{-a\tau}v(\tau)d\tau)$, and is uniquely solvable for every integrable $v$, it is clear that problem (\ref{exs_J}-\ref{exs_E}) is a linear quadratic optimization problem. Knowing this, we can safely continue by stating and deriving the adjoint and gradient expression for our example problem (\ref{exs_J}-\ref{exs_E}): 
 \begin{theorem}
 The adjoint equation of the problem (\ref{exs_J}-\ref{exs_E}) is:
 \begin{align*}     
@@ -185,4 +185,4 @@ The usual choice for the initial inverted Hessian approximation $H^0$ is simply 
 \begin{align*}
 x^{k+1} = x^k + \alpha H^{k}\nabla f(x^k)
 \end{align*} 
-In the BFGS method information from all iterations is used to create the inverse Hessian approximation. An alternative to this is to limit the number of iterations the recursive formula remembers to only the latest iterations. This variation of the BFGS method is called L-BFGS. The length of the memory need to be chosen in advance, and the typical choise is 10. Two advantages L-BFGS has over BFGS is firstly that it is less computationally expensive. Secondly one would think that recent iterations possess more valuable information than early iterations, and therefore should be given more weight. 
+In the BFGS method information from all iterations is used to create the inverse Hessian approximation. An alternative to this is to limit the number of iterations the recursive formula remembers to only the latest iterations. This variation of the BFGS method is called L-BFGS. The length of the memory need to be chosen in advance, and the typical choice is 10. Two advantages L-BFGS has over BFGS is firstly that it is less computationally expensive. Secondly one would think that recent iterations possess more valuable information than early iterations, and therefore should be given more weight. 
