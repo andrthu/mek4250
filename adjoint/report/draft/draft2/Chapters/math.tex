@@ -1,6 +1,6 @@
 \chapter{Optimal control with ODE constraints}
 \section{General optimal control problem}
-In this thesis we are only looking at optimal control problems with time dependent DE constraints. This problem is only a part of the more general control problem, which can be formulated as:
+In this thesis we are only looking at optimal control problems with time dependent Differential equation(DE) constraints. This problem is only a part of the more general control problem, which can be formulated as:
 \begin{align}
 \underset{y\in Y,v\in V}{\text{min}} \ &J(y,v) \\
 \textit{Subject to:} \ &E(y,v)=0
@@ -11,19 +11,19 @@ E(y(v),v)=0
 \end{align*}
 The first question we need to ask ourself, is under what conditions does the above problem even have a solution. This is a complicated question that we will look into when we have defined our example problem. Instead let us assume for now that a solution exists, and try to derive a way to find it. If we replace $y$ with $y(v)$ we can define the reduced problem:
 \begin{align}
-\underset{v\in V}{\text{min}} \ \hat J(v)=\underset{v\in V}{\text{min}} \ J(y(v),v) \ \textit{Subject to:} \ E(y(v),v)=0 \label{reduced problem}
+\underset{v\in V}{\text{min}} \ \hat J(v)=\underset{v\in V}{\text{min}} \ J(y(v),v)  \label{reduced problem}
 \end{align}
-The problem (\ref{reduced problem}) is called the reduced problem because we in reality have moved the differential equation constraints into the function, and by doing so transformed the constrained problem into an unconstrained one. Since we really just want to find the minimum of a function, it is only natural, that to solve (\ref{reduced problem}), we need to be able to differentiate the objective function $\hat{J}$ with respect to the control $v$. There are different ways of doing that, but I will focus on the so called adjoint approach, which is the most computational effective way of calculating the gradient of $\hat{J}$.
-\subsection{The adjoint equation and the gradient}
+The problem (\ref{reduced problem}) is called the reduced problem because we in reality have moved the differential equation constraints into the function, and by doing so transformed the constrained problem into an unconstrained one. Since the aim is to find the minimum of a function, it is only natural, that to solve (\ref{reduced problem}), we need to be able to differentiate the objective function $\hat{J}$ with respect to the control $v$. There are different ways of doing that, but I will focus on the so called adjoint approach, which is the most computational effective way of calculating the gradient of $\hat{J}$.
+\section{The adjoint equation and the gradient}
 To find the gradient $\hat{J}'(v)$, lets start by differentiating $\hat J$:
 \begin{align*}
 \hat{J}'(v) = DJ(y(v),v) = y'(v)^*J_y(y(v),v) + J_v(y(v),v)
 \end{align*}
 The problematic term in the above expression, is $y'(v)^*$. To calculate this we need to differentiate the state equation:
 \begin{align*}
-DE(y(v),v)=0 &\Rightarrow E_y(y(v),v)y'(v)=-E_v(y(v),v) \\ &\Rightarrow y'(v)=-E_y(y(v),v)^{-1}E_v(y(v),v) \\ &\Rightarrow y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}
+DE(y(v),v)=0 &\Rightarrow E_y(y(v),v)y'(v)=-E_v(y(v),v) \\ &\Rightarrow y'(v)=-E_y(y(v),v)^{-1}E_v(y(v),v) \\ &\Rightarrow y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}.
 \end{align*}
-Instead of inserting $y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}$ into our gradient expression, we first define the adjoint equation as:
+Before inserting $y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}$ into our gradient expression, we first define the adjoint equation as:
 \begin{align}
 E_y(y(v),v)^{*}p=J_y(v) \label{general adjoint}
 \end{align}
@@ -31,24 +31,24 @@ This now allows us to write up the gradient as follows:
 \begin{align}
 \hat{J}'(v)&= y'(v)^*J_y(y(v),v) + J_v(y(v),v)\\
 &=-E_v(y(v),v)^*E_y(y(v),v)^{-*}J_y(y(v),v) + J_v(y(v),v) \\
-&= -E_v(y(v),v)^*p +J_v(y(v),v) \label{gradient}
+&= -E_v(y(v),v)^*p +J_v(y(v),v). \label{gradient}
 \end{align}
-Evaluating the gradient for a control variable $v\in V$ typically requires us to solve both the state and adjoint equation, and then inserting the solutions into the expression for the gradient.
+Evaluating the gradient for a control variable $v\in V$ typically requires solving both the state and adjoint equation, and then inserting the solutions into the expression for the gradient (\ref{gradient}).
 \section{Example problem}
-To better understand the adjoint approach to gradient evaluation of the reduced objective function, I will define a simple optimal control problem with ODE constraints, and derive its adjoint equation and gradient. The problem will also be used later to test the implementation. In our example both the state $y$ and the control $v$ will be functions on an interval $[0,T]$. This allows us to define the objective function:
+To better understand the adjoint approach to gradient evaluation of the reduced objective function, we will define a simple optimal control problem with ODE constraints, and derive its adjoint equation and gradient. The problem will also be used later to test the implementation. In our example both the state $y$ and the control $v$ will be functions on an interval $[0,T]$. This allows us to define the objective function:
 \begin{align}
 J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \label{exs_J}
 \end{align}
-Our state equation $E(y,v)$ will be a simple linear first order equation with the control as a source term:
+The state equation $E(y,v)$ is a linear, first order equation with the control as a source term:
 \begin{align}
 \left\{
      \begin{array}{lr}
-       	y'(t)=ay(t) + v(t) \ t\in(0,T)\\
-       	y(0)=y_0
+       	y'(t)=ay(t) + v(t) \ t\in(0,T),\\
+       	y(0)=y_0.
      \end{array}
    \right. \label{exs_E}
 \end{align}
-Before we derive the adjoint and gradient of the reduced version of the above problem, I want to return to the question of solvability. To achieve this, I will write up a general result from \cite{hinze2008optimization} about linear quadratic problems, which also includes problem (\ref{exs_J}-\ref{exs_E}).
+Before we derive the adjoint and gradient of the reduced version of the above problem, we  return to the question of solvability. To achieve this, we will write up a general result from \cite{hinze2008optimization} about linear quadratic problems, which also includes problem (\ref{exs_J}-\ref{exs_E}).
 \begin{theorem}
 The linear quadratic optimization problems, that can be written on the form:
 \begin{align*}
@@ -71,14 +71,14 @@ p(T) &= \alpha(y(T)-y^T)
 \begin{proof}
 Before we calculate the different terms used to derive the adjoint equation, we want to fit our ODE into an expression $E$. We do this by writing up the weak formulation of the equation:
 \begin{gather*}
-\textit{Find $y \in L^2$ such that}\\
+\textit{$y \in L^2(0,T)$ such that}\\
 L[y,\phi] = \int_0^T-y(t)\phi'(t)-ay(t)\phi(t)dt -y_0\phi(0)+y(T)\phi(T)-\int_0^Tv(t)\phi(t)=0\\ \forall \ \phi \in C^{\infty}((0,T))
 \end{gather*}
 To derive the adjoint we need $E_y$ and $J_y$. For $E_y$ we define $(\cdot,\cdot)$ to be the $L^2$ inner product over $(0,T)$. This gives us:
 \begin{align*}
-E_y=L_y[\cdot,\phi]=(\cdot,(\frac{\partial}{-\partial t} - a + \delta_T)\phi)  
+E_y=L_y[\cdot,\phi]=(\cdot,(\frac{\partial}{\partial t} - a + \delta_T)\phi)  
 \end{align*}
-Lets be more thorough with $J_y$, which is the right hand side in the adjoint equation.
+Let us be more thorough with $J_y$, which is the right hand side of the adjoint equation.
 \begin{align*}
 J_y(y(v),v) &= \frac{\partial}{\partial y}(\frac{1}{2}\int_0^Tv^2dt + \frac{\alpha}{2}(y(T)-y^T)^2) \\ &= \frac{\partial}{\partial y} \frac{\alpha}{2}(y(T)-y^T)^2 \\
 &= \frac{\partial}{\partial y}\frac{\alpha}{2}(\int_0^T \delta_T(y-y^T)dt)^2 \\
@@ -96,12 +96,12 @@ E_y&=L_y[v,w]=\int_0^T-v(t)(w'(t)+aw(t))dt + v(T)w(T) \\
 If we multiply $J_y$ with a test function $\psi$ and set $L_y^*[p,\psi]=(J_y,\psi)$, we get the following equation:
 \begin{align*}
 &\textit{Find $p$ such that}\\
-&\int_0^Tp(t)\psi'(t)-a p(t)\psi(t)dt + p(0)\psi(0)= \alpha(y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
+&\int_0^Tp(t)\psi'(t)-a p(t)\psi(t)dt + p(0)\psi(0)= \alpha(y(T)-y^T)\psi(T)\ \quad\forall \ \psi \in C^{\infty}((0,T))
 \end{align*}
 If we then do partial integration, we get:
 \begin{align*}
 &\textit{Find $p$ such that}\\
-&\int_0^T(-p'(t)-ap(t))\psi(t)dt +p(T)\psi(T)= \alpha(y(T)-y^T)\psi(T)\ \forall \ \psi \in C^{\infty}((0,T))
+&\int_0^T(-p'(t)-ap(t))\psi(t)dt +p(T)\psi(T)= \alpha(y(T)-y^T)\psi(T)\ \quad\forall \ \psi \in C^{\infty}((0,T))
 \end{align*}
 Using this we get the strong formulation:
 \begin{align*}
@@ -133,7 +133,7 @@ Since $L_v[\cdot,\phi]$ is symmetric, $E_v^*=E_v$, and strongly formulated, $E_v
 \end{align*} 
 \end{proof}
 \section{Optimization algorithms}
-Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here I will only mention line search methods that are useful to me in my thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
+Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here we will only mention line search methods that are useful to me in the thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
 \subsection{Line search methods and steepest descent}
 Line search methods are algorithms that help us solve problems of the type: 
 \begin{align*}
@@ -150,7 +150,7 @@ What separates different line search methods, is how one chooses direction $p_k$
 f(x^k + \alpha_kp_k)&\leq f(x^k) + c_1\alpha_k\nabla f(x^k)\cdot p_k \\
 \nabla f(x^k + \alpha_kp_k) \cdot p_k &\geq c_2 \nabla f(x^k)\cdot p_k
 \end{align*}
-Here we use constants $0<c_1<c_2<1$. The first Wolfe condition ensures that the decrease in function value is proportional to both step length and direction. The second condition is that the gradient of $f$ at $x^k + \alpha_kp_k$, should be less steep than at $x^k$. If we can find a step length that satisfies these conditions we will use it. How to actually find a step length that satisfies the Wolfe conditions is quite involved, and I will therefore not go into this topic any further. Instead I will mention a couple of line search methods that will be used later in the thesis, starting with steepest descent.
+Here we use constants $0<c_1<c_2<1$. The first Wolfe condition ensures that the decrease in function value is proportional to both step length and direction. The second condition is that the gradient of $f$ at $x^k + \alpha_kp_k$, should be less steep than at $x^k$. If we can find a step length that satisfies these conditions we will use it. How to actually find a step length that satisfies the Wolfe conditions is quite involved, and we will therefore not go into this topic any further. Instead I will mention a couple of line search methods that will be used later in the thesis, starting with steepest descent.
 \\
 \\
 The steepest descent method is a very simple line search method, where the step length $p_k$ is set to the negative gradient direction at point $x^k$, i.e $p_k = -\nabla f(x^k)$. This gives us the following update for each iteration:
