@@ -147,6 +147,7 @@ Evaluating the gradient of our example problem can now be boiled down to the fol
 2.\quad & \textrm{Use $y$ to solve the adjoint equation for $p$}\\
 3.\quad & \textrm{Insert $p$ and control $v$ into gradient formula (\ref{exsample_grad})}
 \end{align*}
+Looking at the above procedure for gradient evaluation, we can see why the adjoint approach is computationally efficient. No matter the problem size, we only need to solve two ODEs to find the gradient. In comparison evaluating the gradient using finite difference for example, would force us to solve the state equation one time for each component of the control. In a setting where the control is the source term of the state equation, using finite difference would mean that the number of ODEs we would have to solve would be equal to the number of time steps we used do discretize the problem.
 \section{Optimization algorithms}
 Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here we will only mention line search methods that are useful to me in the thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
 \subsection{Line search methods and steepest descent}
@@ -160,12 +161,16 @@ Line search methods are iterative methods that starts at an initial guess $x^0$ 
 2. &\textit{Choose step length $\alpha_k\in\mathbb{R}$} \\
 3. &\textit{Set $x^{k+1}=x^k + \alpha_kp_k$} 
 \end{align*}
-What separates different line search methods, is how one chooses direction $p_k$ and step length $\alpha_k$. How to choose a good step length is generally a more difficult question than how to choose the search direction. One way of finding a good search length, are the so called Wolfe conditions. These are as follows:
+If $f$ is differentiable, a necessary condition for a point $x^*\in\mathbb{R}^n$ to be a minimizer of $f$, is that $\nabla f(x^*)=0$. This optimality condition is used to create a stopping criteria for line search methods in the following way: Given a tolerance $\tau>0$ stop the line search iteration when
+\begin{align}
+||\nabla f(x^k)||<\tau \label{opti_con}
+\end{align}  
+What separates different line search methods, is how one chooses descent direction $p_k$ and step length $\alpha_k$. Let us start with how to choose a good step length. There are several ways of doing this, but for our purposes the so called Wolfe conditions will suffice. The Wolfe conditions consists of two conditions on $f$, presented below:
 \begin{align*}
 f(x^k + \alpha_kp_k)&\leq f(x^k) + c_1\alpha_k\nabla f(x^k)\cdot p_k \\
 \nabla f(x^k + \alpha_kp_k) \cdot p_k &\geq c_2 \nabla f(x^k)\cdot p_k
 \end{align*}
-Here we use constants $0<c_1<c_2<1$. The first Wolfe condition ensures that the decrease in function value is proportional to both step length and direction. The second condition is that the gradient of $f$ at $x^k + \alpha_kp_k$, should be less steep than at $x^k$. If we can find a step length that satisfies these conditions we will use it. How to actually find a step length that satisfies the Wolfe conditions is quite involved, and we will therefore not go into this topic any further. Instead let us look into a couple of line search methods that will be used later in the thesis, starting with steepest descent.
+Here we use constants $0<c_1<c_2<1$. The first Wolfe condition ensures that the decrease in function value is proportional to both step length and direction. The second condition is that the gradient of $f$ at $x^k + \alpha_kp_k$, should be less steep than at $x^k$, and therefore closer to fulfilling the optimality condition (\ref{opti_con}). If we can find a step length that satisfies these conditions we will use it. How to actually find a step length that satisfies the Wolfe conditions is quite involved, and we will therefore not go into this topic any further. Instead let us look into a couple of line search methods that will be used later in the thesis, starting with steepest descent.
 \\
 \\
 The steepest descent method is a very simple line search method, where the step length $p_k$ is set to the negative gradient direction at point $x^k$, i.e $p_k = -\nabla f(x^k)$. This gives us the following update for each iteration:
@@ -194,9 +199,9 @@ H^{k+1} &= (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S
 S_k &= x^{k+1}-x^{k} \\
 Y_k &= \nabla f(x^{k+1})-\nabla f(x^{k})\\
 \rho_k &= \frac{1}{Y_k\cdot S_k} \\
-H^0&=\mathbbold{1}
+H^0&=\beta\mathbbold{1}.
 \end{align*}
-The usual choice for the initial inverted Hessian approximation $H^0$ is simply identity, but depending on the problem, other choices can also work. Each line search iteration for BFGS looks like:
+The only thing required of the initial inverted Hessian approximation $H^0$, is that it should be symmetric positive definite. The usual choice however, is just identity or a multiple of identity, where the multiple reflects the scaling of the variables. Each line search iteration for BFGS looks like:
 \begin{align*}
 x^{k+1} = x^k + \alpha H^{k}\nabla f(x^k)
 \end{align*} 

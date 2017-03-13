@@ -78,9 +78,9 @@ An alternative formulation of the Parareal scheme for our simple ODE example (\r
 Using $\bold F_{\Delta T}(\omega)$ we can define the following constrained optimization problem:
 \begin{align*}
 &\min_{\Lambda}\hat{J}(\Lambda) = \sum_{n=1}^{N-1} (y_{n-1}(T_{n})-\lambda_{n}) \\
-&\textit{Subject to } \ y_{n-1}(T_{n}) = \bold F_{\Delta T}(\lambda_{n-1}) \ n=1,...,N-1
+&\textrm{Subject to } \ y_{n-1}(T_{n}) = \bold F_{\Delta T}(\lambda_{n-1}) \ n=1,...,N-1
 \end{align*}
-The solution to the above problem can then be stated as $\lambda_n = \bold{F}_{\Delta T}(\lambda_{n-1})$. This is a system of equations, and on matrix form it can be written as:
+The solution to the above problem can then be stated as $\lambda_n = \bold{F}_{\Delta T}(\lambda_{n-1})$. The constraints are system of equations, and in matrix form can be written as:
 \begin{align}
   \left[ \begin{array}{cccc}
    \mathbbold{1} & 0 & \cdots & 0 \\  
@@ -99,13 +99,13 @@ The solution to the above problem can then be stated as $\lambda_n = \bold{F}_{\
    0 \\
    \cdots \\
    0 \\
-   \end{array}  \right]
+   \end{array}  \right] \label{vir_mat_form_sys }
 \end{align}
-Or just simply:
+Or:
 \begin{align}
-M \ \Lambda \ = \ H \label{vir_mat_sys}
+M \ \Lambda \ = \ H.\quad \textrm{With $M\in\mathbb{R}^{N\times N},H\in\mathbb{R}^N$ given by (\ref{vir_mat_form_sys }).} \label{vir_mat_sys}
 \end{align}
-Resolving (\ref{vir_mat_sys}) is equivalent with solving our ODE (\ref{ODE_eks}) sequentially, which we do not want to do. The idea of \cite{maday2002parareal} is then to define a coarse version of $\bold{F}_{\Delta T}$, and use it to formulate a Parareal iteration. We define the coarse solver using implicit Euler:
+Resolving (\ref{vir_mat_sys}) is equivalent with solving our ODE (\ref{ODE_eks}) sequentially, which we do not want to do. The idea of \cite{maday2002parareal} is then to define a coarse version of $\bold{F}_{\Delta T}$, and use it to formulate a Parareal iteration. As an example we define the coarse solver using implicit Euler:
  \begin{align}
 \frac{\bold{G}_{\Delta T}(\omega) -\omega }{\Delta T } + A \bold{G}_{\Delta T}(\omega) = 0
 \end{align}  
@@ -113,11 +113,11 @@ We then define the following iterative process to find the $\lambda$s:
 \begin{align}
 \lambda_{n+1}^{k+1} = \bold{G}_{\Delta T}(\lambda_{n}^{k+1}) + \bold{F}_{\Delta T}(\lambda_{n}^{k})-\bold{G}_{\Delta T}(\lambda_{n}^{k})
 \end{align} 
-On matrix form this looks like:
+In matrix form this looks like:
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k) \label{matrix_iter1}
 \end{align}
-The matrix $\bar{M}$ is the $\bold{G}_{\Delta T}$ version of $M$, i.e:
+The matrix $\bar{M}\in\mathbb{R}^{N\times N}$ is the $\bold{G}_{\Delta T}$ version of $M$, i.e:
 \begin{align}
 \bar{M} = \left[ \begin{array}{cccc}
    I & 0 & \cdots & 0 \\  
@@ -147,7 +147,7 @@ k\approx\frac{\log(\Delta t)}{\log(\Delta T)}
 This assumes that the constants $C_k$ and $C$ are similar. This is a reasonable assumption, since these constants depend on the parameters of the equation (\ref{ODE_eks}). 
 \\
 \\
-To illustrate this lets try to solve a version of (\ref{ODE_eks}) using an implicit Euler scheme and Parareal with a fine implicit Euler solver. I will use  the parameters $a=1.3$, $T=1$ and $y_0= 3.52$. The fine resolution will be held constant at $\Delta t=\frac{1}{10000}$. I then calculated how many propagation iterations I needed to to reduce the max-norm error to below $\Delta t$ for different time interval decompositions $N$. Table follows below:
+To illustrate this lets try to solve a version of (\ref{ODE_eks}) using an implicit Euler scheme and Parareal with a fine implicit Euler solver. I will use  the parameters $a=1.3$, $T=1$ and $y_0= 3.52$. The fine resolution will be held constant at $\Delta t=\frac{1}{10000}$. I then calculated how many propagation iterations I needed to reduce the max-norm error to below $\Delta t$ for different time interval decompositions $N$. Table follows below:
  \begin{center}
     \begin{tabular}{| l | l | l | l |}
     \hline
