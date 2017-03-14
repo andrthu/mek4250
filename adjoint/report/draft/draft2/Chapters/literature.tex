@@ -1,2 +1,18 @@
 \chapter{Literature review}
-start
+In the paper \cite{maday2002parareal}, Maday and Turinici presents a way to solve a control problem with partial differential evolution constraints in parallel using Parareal. The problem they look at is the following:
+\begin{align*}
+J(y,u) = \frac{1}{2}\int_0^T||u(t)||_U^2dt + \frac{\alpha}{2}||y(T)-y^T||^2
+\end{align*} 
+For the equation:
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	\frac{\partial y}{\partial t}+Ay = Bu\\
+       	   y(0)=y_0
+     \end{array}
+   \right.
+\end{align*}
+They parallelize in time, by dividing up the time interval and enforcing continuity by adding a penalty to the functional. They then derive the adjoint equation and the gradient for the functional. The idea of Parareal, is to sequentially solve a differential equation on a coarser mesh, and then using this solution to solve the same equation in parallel. This approach is necessary to get a speed-up for the virtual problem(i.e. just solving the equation), but the coarse sequential solve also represents a bottleneck for scalability. This is addressed in \cite{rao2014adjoint}, where they try to parallelize PDEs in time in a scalable way, by only doing an initial coarse sequential solve, and thereafter doing everything in parallel.  
+\\
+\\
+In \cite{rao2016time} the authors propose an augmented Lagrangian approach for time-parallel 4d variational data assimilation. This is basically an optimal control problem with PDE constraints. The augmented Lagrangian method is a modification of the penalty method for unconstrained optimization. Algorithms for calculating the modified functional and the gradient of the modified functional is derived, and the method is tested on a problem. The results show weak scalability for gradient and functional evaluation. 

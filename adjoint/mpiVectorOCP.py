@@ -1,6 +1,7 @@
 from my_bfgs.lbfgs import Lbfgs
 from my_bfgs.splitLbfgs import SplitLbfgs
 from my_bfgs.my_vector import SimpleVector
+from my_bfgs.steepest_decent import SteepestDecent,PPCSteepestDecent
 from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
@@ -244,6 +245,40 @@ class MpiVectorOCP(PararealOCP):
                 print 'jump diff:',val
         return Result
 
+
+    def parallel_SD_penalty_solve(self,N,m,mu_list,tol_list=None,x0=None,options=None):
+        comm = self.comm
+        rank = self.rank
+        if x0==None:
+            x0= self.initial_control2(N,m=m)
+        initial_counter = self.counter.copy()
+        self.update_Lbfgs_options(options)
+        Result = []
+        PPC = self.PC_maker4(N,m,comm,step=1)
+        for i in range(len(mu_list)):
+
+            
+            
+            def J(u):
+                self.counter[0]+=1
+                return self.parallel_penalty_functional(u,N,mu_list[i])
+            def grad_J(u):
+                self.counter[1]+=1
+                return self.penalty_grad(u,N,m,mu_list[i])
+
+            #solver = SplitLbfgs(J,grad_J,x0,options=self.Lbfgs_options,mpi=True)
+            solver = PPCSteepestDecent(J,grad_J,x0,PPC,options=self.Lbfgs_options)
+            res = solver.mpi_solve()
+            x0 = res.x
+            
+            res.add_FuncGradCounter(self.counter-initial_counter)
+            Result.append(res)
+            val =self.find_jump_diff(res.x)
+            if self.rank == 0:
+                print 'jump diff:',val
+        
+        return Result
+        
     def find_jump_diff(self,x):
         
         comm = self.comm
@@ -474,7 +509,7 @@ def test_solve():
     rank = comm.Get_rank()
 
     res2 = non_mpi.penalty_solve(N,m,[1])
-    res = mpi_problem.parallel_penalty_solve(N,m,[1])
+    res = mpi_problem.parallel_SD_penalty_solve(N,m,[1],options={'jtol':1e-3})#parallel_penalty_solve(N,m,[1])
     
     print res[0].niter
     print
@@ -559,7 +594,7 @@ def find_error():
     
 if __name__ =='__main__':
     #test_mpi_solvers()
-    #test_solve()
+    test_solve()
     #time_measure_test()
     #test_pppc()
-    find_error()
+    #find_error()

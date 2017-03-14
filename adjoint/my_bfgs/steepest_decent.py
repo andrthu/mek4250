@@ -1,7 +1,8 @@
 import numpy as np
 from linesearch.strong_wolfe import *
 from scaler import PenaltyScaler
-
+from mpiVector import MPIVector
+from lbfgsOptimizationControl import FuncGradCounter
 class OptimizationControl():
 
     def __init__(self,x0,J_f,grad_J,decomp=1,scaler=None):
@@ -49,9 +50,12 @@ class OptimizationControl():
         self.J_func = self.scaler.old_J
         self.grad_J = self.scaler.old_grad
 
+    def add_FuncGradCounter(self,arr):
+        self.counter = FuncGradCounter(arr)
+
 class SteepestDecent():
 
-    def __init__(self,J,grad_J,x0,decomp=1,scale=None,options={}):
+    def __init__(self,J,grad_J,x0,decomp=1,scale=None,options={},mpi=False):
 
         self.J = J
         self.grad_J=grad_J
@@ -84,7 +88,8 @@ class SteepestDecent():
             {"jtol"                   : 1e-4,
              "gtol"                   : 1e-4,
              "maxiter"                :  200,
-             "line_search_options"    : ls,})
+             "line_search_options"    : ls,
+             "ignore xtol"            : False,})
         return default
 
 
@@ -193,6 +198,23 @@ class SteepestDecent():
             #print np.max(y[:501]),np.max(y[501:])
             return 1
         return 0
+
+
+    def mpi_check_convergence(self):
+        y = self.data.dJ
+        k = self.data.niter
+        
+        grad_norm = y.l2_norm()
+        
+        if grad_norm<self.options['jtol']:
+            
+            return 1
+        
+        if k>self.options['maxiter']:
+            return 1
+        return 0
+
+
 
 
     def solve(self):
@@ -338,6 +360,35 @@ class PPCSteepestDecent(SteepestDecent):
             #plt.plot(v)
         #plt.show()
         #print self.data.val(),self.data.niter
+        return self.data
+
+
+
+    def mpi_solve(self):
+        x0 = self.data.x
+        comm = x0.comm
+        rank = comm.Get_rank()
+        J = self.J
+        grad_J = self.grad_J
+        #df1 = MPIVector(np.zeros(n),comm)
+        
+        while self.mpi_check_convergence()==0:
+            
+            p = -self.data.dJ
+            #print type(p)
+            #print p
+            if self.options['ignore xtol']:
+                try:                  
+                    x,alfa = self.do_linesearch(J,grad_J,x0,p)
+                except:                   
+                    return self.data                
+            else:
+                x,alfa = self.do_linesearch(J,grad_J,x0,p)          
+            
+             
+            self.data.update(x)
+            x0=x.copy()
+            
         return self.data
         
 
