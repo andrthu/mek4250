@@ -6,7 +6,7 @@ class InvertedHessian():
     Parent class for inverted hessian used in L-BFGS algorithm
     """
 
-    def update(self,yk,sk):
+    def update(self,yk,sk,beta_scale=False):
         """
         Method for updating the inverted hessian
         
@@ -25,6 +25,10 @@ class InvertedHessian():
         self.y.append(yk)
         self.s.append(sk)
         self.rho.append(self.make_rho(yk,sk))
+        if beta_scale:
+            
+            self.beta = np.sqrt(yk.dot(yk))#(yk.dot(sk)/(yk.dot(yk)))**(-1)
+            #print 'beta:',self.beta
 
     def __getitem__(self,k):
         

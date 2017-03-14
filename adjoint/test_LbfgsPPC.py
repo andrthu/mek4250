@@ -181,7 +181,7 @@ def compare_pc_and_nonpc_for_different_m():
         #tol = 
     except:
         N = 1000
-        mu = 10*N
+        mu = N**2
 
     M = [1,2,3,4,5,6,8,16,32,64]
     
@@ -223,7 +223,7 @@ def compare_pc_and_nonpc_for_different_m():
 
     res2 = []
     res3 = []
-    opt = {'mem_lim':10,'jtol':1e-6}
+    opt = {'mem_lim':10,'jtol':1e-5,'beta_scale':False}
     fu_gr_sum = res1.counter()[0]+res1.counter()[1]
     for m in M[1:]:
 
@@ -675,7 +675,7 @@ def jump_difference():
     print val1
     data = pd.DataFrame(table,index = mu_list)
 
-    data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'_2.tex')
+    #data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'_2.tex')
     print data
     plt.show()
     plt.plot(t,res['control'].array(),'r--')
