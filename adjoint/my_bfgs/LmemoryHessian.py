@@ -27,7 +27,7 @@ class InvertedHessian():
         self.rho.append(self.make_rho(yk,sk))
         if beta_scale:
             
-            self.beta = np.sqrt(yk.dot(yk))#(yk.dot(sk)/(yk.dot(yk)))**(-1)
+            self.beta = (yk.dot(sk)/(yk.dot(yk)))**(-1)
             #print 'beta:',self.beta
 
     def __getitem__(self,k):

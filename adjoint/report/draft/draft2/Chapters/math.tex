@@ -126,19 +126,19 @@ With the adjoint we can find the gradient of $\hat{J}$. Lets state the result fi
 \begin{theorem}
 The gradient of the reduced objective function $\hat{J}$ with respect to v is
 \begin{align}
-\hat{J}'(v)=v+p \label{exsample_grad}
+\hat{J}'(v)=v+p. \label{exsample_grad}
 \end{align} 
 \end{theorem}
 \begin{proof}
 Firstly we need $J_v$ and $E_v^*$:
 \begin{align*}
 J_v &= v \\
-E_v &= L_v[\cdot,\phi] = -(\cdot,\phi)
+E_v &= L_v[\cdot,\phi] = -(\cdot,\phi).
 \end{align*}
-Since $L_v[\cdot,\phi]$ is symmetric, $E_v^*=E_v$, and strongly formulated, $E_v=-1$. The expression for the gradient is then simply:
+Since $L_v[\cdot,\phi]$ is symmetric, $E_v^*=E_v$, and strongly formulated, $E_v=-1$. By inserting relevant terms into (\ref{gradient}), we get the gradient:
 \begin{align*}
 \hat{J}'(v)&=-E_v^*p + J_v \\
-&= p+v 
+&= p+v. 
 \end{align*} 
 \end{proof}
 Evaluating the gradient of our example problem can now be boiled down to the following procedure:
@@ -193,16 +193,16 @@ Since steepest descent has slow convergence, one usually uses faster line search
 \begin{align*}
 x^{k+1} = x^k + \alpha \nabla^2 f(x^k)^{-1}\nabla f(x^k)
 \end{align*}
-The problem with this method is that we need to evaluate the inverse Hessian, which often is computationally expensive procedure. An alternative to the newton method is so called quasi-Newton methods, which construct an approximate Hessian from information of previous iterates. One such method is the BFGS method. In BFGS we we find the inverse Hessian approximation by using the following recursive formula:
+The problem with this method is that we need to evaluate the inverse Hessian in gradient direction, which often is computationally expensive procedure. An alternative to the Newton method is so called quasi-Newton methods, which construct an approximate Hessian from information of previous iterates. One such method is the BFGS method\cite{broyden1965class}\cite{shanno1970conditioning}. In BFGS we find the inverse Hessian approximation by using the following recursive formula:
 \begin{align*}
-H^{k+1} &= (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_k) + S_k\cdot S_k \\
-S_k &= x^{k+1}-x^{k} \\
-Y_k &= \nabla f(x^{k+1})-\nabla f(x^{k})\\
-\rho_k &= \frac{1}{Y_k\cdot S_k} \\
+H^{k+1} &= (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_k) + S_k\cdot S_k, \\
+S_k &= x^{k+1}-x^{k}, \\
+Y_k &= \nabla f(x^{k+1})-\nabla f(x^{k}),\\
+\rho_k &= \frac{1}{Y_k\cdot S_k}, \\
 H^0&=\beta\mathbbold{1}.
 \end{align*}
 The only thing required of the initial inverted Hessian approximation $H^0$, is that it should be symmetric positive definite. The usual choice however, is just identity or a multiple of identity, where the multiple reflects the scaling of the variables. Each line search iteration for BFGS looks like:
 \begin{align*}
 x^{k+1} = x^k + \alpha H^{k}\nabla f(x^k)
 \end{align*} 
-In the BFGS method information from all iterations is used to create the inverse Hessian approximation. An alternative to this is to limit the number of iterations the recursive formula remembers to only the latest iterations. This variation of the BFGS method is called L-BFGS. The length of the memory need to be chosen in advance, and the typical choice is 10. Two advantages L-BFGS has over BFGS is firstly that it is less computationally expensive. Secondly one would think that recent iterations possess more valuable information than early iterations, and therefore should be given more weight. 
+In the BFGS method information from all previous iterations is used to create the inverse Hessian approximation for the new iteration. An alternative to this is to limit the number of iterations the recursive formula remembers to only the latest iterations. This variation of the BFGS method is called L-BFGS\cite{liu1989limited}. The length of the memory need to be chosen in advance, and the typical choice is 10. Two advantages L-BFGS has over BFGS is firstly that it is less computationally expensive. Secondly one would think that recent iterations possess more valuable information than early iterations, and therefore should be given more weight. 

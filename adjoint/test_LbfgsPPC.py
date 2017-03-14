@@ -223,7 +223,7 @@ def compare_pc_and_nonpc_for_different_m():
 
     res2 = []
     res3 = []
-    opt = {'mem_lim':10,'jtol':1e-5,'beta_scale':False}
+    opt = {'mem_lim':10,'jtol':1e-6,'beta_scale':False}
     fu_gr_sum = res1.counter()[0]+res1.counter()[1]
     for m in M[1:]:
 
