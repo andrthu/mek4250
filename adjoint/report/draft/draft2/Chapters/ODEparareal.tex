@@ -21,15 +21,15 @@ Decomposing the interval $I$ means dividing the interval into $N$ subintervals $
 \end{align}
 Here $\lambda^0=u_0$. If $\Lambda=(\lambda_0,..,\lambda_{N-1})$ are known values, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the previous intervals, and need to be calculated by solving the equation. The Parareal scheme is a way of getting around this.
 \section{Parareal scheme}
-The Parareal scheme finds $\Lambda$, by solving the equation on the entire interval using an implicit Euler scheme on a coarse resolution, and then using this numerical solution at the decomposed interval boundaries $\{T^n\}_{n=1}^{N-1}$ as $\lambda$s, for the real solver $y$. We can then repeat this process, by propagating the jumps $S^n=y^{n-1}(T^n)-\lambda^n$ using the coarse scheme. This creates an iteration, that looks like this:
+The Parareal scheme finds $\Lambda$, by solving the equation on the entire interval using a cheap scheme on a coarse resolution, and then using this coarse solution at the decomposed interval boundaries $\{T^n\}_{n=1}^{N-1}$ as $\lambda$s, for a fine solver $y$. We can then repeat this process, by propagating the jumps $S^n=y^{n-1}(T^n)-\lambda^n$ using the coarse scheme. This creates an iteration, that looks like this:
 \begin{align*}
 &(i) \ \textit{Set $S^n_k = y_k^{n-1}(T^n)-\lambda_k^n$} \\
-&(ii) \ \textit{Propogate the jumps with the coarse scheme $\delta_k$ using (\ref{propagator})} \\
+&(ii) \ \textit{Propogate the jumps with the coarse scheme to obtain $\delta_k$ using (\ref{propagator})} \\
 &(iii) \ \textit{Update $\lambda_{k+1}^n=y_k^{n-1}(T^n) + \delta_k^n$}
 \end{align*} 
 \\
 \\
-To illustrate how it works, I will set up the Parareal scheme for a simple ODE:
+To illustrate how it works, we will set up the Parareal scheme for a simple ODE:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -105,7 +105,7 @@ Or:
 \begin{align}
 M \ \Lambda \ = \ H.\quad \textrm{With $M\in\mathbb{R}^{N\times N},H\in\mathbb{R}^N$ given by (\ref{vir_mat_form_sys }).} \label{vir_mat_sys}
 \end{align}
-Resolving (\ref{vir_mat_sys}) is equivalent with solving our ODE (\ref{ODE_eks}) sequentially, which we do not want to do. The idea of \cite{maday2002parareal} is then to define a coarse version of $\bold{F}_{\Delta T}$, and use it to formulate a Parareal iteration. As an example we define the coarse solver using implicit Euler:
+Solving (\ref{vir_mat_sys}) is equivalent with solving our ODE (\ref{ODE_eks}) sequentially, which we do not want to do. The idea of \cite{maday2002parareal} is then to define a coarse version of $\bold{F}_{\Delta T}$, and use it to formulate a Parareal iteration. As an example we define the coarse solver using implicit Euler:
  \begin{align}
 \frac{\bold{G}_{\Delta T}(\omega) -\omega }{\Delta T } + A \bold{G}_{\Delta T}(\omega) = 0
 \end{align}  

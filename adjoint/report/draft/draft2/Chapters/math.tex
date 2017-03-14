@@ -193,7 +193,7 @@ Since steepest descent has slow convergence, one usually uses faster line search
 \begin{align*}
 x^{k+1} = x^k + \alpha \nabla^2 f(x^k)^{-1}\nabla f(x^k)
 \end{align*}
-The problem with this method is that we need to evaluate the inverse Hessian in gradient direction, which often is computationally expensive procedure. An alternative to the Newton method is so called quasi-Newton methods, which construct an approximate Hessian from information of previous iterates. One such method is the BFGS method\cite{broyden1965class}\cite{shanno1970conditioning}. In BFGS we find the inverse Hessian approximation by using the following recursive formula:
+The problem with this method is that we need to evaluate the inverse Hessian in gradient direction, which often is computationally expensive procedure. An alternative to the Newton method is so called quasi-Newton methods, which construct an approximate Hessian from information of previous iterates. One such method is the BFGS method\cite{broyden1970convergence}\cite{fletcher1970new} \cite{goldfarb1970family} \cite{shanno1970conditioning}. In BFGS we find the inverse Hessian approximation by using the following recursive formula:
 \begin{align*}
 H^{k+1} &= (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_k) + S_k\cdot S_k, \\
 S_k &= x^{k+1}-x^{k}, \\

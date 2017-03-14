@@ -68,7 +68,7 @@ Where $p$ is the solution of the adjoint equation:
 \begin{align*}
 E_y^*p=\frac{\partial}{\partial y}J_{\mu}
 \end{align*} 
-Notice that the state equation $E$ in actuality is several equations defined separately on the each of the decomposed subintervals. The result of this will be that the adjoint equation also will be several equations defined on each interval. To see this clearly I will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
+Notice that the state equation $E$ in actuality is several equations defined separately on the each of the decomposed subintervals. The result of this will be that the adjoint equation also will be several equations defined on each interval. To see this clearly we will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
 \subsection{Deriving adjoint for simple problem}
 Let us first remember what the example optimal control problem with ODE constraints looked like:
 \begin{align*}
@@ -215,7 +215,7 @@ The virtual problem is the optimal control problem:
 &\min_{\Lambda}\hat{J}(\Lambda) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i}) \label{virtual_func} \\
 &\textit{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
 \end{align}
-Where $\bold F_{\Delta T}$ is the function defined in (\ref{F_operator}). In chapter 3 I explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
+Where $\bold F_{\Delta T}$ is the function defined in (\ref{F_operator}). In chapter \ref{parareal_chap} we explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
 \begin{align*}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)
 \end{align*}
@@ -496,7 +496,7 @@ Then you apply the forward system:
 \bar{\bar{J_{\lambda_2}}}&=\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)) \\
 \bar{\bar{J_{\lambda_3}}}&=\bar{J_{\lambda_3}} + \bold{G}_{\Delta T}(\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)))
 \end{align*} 
-The $\Lambda$ part of the gradient is then updated to be $\bar{\bar{J_{\lambda_1}}}, \bar{\bar{J_{\lambda_2}}},\bar{\bar{J_{\lambda_3}}}$. Notice that I in the last line of the adjoint system use $\bold{G}_{\Delta T}^*(0)$, and that I in the first line in the forward system use $\bold{G}_{\Delta T}(0)$. The zeros here represent information at time $T_0=0$ and $T_4=T$. At these times, I really have no information relating to the $\Lambda$ part of the gradient of $J$. I am therefore forced to choose zero.
+The $\Lambda$ part of the gradient is then updated to be $\bar{\bar{J_{\lambda_1}}}, \bar{\bar{J_{\lambda_2}}},\bar{\bar{J_{\lambda_3}}}$. Notice that we in the last line of the adjoint system use $\bold{G}_{\Delta T}^*(0)$, and that we in the first line in the forward system use $\bold{G}_{\Delta T}(0)$. The zeros here represent information at time $T_0=0$ and $T_4=T$. At these times, we really have no information relating to the $\Lambda$ part of the gradient of $J$. We are therefore forced to choose zero.
 \\
 \\
 Since we are only using out course solver use $\bold{G}_{\Delta T}$ on the inner points of the interval $I=[0,T]$, when we are applying the inverse of $\bar{M}^{*}$ and $\bar{M}$ on the $\Lambda$ part of the gradient, the course model is only used on the interval $[T_1,T_{N-1}]$. This means that we are not using the first and last parts $[0,T_1]$ and $[T_{N-1},T]$ of $I$. A consequence of this is that it refining our course solver for each interval $\bold{G}_{\Delta T}$, has little effect since $[0,T_1]$ and $[T_{N-1},T]$ have length $\Delta T$, and when we are not using these intervals the course solver has a natural built in error of $\Delta T$, even if we use a finer resolution on $[T_1,T_{N-1}]$. 

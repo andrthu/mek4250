@@ -1,11 +1,8 @@
 \chapter{Literature review}
 In the paper \cite{maday2002parareal}, Maday and Turinici presents a way to solve a control problem with partial differential evolution constraints in parallel using Parareal. The problem they look at is the following:
 \begin{align*}
-J(y,u) = \frac{1}{2}\int_0^T||u(t)||_U^2dt + \frac{\alpha}{2}||y(T)-y^T||^2
-\end{align*} 
-For the equation:
-\begin{align*}
-\left\{
+&J(y,u) = \frac{1}{2}\int_0^T||u(t)||_U^2dt + \frac{\alpha}{2}||y(T)-y^T||^2,\\
+&\left\{
      \begin{array}{lr}
        	\frac{\partial y}{\partial t}+Ay = Bu\\
        	   y(0)=y_0
