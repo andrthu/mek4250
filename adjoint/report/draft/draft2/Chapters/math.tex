@@ -1,21 +1,48 @@
 \chapter{Optimal control with ODE constraints}
 \section{General optimal control problem}
-In this thesis we are only looking at optimal control problems with time dependent Differential equation(DE) constraints. This problem is only a part of the more general control problem, which can be formulated as:
+In this thesis we are only looking at optimal control problems with time dependent differential equation(DE) constraints. This problem is only a part of the more general control problem, which can be formulated as:
 \begin{align}
 \underset{y\in Y,v\in V}{\text{min}} \ &J(y,v) \\
-\textrm{Subject to:} \ &E(y,v)=0
+\textrm{Subject to:} \ &E(y,v)=0.
 \end{align}
-Here $J: Y\times V\rightarrow\mathbb{R}$ is the objective function that we want to minimize, and the spaces $Y,V$ are reflexive Banach spaces. The operator $E:Y\times V \rightarrow Z$, where $Z$ is a Banach spaces, should have the property that $\forall v \in V$, $\exists! y(v)\in Y$ that satisfies the state equation:
+Here $J: Y\times V\rightarrow\mathbb{R}$ is the objective function that we want to minimize, and the spaces $Y,V$ are reflexive Banach spaces. The operator $E:Y\times V \rightarrow Z$, where $Z$ is a Banach spaces, is called the state equation when we set it equal to zero. The state equation should have the property that $\forall v \in V$, $\exists! y(v)\in Y$ that satisfies:
 \begin{align*}
-E(y(v),v)=0
+E(y(v),v)=0.
 \end{align*}
-The first question we need to ask ourself, is under what conditions does the above problem even have a solution. This depends on the operators $J,E$ and the spaces $Y,V,Z$, and we will come back to this question when we have defined our example problem. Instead let us assume for now that a solution exists, and try to derive a way to find it. If we replace $y$ with $y(v)$ we can define the reduced problem:
+The first question we need to ask ourself, is under what conditions does the above problem even have a solution. This depends on the operators $J,E$ and the spaces $Y,V,Z$, and we will therefore come back to this question when we have defined our example problem. Instead let us assume for now that a solution exists, and try to derive a way to find it. If we replace $y$ with $y(v)$ we can define the reduced problem:
 \begin{align}
 \underset{v\in V}{\text{min}} \ \hat J(v)=\underset{v\in V}{\text{min}} \ J(y(v),v)  \label{reduced problem}
 \end{align}
 The problem (\ref{reduced problem}) is called the reduced problem because we have moved the differential equation constraints into the functional, and by doing so transformed the constrained problem into an unconstrained one. Since the aim is to find the minimum of a function, it is natural, that to solve (\ref{reduced problem}), we need to be able to differentiate the objective function $\hat{J}$ with respect to the control $v$. There are different ways of doing that, but I will focus on the so called adjoint approach, which is the most computational effective way of calculating the gradient of $\hat{J}$.
+\subsection{Example problem} \label{example_sec}
+To better understand the adjoint approach to gradient evaluation of the reduced objective function, we will define a simple optimal control problem with ODE constraints, so that we later can derive its adjoint equation and gradient. The problem will also be used to test and verify the implementation in chapter \ref{Verification chapter} and \ref{Experiments chapter}. In our example both the state $y$ and the control $v$ will be functions on an interval $[0,T]$. This allows us to define the objective function:
+\begin{align}
+J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \label{exs_J}
+\end{align}
+The state equation $E(y,v)=0$ is a linear, first order equation with the control as a source term:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	y'(t)=ay(t) + v(t) \ \textrm{for } \ t\in(0,T),\\
+       	y(0)=y_0.
+     \end{array}
+   \right. \label{exs_E}
+\end{align}
+Now that we actually have an optimal control problem, we can return to the question of solvability. To achieve this, we will write up a general result from \cite{hinze2008optimization} about linear quadratic problems, which also includes problem (\ref{exs_J}-\ref{exs_E}). Linear quadratic problems are a quite simple class of problems, and more general theorems for problems with non-linear equations and non-quadratic objective functions do however exist, and can be found in \cite{hinze2008optimization}.
+\begin{theorem}
+The linear quadratic optimization problems, that can be written on the form:
+\begin{align*}
+&\underset{y\in Y,v\in V}{\text{min}}J(y,v) = \frac{1}{2}||Qy-q||_H^2 + \frac{\alpha}{2}||v||_V^2 \\
+&\textit{Subject to:} \ Ay + Bv = g
+\end{align*}
+Where H,V are Hilbert spaces, Y,Z are Banach spaces, $q\in H$, $g\in Z$ and $A:Y\rightarrow Z$, $B:V\rightarrow Z$ and $Q:Y\rightarrow H$ are bounded linear operators. If $\alpha>0$, the above written problem has a unique solution pair $(y,v)\in Y\times V$.
+\end{theorem}   
+\begin{proof}
+See \cite{hinze2008optimization}
+\end{proof}
+It is obvious, that the objective function (\ref{exs_J}) of our example problem is a quadratic function that fits into the setting of the above theorem, and since the equation (\ref{exs_E}) is linear, with solution $y(t) = e^{a t}(C(y_0)+\int_0^te^{-a\tau}v(\tau)d\tau)$, which is unique for every integrable $v$, it is clear that problem (\ref{exs_J}-\ref{exs_E}) is a linear quadratic optimization problem. 
 \section{The adjoint equation and the gradient}
-To find the gradient $\hat{J}'(v)$, lets start by differentiating $\hat J$:
+The usual way of finding the minimum(or maximum) value of a function $J$, is to solve the equation $J'(x)=0$. Solving this equation usually requires us to be able to evaluate, or have an expression for the derivative of $J$. With this in mind let us try to find the gradient $\hat{J}'(v)$ of the reduced problem (\ref{reduced problem}).
 \begin{align*}
 \hat{J}'(v) = DJ(y(v),v) = y'(v)^*J_y(y(v),v) + J_v(y(v),v)
 \end{align*}
@@ -33,34 +60,9 @@ This now allows us to write up the gradient as follows:
 &=-E_v(y(v),v)^*E_y(y(v),v)^{-*}J_y(y(v),v) + J_v(y(v),v) \\
 &= -E_v(y(v),v)^*p +J_v(y(v),v). \label{gradient}
 \end{align}
-Evaluating the gradient for a control variable $v\in V$ typically requires solving both the state and adjoint equation, and then inserting the solutions into the expression for the gradient (\ref{gradient}).
-\section{Example problem}
-To better understand the adjoint approach to gradient evaluation of the reduced objective function, we will define a simple optimal control problem with ODE constraints, and derive its adjoint equation and gradient. The problem will also be used later to test the implementation. In our example both the state $y$ and the control $v$ will be functions on an interval $[0,T]$. This allows us to define the objective function:
-\begin{align}
-J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \label{exs_J}
-\end{align}
-The state equation $E(y,v)$ is a linear, first order equation with the control as a source term:
-\begin{align}
-\left\{
-     \begin{array}{lr}
-       	y'(t)=ay(t) + v(t) \ \textrm{for } \ t\in(0,T),\\
-       	y(0)=y_0.
-     \end{array}
-   \right. \label{exs_E}
-\end{align}
-Before we derive the adjoint and gradient of the reduced version of the above problem, we  return to the question of solvability. To achieve this, we will write up a general result from \cite{hinze2008optimization} about linear quadratic problems, which also includes problem (\ref{exs_J}-\ref{exs_E}).
-\begin{theorem}
-The linear quadratic optimization problems, that can be written on the form:
-\begin{align*}
-&\underset{y\in Y,v\in V}{\text{min}}J(y,v) = \frac{1}{2}||Qy-q||_H^2 + \frac{\alpha}{2}||v||_V^2 \\
-&\textit{Subject to:} \ Ay + Bv = g
-\end{align*}
-Where H,V are Hilbert spaces, Y,Z are Banach spaces, $q\in H$, $g\in Z$ and $A:Y\rightarrow Z$, $B:V\rightarrow Z$ and $Q:Y\rightarrow H$ are bounded linear operators. If $\alpha>0$, the above written problem has a unique solution pair $(y,v)\in Y\times V$.
-\end{theorem}   
-\begin{proof}
-See \cite{hinze2008optimization}
-\end{proof}
-It is obvious, that the objective function (\ref{exs_J}) of our example problem fits into the setting of the above theorem, and since the equation (\ref{exs_E}) has solution $y(t) = e^{a t}(C(y_0)+\int_0^te^{-a\tau}v(\tau)d\tau)$, and is uniquely solvable for every integrable $v$, it is clear that problem (\ref{exs_J}-\ref{exs_E}) is a linear quadratic optimization problem. Knowing this, we can safely continue by stating and deriving the adjoint and gradient expression for our example problem (\ref{exs_J}-\ref{exs_E}): 
+Evaluating the gradient for a control variable $v\in V$ typically requires solving both the state and adjoint equation, and then inserting the solutions into the expression for the gradient (\ref{gradient}). To better illustrate how gradient evaluation works let us derive the adjoint equation and the gradient of the problem introduced in section \ref{example_sec}.
+\subsection{Example adjoint}
+We want to derive the gradient of problem (\ref{exs_J}-\ref{exs_E}), and in order to do so, we need the adjoint equation of the problem, which we now state in the theorem below, followed by its derivation.
 \begin{theorem}
 The adjoint equation of the problem (\ref{exs_J}-\ref{exs_E}) is:
 \begin{align*}     
@@ -244,4 +246,4 @@ If the sequence $\{x^k\}$ originating from the quasi-Newton iteration converges 
 \begin{proof}
 \cite{nocedal2006numerical}
 \end{proof}
-Even though quasi-Newton methods do not posses the quadratic convergence of the Newton method, superliner convergence is still a lot better than the linear one for steepest decent.
+Even though quasi-Newton methods do not posses the quadratic convergence of the Newton method, superlinear convergence is still a lot better than the linear one for steepest decent.
