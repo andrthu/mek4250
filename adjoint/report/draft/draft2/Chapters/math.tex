@@ -179,9 +179,10 @@ x^{k+1} = x^k - \alpha_k \nabla J(x^k)
 \end{align*} 
 The problem with steepest descent is that it converges quite slowly. This fact we get from the following theorem given in \cite{nocedal2006numerical}
 \begin{theorem}
+\label{SD_con}
 Assume that $f:\mathbb{R}^n\longrightarrow\mathbb{R}$ is twice continuously differentiable, that the steepest decent method converge to a point $x^*$, and that the Hessian of $f$ at this point, $\nabla^2 f(x^*)$ is positive definite. Then the following holds:
 \begin{align*}
-f(x^{k+1})-f(x^*) \leq (\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1})^2 f(x^{k})-f(x^*)
+f(x^{k+1})-f(x^*) \leq (\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1})^2 (f(x^{k})-f(x^*))
 \end{align*}  
 Here $\lambda_1\leq\cdots\leq \lambda_n$ denotes the eigenvalues of $\nabla^2 f(x^*)$.
 \end{theorem}   
@@ -208,15 +209,39 @@ x^{k+1} = x^k - \alpha H^{k}\nabla f(x^k)
 In the BFGS method information from all previous iterations is used to create the inverse Hessian approximation for the new iteration. An alternative to this is to limit the number of iterations the recursive formula remembers to only the latest iterations. This variation of the BFGS method is called L-BFGS\cite{nocedal1980updating}. The length of the memory need to be chosen in advance, and the typical choice is 10. Two advantages L-BFGS has over BFGS is firstly that it requires less memory storage than BFGS. Secondly one would think that recent iterations possess more valuable information than early iterations, and therefore should be given more weight. 
 \subsubsection{Convergence results for Newton and quasi-Newton methods}
 Both Newton and quasi-Newton methods converge faster than the steepest descent method. To show this we will include a couple of theorems from \cite{nocedal2006numerical}
-concerning this topic. Let us first look at the convergence result for Newtons method.
-\begin{theorem}
-Suppose $f:\mathbb{R}^n\rightarrow\mathbb{R}$ is twice continuously differentiable, and that the Hessian $\nabla^2 f(x)$ is Lipschitz continuous in neighbourhood of a solution $x^*$ that satisfies $\nabla f(x^*)=0$ and $\nabla^2 f(x^*)=0$. Then the following holds for the Newton iteration \ref{Newton}:
+concerning this topic. Let us however first look at a definition classifying convergence.
+\begin{definition}
+We say that a sequence $\{x^k\}$ converges linearly to a limit $L$, if there exists $\epsilon\in(0,1)$ such that
 \begin{align*}
-1.&\textrm{If $x^0$ is suffichently close to $x^*$, the sequence of iterates converge to $x^*$.}\\
-2.&\textrm{The rate of convergence of $\{x^k+\}$ is quadratic}\\
-3.&\textrm{The sequence of gradient norms $ \{||\nabla f(x^k)||\}$ converges towards zero quadraticly}
+\lim_{k\rightarrow\infty}\frac{||x^{k+1}-L||}{||x^k-L||} =\epsilon.
+\end{align*} 
+If $\epsilon=0$ we say that $\{x^k\}$ converges superlinearly to $L$. Lastly we say that $\{x^k\}$ converges quadratically towards $L$, if
+\begin{align*}
+\lim_{k\rightarrow\infty}\frac{||x^{k+1}-L||}{||x^k-L||^2} =\epsilon.
+\end{align*}
+\end{definition}
+Using the above definition we note that the convergence result for steepest descent from theorem \ref{SD_con} can be restated as: $f(x^k)$ converges linearly towards $f(x^*)$, with $\epsilon=(\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1})^2$. For problems where $\nabla^2 f(x^*)$ is badly conditioned this number is close to 1, and we would then experience bad convergence. Let us now continue with convergence results for Newton and quasi-Newton methods starting with Newton.
+\begin{theorem}
+\label{Newton_con}
+Suppose $f:\mathbb{R}^n\rightarrow\mathbb{R}$ is twice continuously differentiable, and that the Hessian $\nabla^2 f(x)$ is Lipschitz continuous in neighbourhood of a solution $x^*$ that satisfies $\nabla f(x^*)=0$ and $\nabla^2 f(x^*)$ positive definite. Then the following holds for the Newton iteration \ref{Newton}:
+\begin{align*}
+1.\quad&\textrm{If $x^0$ is suffichently close to $x^*$, the sequence of iterates converge to $x^*$.}\\
+2.\quad&\textrm{The rate of convergence of $\{x^k\}$ is quadratic}\\
+3.\quad&\textrm{The sequence of gradient norms $ \{||\nabla f(x^k)||\}$ converges towards zero quadratically}
 \end{align*}
 \end{theorem}
 \begin{proof}
 \cite{nocedal2006numerical}
 \end{proof}
+The quadratic convergence of the Newton iteration is big improvement in comparison with steepest descent, however theorem \ref{Newton_con} also highlights one of the problems with the method. Since we need to invert $\nabla^2 f(x^k)$ to find the search direction at $x^k$, we need an initial $x^0$ sufficiently close to the actual solution for the iteration to even work. This problem does not arise in BFGS and L-BFGS, since the Hessian approximation is designed to be invertible. Unfortunately though, these quasi-Newton methods does not have the convergence properties of Newtons method, as the next result shows.
+\begin{theorem}
+Assume $f:\mathbb{R}^n\rightarrow\mathbb{R}$ is three times differentiable. Consider then the quasi-Newton iteration $x^{k+1}=x^k-\alpha_k B_k^{-1}\nabla f(x^k)$, where $B_k$ is an approximation of the Hessian along the search direction $p_k=-B_k^{-1}\nabla f(x^k)$, satisfying the condition:
+\begin{align*}
+\lim_{K\rightarrow\infty}\frac{||(B_k-\nabla^2f(x^k))p_k||}{||p_k||}=0
+\end{align*}
+If the sequence $\{x^k\}$ originating from the quasi-Newton iteration converges to a point $x^*$, where $\nabla f(x^*)=0$ and $\nabla^2 f(x^*)$ is positive definite, the convergence is superlinear. 
+\end{theorem} 
+\begin{proof}
+\cite{nocedal2006numerical}
+\end{proof}
+Even though quasi-Newton methods do not posses the quadratic convergence of the Newton method, superliner convergence is still a lot better than the linear one for steepest decent.
