@@ -181,7 +181,7 @@ def compare_pc_and_nonpc_for_different_m():
         #tol = 
     except:
         N = 1000
-        mu = N**2
+        mu = 10*N
 
     M = [1,2,3,4,5,6,8,16,32,64]
     
@@ -223,7 +223,7 @@ def compare_pc_and_nonpc_for_different_m():
 
     res2 = []
     res3 = []
-    opt = {'mem_lim':10,'jtol':1e-6,'beta_scale':False}
+    opt = {'mem_lim':10,'jtol':1e-5,'beta_scale':False}
     fu_gr_sum = res1.counter()[0]+res1.counter()[1]
     for m in M[1:]:
 
