@@ -98,11 +98,12 @@ def parareal_solver(y0,a,T,M,N,order=3):
     Y = gather_y(y,N)
     return Y
 
-def parareal_tol_solver(y0,a,T,M,N,ye,tol):
+def parareal_tol_solver(y0,a,T,M,N,ye,tol,plot_itr=False):
     """
     Does parareal iteration until error between numerical and exact
     solution ye is under tolerance tol
     """
+    import matplotlib.pyplot as plt
     dt = float(T)/N
     dT =  float(T)/M
     coarse_y = implicit_solver(y0,a,dT,M)
@@ -113,11 +114,17 @@ def parareal_tol_solver(y0,a,T,M,N,ye,tol):
     
     Y = gather_y(y,N)
     k = 1
-    while np.max(abs(ye-Y))>tol:
+    if plot_itr:
+        plt.plot(ye)
+        plt.plot(Y)
+    while np.max(abs(ye-Y))/np.max(abs(ye))>tol and k<20:
         y,coarse_y=propagator_iteration(y,coarse_y,a,y0,N,M,dt,dT)
         Y = gather_y(y,N)
+        if plot_itr:
+            plt.plot(Y)
         k+=1
-
+    if plot_itr:
+        plt.show()
     return Y,k
 
 def test_order():
@@ -152,26 +159,26 @@ def test_order():
     
 def test_convergence():
     
-    a = 1.3
+    a = -5.3
     T = 1
     y0 = 3.52
 
     N = 10000
-
+    tol = 1./N
     t = np.linspace(0,T,N+1)
     ye = y0*np.exp(-a*t)
     yn = implicit_solver(y0,a,float(T)/N,N)
-    error = np.max(abs(ye-yn))
+    error = np.max(abs(ye-yn)/np.max(abs(ye)))
 
     M = [2,5,10,25,100]
     K = []
     K2 = []
     E = [error]
     for m in M:
-        Y,k=parareal_tol_solver(y0,a,T,m,N,ye,1./N)
+        Y,k=parareal_tol_solver(y0,a,T,m,N,yn,error,plot_itr=True)
         K.append(k)
         K2.append(np.log(1./N)/np.log(1./m))
-        E.append(np.max(abs(ye-Y)))
+        E.append(np.max(abs(yn-Y))/np.max(abs(yn)))
 
     print K
     print
@@ -185,6 +192,6 @@ if __name__ == "__main__":
 
     N = 100000
     M = 2
-    test_order()
-    #test_convergence()
+    #test_order()
+    test_convergence()
     #parareal_solver(y0,a,T,M,N,order=1,show_plot=True)
