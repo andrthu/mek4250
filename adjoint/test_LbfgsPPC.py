@@ -183,7 +183,7 @@ def compare_pc_and_nonpc_for_different_m():
         N = 1000
         mu = 10*N
 
-    M = [1,2,3,4,5,6,8,16,32,64]
+    M = [1,2,3,4,5,6,8,16,32,64,128]
     
     res1 = problem.solve(N,Lbfgs_options={'jtol':1e-7})
     t = np.linspace(0,T,N+1)
