@@ -52,7 +52,7 @@ class PararealOCP(OptimalControlProblem):
     def ODE_ppc_update(self,y,u,i,j,dt):
         return self.ODE_update(y,u,i,j,dt)
         
-    def PC_maker2(self,N,m,step=1):
+    def PC_maker2(self,N,m,step=1,mu=1.):
         #"""
         def pc(x):
             S = np.zeros(m+1)
@@ -70,22 +70,65 @@ class PararealOCP(OptimalControlProblem):
                 S[i] = S[i] + self.ODE_step(S[i-1],dT,step=step)
             #print S
             #time.sleep(1)
+            S = S
             x[:]=S.copy()[1:-1]
             return x
         #"""
         #pc = lambda x:x
         return pc
 
-    def PC_maker3(self,N,m,step=1):      
+    def PC_maker3(self,N,m,step=1,mu=1.):      
 
         def pc(x):
             Nc = len(x)-m
-            lam_pc = self.PC_maker2(N,m,step)
+            lam_pc = self.PC_maker2(N,m,step,mu)
             lam = x.copy()[Nc+1:]
             lam2 = lam_pc(lam)
             x[Nc+1:]= lam2.copy()[:]
             return x
         return pc
+
+    def PC_maker4(self,N,m,step=1,mu=1.):
+        #"""
+        def pc(x):
+            S = np.zeros(m+1)
+            #S[0]  = self.end_end_adjoint +self.y0
+            #S[-1] = -self.end_start_adjoint      
+            
+            S[1:-1] = x.copy()[:]
+            #S[-2] += -self.end_start_adjoint
+            dT = float(self.T)/m
+            dt = float(self.T)/N
+            
+            #print 'step 0: ',S
+            for i in range(1,m):
+                S[-(i+1)] = S[-(i+1)] + S[-i]/(1-self.a*dT)#self.adjoint_step(S[-i],dT,step=step)
+            S = S/(1-self.a*dt)
+            #print 'step 1: ',S
+            for i in range(1,m):
+                S[i] = S[i] + S[i-1]/(1-self.a*dT)#self.ODE_step(S[i-1],dT,step=step)
+            S = S/(1-self.a*dt)
+            #print S
+            #time.sleep(1)
+            #print 'step 2: ',S
+            #S[-2]+=self.end_start_adjoint
+            #S = S/(1-self.a*dt)
+            x[:]=S.copy()[1:-1]
+            return x
+        #"""
+        #pc = lambda x:x
+        return pc
+    def PC_maker5(self,N,m,step=1,mu=1.):      
+
+        def pc(x):
+            Nc = len(x)-m
+            lam_pc = self.PC_maker4(N,m,step,mu)
+            lam = x.copy()[Nc+1:]
+            lam2 = lam_pc(lam)
+            x[Nc+1:]= lam2.copy()[:]
+            return x
+        return pc
+
 
     def adjoint_propogator(self,m,delta0,S):
 
@@ -160,7 +203,7 @@ class PararealOCP(OptimalControlProblem):
         initial_counter = self.counter.copy()
         for i in range(len(my_list)):
         
-            J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
+            J,grad_J = self.generate_reduced_penalty2(dt,N,m,my_list[i])
 
             self.update_Lbfgs_options(options)
             Lbfgsopt = self.Lbfgs_options
@@ -171,7 +214,7 @@ class PararealOCP(OptimalControlProblem):
                     Lbfgsopt = self.Lbfgs_options
                 except:
                     print 'no good tol_list'
-            
+            PPC = self.PC_creator(N,m,step=1,mu=my_list[i])
             Solver = SplitLbfgs(J,grad_J,x0,m=m,Hinit=None,
                                 options=Lbfgsopt,ppc=PPC,scale=scaler)
             res = Solver.normal_solve()
@@ -246,7 +289,7 @@ class PararealOCP(OptimalControlProblem):
         
         return result
 
-    PC_creator = PC_maker3
+    PC_creator = PC_maker5
 
     def PPCLBFGSsolve2(self,N,m,my_list,x0=None,options=None,scale=False):
         dt=float(self.T)/N

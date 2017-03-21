@@ -54,6 +54,10 @@ class OptimalControlProblem():
 
         self.jump_diff = 0
 
+
+        self.end_end_adjoint = None
+        self.end_start_adjoint = None
+
     def set_options(self,user_options,user_Lbfgs):
         """
         Method for setting options
@@ -398,6 +402,22 @@ class OptimalControlProblem():
                     
         return g
 
+    def Penalty_Gradient2(self,u,N,m,mu):
+
+        l,L = self.adjoint_penalty_solver(u,N,m,mu)
+        dt = float(self.T)/N
+        Nc = len(u) - m
+        g = np.zeros(len(u))
+        
+        self.end_end_adjoint = l[0][0]
+        self.end_start_adjoint = l[-1][0]
+
+        g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt)
+
+        for j in range(m-1):
+            g[Nc+1+j]= l[j+1][0] - l[j][-1]
+                    
+        return g
 
     def generate_reduced_penalty(self,dt,N,m,my):
 
@@ -421,6 +441,31 @@ class OptimalControlProblem():
             """
             self.counter[1]+=1
             return self.Penalty_Gradient(u,N,m,my)
+        return J,grad_J
+
+
+    def generate_reduced_penalty2(self,dt,N,m,my):
+
+        def J(u):      
+            self.counter[0]+=1
+            return self.Penalty_Functional(u,N,m,my)
+
+        def grad_J(u):
+            """
+            l,L = self.adjoint_penalty_solver(u,N,m,my)
+            
+            Nc = len(u) - m
+            g = np.zeros(len(u))
+            
+            g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt)
+
+            for j in range(m-1):
+                g[Nc+1+j]= l[j+1][0] - l[j][-1]
+                    
+            return g
+            """
+            self.counter[1]+=1
+            return self.Penalty_Gradient2(u,N,m,my)
         return J,grad_J
     
     def solve(self,N,x0=None,Lbfgs_options=None,algorithm='my_lbfgs'):
@@ -802,7 +847,6 @@ class OptimalControlProblem():
                 g = np.zeros(len(u))
 
                 g[:N+1]=self.grad_J(u[:N+1],L,dt)
-
                 for j in range(m-1):
                     g[N+1+j]= l[j+1][0] - l[j][-1]
                     
