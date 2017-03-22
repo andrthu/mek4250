@@ -169,24 +169,26 @@ def compare_pc_and_nonpc_for_different_m():
     y0 = 3.2
     yT = 1.5
     T  = 1
-    a  = 0.9
+    a  = .9
     p = 2
 
 
     
-    problem = non_lin_problem(y0,yT,T,a,p)
+    problem = non_lin_problem(y0,yT,T,a,p,c=20)
     try:
         N = int(sys.argv[1])
         mu = 1000*N
         tol = 1e-4
+        tol1 = 1e-4
+        tol2 = 1e-4
     except:
         N = 1000
-        mu = 10*N
-        tol = 1e-4
-
+        mu = 100*N
+        tol1 = 1e-3
+        tol2 = 1e-3
     M = [1,2,3,4,5,6,8,16,32,64]
     #M = [1,2,3]
-    res1 = problem.solve(N,Lbfgs_options={'jtol':tol})
+    res1 = problem.solve(N,Lbfgs_options={'jtol':tol1})
     t = np.linspace(0,T,N+1)
     res1_norm = l2_norm(res1.x,t)
     
@@ -224,7 +226,7 @@ def compare_pc_and_nonpc_for_different_m():
 
     res2 = []
     res3 = []
-    opt = {'mem_lim':10,'jtol':10*tol,'beta_scale':False}
+    opt = {'mem_lim':10,'jtol':tol2,'beta_scale':False,'max_iter':200}
     fu_gr_sum = res1.counter()[0]+res1.counter()[1]
     for m in M[1:]:
 

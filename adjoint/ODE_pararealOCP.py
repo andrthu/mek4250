@@ -88,8 +88,9 @@ class PararealOCP(OptimalControlProblem):
             return x
         return pc
 
-    def PC_maker4(self,N,m,step=1,mu=1.):
+    def PC_maker4(self,N,m,step=1,mu=1.,con=None):
         #"""
+        
         def pc(x):
             S = np.zeros(m+1)
             #S[0]  = self.end_end_adjoint +self.y0
@@ -103,11 +104,13 @@ class PararealOCP(OptimalControlProblem):
             #print 'step 0: ',S
             for i in range(1,m):
                 S[-(i+1)] = S[-(i+1)] + S[-i]/(1-self.a*dT)#self.adjoint_step(S[-i],dT,step=step)
-            S = S/(1-self.a*dt)
+            #S = S/(1-self.a*dt)
             #print 'step 1: ',S
             for i in range(1,m):
                 S[i] = S[i] + S[i-1]/(1-self.a*dT)#self.ODE_step(S[i-1],dT,step=step)
-            S = S/(1-self.a*dt)
+                #S[i] = S[i] + (S[i-1]+dT*con[i])/(1-self.a*dT)
+                #print dT*con[i]
+            #S = S/(1-self.a*dt)
             #print S
             #time.sleep(1)
             #print 'step 2: ',S
@@ -119,10 +122,15 @@ class PararealOCP(OptimalControlProblem):
         #pc = lambda x:x
         return pc
     def PC_maker5(self,N,m,step=1,mu=1.):      
-
+        
+        coarse_I = np.linspace(0,N,m+1)
+        coarse_v = np.zeros(m+1)
         def pc(x):
+            
+            for i in range(m+1):
+                coarse_v[i] = x[int(coarse_I[i])]
             Nc = len(x)-m
-            lam_pc = self.PC_maker4(N,m,step,mu)
+            lam_pc = self.PC_maker4(N,m,step,mu,con=coarse_v)
             lam = x.copy()[Nc+1:]
             lam2 = lam_pc(lam)
             x[Nc+1:]= lam2.copy()[:]

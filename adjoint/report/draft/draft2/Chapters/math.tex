@@ -193,9 +193,9 @@ Here $\lambda_1\leq\cdots\leq \lambda_n$ denotes the eigenvalues of $\nabla^2 f(
 \end{proof}
 \subsection{BFGS and L-BFGS}
 Since steepest descent has slow convergence, one usually uses faster line search methods to solve numerical optimization problems. One alternative is Newtons method, that includes the inverse Hessian in the search direction, i.e:
-\begin{align*}
+\begin{align}
 x^{k+1} = x^k - \nabla^2 f(x^k)^{-1}\nabla f(x^k) \label{Newton}
-\end{align*}
+\end{align}
 The problem with this method is that we need to evaluate the inverse Hessian in gradient direction, which often is computationally expensive procedure. An alternative to the Newton method is so called quasi-Newton methods, which construct an approximate Hessian from information of previous iterates. One such method is the BFGS method\cite{broyden1970convergence,fletcher1970new,goldfarb1970family, shanno1970conditioning}. In BFGS we find the inverse Hessian approximation by using the following recursive formula:
 \begin{align*}
 H^{k+1} &= (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_k) + S_k\cdot S_k, \\
