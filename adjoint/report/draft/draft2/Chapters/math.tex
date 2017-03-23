@@ -176,9 +176,9 @@ Here we use constants $0<c_1<c_2<1$. The first Wolfe condition ensures that the 
 \\
 \\
 The steepest descent method is a very simple line search method, where the step length $p_k$ is set to the negative gradient direction at point $x^k$, i.e $p_k = -\nabla f(x^k)$. This gives us the following update for each iteration:
-\begin{align*}
-x^{k+1} = x^k - \alpha_k \nabla J(x^k)
-\end{align*} 
+\begin{align}
+x^{k+1} = x^k - \alpha_k \nabla f(x^k) \label{SD_itr}
+\end{align} 
 The problem with steepest descent is that it converges quite slowly. This fact we get from the following theorem given in \cite{nocedal2006numerical}
 \begin{theorem}
 \label{SD_con}
@@ -197,17 +197,17 @@ Since steepest descent has slow convergence, one usually uses faster line search
 x^{k+1} = x^k - \nabla^2 f(x^k)^{-1}\nabla f(x^k) \label{Newton}
 \end{align}
 The problem with this method is that we need to evaluate the inverse Hessian in gradient direction, which often is computationally expensive procedure. An alternative to the Newton method is so called quasi-Newton methods, which construct an approximate Hessian from information of previous iterates. One such method is the BFGS method\cite{broyden1970convergence,fletcher1970new,goldfarb1970family, shanno1970conditioning}. In BFGS we find the inverse Hessian approximation by using the following recursive formula:
-\begin{align*}
-H^{k+1} &= (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_k) + S_k\cdot S_k, \\
+\begin{align}
+H^{k+1} &= (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_k) + S_k\cdot S_k, \label{inv_H_apr} \\
 S_k &= x^{k+1}-x^{k}, \\
 Y_k &= \nabla f(x^{k+1})-\nabla f(x^{k}),\\
 \rho_k &= \frac{1}{Y_k\cdot S_k}, \\
 H^0&=\beta\mathbbold{1}.
-\end{align*}
+\end{align}
 The above formula is designed in such a way, that $H^k$ is symmetric positive definite. This gives us a requirement for the initial inverted Hessian approximation $H^0$, namely that it needs to be symmetric positive definite. The usual choice however, is just identity or a multiple $\beta$ of identity, where the multiple reflects the scaling of the variables. Strategies of how to chose a scaling factor $\beta$ is detailed in \cite{liu1989limited} and  \cite{gilbert1989some}. Each line search iteration for BFGS looks like:
-\begin{align*}
-x^{k+1} = x^k - \alpha H^{k}\nabla f(x^k)
-\end{align*} 
+\begin{align}
+x^{k+1} = x^k - \alpha H^{k}\nabla f(x^k) \label{BFGS_itr}
+\end{align} 
 In the BFGS method information from all previous iterations is used to create the inverse Hessian approximation for the new iteration. An alternative to this is to limit the number of iterations the recursive formula remembers to only the latest iterations. This variation of the BFGS method is called L-BFGS\cite{nocedal1980updating}. The length of the memory need to be chosen in advance, and the typical choice is 10. Two advantages L-BFGS has over BFGS is firstly that it requires less memory storage than BFGS. Secondly one would think that recent iterations possess more valuable information than early iterations, and therefore should be given more weight. 
 \subsubsection{Convergence results for Newton and quasi-Newton methods}
 Both Newton and quasi-Newton methods converge faster than the steepest descent method. To show this we will include a couple of theorems from \cite{nocedal2006numerical}

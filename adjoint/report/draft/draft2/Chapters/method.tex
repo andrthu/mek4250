@@ -69,7 +69,7 @@ Where $p$ is the solution of the adjoint equation:
 E_y^*p=\frac{\partial}{\partial y}J_{\mu}
 \end{align*} 
 Notice that the state equation $E$ consists of several equations defined separately on the each of the decomposed subintervals. The result is that the adjoint equation also consists of several equations defined on each interval. To see this clearly we will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
-\subsection{Deriving adjoint for the example problem}
+\subsection{Deriving the adjoint for the example problem}
 Let us first recall the example optimal control problem with ODE constraints:
 \begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \\
@@ -208,85 +208,144 @@ Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directio
 Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, that the gradient has the form we stated above.
 \end{proof} 
 \section{Parareal preconditioner} \label{pc sec}
-Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. In order to improve convergence of the unconstrained optimization solver, we include the parareal preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. To understand the preconditioner, we need to remember the second formulation of the parareal scheme defined in chapter \ref{parareal_chap}.
-\subsection{Virtual problem}
-The virtual problem is the optimal control problem:
+Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. We can for example use the steepest descent method (\ref{SD_itr}), which would create the following iteration for each penalized control problem:
 \begin{align}
-&\min_{\Lambda}\hat{J}(\Lambda) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i}) \label{virtual_func} \\
+(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_k\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method}
+\end{align}
+Alternatively we could use a BFGS iteration (\ref{BFGS_itr}), which would result in the following update:
+\begin{align}
+(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kH^{k}\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{bfgs_method}
+\end{align}
+Where $H^k$ is the inverse Hessian approximation defined in (\ref{inv_H_apr}). In order to improve convergence of the unconstrained optimization solvers, we include a preconditioner based on Parareal, proposed in \cite{maday2002parareal}, in our optimization algorithms. The preconditioner $Q$ will be on the form:
+\begin{align}
+Q = \left[ \begin{array}{cc}
+	\mathbbold{1} & 0 \\
+	0 & Q_{\Lambda} \\
+	\end{array} \right],\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1} \label{PC_form}
+\end{align} 
+For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the following way:
+\begin{align}
+(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kQ\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method2}
+\end{align}
+For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. For us to be able to do that, we need $Q$ to be positive definite, since that is a requirement on $H^0$. Before we write up what $Q_ {\Lambda}$ is, we need to revisit the algebraic formulation of the Parareal scheme defined in chapter \ref{parareal_chap}.
+\subsection{Virtual problem}
+In order for us to be able to derive the preconditioner from \cite{maday2002parareal}, we define the virtual optimal control problem. In the virtual control problem the objective function is only the penalty part of (\ref{pen_obj_J}). The problem was already written up in section (\ref{algebraic_sec}), let us however restate it here:
+\begin{align}
+&\min_{\Lambda}\hat{J}(\Lambda) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2 \label{virtual_func} \\
 &\textit{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
 \end{align}
-Where $\bold F_{\Delta T}$ is the function defined in (\ref{F_operator}). Chapter \ref{parareal_chap} explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
+Where $\bold F_{\Delta T}$ is the fine propagator from section \ref{Parareal_sec}. In the context of the virtual problem (\ref{virtual_func}-\ref{virtual}), $\bold F_{\Delta T}(\omega)$ propagates $\omega$ one time step of length $\Delta T$ using the equation:
 \begin{align*}
-\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)
+\left\{
+     \begin{array}{lr}
+       	\frac{\partial}{\partial t} y(t)-ay(t)=0  \ \textrm{for } \ t\in(0,\Delta T),\\
+       	y(0)=\omega.
+     \end{array}
+   \right.
+\end{align*} 
+Chapter \ref{parareal_chap} explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
+\begin{align*}
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)\label{par_mat_sys}
 \end{align*}
 Where $M$ and $\bar{M}$ are matrix representation of the fine and course resolution propagators $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1})$:
 \begin{align*}
 M = \left[ \begin{array}{cccc}
-   I & 0 & \cdots & 0 \\  
-   -\bold{F}_{\Delta T} & I & 0 & \cdots \\ 
-   0 &-\bold{F}_{\Delta T} & I  & \cdots \\
-   0 &\cdots &-\bold{F}_{\Delta T} & I   \\
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T} & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T} & \mathbbold{1}  \\
    \end{array}  \right],
 \bar{M} = \left[ \begin{array}{cccc}
-   I & 0 & \cdots & 0 \\  
-   -\bold{G}_{\Delta T} & I & 0 & \cdots \\ 
-   0 &-\bold{G}_{\Delta T} & I  & \cdots \\
-   0 &\cdots &-\bold{G}_{\Delta T} & I   \\
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -\bold{G}_{\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{G}_{\Delta T} & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{G}_{\Delta T} & \mathbbold{1}   \\
    \end{array}  \right]
 \end{align*}
-As mentioned, solving the system (\ref{vir_mat_sys}), solves the the problem $\hat{J}(\Lambda)=0$. However, we can only do this because we know that the optimal value of the problem is $0$. What we normally have to do when we want to solve optimal control problems, is solving $\hat{J}'(\Lambda)=0$. From (\ref{penalty grad}), we know that: $$\hat{J}'(\Lambda) = \{p_i(T_i)-p_{i-1}(T_i)\}_{i=1}^{N-1}$$ We also see that the adjoint equations (\ref{exs_adjoint}) can be used to define $\bold{F}_{\Delta T}^*(\omega)$ as we did in (\ref{F_operator}). It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
+In section \ref{algebraic_sec} we said that $\bar M^{-1}$ can be seen as a preconditioner for the fix point iteration solving $\hat{J}(\Lambda)=0$. Solving the virtual problem in this way, is only possible since we know that the minimum value of $\hat{J}(\Lambda)$ is zero. A more natural approach of solving this problem would be to solve $\hat{J}'(\Lambda)=0$. If we could find a preconditioner to a fix point iteration solving $\hat{J}'(\Lambda)=0$, this would be a candidate for $Q_{\Lambda}$. Luckily for us we have already derived an expression for the gradient for the more general problem (\ref{exs_J}-\ref{exs_E}), and we get the gradient of the virtual problem by extracting the $\Lambda$ part of the expression (\ref{penalty grad}): 
+\begin{align*}
+\hat{J}'(\Lambda) = \{p_i(T_i)-p_{i-1}(T_i)\}_{i=1}^{N-1}
+\end{align*}
+Here $p^i$ are the solutions of the adjoint equations (\ref{exs_adjoint}). Since we need the adjoints, let us define the fine adjoint propagator $\bold{F}_{\Delta T}^*(\omega)$ as we did for $\bold{F}_{\Delta T}$, but now $\omega$ is propagated backwards one time step of length $\Delta T$, and the equation $\bold{F}_{\Delta T}^*$ solves is:   
+\begin{align}
+\left\{
+     \begin{array}{lr}
+	\frac{\partial }{\partial t}p +ap=0,\quad t\in (0,\Delta T)  \\
+	p(\Delta T) = \omega
+	\end{array}
+   \right. 
+\end{align}
+We also define $\bold G_{\Delta T}^*$ as the fine adjoint propagators coarse counterpart. Next we can define the matrices $M^*$ and $\bar M^*$ as:
+\begin{align*}
+M^*= \left[ \begin{array}{cccc}
+   \mathbbold{1} & -\bold{F}_{\Delta T}^* & 0 & 0 \\  
+   0 & \mathbbold{1} & -\bold{F}_{\Delta T}^* & \cdots \\ 
+   \cdots &0 &  \mathbbold{1} & -\bold{F}_{\Delta T}^* \\
+   0 &\cdots &\cdots &  \mathbbold{1}  \\
+   \end{array}  \right],
+\bar M^*= \left[ \begin{array}{cccc}
+   \mathbbold{1} & -\bold{G}_{\Delta T}^* & 0 & 0 \\  
+   0 & \mathbbold{1} & -\bold{G}_{\Delta T}^* & \cdots \\ 
+   \cdots &0 &  \mathbbold{1} & -\bold{G}_{\Delta T}^* \\
+   0 &\cdots &\cdots &  \mathbbold{1}  \\
+   \end{array}  \right]
+\end{align*}
+It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
 \begin{align}
 M^* \ M \ \Lambda \ = \ M^* \ H \label{vir_grad_sys}
 \end{align}
-where 
-\begin{align}
-M^*= \left[ \begin{array}{cccc}
-   I & -\bold{F}_{\Delta T}^* & 0 & 0 \\  
-   0 & I & -\bold{F}_{\Delta T}^* & \cdots \\ 
-   \cdots &0 & I  & -\bold{F}_{\Delta T}^* \\
-   0 &\cdots &\cdots & I   \\
-   \end{array}  \right]
-\end{align}
 The reason we see by moving $M^*H$ to the left hand side of (\ref{vir_grad_sys}) and writing out what $M^*( \ M \ \Lambda-H)$ means. Firstly:
 \begin{align}
-M \ \Lambda - H = \left( \begin{array}{c}
-	\lambda_0 -y_0 \\
-	\lambda_1 - \bold{F}_{\Delta T}(\lambda_0)\\
-	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) \\
+M \ H-\Lambda  = \left( \begin{array}{c}
+	y_0-\lambda_0  \\
+	 \bold{F}_{\Delta T}(\lambda_0)-\lambda_1 \\
+	 \bold{F}_{\Delta T}(\lambda_1)-\lambda_2  \\
 	\cdots \\
-	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
+	\bold{F}_{\Delta T}(\lambda_{N-2})-\lambda_{N-1} 
 	\end{array} \right)
 \end{align}
-Then:
+We recognise $\bold{F}_{\Delta T}(\lambda_{i-1})-\lambda_i=y^i(T_i) -\lambda_i$, $i=1,...,N-1$ as the initial conditions of the adjoint equations (\ref{exs_adjoint}). This means that $\bold{F}_{\Delta T}(\lambda_{i-1})-\lambda_i=p^i(T_i)$. This means that: 
 \begin{align}
-M^*\left( \begin{array}{c}
-	\lambda_0-y_0 \\
-	\lambda_1 - \bold{F}_{\Delta T}(\lambda_0)\\
-	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) \\
+M \ H-\Lambda  = \left( \begin{array}{c}
+	y_0-\lambda_0  \\
+	 p^1(T_1) \\
+	 p^2( T_2) \\
 	\cdots \\
-	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
-	\end{array} \right) &=
+	p^{N-1}(T_{N-1}) 
+	\end{array} \right)
+\end{align}
+If we then apply $M^*$ to $M \ H-\Lambda$, we get:
+\begin{align}
+M^* (M \ H-\Lambda)&=
 	\left( \begin{array}{c}
-	\lambda_0-y_0 -\bold{F}_{\Delta T}^*(\lambda_1 -\bold{F}_{\Delta T}(\lambda_0))\\
-	\lambda_1 -\bold{F}_{\Delta T}(\lambda_0) -\bold{F}_{\Delta T}^*(\lambda_2 - \bold{F}_{\Delta T}(\lambda_1))\\
-	\lambda_2 - \bold{F}_{\Delta T}(\lambda_1) -\bold{F}_{\Delta T}^*(\lambda_3 - \bold{F}_{\Delta T}(\lambda_2))\\
+	y_0-\lambda_0 -\bold{F}_{\Delta T}^*(p^1(T_1))\\
+	 p^1(T_1)-\bold{F}_{\Delta T}^*(p^2( T_2))\\
+	p^2( T_2)-\bold{F}_{\Delta T}^*(p^3( T_3))\\
 	\cdots \\
-	\lambda_{N-1} -\bold{F}_{\Delta T}(\lambda_{N-2})
+	p^{N-1}(T_{N-1})
 	\end{array} \right)
 	\\
 	&=\left( \begin{array}{c}
-	\lambda_0-y_0 + p_0(T_0)\\
-	p_1(T_1)-p_0(T_1)\\
-	p_2(T_2)-p_1(T_2)\\
+	y_0-\lambda_0 - p_1(T_0)\\
+	p_1(T_1)-p_2(T_2)\\
+	p_3(T_2)-p_2(T_2)\\
 	\cdots \\
-	p_{N-2}(T_{N-2})-p_{N-3}(T_{N-2}) \\
-	-p_{N-2}(T_{N-2})
+	p_{N-2}(T_{N-2})-p_{N-1}(T_{N-2}) \\
+	p_{N-1}(T_{N-1})
 	\end{array} \right)
 \end{align}
-The last vector, can be recognised as the gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices.
-\\
-\\ 
-One could then solve the system (\ref{vir_grad_sys}), using an iteration as in (\ref{matrix_iter1}), but with $\bar{M}^{-1}\bar{M}^{-*}$ instead of $\bar{M}^{-1}$. \cite{maday2002parareal} then propose $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for solving the original penalized control problem (\ref{decomp_E}-\ref{penalty_func}) when using the gradient method. 
+The last vector, can be recognised as the negative gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices, which shows that solving (\ref{vir_grad_sys}) is thae same as solving $\hat J'(\Lambda)=0$. If we then created a fix point iteration for (\ref{vir_grad_sys}), in a similar fashion as (\ref{par_mat_sys}), it would look like this:
+\begin{align*}
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}\bar M^{-*}(H-M^*M\Lambda^k)
+\end{align*}
+$\bar{M}^{-1}\bar{M}^{-*}$ could then be thought of as the preconditioner of the iteration, in the sense that $bar{M}^{-1}\bar{M}^{-*}M^*M$ would be close to $\mathbbold{1}$. If $\bar{M}^{-1}\bar{M}^{-*}$ works as a preconditioner for  $\hat J'(\Lambda)=0$ where $\hat J$ is the objective function in the virtual problem, \cite{maday2002parareal} proposes $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for the penalized optimal control problem (\ref{decomp_E}-\ref{penalty_func}). Meaning that we set $Q$ to be:
+\begin{align}
+Q = \left[ \begin{array}{cc}
+	\mathbbold{1} & 0 \\
+	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
+	\end{array} \right]
+\end{align}
+We have derived $Q$ by trying to find a good preconditioner for the fix point iteration for solving $\hat J'(\Lambda)=0$. Whether $\bar{M}^{-1}\bar{M}^{-*}$ has anything to do with the inverse Hessian of $\hat J'$ is however not clear. It turns out that $M^*M$ actually is related to the Hessian of the virtual problem, which we will show in the next subsection.
 \subsection{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian}
 If one defines the vector x as:
 \begin{align}

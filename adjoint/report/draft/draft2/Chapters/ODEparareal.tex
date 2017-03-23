@@ -54,7 +54,7 @@ Another important topic, that affects the performance of Parareal, that we have 
 \frac{\bold{G}_{\Delta T}(\lambda_i) -\lambda_i }{\Delta T } + A \bold{G}_{\Delta T}(\lambda_i) = f(T_{i})
 \end{align}
 In the above example we just used a coarse discretization of our problem (\ref{unbroken}) to define the coarse propagator. There are however a lot of other ways to construct $\bold{G}_{\Delta T}$. In \cite{baffico2002parallel} for example, they create the coarse propagator by simplifying the physics of the problem they are trying to model. The underlying numerical method of the coarse propagator should in any case be chosen so that the computational cost of $\bold{G}_{\Delta T}$ is negligible in comparison to the cost of  $\bold{F}_{\Delta T}$.
-\section{Algebraic formulation}
+\section{Algebraic formulation}\label{algebraic_sec}
 In \cite{maday2002parareal} an algebraic reformulation of (\ref{pred_corr_PR}) is presented. The setting in \cite{maday2002parareal} is slightly different than the one we had in section \ref{Parareal_sec}, since they are trying to solve an optimal control problem with differential equation constraints, rather than to just solve a differential equation. Luckily for us the problem they are looking at is very much connected to that of solving the time decomposed differential equation system. The problem they solve follows below:
 \begin{align*}
 &\min_{\Lambda}\hat{J}(\Lambda) = \sum_{i=1}^{N-1} ||u^{i}(T_{i})-\lambda_{i}||^2 \\
