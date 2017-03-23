@@ -10,27 +10,27 @@ The Parareal scheme is used to parallelize differential equations in temporal di
 	\end{array}
    \right. \label{unbroken}
 \end{align} 
-Decomposing the interval $I$ means dividing the interval into $N$ subintervals $\{I_n = [T^{n},T^{n+1}]\}_{n=0}^{N-1}$, with length $\Delta T = T/N$. We define new equations for each interval:
+Decomposing the interval $I$ means dividing the interval into $N$ subintervals $\{I_i = [T^{i-1},T^{i}]\}_{i=1}^{N}$, with length $\Delta T = T/N$. We define new equations for each interval:
 \begin{align}
 \left\{
      \begin{array}{lr}
-		\frac{\partial u^n}{\partial t} + Au^n = f \ \quad \textrm{For $t \in I^n$} \\
-		u^n(T^n)=\lambda^n
+		\frac{\partial u^i}{\partial t} + Au^i = f \ \quad \textrm{For $t \in I^n$} \\
+		u^n(T^n)=\lambda_{i-1}
 	\end{array}
 	\right.	\label{broken}
 \end{align}
 Here $\lambda^0=u_0$. If $\Lambda=(\lambda_0,..,\lambda_{N-1})$ are known values, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the previous intervals, and need to be calculated by solving the equation. The Parareal scheme is a way of getting around this.
 \section{Parareal}\label{Parareal_sec}
-We see that when we decompose the time domain, the original initial value problem (\ref{unbroken}) brakes down to a system of initial value problems of size $N$ (\ref{broken}). The idea of \cite{baffico2002parallel} is then first to define a fine solution operator $\bold F_{\Delta T}$, which given an initial condition $\lambda_i$ at time $T_i$, evolves $\lambda_i$, using a fine scheme applied to the $i$th equation (\ref{broken}), from time $T_i$ to $T_{i+1}$. Meaning:
+We see that when we decompose the time domain, the original initial value problem (\ref{unbroken}) brakes down to a set of $N$ initial value problems on the form (\ref{broken}). The idea of \cite{baffico2002parallel} is then first to define a fine solution operator $\bold F_{\Delta T}$, which when given an initial condition $\lambda_{i-1}$ at time $T_{i-1}$, evolves $\lambda_i$, using a fine scheme applied to the $i$th equation (\ref{broken}), from time $T_i$ to $T_{i+1}$. Meaning:
 \begin{align*}
-\hat \lambda_{i+1}= u^i(T_{i+1})=\bold F_{\Delta T}(\lambda_i)
+\hat \lambda_{i}= u^i(T_{i})=\bold F_{\Delta T}(\lambda_{i-1})
 \end{align*} 
 We name $\bold F_{\Delta T}$ the fine propagator, and note that letting $\hat \lambda_{1}=\bold F_{\Delta T}(u_0)$, and then applying $\bold F_{\Delta T}$ sequentially to $\hat \lambda_{i}$, is the same as solving (\ref{unbroken}), using the underlying numerical method of the fine propagator. However, we intend to use $\bold F_{\Delta T}$ simultaneously on a given set of initial values $\Lambda=(\lambda_0=u_0,\lambda_1,...,\lambda_{N-1})$, and not sequentially. Since we also want $\hat{\lambda_i}$ to be as close as possible to $\lambda_i$ for $i=1,...,N-1$, we define a coarse propagator $\bold G_{\Delta T}$, and use this operator to predict the $\Lambda$ values. The predictions are made by sequentially applying the coarse propagator to the system (\ref{broken}). This means:
 \begin{align}
 \lambda_i^0 &= \bold G_{\Delta T}(\lambda_{i-1}^0),\quad i=1,...,N-1 \\
 \lambda_0^0&=u_0
 \end{align} 
-Once we have these predicted initial values, we can apply the fine propagator on all the equations in system (\ref{broken}) simultaneously, and then use the difference between our fine solution  and coarse solution $\delta_{i-1}^0= \bold F_ {\Delta T}( \lambda_{i-1}^0)-\bold G_ {\Delta T}( \lambda_{i-1}^0)$ at time $T_i$ to correct $\lambda_i^0$. The correction for time $T_i$, is done by using the coarse propagator on the already corrected $\lambda_{i-1}^1$, and then add the difference $\delta_{i-1}^0$ to $\bold G_ {\Delta T}(\lambda_{i-1}^1)$. When this sequential process is done, we have a new set of initial conditions $\lambda_i^1$, $i=1,...,N-1$, which means that we can redo the correction, and the prediction-correction formulation of Parareal can then be written up as the following iteration:
+Once we have these predicted initial values, we can apply the fine propagator on all $N$ equations (\ref{broken}) simultaneously, and then use the difference between our fine solution and coarse solution $\delta_{i-1}^0= \bold F_ {\Delta T}( \lambda_{i-1}^0)-\bold G_ {\Delta T}( \lambda_{i-1}^0)$ at time $T_{i}$ to correct $\lambda_i^0$. The correction for time $T_i$, is done by using the coarse propagator on the already corrected $\lambda_{i-1}^1$, and then add the difference $\delta_{i-1}^0$ to $\bold G_ {\Delta T}(\lambda_{i-1}^1)$. When this sequential process is done, we have a new set of initial conditions $\lambda_i^1$, $i=1,...,N-1$, which means that we can redo the correction procedure in an iterative fashion. The prediction-correction formulation of Parareal can then be written up as the following iteration:
 \begin{align}
 \lambda_{i}^{k+1} &= \bold G_ {\Delta T}(\lambda_{i-1}^{k+1})+\bold F_ {\Delta T}( \lambda_{i-1}^{k})-\bold G_ {\Delta T}( \lambda_{i-1}^{k}), \quad i=1,...,N-1 \label{pred_corr_PR} \\
 \lambda_0^k &= u_0
@@ -46,7 +46,14 @@ Updating our initial conditions $\Lambda^k$ from iteration $k$ to iteration $k+1
 &\quad\textrm{$\bold{for}$ $i=1,...,N-1$:} \\
 &\quad \quad \quad \bold{Set} \ \lambda_{i}^{k} = \bold G_ {\Delta T}(\lambda_{i-1}^{k})+\hat\lambda_i^{k-1}-\lambda_i^{k-1}
 \end{align*}
-In the above algorithm we do $K$ iterations, where $K$ is a pre-chosen number. If one wanted to construct an actual Parareal algorithm, the iteration should instead terminate, when a certain stopping criteria is met. In general we want the iteration to stop when the Parareal solution is sufficiently close to the sequential solution. 
+In the above algorithm we do $K$ iterations, where $K$ is a pre-chosen number. If one wanted to construct an actual Parareal algorithm, the iteration should instead terminate, when a certain stopping criteria is met. In general we want the iteration to stop when the Parareal solution is sufficiently close to the sequential solution, but we also want to avoid finding the sequential solution. A good stopping criteria for the Parareal algorithms can be found in \cite{lepsa2010efficient}.
+\\
+\\
+Another important topic, that affects the performance of Parareal, that we have yet to mention, is how to choose a good coarse propagator $\bold G_{\Delta T}$. If $\bold F_{\Delta T}$ is based on a finite difference scheme method with time step $\Delta t$, one obvious choice for $\bold G_{\Delta T}$, would be to use the same scheme as the fine propagator with bigger time step. One must be careful though, since such schemes might be unstable for big time steps. One simple and safe way of choosing $\bold G_{\Delta T}$, is to use implicit Euler with time step $\Delta T$. Using this scheme for our coarse propagator in the context of problem (\ref{unbroken}), would mean that we find $\bold{G}_{\Delta T}(\lambda_i)$ by solving:
+\begin{align}
+\frac{\bold{G}_{\Delta T}(\lambda_i) -\lambda_i }{\Delta T } + A \bold{G}_{\Delta T}(\lambda_i) = f(T_{i})
+\end{align}
+In the above example we just used a coarse discretization of our problem (\ref{unbroken}) to define the coarse propagator. There are however a lot of other ways to construct $\bold{G}_{\Delta T}$. In \cite{baffico2002parallel} for example, they create the coarse propagator by simplifying the physics of the problem they are trying to model. The underlying numerical method of the coarse propagator should in any case be chosen so that the computational cost of $\bold{G}_{\Delta T}$ is negligible in comparison to the cost of  $\bold{F}_{\Delta T}$.
 \section{Algebraic formulation}
 In \cite{maday2002parareal} an algebraic reformulation of (\ref{pred_corr_PR}) is presented. The setting in \cite{maday2002parareal} is slightly different than the one we had in section \ref{Parareal_sec}, since they are trying to solve an optimal control problem with differential equation constraints, rather than to just solve a differential equation. Luckily for us the problem they are looking at is very much connected to that of solving the time decomposed differential equation system. The problem they solve follows below:
 \begin{align*}
@@ -91,7 +98,7 @@ Using $\bar{M}$, we can write up what turns out to be the Parareal iteration (\r
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k) \label{matrix_iter1}
 \end{align}
-Looking at the (\ref{matrix_iter1}), we recognise the Parareal iteration as a preconditioned fix point iteration, where $\bar{M}^-1$ is the prconditioner.
+Looking at the (\ref{matrix_iter1}), we recognise the Parareal iteration as a preconditioned fix point iteration, where $\bar{M}^{-1}$ is the prconditioner.
 \section{Properties of Parareal}
 \subsection{Error estimates}
 According to \cite{lions2001resolution} we have the following error estimate for the Parareal scheme of (\ref{ODE_eks}):
