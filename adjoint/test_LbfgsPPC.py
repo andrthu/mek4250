@@ -177,7 +177,7 @@ def compare_pc_and_nonpc_for_different_m():
     problem = non_lin_problem(y0,yT,T,a,p,c=20)
     try:
         N = int(sys.argv[1])
-        mu = 1000*N
+        mu = N
         tol = 1e-4
         tol1 = 1e-4
         tol2 = 1e-4
@@ -226,7 +226,7 @@ def compare_pc_and_nonpc_for_different_m():
 
     res2 = []
     res3 = []
-    opt = {'mem_lim':10,'jtol':tol2,'beta_scale':False,'max_iter':200}
+    opt = {'mem_lim':10,'jtol':tol2,'beta_scale':True,'maxiter':150}
     fu_gr_sum = res1.counter()[0]+res1.counter()[1]
     for m in M[1:]:
 
@@ -237,7 +237,7 @@ def compare_pc_and_nonpc_for_different_m():
         
         pc_fugr = pc_res.counter()
         npc_fugr = nonpc_res.counter()
-        
+        print pc_res.val(),nonpc_res.val(),res1.val()
         res2.append(pc_res)
         res3.append(nonpc_res)
         

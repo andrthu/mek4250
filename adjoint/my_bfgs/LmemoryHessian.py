@@ -1,12 +1,13 @@
 import numpy as np
 from my_vector import *
+from diagonalMatrix import DiagonalMatrix
 
 class InvertedHessian():
     """
     Parent class for inverted hessian used in L-BFGS algorithm
     """
 
-    def update(self,yk,sk,beta_scale=False):
+    def update(self,yk,sk,beta_scale={'scale':False}):
         """
         Method for updating the inverted hessian
         
@@ -25,10 +26,25 @@ class InvertedHessian():
         self.y.append(yk)
         self.s.append(sk)
         self.rho.append(self.make_rho(yk,sk))
-        if beta_scale:
+        if beta_scale['scale']:
             
-            self.beta = (yk.dot(sk)/(yk.dot(yk)))**(-1)
+            #self.beta = (yk.dot(sk)/(yk.dot(yk)))**(-1)
             #print 'beta:',self.beta
+            n = len(sk)
+            N = n-beta_scale['m']
+            yk1=yk[:N+1]
+            yk2=yk[N+1:]
+            sk1=sk[:N+1]
+            sk2=sk[N+1:]
+
+            beta1 = (yk1.dot(sk1)/(yk1.dot(yk1)))
+            beta2 = (yk2.dot(sk2)/(yk1.dot(yk1)))
+            beta = (yk.dot(sk)/(yk.dot(yk)))
+            #print beta
+            diag = np.zeros(n) 
+            diag[:N+1]=beta**(-1)
+            diag[N+1:]=beta**(-1)
+            self.Hint=DiagonalMatrix(n,diag=diag)
 
     def __getitem__(self,k):
         
@@ -233,7 +249,9 @@ class NumpyLimMemoryHessian(InvertedHessian):
             k = len(self)
         if k==0:
             if self.PPCH!=None:
+                
                 return self.beta * self.Hint(self.PPCH(x))
+                                  
             else:
                 return self.beta * self.Hint(x)#(x.dot(self.Hint))
         rhok, yk, sk = self[k]

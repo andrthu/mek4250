@@ -64,7 +64,8 @@ class LbfgsOptimizationControl():
         #self.dJ=self.grad_J(self.x)
         
 
-    
+    def val(self):
+        return self.J_func(self.x)
     def add_mu(self,mu):
         self.mu = mu
 

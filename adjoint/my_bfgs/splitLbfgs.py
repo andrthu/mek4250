@@ -120,8 +120,8 @@ class SplitLbfgs(LbfgsParent):
         
         default = {"jtol"                   : 1e-4,
                    "gtol"                   : 1e-4,
-                   "maxiter"                :  200,
-                   "display"                :    2,
+                   "maxiter"                : 200,
+                   "display"                : 2,
                    "line_search"            : "strong_wolfe",
                    "line_search_options"    : ls,                   
                    "mem_lim"                : 10,
@@ -205,7 +205,7 @@ class SplitLbfgs(LbfgsParent):
             s = x-x0
             y = df1-df0
 
-            H.update(y,s,beta_scale=self.options['beta_scale'])
+            H.update(y,s,beta_scale={'scale':self.options['beta_scale'],'m':self.m})
              
             self.data.update(x,df1)
             x0=x.copy()

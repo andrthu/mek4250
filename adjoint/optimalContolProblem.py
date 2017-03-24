@@ -579,7 +579,7 @@ class OptimalControlProblem():
                     solver = SplitLbfgs(J,grad_J,x0.array(),options=self.Lbfgs_options,scale=scaler)
                 else:
                     #solver = Lbfgs(J,grad_J,x0,options=self.Lbfgs_options)
-                    solver = SplitLbfgs(J,grad_J,x0.array(),options=self.Lbfgs_options)
+                    solver = SplitLbfgs(J,grad_J,x0.array(),m=m,options=self.Lbfgs_options)
                 #res = solver.solve()
                 res = solver.normal_solve()
                 
