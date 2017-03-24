@@ -183,9 +183,9 @@ def compare_pc_and_nonpc_for_different_m():
         tol2 = 1e-4
     except:
         N = 1000
-        mu = 100*N
-        tol1 = 1e-3
-        tol2 = 1e-3
+        mu = N
+        tol1 = 1e-7
+        tol2 = 1e-4
     M = [1,2,3,4,5,6,8,16,32,64]
     #M = [1,2,3]
     res1 = problem.solve(N,Lbfgs_options={'jtol':tol1})
@@ -232,9 +232,13 @@ def compare_pc_and_nonpc_for_different_m():
 
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
-        pc_res = problem.PPCLBFGSsolve(N,m,[mu],options=opt)
-        nonpc_res = problem.penalty_solve(N,m,[mu],Lbfgs_options=opt)
+        pc_res = problem.PPCLBFGSsolve(N,m,[mu,mu*100,mu**2*100],tol_list=[tol2,tol2/100,(tol2**2)/100],options=opt)
+        nonpc_res = problem.penalty_solve(N,m,[mu,mu*100],Lbfgs_options=opt)
         
+        if type(pc_res)==list:
+            pc_res=pc_res[-1]
+            nonpc_res=nonpc_res[-1]
+
         pc_fugr = pc_res.counter()
         npc_fugr = nonpc_res.counter()
         print pc_res.val(),nonpc_res.val(),res1.val()
