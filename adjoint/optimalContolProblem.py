@@ -16,7 +16,7 @@ class OptimalControlProblem():
     E(y(t),u(t)) = 0
     """
 
-    def __init__(self,y0,yT,T,J,grad_J,Lbfgs_options=None,options=None):
+    def __init__(self,y0,yT,T,J,grad_J,Lbfgs_options=None,options=None,implicit=True):
         """
         Initialize OptimalControlProblem
 
@@ -57,6 +57,10 @@ class OptimalControlProblem():
 
         self.end_end_adjoint = None
         self.end_start_adjoint = None
+        if implicit:
+            self.serial_gather = self.implicit_gather
+        else:
+            self.serial_gather = self.explicit_gather
 
     def set_options(self,user_options,user_Lbfgs):
         """
@@ -314,7 +318,7 @@ class OptimalControlProblem():
             for j in range(len(l[i])-1):
                 l[i][-(j+2)] = self.adjoint_update(l[i],y[i],j,dt)
             
-        L=np.zeros(N+1)
+        L=self.serial_gather(l,N,m)#np.zeros(N+1)
         #"""
         start=0
         for i in range(m):
@@ -331,6 +335,26 @@ class OptimalControlProblem():
         #"""
         return l,L
 
+    def implicit_gather(self,l,N,m):
+        L=np.zeros(N+1)
+        #"""
+        start=0
+        for i in range(m):
+            L[start:start+len(l[i])-1] = l[i][:-1]
+            start = start + len(l[i])-1
+        L[-1]=l[-1][-1]
+        return L
+
+    def explicit_gather(self,l,N,m):
+        L=np.zeros(N+1)
+        L[0] = l[0][0]
+        start = 1
+        for i in range(m):
+            L[start:start+len(l[i])-1] = l[i][1:]
+            start += len(l[i])-1
+        return L
+
+    
     def Lagrange_Penalty_Functional(self,u,N,m,my,G):
         """
         Add penalty terms and lagrangian terms to the functional, for

@@ -7,7 +7,7 @@ from scipy.integrate import trapz
 
 class Explicit_quadratic(OptimalControlProblem):
 
-    def __init__(self,y0,yT,T,a,J,grad_J,options=None):
+    def __init__(self,y0,yT,T,a,J,grad_J,options=None,implicit=False):
 
         OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
 
@@ -25,7 +25,7 @@ class Explicit_quadratic(OptimalControlProblem):
     def adjoint_update(self,l,y,i,dt):
         a = self.a
         #return (1+dt*a)*l[-(i+1)]
-
+        #return (1-dt*a)*l[-(i+1)]
         return (1-a*2*dt*y[-(i+1)])*l[-(i+1)]
 
 
