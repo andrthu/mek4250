@@ -100,48 +100,18 @@ Using $\bar{M}$, we can write up what turns out to be the Parareal iteration (\r
 \end{align}
 Looking at the (\ref{matrix_iter1}), we recognise the Parareal iteration as a preconditioned fix point iteration, where $\bar{M}^{-1}$ is the prconditioner.
 \section{Convergence of Parareal}
-In this section we look at some of the convergence properties of the Parareal algorithm given in the literature. The first publication on Parareal \cite{lions2001resolution} studied the convergence in ontext of the following equation: 
+In this section we look at some of the convergence properties of the Parareal algorithm given in the literature. The first publication on Parareal \cite{lions2001resolution} studied the convergence in context of the following equation: 
 \begin{align}
 \frac{\partial}{\partial t} y(t)=ay(t),\quad t\in [0,T],\quad y(0)=y_0\label{convergence_ODE}
 \end{align}
-We stae their findings in the theorem below:
+We state their findings in the theorem below:
 \begin{theorem}
 Let us decompose $I=[0,T]$ into $N$ subintervals of length $\Delta T = \frac{T}{N}$, and then let $\bold F_{\Delta T}$ and $\bold G_{\Delta T}$ be the fine and coarse propagator solving equation (\ref{convergence_ODE}). If $\bold G_{\Delta T}(\omega)$  is evaluated using the implicit Euler scheme (\ref{G_Backward}), there exist for all integers $k$ a constant $c_k$ such that the error between the $k$th iterate of the Parareal algorithm (\ref{pred_corr_PR}) and the exact solution of (\ref{convergence_ODE}) $y$ is bounded in the following way:
 \begin{align}
-\forall \ i,0\leq i\leq N-1 \quad |\lambda_i^k-y(T_i)| + \max_{t\in[T_{i},T^{i+1}]}|y_{i+1}^k(t)-y(t)| \leq c_k\Delta T^k
+\forall \ i,0\leq i\leq N-1 \quad |\lambda_i^k-y(T_i)| + \max_{t\in[T_{i},T^{i+1}]}|y_{i+1}^k(t)-y(t)| \leq c_k\Delta T^k \label{P_error_bound}
 \end{align}
 \end{theorem}
-The bound given in the above theorem is for fixed $k$ values, which means that doing $k$ iterations of the Parareal algorithm can be thought of as a numerical method of order $O(\Delta T^k)$.
-According to \cite{lions2001resolution} we have the following error estimate for the Parareal scheme of (\ref{ODE_eks}):
-\begin{gather*}
-\forall \ n,0\leq n\leq N-1 \quad |Y_k^n-y(T^n)| + \max_{t\in[T^N,T^{n+1}]}|y_k^n(t)-y(t)| \leq c_k\Delta T^k
-\end{gather*} 
-This suggest that the max norm difference between exact and Parareal solution looks like this:
-\begin{align*}
-\max_{t\in[0,T]}|y_k(t)-y(t)| \leq C_k\Delta T^k
-\end{align*}
-The error estimate for a first order scheme, like implicit Euler, we know looks like this:
-\begin{align*}
-\max_{t\in[0,T]}|y_{\Delta t}(t)-y(t)| \leq C\Delta t
-\end{align*}
-It would then be reasonable that the number of iterations for the Parareal scheme needed to reach the same error as the fine first order solver, would be:
-\begin{align*}
-k\approx\frac{\log(\Delta t)}{\log(\Delta T)}
-\end{align*}
-This assumes that the constants $C_k$ and $C$ are similar. This is a reasonable assumption, since these constants depend on the parameters of the equation (\ref{ODE_eks}). 
+It is important to note that the error bound given in the above theorem only holds for fixed $k$s, since the constant $c_k$ grows with $k$. This means that for a fixed number of iterations $k$ of the Parareal algorithm converges to the solution with $\Delta T$ at a rate of $\bold O(\Delta T^k)$. In \cite{lions2001resolution}, they used a first order method for their coarse propagator. It turns out that if one instead uses a scheme of order $p$, the Parareal algorithm behaves as numerical method with error bound $\bold O(\Delta T^{pk})$ after $k$ iterations. This was shown in \cite{bal2005convergence}, where the bounds were derived for more general equations. 
 \\
 \\
-To illustrate this lets try to solve a version of (\ref{ODE_eks}) using an implicit Euler scheme and Parareal with a fine implicit Euler solver. I will use  the parameters $a=1.3$, $T=1$ and $y_0= 3.52$. The fine resolution will be held constant at $\Delta t=\frac{1}{10000}$. I then calculated how many propagation iterations I needed to reduce the max-norm error to below $\Delta t$ for different time interval decompositions $N$. Table follows below:
- \begin{center}
-    \begin{tabular}{| l | l | l | l |}
-    \hline
-     & $\frac{\log(\Delta t)}{\log(\Delta T)}$&iterations  & $\max_{t\in[0,T]}|y_k(t)-y(t)|$   \\ \hline
-    $N=1$ &0 & 1& 8.416625e-5 	\\ \hline
-    $N=2$ &13.3 &2& 8.416625e-5 	\\ \hline
-    $N=5$ &5.7&4& 8.416625e-5	\\ \hline
-    $N=10$ &4&4& 8.399513e-5	\\ \hline
-    $N=25$ &2.8&3& 	8.737827e-5\\ \hline
-    $N=100$ &2&2&	6.302522e-5\\ \hline
-    \end{tabular}
-\end{center}
-Notice that for two intervals, the expected number of iterations is $13$, however with $N=2$, we get the same error as the one interval solution in only two iterations. The reason for this, is that doing $N$ iterations of the Parareal scheme when using $N$ time decompositions, is the same as solving the equation without any decompositions. 
+The case where we let $\Delta T$ be fixed, and look at convergence when we increase $k$, is analysed in \cite{gander2007analysis}. Here the authors again investigate the convergence of the equation (\ref{convergence_ODE}). They found that the convergence was super linear in $k$ for bounded time intervals $[0,T]$, and linear for a unbounded time interval. 
