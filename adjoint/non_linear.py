@@ -35,11 +35,11 @@ class Explicit_quadratic(OptimalControlProblem):
         dt = float(self.T)/N
         Nc = len(u) - m
         g = np.zeros(len(u))
-            
+        a = self.a
         g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt)
 
         for j in range(m-1):
-            g[Nc+1+j]= l[j+1][0]*(1-dt*a*u[Nc+1+j]) - l[j][-1]
+            g[Nc+1+j]= (l[j+1][0]*(1-dt*2*a*u[Nc+1+j]) - l[j][-1])
                     
         return g
 

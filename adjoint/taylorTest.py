@@ -507,7 +507,7 @@ def taylor_quadratic_state():
     y0 = 1.2
     yT = 2
     T  = 1
-    a  = .09
+    a  = 10.9
     p = 2
     c =0.5
 
@@ -533,7 +533,7 @@ def taylor_quadratic_state():
         
         return problem.Gradient(x,N)
     def grad_J2(x):
-        return
+        #return
         return problem.Penalty_Gradient(x,N,m,mu)
     print
     table = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
@@ -541,6 +541,7 @@ def taylor_quadratic_state():
     eps_list = []
     for i in range(8):
         eps = 1./(10**i)
+        
         grad_val = abs(J2(u+h*eps) - J2(u) - eps*h.dot(grad_J2(u)))
         func_val = J2(u+h*(eps))-J2(u)
         eps_list.append(eps)
