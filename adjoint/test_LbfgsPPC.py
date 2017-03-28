@@ -169,7 +169,7 @@ def compare_pc_and_nonpc_for_different_m():
     y0 = 3.2
     yT = 1.5
     T  = 1
-    a  = .9
+    a  = .009
     p = 2
 
 

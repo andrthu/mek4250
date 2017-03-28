@@ -10,7 +10,7 @@ from scipy.integrate import trapz
 from scipy.optimize import minimize
 from optimalContolProblem import OptimalControlProblem,Problem1
 from scipy import linalg
-from non_linear import Explicit_quadratic
+from non_linear import Explicit_quadratic,Explicit_sine
 
 from mpi4py import MPI
 from mpiVectorOCP import MpiVectorOCP,simpleMpiVectorOCP,generate_problem,local_u_size
@@ -71,13 +71,13 @@ def quadratic_state(y0,yT,T,a):
     def grad_J(u,p,dt):
         t = np.linspace(0,T,len(u))
         grad = np.zeros(len(u))
-        grad[:-1] = dt*(u[:-1]+p[:-1])
-        grad[0] = 0.5*dt*(u[0])+dt*p[0] 
+        grad[:-1] = dt*(u[:-1]+p[1:])
+        grad[0] = 0.5*dt*(u[0])+dt*p[1] 
         grad[-1] = 0.5*dt*(u[-1]) 
         return grad
         
 
-    problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)
+    problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)#Explicit_sine(y0,yT,T,a,J,grad_J)
 
     return problem
 
@@ -107,11 +107,11 @@ def taylor_test_non_penalty():
 
 
     def grad_J(x):
-        l = problem.adjoint_solver(u,N)
-        return problem.grad_J(u,l,dt)
+        l = problem.adjoint_solver(x,N)
+        return problem.grad_J(x,l,dt)
     def grad_J2(x):
-        l = problem2.adjoint_solver(u,N)
-        return problem.grad_J(u,l,dt)
+        l = problem2.adjoint_solver(x,N)
+        return problem.grad_J(x,l,dt)
     print
     table = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
              'rate2':['--'],'e v':[]}
@@ -504,41 +504,45 @@ def taylor_test_mpi():
 
 def taylor_quadratic_state():
 
-    y0 = 3.2
-    yT = 1.5
+    y0 = 1.2
+    yT = 2
     T  = 1
-    a  = 10.9
+    a  = .09
     p = 2
     c =0.5
 
     problem = quadratic_state(y0,yT,T,a)
     #problem = non_lin_problem(y0,yT,T,a,p,c=c)
     N = 100
+    m = 10
     dt = float(T)/(N)
     
-    h = 100*np.random.random(N+1)
+    h = 100*np.random.random(N+m)
     
-    
+    mu = 1
 
     J = lambda u: problem.Functional(u,N)
-    u = np.zeros(N+1) 
+    J2 = lambda u: problem.Penalty_Functional(u,N,m,mu)
+    u = np.zeros(N+m) +1
     for i in range(8):
 
-        print J(u+h/(10**i))-J(u)
+        print J2(u+h/(10**i))-J2(u)
 
 
     def grad_J(x):
-        l = problem.adjoint_solver(x,N)
-        return problem.grad_J(x,l,dt)
-    
+        
+        return problem.Gradient(x,N)
+    def grad_J2(x):
+        return
+        return problem.Penalty_Gradient(x,N,m,mu)
     print
     table = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
              'rate2':['--'],'e v':[]}
     eps_list = []
     for i in range(8):
         eps = 1./(10**i)
-        grad_val = abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
-        func_val = J(u+h*(eps))-J(u)
+        grad_val = abs(J2(u+h*eps) - J2(u) - eps*h.dot(grad_J2(u)))
+        func_val = J2(u+h*(eps))-J2(u)
         eps_list.append(eps)
         table['J(u+v)-J(u)'].append(func_val)
         table['J(u+v)-J(u)-dJ(u)v'].append(grad_val)
@@ -550,9 +554,9 @@ def taylor_quadratic_state():
     
     for i in range(10):
         eps = 1./(2**i)
-        grad_fd = finite_diff(J,u,eps)
-        grad = grad_J(u)
-        #print max(abs(grad_fd[:]-grad[:]))
+        grad_fd = finite_diff(J2,u,eps)
+        grad = grad_J2(u)
+        print max(abs(grad_fd[:]-grad[:]))
     
     data2 = pd.DataFrame(table,index=eps_list)
     #data2.to_latex('report/draft/discertizedProblem/taylorTest1.tex')

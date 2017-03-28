@@ -319,13 +319,13 @@ class OptimalControlProblem():
                 l[i][-(j+2)] = self.adjoint_update(l[i],y[i],j,dt)
             
         L=self.serial_gather(l,N,m)#np.zeros(N+1)
-        #"""
+        """
         start=0
         for i in range(m):
             L[start:start+len(l[i])-1] = l[i][:-1]
             start = start + len(l[i])-1
         L[-1]=l[-1][-1]
-        """
+        ""
         L[0] = l[0][0]
         start = 1
         for i in range(m):

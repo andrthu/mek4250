@@ -7,9 +7,9 @@ from scipy.integrate import trapz
 
 class Explicit_quadratic(OptimalControlProblem):
 
-    def __init__(self,y0,yT,T,a,J,grad_J,options=None,implicit=False):
+    def __init__(self,y0,yT,T,a,J,grad_J,options=None):
 
-        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
 
         self.a = a
 
@@ -29,11 +29,26 @@ class Explicit_quadratic(OptimalControlProblem):
         return (1-a*2*dt*y[-(i+1)])*l[-(i+1)]
 
 
+    def Penalty_Gradient(self,u,N,m,mu):
+
+        l,L = self.adjoint_penalty_solver(u,N,m,mu)
+        dt = float(self.T)/N
+        Nc = len(u) - m
+        g = np.zeros(len(u))
+            
+        g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt)
+
+        for j in range(m-1):
+            g[Nc+1+j]= l[j+1][0]*(1-dt*a*u[Nc+1+j]) - l[j][-1]
+                    
+        return g
+
+
 class Explicit_sine(OptimalControlProblem):
 
     def __init__(self,y0,yT,T,a,J,grad_J,options=None):
 
-        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
 
         self.a = a
 
@@ -41,13 +56,13 @@ class Explicit_sine(OptimalControlProblem):
     def ODE_update(self,y,u,i,j,dt):
         a = self.a
         
-        
+        #return y[i] +dt*(a*y[i] +u[j])
         return y[i] + dt*(a*np.sin(y[i]) + u[j])
 
 
     def adjoint_update(self,l,y,i,dt):
         a = self.a
-        
+        #return (1+dt*a)*l[-(i+1)]
 
         return (1+dt*a*np.cos(y[-(i+1)]))*l[-(i+1)]
     
@@ -135,11 +150,11 @@ def test_sine():
 
     y0 = 1
     yT = 2
-    T  = 1
-    a  = 0.3
+    T  = 3
+    a  = 0.1
     N1 = 1000
     N2 = 2000
-    m=30
+    m=2
     
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
@@ -149,12 +164,17 @@ def test_sine():
         return 0.5*(I + (y-yT)**2)
 
     def grad_J(u,p,dt):
-        return dt*(u+p)
+        grad = np.zeros(len(u))
+        grad[:-1] = dt*(u[:-1]+p[1:])
+        grad[0] = 0.5*dt*(u[0])+dt*p[1] 
+        grad[-1] = 0.5*dt*(u[-1]) 
+        return grad
+        #return dt*(u+p)
 
 
     problem = Explicit_sine(y0,yT,T,a,J,grad_J)
 
-    opt = {"mem_lim":40}
+    opt = {"mem_lim":10,'jtol':1e-7}
     res1=problem.solve(N1,Lbfgs_options=opt)
     res2=problem.solve(N2,Lbfgs_options=opt)
     
@@ -166,8 +186,9 @@ def test_sine():
 
     
     try:
-        res3=problem.penalty_solve(N1,m,[0.1*N1],Lbfgs_options=opt)
+        res3=problem.penalty_solve(N1,m,[1,N1],Lbfgs_options={'jtol':1e-4})[-1]
         #print res1['iteration'],res2['iteration'],res3['iteration']
+        print res3.counter(),res1.counter()
         print
         print "number of iterations for m=%d and N=%d: %d"%(1,N1,res1['iteration'])
         print "number of iterations for m=%d and N=%d: %d"%(1,N2,res2['iteration'])
@@ -229,8 +250,8 @@ def test_quad():
     
 if __name__ == "__main__":
 
-    test_quad()
-    #test_sine()
+    #test_quad()
+    test_sine()
     #test_nonLinear()
     
 """
