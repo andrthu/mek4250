@@ -342,7 +342,7 @@ The last vector, can be recognised as the negative gradient of (\ref{virtual_fun
 \begin{align*}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}\bar M^{-*}(H-M^*M\Lambda^k)
 \end{align*}
-$\bar{M}^{-1}\bar{M}^{-*}$ could then be thought of as the preconditioner of the iteration, in the sense that $bar{M}^{-1}\bar{M}^{-*}M^*M$ would be close to $\mathbbold{1}$. If $\bar{M}^{-1}\bar{M}^{-*}$ works as a preconditioner for  $\hat {\bold J}'(\Lambda)=0$ where $\hat {\bold J}$ is the objective function in the virtual problem, \cite{maday2002parareal} proposes $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for the penalized optimal control problem (\ref{decomp_E}-\ref{penalty_func}). Meaning that we set $Q$ to be:
+$\bar{M}^{-1}\bar{M}^{-*}$ could then be thought of as the preconditioner of the iteration, in the sense that $\bar{M}^{-1}\bar{M}^{-*}M^*M$ would be close to $\mathbbold{1}$. If $\bar{M}^{-1}\bar{M}^{-*}$ works as a preconditioner for  $\hat {\bold J}'(\Lambda)=0$ where $\hat {\bold J}$ is the objective function in the virtual problem, \cite{maday2002parareal} proposes $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for the penalized optimal control problem (\ref{decomp_E}-\ref{penalty_func}). Meaning that we set $Q$ to be:
 \begin{align}
 Q = \left[ \begin{array}{cc}
 	\mathbbold{1} & 0 \\
@@ -451,11 +451,11 @@ The Hessian of the reduced objective function $\hat{\bold J}$ (\ref{T_J}) origin
 \begin{proof}
 We can easily verify the above proposition by differentiating expression (\ref{T_J}). First the gradient $\nabla \hat{\bold J}$ is:
 \begin{align*}
-\nabla\hat{J}(\Lambda) = 2 M^TM\Lambda - 2M^Tb
+\nabla\hat{\bold J}(\Lambda) = 2 M^TM\Lambda - 2M^Tb
 \end{align*}
 Notice that if we assume that $M^T=M^*$, setting $\nabla\hat{J}(\Lambda)=0$ gives us the system (\ref{vir_grad_sys}). If we now differentiate $\nabla \hat{\bold J}(\Lambda)$, we get the Hessian we wanted:
 \begin{align}
-\nabla^2 \hat{J}(\Lambda) = 2 M^TM
+\nabla^2 \hat{\bold J}(\Lambda) = 2 M^TM
 \end{align}
 \end{proof}
 This means that if $M^*=M^T$, then $M^*M$ is the Hessian of $\frac{1}{2}\hat{\bold J}$, and since $\bar{M}$ and $\bar{M}^*$ approximates $M$ and $M^*$, the matrix $\bar{M}^{*}\bar{M}$ should be an approximation of $\frac{1}{2}\nabla^2 \hat{\bold J}$, which means its inverse $\bar{M}^{-1}\bar{M}^{-*}$ should approximate the inverse Hessian. However as we have already said, these conclusions are based on the assumption that $M^*=M^T$. Let us therefore investigate if this assumption holds when we solve the virtual problem (\ref{virtual_func}-\ref{virtual}) for equation (\ref{virtual_exs}). 
@@ -489,7 +489,28 @@ Since $\bar{M}$ and $\bar{M}^{*}$ are only approximations of $M$ and $M^*$, we m
 x^TM^TMx=(Mx)^TMx=||Mx||^2\geq &0, \quad \textrm{and} \\
 ||Mx||^2=0 \iff x=&0
 \end{align*}
-The second requirement for positive definiteness 
+The second requirement for positive definiteness is true if $M$ is invertible, which is trivially true, since $M$ is a triangular matrix with the identity on its diagonal, and this means that $M$ has a non-zero determinant. Since $\bar{M}^*=\bar{M}^T$ guaranties that $\bar{M}^{-1}\bar{M}^{-*}$ is positive definite, we want to choose coarse propagators that gives us this property. Let us try to find out how we need to define $\bold G_{\Delta T}^*$, when we use the coarse propagator suggested in \cite{lions2001resolution} written up in (\ref{G_Backward}) based on the implicit Euler finite difference scheme. For equation (\ref{virtual_exs}), we can use (\ref{G_Backward}) to derive an expression for evaluating the coarse propagator $\bold G_{\Delta T}(\omega)$:
+\begin{align}
+\frac{\bold{G}_{\Delta T}(\omega) -\omega}{\Delta T } - a \bold{G}_{\Delta T}(\omega) &= 0 \\
+\bold{G}_{\Delta T}(\omega)(1-a\Delta T)&= \omega \\
+\bold{G}_{\Delta T}(\omega)&=\frac{\omega}{(1-a\Delta T)}
+\end{align}
+The implicit Euler coarse propagator for equation (\ref{virtual_exs}) then reads:
+\begin{align*}
+\bar M = \left[ \begin{array}{cccc}
+   	\mathbbold{1} & 0 & \cdots & 0 \\  
+   	\frac{-1}{1-a\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
+   	0 &\frac{-1}{1-a\Delta T} & \mathbbold{1}  & \cdots \\
+   	0 &\cdots &\frac{-1}{1-a\Delta T} & \mathbbold{1}  \\
+  	\end{array}  \right]
+\end{align*}
+In order for us to get $\bar{M}^*=\bar{M}^T$, we the discretization of (\ref{virtual_adjoint_exs}) to produce $\bold{G}_{\Delta T}^*(\omega)=\frac{\omega}{(1-a\Delta T)}$. Maybe unsurprisingly, it turns out that this is achieved by again discretizing (\ref{virtual_adjoint_exs}) using implicit Euler. $\bold{G}_{\Delta T}^*(\omega)$ is found as follows:
+\begin{align*}
+\frac{\omega-\bold{G}_{\Delta T}^*(\omega)}{\Delta T} + a \bold{G}_{\Delta T}^*(\omega)&=0 \\
+\bold{G}_{\Delta T}^*(\omega)(a\Delta T-1)&=-\omega \\
+\bold{G}_{\Delta T}^*(\omega)&=\frac{\omega}{(1-a\Delta T)}
+\end{align*}
+In the above derivation for $\bold{G}_{\Delta T}^*(\omega)$, the forward Euler finite difference scheme is used to discretize (\ref{virtual_adjoint_exs}), but since this equation is solved backwards in time this scheme is implicit. Since $\bold{G}_{\Delta T}^*(\omega)=\bold{G}_{\Delta T}(\omega)$, we get that $\bar{M}^*=\bar{M}^T$, which means that $\bar{M}^{-1}\bar{M}^{-*}$ is a valid choice for an initial inverted Hessian approximation in the BFGS-algorithm.
 \\
 \\
 As mentioned above, \cite{maday2002parareal} solves the problem (\ref{decomp_E}-\ref{penalty_func}), using the gradient method:
