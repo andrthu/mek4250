@@ -26,10 +26,10 @@ class Explicit_quadratic(OptimalControlProblem):
         a = self.a
         #return (1+dt*a)*l[-(i+1)]
         #return (1-dt*a)*l[-(i+1)]
-        return (1-a*2*dt*y[-(i+1)])*l[-(i+1)]
+        return (1-a*2*dt*y[-(i+2)])*l[-(i+1)]
 
 
-    def Penalty_Gradient(self,u,N,m,mu):
+    def Penalty_Gradient2(self,u,N,m,mu):
 
         l,L = self.adjoint_penalty_solver(u,N,m,mu)
         dt = float(self.T)/N
