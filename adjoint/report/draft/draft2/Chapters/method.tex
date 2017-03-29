@@ -235,14 +235,14 @@ In order for us to be able to derive the preconditioner from \cite{maday2002para
 &\textit{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
 \end{align}
 Where $\Lambda=(\lambda_0=y_0,\lambda_1,...,\lambda_ {N-1}$ and $\bold F_{\Delta T}$ is the fine propagator from section \ref{Parareal_sec}. In the context of the virtual problem (\ref{virtual_func}-\ref{virtual}), $\bold F_{\Delta T}(\omega)$ propagates $\omega$ one time step of length $\Delta T$ using the equation:
-\begin{align*}
+\begin{align}
 \left\{
      \begin{array}{lr}
        	\frac{\partial}{\partial t} y(t)-ay(t)=0  \ \textrm{for } \ t\in(0,\Delta T),\\
        	y(0)=\omega.
      \end{array}
-   \right.
-\end{align*} 
+   \right. \label{virtual_exs}
+\end{align} 
 Chapter \ref{parareal_chap} explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)\label{par_mat_sys}
@@ -277,7 +277,7 @@ Here $p^i$ are the solutions of the adjoint equations (\ref{exs_adjoint}). Since
 	\frac{\partial }{\partial t}p +ap=0,\quad t\in (0,\Delta T)  \\
 	p(\Delta T) = \omega
 	\end{array}
-   \right. 
+   \right. \label{virtual_adjoint_exs}
 \end{align}
 We also define $\bold G_{\Delta T}^*$ as the fine adjoint propagators coarse counterpart. Next we can define the matrices $M^*$ and $\bar M^*$ as:
 \begin{align*}
@@ -458,7 +458,38 @@ Notice that if we assume that $M^T=M^*$, setting $\nabla\hat{J}(\Lambda)=0$ give
 \nabla^2 \hat{J}(\Lambda) = 2 M^TM
 \end{align}
 \end{proof}
-This means that if $M^*=M^T$, then $M^*M$ is the Hessian of $\frac{1}{2}\hat{\bold J}$, and since $\bar{M}$ and $\bar{M}^*$ approximates $M$ and $M^*$, the matrix $\bar{M}\bar{M}^{*}$ should be an approximation of $\frac{1}{2}\nabla^2 \hat{\bold J}$. 
+This means that if $M^*=M^T$, then $M^*M$ is the Hessian of $\frac{1}{2}\hat{\bold J}$, and since $\bar{M}$ and $\bar{M}^*$ approximates $M$ and $M^*$, the matrix $\bar{M}^{*}\bar{M}$ should be an approximation of $\frac{1}{2}\nabla^2 \hat{\bold J}$, which means its inverse $\bar{M}^{-1}\bar{M}^{-*}$ should approximate the inverse Hessian. However as we have already said, these conclusions are based on the assumption that $M^*=M^T$. Let us therefore investigate if this assumption holds when we solve the virtual problem (\ref{virtual_func}-\ref{virtual}) for equation (\ref{virtual_exs}). 
+\\
+\\
+Let the fine propagator $\bold F_{\Delta T}$ and the fine adjoint propagator $\bold F_{\Delta T}^*$ solve equations (\ref{virtual_exs}) and (\ref{virtual_adjoint_exs}) exactly. Due to the simplicity of these equations, we can easily write up the solutions of these equations:
+\begin{align}
+y(t)&=y(0)e^{at}, \\
+p(t)&=p(\Delta T) e^{a(\Delta T-t)}
+\end{align} 
+This means that $\bold F_{\Delta T}(\omega)=y(\Delta T)=\omega e^{a\Delta T}$, and that $\bold F_{\Delta T}^*(\omega)=p(0)=\omega e^{a\Delta T}$. If we insert these expressions into $M$ and $M^*$, we get:
+\begin{align*}
+M = \left[ \begin{array}{cccc}
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -e^{a\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-e^{a\Delta T} & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-e^{a\Delta T} & \mathbbold{1}  \\
+   \end{array}  \right],
+M^* =\left[ \begin{array}{cccc}
+   	\mathbbold{1} & - e^{a\Delta T} & 0 & 0 \\  
+  	 0 & \mathbbold{1} & - e^{a\Delta T} & \cdots \\ 
+  	 \cdots &0 &  \mathbbold{1} & - e^{a\Delta T} \\
+  	 0 &\cdots &\cdots &  \mathbbold{1}  \\
+  	 \end{array}  \right]
+\end{align*}
+Looking at the $M$ and $M^*$ matrices above, it is quite clear that $M^*=M^T$, which means that for the virtual problem (\ref{virtual_func}-\ref{virtual}) governed by the equation (\ref{virtual_exs}), the assumption $M^*=M^T$ holds, when the fine propagator and the fine adjoint propagator solved the state and adjoint equations exactly. If one instead let the underlying solvers of $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$ be based on some numerical method, the $M$ and $M^*$ matrices will of course depend on the choice of method. When we discretize the state and adjoint equations, we want the matrices $M$ and $M^*$ to behave as they did for non-discrete $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$.
+\\
+\\
+Since $\bar{M}$ and $\bar{M}^{*}$ are only approximations of $M$ and $M^*$, we might think that $\bar{M}^*=\bar{M}^T$ is unnecessary. However since we want to use $\bar{M}^{-1}\bar{M}^{-*}$ as an initial inverse Hessian approximation in our BFGS-optimization algorithm, we need $\bar{M}^{-1}\bar{M}^{-*}$ to be symmetric positive definite. This is true if $\bar{M}^*=\bar{M}^T$, because the matrix product between an invertible matrix and its transpose always is positive definite. This holds because:
+\begin{align*}
+x^TM^TMx=(Mx)^TMx=||Mx||^2\geq &0, \quad \textrm{and} \\
+||Mx||^2=0 \iff x=&0
+\end{align*}
+The second requirement for positive definiteness 
 \\
 \\
 As mentioned above, \cite{maday2002parareal} solves the problem (\ref{decomp_E}-\ref{penalty_func}), using the gradient method:
