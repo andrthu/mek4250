@@ -70,7 +70,7 @@ class ExplicitNonLinear(OptimalControlProblem):
 
     def __init__(self,y0,yT,T,F,DF,J,grad_J,options=None):
 
-        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options)
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
 
         self.F  = F
         self.DF = DF
@@ -79,14 +79,14 @@ class ExplicitNonLinear(OptimalControlProblem):
         F = self.F
         
         
-        return y[i] + dt*(F(y[i]) + u[j])
+        return y[i] - dt*(F(y[i]) - u[j])
 
 
     def adjoint_update(self,l,y,i,dt):
         DF = self.DF
         
 
-        return (1+dt*DF(y[-(i+2)]))*l[-(i+1)]
+        return (1-dt*DF(y[-(i+2)]))*l[-(i+1)]
 
 
 def test_nonLinear():
