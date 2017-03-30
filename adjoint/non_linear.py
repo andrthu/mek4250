@@ -64,7 +64,7 @@ class Explicit_sine(OptimalControlProblem):
         a = self.a
         #return (1+dt*a)*l[-(i+1)]
 
-        return (1+dt*a*np.cos(y[-(i+1)]))*l[-(i+1)]
+        return (1+dt*a*np.cos(y[-(i+2)]))*l[-(i+1)]
     
 class ExplicitNonLinear(OptimalControlProblem):
 
@@ -86,7 +86,7 @@ class ExplicitNonLinear(OptimalControlProblem):
         DF = self.DF
         
 
-        return (1+dt*DF(y[-(i+1)]))*l[-(i+1)]
+        return (1+dt*DF(y[-(i+2)]))*l[-(i+1)]
 
 
 def test_nonLinear():
@@ -151,7 +151,7 @@ def test_sine():
     y0 = 1
     yT = 2
     T  = 3
-    a  = 0.1
+    a  = 1
     N1 = 1000
     N2 = 2000
     m=2
@@ -186,7 +186,7 @@ def test_sine():
 
     
     try:
-        res3=problem.penalty_solve(N1,m,[1,N1],Lbfgs_options={'jtol':1e-4})[-1]
+        res3=problem.penalty_solve(N1,m,[N1,N1**2],Lbfgs_options={'jtol':1e-5})[-1]
         #print res1['iteration'],res2['iteration'],res3['iteration']
         print res3.counter(),res1.counter()
         print
@@ -239,6 +239,7 @@ def test_quad():
     
     res3=problem.penalty_solve(N1,m,[0.5*N1],Lbfgs_options=opt)
     #print res1['iteration'],res2['iteration'],res3['iteration']
+    print res3.counter(),res1.counter()
     print
     print "number of iterations for m=%d and N=%d: %d"%(1,N1,res1['iteration'])
     print "number of iterations for m=%d and N=%d: %d"%(1,N2,res2['iteration'])

@@ -77,7 +77,8 @@ def quadratic_state(y0,yT,T,a):
         return grad
         
 
-    problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)#Explicit_sine(y0,yT,T,a,J,grad_J)
+    problem = Explicit_quadratic(y0,yT,T,a,J,grad_J)
+    problem=Explicit_sine(y0,yT,T,a,J,grad_J)
 
     return problem
 
@@ -514,25 +515,25 @@ def taylor_quadratic_state():
     problem = quadratic_state(y0,yT,T,a)
     #problem = non_lin_problem(y0,yT,T,a,p,c=c)
     N = 100
-    m = 10
+    m = 1
     dt = float(T)/(N)
     
     h = 100*np.random.random(N+m)
     
     mu = 1
 
-    J = lambda u: problem.Functional(u,N)
-    J2 = lambda u: problem.Penalty_Functional(u,N,m,mu)
+    J2 = lambda u: problem.Functional(u,N)
+    J3 = lambda u: problem.Penalty_Functional(u,N,m,mu)
     u = np.zeros(N+m) +1
     for i in range(8):
 
         print J2(u+h/(10**i))-J2(u)
 
 
-    def grad_J(x):
+    def grad_J2(x):
         
         return problem.Gradient(x,N)
-    def grad_J2(x):
+    def grad_J3(x):
         #return
         return problem.Penalty_Gradient(x,N,m,mu)
     print
