@@ -348,7 +348,7 @@ Q = \left[ \begin{array}{cc}
 	\mathbbold{1} & 0 \\
 	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
 	\end{array} \right]
-\end{align}
+\end{align}  
 We have derived $Q$ by trying to find a good preconditioner for the fix point iteration for solving $\hat {\bold J}'(\Lambda)=0$. Whether $\bar{M}^{-1}\bar{M}^{-*}$ has anything to do with the inverse Hessian of $\hat J'$ is however not clear. It turns out that $M^*M$ actually is related to the Hessian of the virtual problem, which we will show in the next subsection.
 \subsection{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian}
 In order for us to make it easier to differentiate the gradient of the reduced objective function (\ref{reduced_viritual}), we try to write up $\hat{\bold J}$ on vector notation. Let us first define the vector $x\in\mathbb{R}^{N-1}$ as:

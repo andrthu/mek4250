@@ -625,11 +625,13 @@ def general_non_linear_test():
     F = lambda x : a*np.cos(np.pi*2*x)
     DF = lambda x : -a*np.pi*2*np.sin(np.pi*2*x)
 
-    F = lambda x : a*np.log(x)
-    DF = lambda x: a*1./x
+    F = lambda x : a*np.log(x-1)
+    DF = lambda x: a*1./(x-1)
     
-    F = lambda x : np.exp(x)
-    DF = lambda x : np.exp(x)
+    #F = lambda x : np.exp(x)
+    #DF = lambda x : np.exp(x)
+
+    
     
     problem = non_lin_state(y0,yT,T,F,DF)
     #problem = non_lin_problem(y0,yT,T,a,p,c=c)
@@ -646,7 +648,7 @@ def general_non_linear_test():
     J = lambda u: problem.Functional(u,N)
     J2 = lambda u: problem.Penalty_Functional(u,N,m,mu)
     u = np.zeros(N+1) +1
-    u2 = np.zeros(N+m) +1
+    u2 = np.zeros(N+m) +1.1
     for i in range(8):
 
         print J2(u2+h2/(10**i))-J2(u2),J(u+h/(10**i)),J(u)
@@ -717,7 +719,7 @@ def general_non_linear_test():
     plt.plot(grad)
     plt.plot(grad_fd,'r--')
     #plt.plot(grad2)
-    plt.legend(['num grad','finite diff grad'])
+    plt.legend(['num grad','finite diff grad'],loc=4)
     plt.xlabel('gradient index')
     plt.ylabel('gradient value')
     plt.show()
