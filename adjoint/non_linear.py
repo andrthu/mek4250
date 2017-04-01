@@ -1,5 +1,5 @@
 from  optimalContolProblem import *
-
+from ODE_pararealOCP import PararealOCP
 import numpy as np
 from scipy.integrate import trapz
 
@@ -66,11 +66,11 @@ class Explicit_sine(OptimalControlProblem):
 
         return (1+dt*a*np.cos(y[-(i+2)]))*l[-(i+1)]
     
-class ExplicitNonLinear(OptimalControlProblem):
+class ExplicitNonLinear(PararealOCP):
 
     def __init__(self,y0,yT,T,F,DF,J,grad_J,options=None):
 
-        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
+        PararealOCP.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
 
         self.F  = F
         self.DF = DF

@@ -13,9 +13,9 @@ import time
 class PararealOCP(OptimalControlProblem):
 
 
-    def __init__(self,y0,yT,T,J,grad_J,options=None):
+    def __init__(self,y0,yT,T,J,grad_J,options=None,implicit=False):
         
-        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options=options)
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options=options,implicit=implicit)
         
         self.end_diff = None
         
