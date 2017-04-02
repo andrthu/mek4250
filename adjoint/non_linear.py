@@ -124,7 +124,8 @@ def test_nonLinear():
 
     opt = {"mem_lim":40}
     
-    res1=problem.plot_solve(N1,opt=opt,state= True)
+    #res1=problem.plot_solve(N1,opt=opt,state= True)
+    res1=problem.PPCLBFGSsolve(N1,m,[0.5*N1],options=opt)
     #res2=problem.solve(N2,Lbfgs_options=opt)
     
     t1 = np.linspace(0,T,N1+1)
@@ -238,6 +239,7 @@ def test_quad():
     
     
     res3=problem.penalty_solve(N1,m,[0.5*N1],Lbfgs_options=opt)
+    #res3=problem.PPCLBFGSsolve(N1,m,[0.5*N1],options=opt)
     #print res1['iteration'],res2['iteration'],res3['iteration']
     print res3.counter(),res1.counter()
     print
@@ -252,8 +254,8 @@ def test_quad():
 if __name__ == "__main__":
 
     #test_quad()
-    test_sine()
-    #test_nonLinear()
+    #test_sine()
+    test_nonLinear()
     
 """
 terminal> python non_linear (test_quad())
