@@ -26,24 +26,24 @@ class PararealOCP(OptimalControlProblem):
         self.end_diff = y - self.yT
         return y - self.yT
 
-    def adjoint_step(self,omega,dT,step=1):
+    def adjoint_step(self,omega,dT,step=1,lam=np.zeros(2)):
         
         step_dt = dT/float(step)
 
         v = np.zeros(step+1)
         v[-1] = omega
         for i in range(step):
-            v[-(i+2)] = self.adjoint_ppc_update(v,None,i,step_dt)
+            v[-(i+2)] = self.adjoint_ppc_update(v,lam,i,step_dt)
 
         return v[0]
 
-    def ODE_step(self,omega,dT,step=1):
+    def ODE_step(self,omega,dT,step=1,lam=np.zeros(2)):
         step_dt = dT/float(step)
 
         v = np.zeros(step+1)
         v[0] = omega
         for i in range(step):
-            v[i+1] = self.ODE_ppc_update(v,np.zeros(step+1),i,0,step_dt)
+            v[i+1] = self.ODE_ppc_update(v,lam,i,0,step_dt)
         return v[-1]
         
         

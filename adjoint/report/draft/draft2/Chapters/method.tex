@@ -511,24 +511,6 @@ In order for us to get $\bar{M}^*=\bar{M}^T$, we the discretization of (\ref{vir
 \bold{G}_{\Delta T}^*(\omega)&=\frac{\omega}{(1-a\Delta T)}
 \end{align*}
 In the above derivation for $\bold{G}_{\Delta T}^*(\omega)$, the forward Euler finite difference scheme is used to discretize (\ref{virtual_adjoint_exs}), but since this equation is solved backwards in time this scheme is implicit. Since $\bold{G}_{\Delta T}^*(\omega)=\bold{G}_{\Delta T}(\omega)$, we get that $\bar{M}^*=\bar{M}^T$, which means that $\bar{M}^{-1}\bar{M}^{-*}$ is a valid choice for an initial inverted Hessian approximation in the BFGS-algorithm.
-\\
-\\
-As mentioned above, \cite{maday2002parareal} solves the problem (\ref{decomp_E}-\ref{penalty_func}), using the gradient method:
-\begin{align}
-(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho\nabla\hat{J}(v^{k},\Lambda^{k}) \label{gradient_method}
-\end{align}
-They then propose a preconditioner $Q$ for (\ref{gradient_method}), i.e:
-\begin{align}
-(v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho Q\nabla\hat{J}(v^{k},\Lambda^{k}) 
-\end{align}
-where Q is:
-\begin{align}
-Q = \left[ \begin{array}{cc}
-	I & 0 \\
-	0 & \bar{M}^{-1}\bar{M}^{-*} \\
-	\end{array} \right] \label{PC}
-\end{align}
-One could then imagine, that $Q$ is an approximation of the inverse Hessian of $\hat{J}$, atleast for the $\Lambda$ part of the control.
 \subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
 Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
 \begin{align}

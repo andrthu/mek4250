@@ -3,7 +3,7 @@ from ODE_pararealOCP import PararealOCP
 import numpy as np
 from scipy.integrate import trapz
 
-
+#from taylorTest import non_lin_state#(y0,yT,T,F,DF)
 
 class Explicit_quadratic(OptimalControlProblem):
 
@@ -89,6 +89,86 @@ class ExplicitNonLinear(PararealOCP):
         return (1-dt*DF(y[-(i+2)]))*l[-(i+1)]
 
 
+    def adjoint_ppc_update(self,l,y,i,dt):
+        return self.adjoint_update(l,y,i,dt)
+
+
+    def ODE_ppc_update(self,y,u,i,j,dt):
+        
+        DF = self.DF
+        
+        return (1-dt*DF(u[i]))*y[i]
+
+    def NL_PC_maker(self,N,m,step=1,mu=1.):
+        #"""
+        def pc(x):
+            S = np.zeros(m+1)
+            S[1:-1] = x.copy()[:]
+            
+            dT = float(self.T)/m
+            dt = float(self.T)/N
+            
+            
+            for i in range(1,m-1):
+                lam = np.zeros(step+1) + x[-(i+1)]
+                S[-(i+1)] = S[-(i+1)] + self.adjoint_step(S[-i],dT,step=step,lam=lam)
+
+            
+            for i in range(1,m-1):
+                lam = np.zeros(step+1) + x[i]
+                S[i] = S[i] + self.ODE_step(S[i-1],dT,step=step,lam=lam)
+            #print S
+            #time.sleep(1)
+            S = S
+            x[:]=S.copy()[1:-1]
+            return x
+        #"""
+        #pc = lambda x:x
+        return pc
+
+    def non_lin_PC_maker(self,N,m,step=1,mu=1.):      
+
+        def pc(x):
+            Nc = len(x)-m
+            lam_pc = self.NL_PC_maker(N,m,step,mu)
+            lam = x.copy()[Nc+1:]
+            lam2 = lam_pc(lam)
+            x[Nc+1:]= lam2.copy()[:]
+            return x
+        return pc
+
+
+
+
+    PC_creator = non_lin_PC_maker
+
+def non_lin_state(y0,yT,T,F,DF):
+    
+    
+    
+    def J(u,y,yT,T):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz((u)**2,t)
+
+        return 0.5*I + 0.5*(y-yT)**2
+
+    def grad_J(u,p,dt):
+        t = np.linspace(0,T,len(u))
+        grad = np.zeros(len(u))
+        grad[:-1] = dt*(u[:-1]+p[1:])
+        grad[0] = 0.5*dt*(u[0])+dt*p[1] 
+        grad[-1] = 0.5*dt*(u[-1]) 
+        return grad
+        
+
+    problem = ExplicitNonLinear(y0,yT,T,F,DF,J,grad_J)
+    
+
+    return problem
+
+
+
 def test_nonLinear():
 
     
@@ -102,9 +182,12 @@ def test_nonLinear():
     m=10
     a=0.1
     #"""
-    F  = lambda x : a*np.exp(-x)*np.cos(x*np.pi)
+    #F  = lambda x : a*np.exp(-x)*np.cos(x*np.pi)
     
-    DF = lambda x : -a*np.exp(-x)*(np.pi*np.sin(np.pi*x)+np.cos(np.pi*x))
+    #DF = lambda x : -a*np.exp(-x)*(np.pi*np.sin(np.pi*x)+np.cos(np.pi*x))
+
+    F = lambda x : np.sin(x)
+    DF = lambda x: np.cos(x)
     """
     F = lambda x : np.exp(-x**2)
     DF = lambda x : -2*x*np.exp(-x**2)
@@ -120,28 +203,31 @@ def test_nonLinear():
         return dt*(u+p)
 
 
-    problem = ExplicitNonLinear(y0,yT,T,F,DF,J,grad_J)
+    problem = non_lin_state(y0,yT,T,F,DF)
 
-    opt = {"mem_lim":40}
+    opt = {"mem_lim":10}
     
     #res1=problem.plot_solve(N1,opt=opt,state= True)
-    res1=problem.PPCLBFGSsolve(N1,m,[0.5*N1],options=opt)
+    res1=problem.PPCLBFGSsolve(N1,m,[N1],options=opt)
+    res2 = problem.penalty_solve(N1,m,[N1],Lbfgs_options=opt)
     #res2=problem.solve(N2,Lbfgs_options=opt)
     
     t1 = np.linspace(0,T,N1+1)
     t2 = np.linspace(0,T,N2+1)
     plt.figure()
-    plt.plot(t1,res1['control'])
+    plt.plot(res1['control'][:N1+1])
+    plt.plot(res2.x[:N1+1])
     #plt.plot(t2,res2['control'],"r--")
-
-    
+    print res1.counter(),res2.counter()
+    """
     try:
-        res3=problem.penalty_solve(N1,m,[0.5*N1],Lbfgs_options=opt)
+        res3=problem.penalty_solve(N1,m,[N1],Lbfgs_options=opt)
         print res1['iteration'],res3['iteration']
         plt.plot(t1,res3['control'][:N1+1])
     except:
         #print res1['iteration'],res2['iteration']
         print res1['iteration']
+    """
     plt.show()
     
 def test_sine():
