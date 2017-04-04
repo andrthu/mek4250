@@ -205,20 +205,21 @@ def test_nonLinear():
 
     problem = non_lin_state(y0,yT,T,F,DF)
 
-    opt = {"mem_lim":10}
-    
+    opt = {"mem_lim":10,'jtol':1e-5}
+    opt2 = {'jtol':1e-6}
     #res1=problem.plot_solve(N1,opt=opt,state= True)
-    res1=problem.PPCLBFGSsolve(N1,m,[N1],options=opt)
-    res2 = problem.penalty_solve(N1,m,[N1],Lbfgs_options=opt)
+    res1=problem.PPCLBFGSsolve(N1,m,[N1],options=opt,)
+    res2 = problem.penalty_solve(N1,m,[N1],Lbfgs_options=opt2)
     #res2=problem.solve(N2,Lbfgs_options=opt)
-    
+    res3=problem.solve(N1,Lbfgs_options=opt2,)
     t1 = np.linspace(0,T,N1+1)
     t2 = np.linspace(0,T,N2+1)
     plt.figure()
-    plt.plot(res1['control'][:N1+1])
+    plt.plot(res1['control'][:N1+1],'--')
     plt.plot(res2.x[:N1+1])
+    plt.plot(res3.x,'-.')
     #plt.plot(t2,res2['control'],"r--")
-    print res1.counter(),res2.counter()
+    print res1.counter(),res2.counter(),res3.counter()
     """
     try:
         res3=problem.penalty_solve(N1,m,[N1],Lbfgs_options=opt)
