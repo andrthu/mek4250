@@ -227,12 +227,12 @@ For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the 
 \begin{align}
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kQ\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method2}
 \end{align}
-For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. For us to be able to do that, we need $Q$ to be positive definite, since that is a requirement on $H^0$. Before we write up what $Q_ {\Lambda}$ is, we need to revisit the algebraic formulation of the Parareal scheme defined in chapter \ref{parareal_chap}.
+For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. Before we write up what $Q_ {\Lambda}$ is, we need to revisit the algebraic formulation of the Parareal scheme defined in chapter \ref{parareal_chap}.
 \subsection{Virtual problem}
-In order for us to be able to derive the preconditioner from \cite{maday2002parareal}, we define the virtual optimal control problem. In the virtual control problem the objective function is only the penalty part of (\ref{pen_obj_J}). The problem was already written up in section (\ref{algebraic_sec}), let us however restate it here:
+In order for us to be able to derive the preconditioner from \cite{maday2002parareal}, we define the virtual optimal control problem. In the virtual control problem the objective function is only the penalty part of (\ref{pen_obj_J}). The problem was already written up in section \ref{algebraic_sec}, let us however restate it here:
 \begin{align}
 &\min_{\Lambda}\bold{J}(\Lambda,y) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2 \label{virtual_func} \\
-&\textit{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
+&\textrm{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
 \end{align}
 Where $\Lambda=(\lambda_0=y_0,\lambda_1,...,\lambda_ {N-1}$ and $\bold F_{\Delta T}$ is the fine propagator from section \ref{Parareal_sec}. In the context of the virtual problem (\ref{virtual_func}-\ref{virtual}), $\bold F_{\Delta T}(\omega)$ propagates $\omega$ one time step of length $\Delta T$ using the equation:
 \begin{align}
@@ -247,7 +247,7 @@ Chapter \ref{parareal_chap} explained how this could be solved by setting $\lamb
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)\label{par_mat_sys}
 \end{align}
-Where $M$ and $\bar{M}$ are matrix representation of the fine and course resolution propagators $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1})$:
+Where $M$ and $\bar{M}$ are matrix representation of the fine and coarse resolution propagators $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1})$:
 \begin{align*}
 M = \left[ \begin{array}{cccc}
    \mathbbold{1} & 0 & \cdots & 0 \\  
@@ -607,4 +607,4 @@ Then you apply the forward system:
 The $\Lambda$ part of the gradient is then updated to be $\bar{\bar{J_{\lambda_1}}}, \bar{\bar{J_{\lambda_2}}},\bar{\bar{J_{\lambda_3}}}$. Notice that we in the last line of the adjoint system use $\bold{G}_{\Delta T}^*(0)$, and that we in the first line in the forward system use $\bold{G}_{\Delta T}(0)$. The zeros here represent information at time $T_0=0$ and $T_4=T$. At these times, we really have no information relating to the $\Lambda$ part of the gradient of $J$. We are therefore forced to choose zero.
 \\
 \\
-Since we are only using out course solver use $\bold{G}_{\Delta T}$ on the inner points of the interval $I=[0,T]$, when we are applying the inverse of $\bar{M}^{*}$ and $\bar{M}$ on the $\Lambda$ part of the gradient, the course model is only used on the interval $[T_1,T_{N-1}]$. This means that we are not using the first and last parts $[0,T_1]$ and $[T_{N-1},T]$ of $I$. A consequence of this is that it refining our course solver for each interval $\bold{G}_{\Delta T}$, has little effect since $[0,T_1]$ and $[T_{N-1},T]$ have length $\Delta T$, and when we are not using these intervals the course solver has a natural built in error of $\Delta T$, even if we use a finer resolution on $[T_1,T_{N-1}]$. 
+Since we are only using our coarse solver use $\bold{G}_{\Delta T}$ on the inner points of the interval $I=[0,T]$, when we are applying the inverse of $\bar{M}^{*}$ and $\bar{M}$ on the $\Lambda$ part of the gradient, the coarse model is only used on the interval $[T_1,T_{N-1}]$. This means that we are not using the first and last parts $[0,T_1]$ and $[T_{N-1},T]$ of $I$. A consequence of this is that it refining our coarse solver for each interval $\bold{G}_{\Delta T}$, has little effect since $[0,T_1]$ and $[T_{N-1},T]$ have length $\Delta T$, and when we are not using these intervals the coarse solver has a natural built in error of $\Delta T$, even if we use a finer resolution on $[T_1,T_{N-1}]$. 

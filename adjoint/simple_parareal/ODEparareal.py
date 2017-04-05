@@ -55,7 +55,7 @@ def implicit_solver(y0,a,dt,N,f=None,partition=None):
     y[0] = y0
 
     if f==None:
-        f = np.zeros(N+1)
+        f = np.zeros(len(a))
     if partition==None:
         start = 0
         partition = [N]
@@ -66,6 +66,7 @@ def implicit_solver(y0,a,dt,N,f=None,partition=None):
         a = aa
         
     for i in range(N):
+        #print start+i,len(a),len(f)
         y[i+1] = (y[i] +dt*f[start+i+1])/(dt*a[start+i]+1)
 
     return y
@@ -136,7 +137,7 @@ def gather_y(y,N):
         start = end
     return Y
 
-def parareal_solver(y0,a,T,M,N,order=3):
+def parareal_solver(y0,a,T,M,N,order=3,,f=[None,None]):
     """
     implementation of the parareal scheme for our simple ODE
     using N+1 as fine resolution and M time decompositions, and
@@ -145,11 +146,11 @@ def parareal_solver(y0,a,T,M,N,order=3):
     
     dt = float(T)/N
     dT =  float(T)/M
-    coarse_y = implicit_solver(y0,a,dT,M)
+    coarse_y = implicit_solver(y0,a[0],dT,M)
     
     y=[]
     for i in range(M):
-        y.append(implicit_solver(coarse_y[i],a,dt,int_par_len(N+1,M,i)-1))    
+        y.append(implicit_solver(coarse_y[i],a[1],dt,int_par_len(N+1,M,i)-1))    
     
     for k in range(order-1):
         y,coarse_y=propagator_iteration(y,coarse_y,a,y0,N,M,dt,dT)
@@ -252,6 +253,37 @@ def test_convergence():
     print K2
     print 
     print E
+
+
+def constand_iteration(k=3):
+
+    a = 1.3
+    T = 4
+    y0 = 3.52
+
+    N = 10000
+    tol = 1./1000
+    t = np.linspace(0,T,N+1)
+    A = lambda x: np.sin(2*np.pi*x)
+    a = A(t)
+    c= 10
+    #C = np.zeros(N+1) +c
+    C = c*t
+    ye = y0*np.exp(-a*t)
+    yn = implicit_solver(y0,a,float(T)/N,N,f=None)
+
+    import matplotlib.pyplot as plt
+    M = [7,20,40,100]
+    for m in M:
+        aa = [A(np.linspace(0,T,m+1)),a]
+        Y = parareal_solver(y0,aa,T,m,N,order=k)
+
+    
+
+        plt.plot(t,yn)
+    plt.show()
+
+
 if __name__ == "__main__":
     a = 1
     T = 1
@@ -260,5 +292,6 @@ if __name__ == "__main__":
     N = 100000
     M = 2
     #test_order()
-    test_convergence()
+    #test_convergence()
     #parareal_solver(y0,a,T,M,N,order=1,show_plot=True)
+    constand_iteration(k=2)
