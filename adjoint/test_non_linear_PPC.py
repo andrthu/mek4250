@@ -26,20 +26,20 @@ def quad_PPC_test():
     
 
     N = 10000
-    opt = {'jtol':1e-9}
+    opt = {'jtol':1e-10}
     opt2 ={'jtol':1e-6}
     res = problem.solve(N,Lbfgs_options=opt)
     
     print res.counter()
 
-    mu_list = [N,N**2]
-    tol=[1e-4,1e-6,1e-7]
+    mu_list = [.01*N,0.1*N,N]
+    tol=[1e-5,1e-6,1e-8]
     M = [64,164]
 
     for m in M:
 
         res2 = problem.PPCLBFGSsolve(N,m,mu_list,tol_list=tol,options=opt2)[-1]
-        res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt2)
+        #res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt2)[-1]
         plt.plot(res2.x[:N+1])
         print m,res2.counter(),max(abs(res.x-res2.x[:N+1]))
         

@@ -380,14 +380,16 @@ class OptimalControlProblem():
     
         return J_val + 0.5*pen
 
-    
-        
+    def func_state_part(self,u,N):
+        return self.ODE_solver(u,N)[-1]
+    def penalty_func_state_part(self,y,Y):
+        return y[-1][-1]
     def Functional(self,u,N):
         """
         Reduced functional, that only depend on control u 
         """
 
-        return self.J(u,self.ODE_solver(u,N)[-1],self.yT,self.T)  
+        return self.J(u,self.func_state_part(u,N),self.yT,self.T)  
         
         
 
@@ -398,7 +400,7 @@ class OptimalControlProblem():
         """
         y,Y = self.ODE_penalty_solver(u,N,m)
         Nc = len(u) -m
-        J_val = self.J(u[:Nc+1],y[-1][-1],self.yT,self.T)
+        J_val = self.J(u[:Nc+1],self.penalty_func_state_part(y,Y),self.yT,self.T)
 
         penalty = 0
 
@@ -501,7 +503,7 @@ class OptimalControlProblem():
         * x0: initial guess for control
         * Lbfgs_options: same as for class initialisation
         """
-        
+        self.t = np.linspace(0,self.T,N+1)
         dt=float(self.T)/N
         if x0==None:
             x0 = self.initial_control(N)# np.zeros(N+1)
