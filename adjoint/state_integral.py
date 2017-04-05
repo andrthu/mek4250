@@ -2,15 +2,15 @@ from  optimalContolProblem import *
 from ODE_pararealOCP import PararealOCP
 import numpy as np
 from scipy.integrate import trapz
-from taylorTest import finite_diff
+from taylorTest import finite_diff,general_taylor_test
 import pandas as pd
-
+from parallelOCP import u_part,interval_partition
 class StateIntegralProblem(OptimalControlProblem):
 
-    def __init__(self,y0,T,a,J,grad_J,z=None,options=None,implicit=True):
+    def __init__(self,y0,T,yT,a,J,grad_J,z=None,options=None,implicit=True):
 
         
-        OptimalControlProblem.__init__(self,y0,0,T,J,grad_J,options,implicit=implicit)
+        OptimalControlProblem.__init__(self,y0,yT,T,J,grad_J,options,implicit=implicit)
 
         self.a = a
         if z == None:
@@ -32,7 +32,8 @@ class StateIntegralProblem(OptimalControlProblem):
         a = self.a
         z = self.z
         help_z = self.help_z
-        return (l[-(i+1)]+dt*(y[-i]-z(self.t[-help_z*i])))/(1.-dt*a)
+        #print len(l),len(y),len(self.t)
+        return (l[-(i+1)]+dt*(y[-(i+1)]-z(self.t[-help_z*(i+1)])))/(1.-dt*a)
 
 
         
@@ -41,6 +42,20 @@ class StateIntegralProblem(OptimalControlProblem):
     def penalty_func_state_part(self,y,Y):
         return Y
 
+    def decompose_time(self,N,m):
+        t = np.linspace(0,self.T,N+1)
+
+        T_z = []
+
+        for i in range(m):
+            ti = interval_partition(N+1,m,i)
+            s = u_part(N+1,m,i)
+            for j in range(len(ti)):
+                ti[j] = t[s+j]
+            T_z.append(ti.copy())
+
+        return t,T_z
+
 def create_stateIntegralProblem(y0,T,a,z):
 
     def J(u,y,yT,T):
@@ -48,7 +63,7 @@ def create_stateIntegralProblem(y0,T,a,z):
         dt = float(T)/(len(u)-1)
         I1 = trapz((u)**2,t)
         I2 = sum(dt*(y-z(t))**2)
-
+        #I2 = trapz((y-z(t))**2,t)
         return 0.5*(I1+I2) + 0.5*(y[-1]-yT)**2
 
     def grad_J(u,p,dt):
@@ -60,8 +75,8 @@ def create_stateIntegralProblem(y0,T,a,z):
         grad[-1] = 0.5*dt*(u[-1]) + dt*p[-2]
         return grad
         
-
-    problem = StateIntegralProblem(y0,T,a,J,grad_J,z=z)
+    yT = 0
+    problem = StateIntegralProblem(y0,T,yT,a,J,grad_J,z=z)
     return problem
 
 def test_stateI():
@@ -85,13 +100,33 @@ def test_stateI():
     plt.plot(y,'--')
     plt.show()
 
+def test_penaty_stateI():
+    y0 = 1
+    a = 1
+    T = 1
+    z = lambda x : (1-x)*10
+    
+    problem = create_stateIntegralProblem(y0,T,a,z)
+
+    N = 1000
+    m = 5
+    
+    res = problem.penalty_solve(N,m,[1,100,1000,10000])[-1]
+    print res.counter()
+
+    y,Y = problem.ODE_penalty_solver(res.x,N,m)
+    import matplotlib.pyplot as plt
+
+    plt.plot(res.x[:N+1])
+    plt.plot(Y,'--')
+    plt.show()
 
 def taylorTest():
 
     y0 = 1
     a = 1
     T = 1
-    z = lambda x : 0*x
+    z = lambda x : 10*(1-x)
     
     problem = create_stateIntegralProblem(y0,T,a,z)
 
@@ -151,9 +186,21 @@ def taylorTest():
     plt.show()
     return
 
+def tayorTest2():
+
+    y0 = 1
+    a = 1
+    T = 1
+    z = lambda x : (1-x)*10
+    
+    problem = create_stateIntegralProblem(y0,T,a,z)
+
+    general_taylor_test(problem)
+
+
 if __name__=='__main__':
     
     #test_stateI()
-    taylorTest()
-
-
+    #taylorTest()
+    #test_penaty_stateI()
+    tayorTest2()

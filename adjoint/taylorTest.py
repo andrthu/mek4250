@@ -724,6 +724,89 @@ def general_non_linear_test():
     plt.ylabel('gradient value')
     plt.show()
 
+def general_taylor_test(problem,N=100,m=10):
+
+    T = problem.T
+    problem.t,problem.T_z = problem.decompose_time(N,m)
+    dt = float(T)/(N)
+    
+    h = 100*np.random.random(N+1)
+    h2 = 100*np.random.random(N+m)
+    
+    mu = 1
+
+    J = lambda u: problem.Functional(u,N)
+    J2 = lambda u: problem.Penalty_Functional(u,N,m,mu)
+    u = np.zeros(N+1) +1
+    u2 = np.zeros(N+m) +1.1
+    for i in range(8):
+
+        print J2(u2+h2/(10**i))-J2(u2),J(u+h/(10**i)),J(u)
+
+
+    def grad_J(x):
+        
+        return problem.Gradient(x,N)
+    def grad_J2(x):
+        #return
+        return problem.Penalty_Gradient(x,N,m,mu)
+    print
+    table = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
+             'rate2':['--'],'e v':[]}
+    table2 = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
+             'rate2':['--'],'e v':[]}
+    eps_list = []
+    for i in range(8):
+        eps = 1./(10**i)
+        
+        grad_val = abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
+        func_val = J(u+h*(eps))-J(u)
+
+        grad_val2 = abs(J2(u2+h2*eps) - J2(u2) - eps*h2.dot(grad_J2(u2)))
+        func_val2 = J2(u2+h2*(eps))-J2(u2)
+        
+        eps_list.append(eps)
+        table2['J(u+v)-J(u)'].append(func_val2)
+        table2['J(u+v)-J(u)-dJ(u)v'].append(grad_val2)
+        table2['e v'].append(eps*max(h2))
+        
+        table['J(u+v)-J(u)'].append(func_val)
+        table['J(u+v)-J(u)-dJ(u)v'].append(grad_val)
+        table['e v'].append(eps*max(h))
+        if i!=0:
+            table['rate1'].append(np.log(abs(table['J(u+v)-J(u)'][i-1]/table['J(u+v)-J(u)'][i]))/np.log(10))
+            table['rate2'].append(np.log(abs(table['J(u+v)-J(u)-dJ(u)v'][i-1]/table['J(u+v)-J(u)-dJ(u)v'][i]))/np.log(10))
+
+            table2['rate1'].append(np.log(abs(table2['J(u+v)-J(u)'][i-1]/table2['J(u+v)-J(u)'][i]))/np.log(10))
+            table2['rate2'].append(np.log(abs(table2['J(u+v)-J(u)-dJ(u)v'][i-1]/table2['J(u+v)-J(u)-dJ(u)v'][i]))/np.log(10))
+    print
+    
+    for i in range(10):
+        eps = 1./(2**i)
+        grad_fd = finite_diff(J2,u2,eps)
+        grad = grad_J2(u2)
+        print max(abs(grad_fd[:]-grad[:]))
+    
+    data2 = pd.DataFrame(table,index=eps_list)
+    #data2.to_latex('report/draft/discertizedProblem/taylorTest1.tex')
+    data3 = pd.DataFrame(table2,index=eps_list)
+    print data2
+    print
+    print data3
+    
+    import matplotlib.pyplot as plt
+
+
+    
+
+    #grad2 = grad_J2(u)
+    plt.plot(grad)
+    plt.plot(grad_fd,'r--')
+    #plt.plot(grad2)
+    plt.legend(['num grad','finite diff grad'],loc=4)
+    plt.xlabel('gradient index')
+    plt.ylabel('gradient value')
+    plt.show()
 
 
 if __name__ == '__main__':

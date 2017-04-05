@@ -46,6 +46,9 @@ class OptimalControlProblem():
         self.J      = J
         self.grad_J = grad_J
         
+        self.T_z = NoneVec()
+        self.t   = None
+
         self.set_options(options,Lbfgs_options)
         
         self.Vec = self.options['Vector']
@@ -315,9 +318,10 @@ class OptimalControlProblem():
             l[i][-1]=init(self,y,u,my,N,i,m) #my*(y[i][-1]-u[N+1+i])
             
         for i in range(m):
+            self.t = self.T_z[i]
             for j in range(len(l[i])-1):
                 l[i][-(j+2)] = self.adjoint_update(l[i],y[i],j,dt)
-            
+        self.t=np.linspace(0,T,N+1)
         L=self.serial_gather(l,N,m)#np.zeros(N+1)
         """
         start=0
@@ -544,7 +548,9 @@ class OptimalControlProblem():
         res.add_FuncGradCounter(self.counter-initial_counter)
         return res
 
-
+    def decompose_time(self,N,m):
+        return np.linspace(0,self.T,N+1),np.zeros(m+2)
+        
     def penalty_solve(self,N,m,my_list,tol_list=None,x0=None,Lbfgs_options=None,algorithm='my_lbfgs',scale=False):
         """
         Solve the optimazation problem with penalty
@@ -557,7 +563,7 @@ class OptimalControlProblem():
         * x0: initial guess for control
         * options: same as for class initialisation
         """
-
+        self.t,self.T_z = self.decompose_time(N,m)
         dt=float(self.T)/N
         if x0==None:
             x0 = self.initial_control(N,m=m)#np.zeros(N+m)
@@ -1106,6 +1112,12 @@ class Problem3(OptimalControlProblem):
     def adjoint_update(self,l,y,i,dt):
         a = self.a
         return (1+dt*a)*l[-(i+1)] 
+
+
+class NoneVec():
+
+    def __getitem__(self,i):
+        return None
 
 if __name__ == "__main__":
 
