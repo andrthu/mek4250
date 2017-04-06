@@ -104,19 +104,100 @@ In this section we look at some of the convergence properties of the Parareal al
 \begin{align}
 \frac{\partial}{\partial t} y(t)=ay(t),\quad t\in [0,T],\quad y(0)=y_0\label{convergence_ODE}
 \end{align}
-We state their findings in the theorem below:
-\begin{theorem}
+We state their findings in the proposition below:
+\begin{proposition} \label{P_con_prop}
 Let us decompose $I=[0,T]$ into $N$ subintervals of length $\Delta T = \frac{T}{N}$, and then let $\bold F_{\Delta T}$ and $\bold G_{\Delta T}$ be the fine and coarse propagator solving equation (\ref{convergence_ODE}). If $\bold G_{\Delta T}(\omega)$  is evaluated using the implicit Euler scheme (\ref{G_Backward}), there exist for all integers $k$ a constant $c_k$ such that the error between the $k$th iterate of the Parareal algorithm (\ref{pred_corr_PR}) and the exact solution of (\ref{convergence_ODE}) $y$ is bounded in the following way:
 \begin{align}
 \forall \ i,0\leq i\leq N-1 \quad |\lambda_i^k-y(T_i)| + \max_{t\in[T_{i},T^{i+1}]}|y_{i+1}^k(t)-y(t)| \leq c_k\Delta T^{k+1} \label{P_error_bound}
 \end{align}
-\end{theorem}
-It is important to note that the error bound given in the above theorem only holds for fixed $k$s, since the constant $c_k$ grows with $k$. This means that if we do $k$ iterations of Parareal, the algorithm converges to the exact solution(or rather the fine numerical solution), when $\Delta T$ goes to zero at a rate of $\bold O(\Delta T^{k+1})$. We can therefore say that $k$ iterations behaves like a numerical method of order $k+1$. In \cite{lions2001resolution}, they used a first order implicit Euler scheme for their coarse propagator. It turns out that if one instead uses a scheme of order $p$, the convergence bound (\ref{P_error_bound}) after $k$ iterations is improved to $\bold O(\Delta T^{p(k+1)})$. This was shown in \cite{bal2005convergence}, where the bounds were derived for more general equations. 
+\end{proposition}
+It is important to note that the error bound given in proposition \ref{P_con_prop} only holds for fixed $k$s, since the constant $c_k$ grows with $k$. This means that if we do $k$ iterations of Parareal, the algorithm converges to the exact solution(or rather the fine numerical solution), when $\Delta T$ goes to zero at a rate of $\bold O(\Delta T^{k+1})$. We can therefore say that $k$ iterations behaves like a numerical method of order $k+1$. In \cite{lions2001resolution}, they used a first order implicit Euler scheme for their coarse propagator. It turns out that if one instead uses a scheme of order $p$, the convergence bound (\ref{P_error_bound}) after $k$ iterations is improved to $\bold O(\Delta T^{p(k+1)})$. This was shown in \cite{bal2005convergence}, where the bounds were derived for more general equations. 
 \\
 \\
-The case where we let $\Delta T$ be fixed, and look at convergence when we increase $k$, is analysed in \cite{gander2007analysis}. Here the authors again investigate the convergence of the equation (\ref{convergence_ODE}). They found that the convergence was super linear in $k$ for bounded time intervals $[0,T]$, and linear for unbounded time interval. 
+The case where we let $\Delta T$ be fixed, and look at convergence when we increase $k$, is analysed in \cite{gander2007analysis}. Here the authors again investigate the convergence of the equation (\ref{convergence_ODE}). They found that the convergence was superlinear in $k$ for bounded time intervals $[0,T]$, and linear for unbounded time interval. 
+\\
+\\
+To demonstrate the Parareal algorithm, we will try to verify proposition \ref{P_con_prop} for the following linear ODE:
+\begin{align}
+\frac{\partial}{\partial t} y(t) =\cos(2\pi t)y(t), \quad t\in[0,4],y(0)=3.52 \label{Parareal_ODE_exs}
+\end{align}
+This is a simple separable equation with solution $y_e(t)=y_0e^{-\frac{\sin(2\pi t)}{2\pi}}$. To test the Parareal algorithm we choose a fine solver that discretizes (\ref{Parareal_ODE_exs}) using the second order Crank-Nicolson finite difference scheme\cite{crank1947practical}, while we base the coarse solver on a first order implicit Euler scheme. The experimental setup, is to do "zero", one, two and three iterations of Parareal on different time decompositions, and then check if we get the convergence rate proposed in proposition \ref{Parareal_ODE_exs}. The error between the exact solution $y_e$ and the solution $y_k$ we get from $k$ Parareal iterations is measured in the max-norm, and we use $\Delta t=10^{-6}$ as small time step for the fine discretization. The results can be found in tables \ref{par_con1} to \ref{par_con4}. Plots of the results of one Parareal iteration applied to large $\Delta T$ values are also added in Figure \ref{P_fig_1_itr}.
+\\
+\begin{table}[h]
+\centering
+\caption{Results for initial coarse and fine solver applied to equation \ref{Parareal_ODE_exs}. We observe a convergence rate of 1, which is as expected for an implicit Euler scheme.}
+\label{par_con1}
+\begin{tabular}{lrrl}
+\toprule
+{}$N$ &      $\Delta T$ &       err &     rate \\
+\midrule
+40   &  0.0250 &  0.802648 &       -- \\
+50   &  0.0200 &  0.628177 &  1.09837 \\
+100  &  0.0100 &  0.298689 &  1.07253 \\
+200  &  0.0050 &  0.145239 &  1.04021 \\
+500  &  0.0020 &  0.057075 &  1.01934 \\
+1000 &  0.0010 &  0.028365 &  1.00875 \\
+2000 &  0.0005 &  0.014139 &  1.00441 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[h]
+\centering
+\caption{Convergence results for one iteration of Parareal. We see a rate of convergence consistent with proposition \ref{P_con_prop}.}
+\label{par_con2}
+\begin{tabular}{lrrl}
+\toprule
+{}$N$ &      $\Delta T$ &       err &     rate \\
+\midrule
+40   &  0.0250 &  0.036593 &       -- \\
+50   &  0.0200 &  0.027970 &  1.20431 \\
+100  &  0.0100 &  0.008871 &  1.65668 \\
+200  &  0.0050 &  0.002426 &  1.87042 \\
+500  &  0.0020 &  0.000406 &  1.95102 \\
+1000 &  0.0010 &  0.000103 &  1.97996 \\
+2000 &  0.0005 &  0.000026 &  1.99027 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[h]
+\centering
+\caption{Convergence results for two iterations of Parareal. We see that the rate of convergence approaches 3}
+\label{par_con3}
+\begin{tabular}{lrrl}
+\toprule
+{}$N$ &      $\Delta T$ &       err &     rate \\
+\midrule
+40   &  0.0250 &  3.759869e-03 &       -- \\
+50   &  0.0200 &  1.384116e-03 &  4.47838 \\
+100  &  0.0100 &  1.090653e-04 &   3.6657 \\
+200  &  0.0050 &  2.345744e-05 &  2.21707 \\
+500  &  0.0020 &  1.852693e-06 &  2.77046 \\
+1000 &  0.0010 &  2.448745e-07 &  2.91951 \\
+2000 &  0.0005 &  3.072620e-08 &   2.9945 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[h]
+\centering
+\caption{Convergence results for three iterations of Parareal. We see that the convergence rate does not behave as we would expect from proposition \ref{P_con_prop}. This most likely explanation for this is that the error of the Parareal algorithm approaches the numerical error of the fine scheme. }
+\label{par_con4}
+\begin{tabular}{lrrl}
+\toprule
+{}$N$ &      $\Delta T$ &       err &     rate \\
+\midrule
+40   &  0.0250 &  2.574574e-04 &       -- \\
+50   &  0.0200 &  7.818525e-05 &  5.34084 \\
+100  &  0.0100 &  1.487138e-06 &  5.71629 \\
+200  &  0.0050 &  1.345036e-07 &  3.46682 \\
+500  &  0.0020 &  6.044837e-09 &  3.38581 \\
+1000 &  0.0010 &  4.431655e-10 &  3.76979 \\
+2000 &  0.0005 &  5.573852e-11 &   2.9911 \\
+\bottomrule
+\end{tabular}
+\end{table}
 \begin{figure}[h]
-\caption{test}
 \centering
 \includegraphics[scale=0.5]{parareal_img.png}
+\caption{The result of 1 iteration of the Parareal algorithm on equation (\ref{Parareal_ODE_exs}), for three different time decompositions, $N=6,12,24$. }
+\label{P_fig_1_itr}
 \end{figure}

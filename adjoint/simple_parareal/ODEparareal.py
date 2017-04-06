@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.integrate import trapz
 
@@ -67,7 +68,7 @@ def implicit_solver(y0,a,dt,N,f=None,partition=None):
         
     for i in range(N):
         #print start+i,len(a),len(f)
-        y[i+1] = (y[i] +dt*f[start+i+1])/(dt*a[start+i]+1)
+        y[i+1] = (y[i] +dt*f[start+i+1])/(dt*a[start+i+1]+1)
 
     return y
 
@@ -169,10 +170,9 @@ def parareal_solver(y0,a,T,M,N,order=3,f=[None,None]):
     
     y=[]
     for i in range(M):
-        y.append(second_order_solver(coarse_y[i],a[1],dt,int_par_len(N+1,M,i)-1,f=f[1]))    
+        y.append(second_order_solver(coarse_y[i],a[1],dt,int_par_len(N+1,M,i)-1,f=f[1],partition=(N+1,M,i)))    
     
     for k in range(order-1):
-        print k
         y,coarse_y=propagator_iteration(y,coarse_y,a,y0,N,M,dt,dT,f=f)
         
     Y = gather_y(y,N)
@@ -275,13 +275,13 @@ def test_convergence():
     print E
 
 
-def constant_iteration(k=3):
+def constant_iteration(k=3,M=[3,6,12,24,80,100,200,500,1000,2000],N=10000,plot_=True):
 
     a = 1.3
     T = 4
     y0 = 3.52
 
-    N = 10000
+    #N = 10000
     tol = 1./1000
     t = np.linspace(0,T,N+1)
     A = lambda x: np.cos(2*np.pi*x)
@@ -291,60 +291,94 @@ def constant_iteration(k=3):
     C = c*t
     ye = y0*np.exp(-np.sin(2*np.pi*t)/(2*np.pi))
     yn = second_order_solver(y0,a,float(T)/N,N,f=None)
-    print max(abs(ye-yn))
+    #print max(abs(ye-yn))
     import matplotlib.pyplot as plt
-    M = [12,20,80,100,200,500,1000,2000]
+    #M = [3,6,12,24,80,100,200,500,1000,2000]
     #plt.figure(figsize=(20,10))
     #plt.plot(t,ye,'--')
     Y_list = []
     error_list = []
     coarse_dts = []
+    
     for m in M:
-        f = [None,None]#[c*np.linspace(0,T,m+1),C]
+        f = [None,None]
+        #f=[c*np.linspace(0,T,m+1),C]
         aa = [A(np.linspace(0,T,m+1)),a]
         Y = parareal_solver(y0,aa,T,m,N,order=k,f=f)
         Y_list.append(Y)
         error = max(abs(Y-ye))
-        print error
+        #print error
         error_list.append(error)
         coarse_dts.append(1./m)
 
         #plt.plot(t,Y,'.')
     #plt.show()
+    table ={"err":None,"dT":None,"rate":None}
+    table["err"] = error_list
+    table["dT"] = coarse_dts
     error_list = np.array(error_list)
     coarse_dts = np.array(coarse_dts)
     
-    print np.log(error_list[1:]/error_list[:-1])/np.log(coarse_dts[1:]/coarse_dts[:-1])
-    plt.figure(figsize=(10,16))
-    ax1 = plt.subplot(311)
-    ax1.plot(t,ye)
-    ax1.plot(t,Y_list[1],'ro',markersize=1)
-    ax1.legend(['exact','Parareal,N='+str(M[1])],loc=2)
-    #ax1.set_title('dT='+str(coarse_dts[1]))
+    rate=np.log(error_list[1:]/error_list[:-1])/np.log(coarse_dts[1:]/coarse_dts[:-1])
+    #print rate
+    rate2 = ['--']
+    for i in range(len(rate)):
+        rate2.append(rate[i])
+    table["rate"]=rate2
+    
+    
+    data = pd.DataFrame(table,index=M)
+    #print data
+    if plot_:
+        plt.figure(figsize=(10,16))
+        ax1 = plt.subplot(311)
+        ax1.plot(t,ye,'--')
+        ax1.plot(t,Y_list[1],'ro',markersize=1)
+        ax1.legend(['exact','Parareal,N='+str(M[1])],loc=2)
+        #ax1.set_title('dT='+str(coarse_dts[1]))
 
-    ax2 = plt.subplot(312)
-    ax2.plot(t,ye)
-    ax2.plot(t,Y_list[2],'o',markersize=1)
-    ax2.legend(['exact','Parareal,N='+str(M[2])],loc=2)
-    #ax2.set_title('dT='+str(coarse_dts[2]))
+        ax2 = plt.subplot(312)
+        ax2.plot(t,ye,'--')
+        ax2.plot(t,Y_list[2],'o',markersize=1)
+        ax2.legend(['exact','Parareal,N='+str(M[2])],loc=2)
+        #ax2.set_title('dT='+str(coarse_dts[2]))
 
-    ax3 = plt.subplot(313)
-    ax3.plot(t,ye)
-    ax3.plot(t,Y_list[5],'o',markersize=1)
-    ax3.legend(['exact','Parareal,N='+str(M[5])],loc=2)
-    #plt.savefig('report/draft/draft2/parareal_img.png')
-    #ax3.set_title('dT='+str(coarse_dts[5]))
-    """
-    ax4 = plt.subplot(414)
-    ax4.plot(t,yn)
-    ax4.plot(t,Y_list[6],'.')
-    """
-    plt.show()
+        ax3 = plt.subplot(313)
+        ax3.plot(t,ye,'--')
+        ax3.plot(t,Y_list[3],'o',markersize=1)
+        ax3.legend(['exact','Parareal,N='+str(M[3])],loc=2)
+        #plt.savefig('report/draft/draft2/parareal_img.png')
+        #ax3.set_title('dT='+str(coarse_dts[5]))
+        """
+        ax4 = plt.subplot(414)
+        ax4.plot(t,yn)
+        ax4.plot(t,Y_list[6],'.')
+        """
+        plt.show()
+    
+    return data
+    
+
+def create_con_table():
+
+    
+    N = 1000000
+    M = [40,50,100,200,500,1000,2000]
+
+    Data = []
+    
+    for k in range(1,5):
+
+        Data.append(constant_iteration(k=k,N=N,M=M,plot_=False))
+        print Data[k-1]
+        Data[k-1].to_latex('report/draft/draft2/tables/parareal_convergence'+str(k)+'.tex')
+
+    return 0
     
 
 if __name__ == "__main__":
-    a = 1
-    T = 1
+    a  = 1
+    T  = 1
     y0 = 1
 
     N = 100000
@@ -352,4 +386,5 @@ if __name__ == "__main__":
     #test_order()
     #test_convergence()
     #parareal_solver(y0,a,T,M,N,order=1,show_plot=True)
-    constant_iteration(k=2)
+    #constant_iteration(k=1)
+    create_con_table()
