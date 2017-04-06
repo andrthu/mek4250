@@ -71,6 +71,25 @@ def implicit_solver(y0,a,dt,N,f=None,partition=None):
 
     return y
 
+def second_order_solver(y0,a,dt,N,f=None,partition=None):
+    y = np.zeros(N+1)
+    y[0] = y0
+
+    if f==None:
+        f = np.zeros(len(a))
+    if partition==None:
+        start = 0
+        partition = [N]
+    else:
+        start = u_part(partition[0],partition[1],partition[2])
+    if type(a)!=np.ndarray:
+        aa = np.zeros(partition[0]+1)+a
+        a = aa
+    for i in range(N):
+        #print start+i,len(a),len(f)
+        y[i+1] = (y[i]*(1-0.5*dt*a[start+i]) + dt*0.5*(f[start+i+1]+f[start+i]))/(0.5*dt*a[start+i+1]+1)
+    return y
+
 def int_par_len(n,m,i):
     """
     With fine resolution n and m time decomposition intervals,
@@ -116,7 +135,7 @@ def propagator_iteration(y,c_y,a,y0,N,M,dt,dT,f=[None,None]):
         
     y=[]
     for i in range(M):
-        y.append(implicit_solver(c_y[i],a2,dt,int_par_len(N+1,M,i)-1,f=f[1],partition=(N+1,M,i)))
+        y.append(second_order_solver(c_y[i],a2,dt,int_par_len(N+1,M,i)-1,f=f[1],partition=(N+1,M,i)))
     
     return y,c_y
 
@@ -137,7 +156,7 @@ def gather_y(y,N):
         start = end
     return Y
 
-def parareal_solver(y0,a,T,M,N,order=3,,f=[None,None]):
+def parareal_solver(y0,a,T,M,N,order=3,f=[None,None]):
     """
     implementation of the parareal scheme for our simple ODE
     using N+1 as fine resolution and M time decompositions, and
@@ -146,14 +165,15 @@ def parareal_solver(y0,a,T,M,N,order=3,,f=[None,None]):
     
     dt = float(T)/N
     dT =  float(T)/M
-    coarse_y = implicit_solver(y0,a[0],dT,M)
+    coarse_y = implicit_solver(y0,a[0],dT,M,f=f[0])
     
     y=[]
     for i in range(M):
-        y.append(implicit_solver(coarse_y[i],a[1],dt,int_par_len(N+1,M,i)-1))    
+        y.append(second_order_solver(coarse_y[i],a[1],dt,int_par_len(N+1,M,i)-1,f=f[1]))    
     
     for k in range(order-1):
-        y,coarse_y=propagator_iteration(y,coarse_y,a,y0,N,M,dt,dT)
+        print k
+        y,coarse_y=propagator_iteration(y,coarse_y,a,y0,N,M,dt,dT,f=f)
         
     Y = gather_y(y,N)
     return Y
@@ -255,7 +275,7 @@ def test_convergence():
     print E
 
 
-def constand_iteration(k=3):
+def constant_iteration(k=3):
 
     a = 1.3
     T = 4
@@ -264,25 +284,63 @@ def constand_iteration(k=3):
     N = 10000
     tol = 1./1000
     t = np.linspace(0,T,N+1)
-    A = lambda x: np.sin(2*np.pi*x)
+    A = lambda x: np.cos(2*np.pi*x)
     a = A(t)
     c= 10
     #C = np.zeros(N+1) +c
     C = c*t
-    ye = y0*np.exp(-a*t)
-    yn = implicit_solver(y0,a,float(T)/N,N,f=None)
-
+    ye = y0*np.exp(-np.sin(2*np.pi*t)/(2*np.pi))
+    yn = second_order_solver(y0,a,float(T)/N,N,f=None)
+    print max(abs(ye-yn))
     import matplotlib.pyplot as plt
-    M = [7,20,40,100]
+    M = [12,20,80,100,200,500,1000,2000]
+    #plt.figure(figsize=(20,10))
+    #plt.plot(t,ye,'--')
+    Y_list = []
+    error_list = []
+    coarse_dts = []
     for m in M:
+        f = [None,None]#[c*np.linspace(0,T,m+1),C]
         aa = [A(np.linspace(0,T,m+1)),a]
-        Y = parareal_solver(y0,aa,T,m,N,order=k)
+        Y = parareal_solver(y0,aa,T,m,N,order=k,f=f)
+        Y_list.append(Y)
+        error = max(abs(Y-ye))
+        print error
+        error_list.append(error)
+        coarse_dts.append(1./m)
 
+        #plt.plot(t,Y,'.')
+    #plt.show()
+    error_list = np.array(error_list)
+    coarse_dts = np.array(coarse_dts)
     
+    print np.log(error_list[1:]/error_list[:-1])/np.log(coarse_dts[1:]/coarse_dts[:-1])
+    plt.figure(figsize=(10,16))
+    ax1 = plt.subplot(311)
+    ax1.plot(t,ye)
+    ax1.plot(t,Y_list[1],'ro',markersize=1)
+    ax1.legend(['exact','Parareal,N='+str(M[1])],loc=2)
+    #ax1.set_title('dT='+str(coarse_dts[1]))
 
-        plt.plot(t,yn)
+    ax2 = plt.subplot(312)
+    ax2.plot(t,ye)
+    ax2.plot(t,Y_list[2],'o',markersize=1)
+    ax2.legend(['exact','Parareal,N='+str(M[2])],loc=2)
+    #ax2.set_title('dT='+str(coarse_dts[2]))
+
+    ax3 = plt.subplot(313)
+    ax3.plot(t,ye)
+    ax3.plot(t,Y_list[5],'o',markersize=1)
+    ax3.legend(['exact','Parareal,N='+str(M[5])],loc=2)
+    #plt.savefig('report/draft/draft2/parareal_img.png')
+    #ax3.set_title('dT='+str(coarse_dts[5]))
+    """
+    ax4 = plt.subplot(414)
+    ax4.plot(t,yn)
+    ax4.plot(t,Y_list[6],'.')
+    """
     plt.show()
-
+    
 
 if __name__ == "__main__":
     a = 1
@@ -294,4 +352,4 @@ if __name__ == "__main__":
     #test_order()
     #test_convergence()
     #parareal_solver(y0,a,T,M,N,order=1,show_plot=True)
-    constand_iteration(k=2)
+    constant_iteration(k=2)

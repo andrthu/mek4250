@@ -113,7 +113,8 @@ class OptimalControlProblem():
         """
 
         default = {"Vector" : SimpleVector,
-                   "Lbfgs"  : Lbfgs,}
+                   "Lbfgs"  : Lbfgs,
+                   "state_int"       : False}
         return default
 
     def default_SD_options(self):
@@ -549,7 +550,7 @@ class OptimalControlProblem():
         return res
 
     def decompose_time(self,N,m):
-        return np.linspace(0,self.T,N+1),np.zeros(m+2)
+        return np.linspace(0,self.T,N+1),NoneVec()
         
     def penalty_solve(self,N,m,my_list,tol_list=None,x0=None,Lbfgs_options=None,algorithm='my_lbfgs',scale=False):
         """
