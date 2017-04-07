@@ -1,7 +1,7 @@
 from ODE_pararealOCP import PararealOCP
 import numpy as np
 from scipy.integrate import trapz
-from taylorTest import general_taylor_test
+from taylorTest import general_taylor_test,lin_problem
 
 class CrankNicolsonOCP(PararealOCP):
 
@@ -35,10 +35,27 @@ class CrankNicolsonOCP(PararealOCP):
             start = start + len(l[i])-1
         L[-1]=l[-1][-1]
         return L
+class CrankNicolsonStateIntOCP(PararealOCP):
+    def __init__(self,y0,yT,T,a,J,grad_J,options=None):
+ 
+        PararealOCP.__init__(self,y0,yT,T,J,grad_J,options,implicit=True)
+
+        self.a = a
+
+    def implicit_gather(self,l,N,m):
+        L=np.zeros(N+1)
+        #"""
+        start=0
+        for i in range(m):
+            L[start:start+len(l[i])-1] = l[i][:-1]
+            if i!=0:
+                L[start] = 0.5*(l[i][0]+l[i-1][-1])
+            start = start + len(l[i])-1
+        L[-1]=l[-1][-1]
+        return L
 
 
-
-def create_CN_problem(y0,yT,T,a):
+def create_simple_CN_problem(y0,yT,T,a):
     
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
@@ -67,13 +84,22 @@ def test_CN():
     T=1
     yT=1
 
-    problem = create_CN_problem(y0,yT,T,a)
+    problem = create_simple_CN_problem(y0,yT,T,a)
+    problem2,_ = lin_problem(y0,yT,T,a)
     N = 10000
+    opt = {'jtol':0,'maxiter':50}
+    res = problem.solve(N,Lbfgs_options=opt )
+    res2 = problem2.solve(N,Lbfgs_options=opt)
 
-    res = problem.solve(N)
+    res3 = problem.penalty_solve(N,10,[N,N**2],Lbfgs_options=opt)[-1]
+    res4 = problem.PPCLBFGSsolve(N,10,[N,N**2],options=opt)[-1]
+
     import matplotlib.pyplot as plt
-
-    plt.plot(res.x)
+    print res.counter(),res2.counter(),res3.counter(),res4.counter()
+    plt.plot(res.x,'--')
+    plt.plot(res2.x)
+    plt.plot(res3.x[:N+1])
+    plt.plot(res4.x[:N+1],'o')
     plt.show()
 
 def taylorTestCN():
@@ -82,11 +108,11 @@ def taylorTestCN():
     T=1
     yT=1
 
-    problem = create_CN_problem(y0,yT,T,a)
+    problem = create_simple_CN_problem(y0,yT,T,a)
     
     general_taylor_test(problem)
 
 if __name__=='__main__':
 
-    #test_CN()
-    taylorTestCN()
+    test_CN()
+    #taylorTestCN()

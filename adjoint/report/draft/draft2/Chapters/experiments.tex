@@ -70,8 +70,9 @@ This time I only use the preconditioned solver, but now we also measure the exec
 I solved penalized problem using only one penalty iteration setting the penalty parameter $\mu=\frac{1}{\Delta t}$. Finally, I ran my experiments using $\Delta t =10^{-5},0.5(10^{-5}),10^{-6}$. The results follow below:
 \\
 \\
-$\Delta t = 10^{-5}$
-\\
+\begin{table}[h]
+\centering
+\caption{$\Delta t = 10^{-5}$}
 \begin{tabular}{lrrllrr}
 \toprule
 {} $N$&   L &        $\hat S$ &          $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&   speedup &      time \\
@@ -84,13 +85,14 @@ $\Delta t = 10^{-5}$
 6: &  61 &  4.229508 &   4.1827e-09 &  2.7e-05 &  2.877279 &  1.719890 \\
 \bottomrule
 \end{tabular}
-\\
+\end{table}
 \\
 When comparing the ideal speedup $\hat S$ with the actual achieved wall clock speedup in the above results, we see that the ideal speedup is a lot higher. We do however notice that both ideal and actual speedup increase for larger $N$, which indicates that they might be somewhat related.
 \\
 \\
-$\Delta t = 0.5(10^{-5})$
-\\
+\begin{table}[h]
+\centering
+\caption{$\Delta t = 0.5(10^{-5})$}
 \begin{tabular}{lrrllrr}
 \toprule
 {} $N$&   L &        $\hat S$ &         $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&speedup &       time \\
@@ -103,11 +105,11 @@ $\Delta t = 0.5(10^{-5})$
 6: &  69 &  3.913043 &  1.04562e-09 &  1.3e-05 &  2.374901 &   4.294703 \\
 \bottomrule
 \end{tabular}
+\end{table}
 \\
-\\
-$\Delta t = 10^{-6}$
-\\
-\\
+\begin{table}[h]
+\centering
+\caption{$\Delta t = 10^{-6}$}
 \begin{tabular}{lrrllrr}
 \toprule
 {} $N$&   L &        $\hat S$ &          $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&speedup &       time \\
@@ -120,6 +122,6 @@ $\Delta t = 10^{-6}$
 6: &  115 &  2.660870 &  4.21117e-11 &    3e-06 &  1.780952 &  31.987489 \\
 \bottomrule
 \end{tabular}
-\\
+\end{table}
 \\
 For $\Delta t = 0.5(10^{-5})$ and $\Delta t = 10^{-6}$, the results are a bit disappointing, however we do continue to see the a relation between ideal and actual speedup, which justifies the use of $\hat S$ as a measure of effectiveness for our algorithm. In the last table for $N=3$, we notice that the error is high, and that the number of gradient evaluations is low. The reason for this is that the last line search iteration for this specific case failed to satisfy the Wolfe conditions due to numerical numerical errors. The next natural step would then be to do a second penalty iteration with increased penalty parameter and or decreased tolerances, for line search and L-BFGS iterations. This was however not done in this case, since the set-up for the experiment was only to do one penalty iteration.

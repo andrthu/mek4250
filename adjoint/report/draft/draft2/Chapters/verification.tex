@@ -103,8 +103,9 @@ In \ref{analysis sec} I derived the theoretical speedup for numerical gradient a
 \end{align*}
 Available to me, is a computer with 6 cores, so I will do gradient and function evaluation for $N=1,2,...,6$ decompositions, for different time step sizes $\Delta t$. For each combination of $N$ and $\Delta t$, I will run the function and gradient evaluations ten times, and then choose the the smallest execution time produced by the ten runs. The speedup is then calculated by dividing the sequential execution time by the parallel execution time. Below follows tables showing runtime and speedup for both gradient and function evaluation for different $\Delta t$s and $N$s. All evaluations are done with control input $v=1$ and $\lambda_i=1$.  
 \\
-\begin{center}
-$\Delta t=10^{-2}$\\
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-2}$}
 \begin{tabular}{lrr}
 \toprule
 {} $N$&   function speedup &      function time \\
@@ -129,9 +130,10 @@ $\Delta t=10^{-2}$\\
 6: &  0.480088 &  0.000452 \\
 \bottomrule
 \end{tabular}
-\end{center}
-\begin{center}
-$\Delta t=10^{-3}$\\
+\end{table}
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-3}$}
 \begin{tabular}{lrr}
 \toprule
 {}$N$ &  function speedup &     function time \\
@@ -156,9 +158,10 @@ $\Delta t=10^{-3}$\\
 6: &  2.334848 &  0.000660 \\
 \bottomrule
 \end{tabular}
-\end{center}
-\begin{center}
-$\Delta t=10^{-4}$\\
+\end{table}
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-4}$}
 \begin{tabular}{lrr}
 \toprule
 {} $N$&  function speedup &    function  time \\
@@ -183,9 +186,10 @@ $\Delta t=10^{-4}$\\
 6: &  4.978780 &  0.003016 \\
 \bottomrule
 \end{tabular}
-\end{center}
-\begin{center}
-$\Delta t=10^{-5}$\\
+\end{table}
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-5}$}
 \begin{tabular}{lrr}
 \toprule
 {}$N$ &  function speedup &    function  time \\
@@ -210,9 +214,10 @@ $\Delta t=10^{-5}$\\
 6: &  5.755101 &  0.026905 \\
 \bottomrule
 \end{tabular}
-\end{center}
-\begin{center}
-$\Delta t=10^{-6}$\\
+\end{table}
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-6}$}
 \begin{tabular}{lrr}
 \toprule
 {} $N$&  function speedup &    function time \\
@@ -237,9 +242,10 @@ $\Delta t=10^{-6}$\\
 6: &  5.651349 &  0.266137 \\
 \bottomrule
 \end{tabular}
-\end{center}
-\begin{center}
-$\Delta t=10^{-7}$\\
+\end{table}
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-7}$}
 \begin{tabular}{lrr}
 \toprule
 {}$N$ &  function speedup &      time \\
@@ -264,9 +270,10 @@ $\Delta t=10^{-7}$\\
 6: &  5.744552 &   2.599027 \\
 \bottomrule
 \end{tabular}
-\end{center}
-\begin{center}
-$\Delta t=10^{-8}$\\
+\end{table}
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-8}$}
 \begin{tabular}{lrr}
 \toprule
 {} $N$&  function speedup &      function time \\
@@ -279,7 +286,9 @@ $\Delta t=10^{-8}$\\
 6: &  5.735492 &  15.267741 \\
 \bottomrule
 \end{tabular}
-\end{center}
+\end{table}
+\\
+\\
 In all parallel algorithms there will be overhead, which means that for small problems parallelization does not produce any improvement in execution time. This is reflected in the above results, where we for $\Delta t = 10^{-2}$ see an increased execution time when running function and gradient evaluation in parallel. For $\Delta t = 10^{-3}$ and $\Delta t = 10^{-4}$ we see only a modest speedup, that is significantly lower than the expected speedup from section \ref{analysis sec}. For $\Delta t \leq 10^{-5}$, however we see speedup results in line with what we expect from the theory.  
 \section{Consistency}
 When we introduced the penalty method in section \ref{penalty_sec}, we also presented a result showing that the iterates $\{v^k\}$ stemming from the penalty algorithmic framework converged towards the solution of the non-penalized problem $v$. We can write this up as:
@@ -302,6 +311,10 @@ The interpretation of the above limit, is that solving the penalized problem wit
 \end{align}
 Then I set the time step to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of decomposed subintervals. I solved problem (\ref{con J}-\ref{con E}) for increasing $\mu$ values, and looked at different ways to compare the the solutions $v$ and $v^{\mu}$. I compared the function value these controls gave for both the penalized and non-penalized objective function, and the relative difference between $v$ and $v^{\mu}$ in numerical $L^2$-norm. I also looked at the maximal jump difference in the decomposed state equation for each penalized control solution. The results were as follows:
 \\
+\begin{table}[h]
+\centering
+\caption{Consistency of penalty method using 2 decompositions}
+\label{Cosistency_table}
 \begin{tabular}{lrrrr}
 \toprule 
 {} $\mu$&  $\frac{J(v_{\mu})-J(v)}{J(v)}$ &  $\frac{J_{\mu}(v_{\mu})-J_{\mu}(v)}{J_{\mu}(v)}$ &         $\sup_i\{y_{k_i}^i-y_{k_i}^{i+1}\}$ &    $\frac{||v_{\mu}-v||}{||v||}$ \\
@@ -329,7 +342,7 @@ Then I set the time step to be $\Delta t = 10^{-2}$ and let $N=2$ be the number 
 1.000000e+16 &      2.004854e-15 &             9.355984e-15 &  3.108624e-15 &  1.375728e-08 \\
 \bottomrule
 \end{tabular}
+\end{table}
 \\
-\\
-What we need to note about the above results, is that while difference in function value and state equation jump approach machine precision, the relative norm difference $\frac{||v_{\mu}-v||}{||v||}$ does not hit machine precision. The explanation of this is that all the terms in our functional are squared, and a difference of $10^{-8}$ is therefore actually quite close to machine precision, when you square it. The jump differences are also squared, however the $\mu$ penalty counter balances this for these terms.
+What we need to note about the results in table \ref{Cosistency_table}, is that while difference in function value and state equation jump approach machine precision, the relative norm difference $\frac{||v_{\mu}-v||}{||v||}$ does not hit machine precision. The explanation of this is that all the terms in our functional are squared, and a difference of $10^{-8}$ is therefore actually quite close to machine precision, when you square it. The jump differences are also squared, however the $\mu$ penalty counter balances this for these terms.
 
