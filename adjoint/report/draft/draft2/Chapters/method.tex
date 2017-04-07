@@ -351,20 +351,20 @@ Q = \left[ \begin{array}{cc}
 \end{align}  
 We have derived $Q$ by trying to find a good preconditioner for the fix point iteration for solving $\hat {\bold J}'(\Lambda)=0$. Whether $\bar{M}^{-1}\bar{M}^{-*}$ has anything to do with the inverse Hessian of $\hat J'$ is however not clear. It turns out that $M^*M$ actually is related to the Hessian of the virtual problem, which we will show in the next subsection.
 \subsection{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian}
-In order for us to make it easier to differentiate the gradient of the reduced objective function (\ref{reduced_viritual}), we try to write up $\hat{\bold J}$ on vector notation. Let us first define the vector $x\in\mathbb{R}^{N-1}$ as:
+In order for us to make it easier to differentiate the gradient of the reduced objective function (\ref{reduced_viritual}), we try to write up $\hat{\bold J}$ on vector notation. Even though the propagator $\bold F$ is generally defined, and might very well be non-linear, we will now and for the rest of this subsection assume that the propagator is linear. Let us first define the vector $x(\Lambda)\in\mathbb{R}^{N-1}$ as:
 \begin{align}
-x= \left( \begin{array}{c}  
+x(\Lambda)= \left( \begin{array}{c}  
    \lambda_1 - y_1(T_1) \\ 
    \lambda_2 - y_2(T_2) \\
    \cdots  \\
    \lambda_{N-1} -y_{N-1}(T_{N-1})  \\
    \end{array}  \right)
 \end{align} 
-We can then formulate the problem (\ref{reduced_viritual}) as:
+We can then formulate the problem (\ref{reduced_viritual}) as a least square problem:
 \begin{align}
-\min_{\Lambda}\hat{\bold J}(\Lambda) = x^Tx \label{vector_J}  
+\min_{\Lambda}\hat{\bold J}(\Lambda) = \min_{\Lambda}x(\Lambda)^Tx(\Lambda) \label{vector_J}  
 \end{align}
-Here $x^T$ means $x$ transposed. We then want to express $x$ in terms of $\Lambda$ and $y_0$. To do this, we first find an expression for $\{y_i(T_i)\}_{i=1}^{N-1}$:
+Here $x(\Lambda)^T$ means $x(\Lambda)$ transposed. We then want to express $x$ on matrix notation in terms of $\Lambda$ and $y_0$. To do this, we first find an expression for $\{y_i(T_i)\}_{i=1}^{N-1}$:
 \begin{align}
 \left( \begin{array}{c}
    y_0(T_1) \\  
@@ -511,6 +511,8 @@ In order for us to get $\bar{M}^*=\bar{M}^T$, we the discretization of (\ref{vir
 \bold{G}_{\Delta T}^*(\omega)&=\frac{\omega}{(1-a\Delta T)}
 \end{align*}
 In the above derivation for $\bold{G}_{\Delta T}^*(\omega)$, the forward Euler finite difference scheme is used to discretize (\ref{virtual_adjoint_exs}), but since this equation is solved backwards in time this scheme is implicit. Since $\bold{G}_{\Delta T}^*(\omega)=\bold{G}_{\Delta T}(\omega)$, we get that $\bar{M}^*=\bar{M}^T$, which means that $\bar{M}^{-1}\bar{M}^{-*}$ is a valid choice for an initial inverted Hessian approximation in the BFGS-algorithm.
+\subsection{Non-linear state equations}
+
 \subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
 Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
 \begin{align}
