@@ -55,6 +55,45 @@ class CrankNicolsonStateIntOCP(PararealOCP):
         return L
 
 
+    def ODE_update(self,y,u,i,j,dt):
+        a = self.a
+
+        
+        return (y[i]+dt*u[j+1])/(1.-dt*a)
+        
+
+
+    def adjoint_update(self,l,y,i,dt):
+        a = self.a
+        z = self.z
+        help_z = self.help_z
+        #print len(l),len(y),len(self.t)
+        return (l[-(i+1)]+dt*(y[-(i+1)]-z(self.t[-help_z*(i+1)])))/(1.-dt*a)
+
+
+        
+    def func_state_part(self,u,N):
+        return self.ODE_solver(u,N)
+    def penalty_func_state_part(self,y,Y):
+        return Y
+
+    def decompose_time(self,N,m):
+        t = np.linspace(0,self.T,N+1)
+
+        T_z = []
+
+        for i in range(m):
+            ti = interval_partition(N+1,m,i)
+            s = u_part(N+1,m,i)
+            for j in range(len(ti)):
+                ti[j] = t[s+j]
+            T_z.append(ti.copy())
+
+        return t,T_z
+
+
+
+
 def create_simple_CN_problem(y0,yT,T,a):
     
     def J(u,y,yT,T):
