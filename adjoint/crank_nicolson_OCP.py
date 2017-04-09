@@ -59,7 +59,7 @@ class CrankNicolsonStateIntOCP(PararealOCP):
         a = self.a
 
         
-        return (y[i]+dt*u[j+1])/(1.-dt*a)
+       return (y[i]*(1+0.5*dt*a)+0.5*dt*(u[j]+u[j+1]))/(1-0.5*dt*a)
         
 
 
@@ -67,8 +67,8 @@ class CrankNicolsonStateIntOCP(PararealOCP):
         a = self.a
         z = self.z
         help_z = self.help_z
-        #print len(l),len(y),len(self.t)
-        return (l[-(i+1)]+dt*(y[-(i+1)]-z(self.t[-help_z*(i+1)])))/(1.-dt*a)
+        #return (1+0.5*dt*a)*l[-(i+1)]/(1-0.5*dt*a)
+        return ((1+0.5*a*dt)*l[-(i+1)]+dt*0.5*(y[-(i+1)]+y[-(i+2)]-z(self.t[-help_z*(i+1)-z(self.t[-help_z*(i+2)])))/(1.-0.5*dt*a)
 
 
         
