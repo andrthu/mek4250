@@ -1,8 +1,8 @@
 \chapter{Discretization and MPI communication}
-In previous chapters we have derived the adjoint equation and the gradient for our example optimal control problem with ODE constraints. We have also explained how we can parallelize the solving of the state and adjoint equations using the penalty method, and we have introduced a prconditioner for our optimization algorithms based on the parareal scheme. Before we can start to test our parallel algorithm, we need to discretize the time domain, the equations, the objective function and its gradient. 
+In the previous chapters we derived the adjoint equation and the gradient for our example optimal control problem with ODE constraints. We also explained how we can parallelize the solving of the state and adjoint equations using the penalty method, and we introduced a prconditioner for our optimization algorithm based on the parareal scheme. Before we can start to test our parallel algorithm, we need to discretize the time domain, the equations, the objective function and its gradient. 
 \\
 \\
-We discretize $I=[0,T]$ by dividing it into $n$ parts of length $\Delta t=\frac{T}{n}$, and setting $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Using $I_{\Delta t}$ we can start to discretize our example problem.
+We discretize the time interval $I=[0,T]$ by dividing it into $n$ parts of length $\Delta t=\frac{T}{n}$, and set $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Using $I_{\Delta t}$ we can start to discretize our example problem.
 \section{Discretizing the non-penalized example problem}
 Let us remember our example state equation (\ref{exs_E}) and objective function (\ref{exs_J}) 
 \begin{align}
@@ -17,7 +17,7 @@ Let us remember our example state equation (\ref{exs_E}) and objective function 
 J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2
 \label{problem}
 \end{align}
-We know that the the reduced gradient of (\ref{problem}) is:
+We know that the reduced gradient of (\ref{problem}) is:
 \begin{align}
 \nabla\hat{J}(v) = v(t)+p(t) \label{gradiant}
 \end{align}
@@ -32,7 +32,7 @@ where $p$ is the solution of the adjoint equation:
 \end{align}
 We now want to discretize (\ref{equation}-\ref{adjoint}), so we can solve the problem numerically. What we particularly want, is an expression for the gradient. 
 \subsection{Finite difference schemes for state and adjoint equations}
-Before I state what the numerical gradient will be for the implicit end explicit Euler schemes, I will write up these schemes for our equations (\ref{equation}) and (\ref{adjoint}). First the implicit for the state equation:
+Before we state what the numerical gradient will be for the implicit end explicit Euler schemes, we write these schemes for our equations (\ref{equation}) and (\ref{adjoint}). First the implicit Euler applied to the state equation yields:
 \begin{align}
 \frac{y^k-y^{k-1}}{\Delta t} &= a y^{k} + v^{k} \\
 (1-a\Delta t)y^{k} &= y^{k-1} +\Delta t v^{k} \\
@@ -101,7 +101,7 @@ The function $f(v)=\frac{1}{2} v^*Mv$ obviously has $Mv$ as gradient. The second
 \frac{\partial g(v)}{\partial v_n} &= \frac{\partial g(v)}{\partial y_n}\frac{\partial y_n}{\partial v_n} = \alpha(y_n -y^T)\frac{\partial y_n}{\partial v_n}\\
 &= \alpha(y_n -y^T)\frac{\Delta t}{1-a\Delta t}
 \end{align*}
-To get to the second line I used the implicit Euler formula (\ref{I_state}). If we then look at the scheme (\ref{I_adjoint}) for the adjoint equation, we see that:
+To get to the second line we used the implicit Euler formula (\ref{I_state}). If we then look at the scheme (\ref{I_adjoint}) for the adjoint equation, we see that:
 \begin{align*}
 \alpha(y_n -y^T)\frac{\Delta t}{1-a\Delta t} = \Delta t\frac{p_n}{1-a\Delta t} = \Delta t p_{n-1}
 \end{align*} 
@@ -157,12 +157,12 @@ The general rule for partitioning a task between $N$ processes, is to distribute
 q &= \lfloor \frac{n}{N}\rfloor \\
 r &= N \mod n
 \end{align*} 
-Then we give each process $q$ tasks, and then add one task to $r$ processes. To which processes you give the extra task does not really matter, but the most straightforward way of doing it is just to give the first $r$ processes the extra task. I however chose to look at the distributing problem slightly different, by instead of trying to distribute the $n$ tasks, looking at how to evenly divide the $n+1$ points $\{t_k\}_{k=0}^{n}$ among the $N$ processes. Again lets define $q$ and $r$ as:
+Then we give each process $q$ tasks, and then add one task to $r$ processes. To which processes you give the extra task does not really matter, but the most straightforward way of doing it is just to give the first $r$ processes the extra task. We however chose to look at the distributing problem slightly different, by instead of trying to distribute the $n$ tasks, looking at how to evenly divide the $n+1$ points $\{t_k\}_{k=0}^{n}$ among the $N$ processes. We redefine $q$ and $r$ as:
 \begin{align*}
 q &= \lfloor \frac{n+1}{N}\rfloor \\
 r &= N \mod n+1
 \end{align*}
-Every process now gets $q$ points, but due to overlap every process gets an extra point excluding the first process. Then the remaining $r$ points are given to the first $r$ processes. This allows me to define the sequence $\{k_{i}\}_{i=0}^N$ recursively as follows:
+Every process now gets $q$ points, but due to overlap every process gets an extra point excluding the first process. Then the remaining $r$ points are given to the first $r$ processes. This allows us to define the sequence $\{k_{i}\}_{i=0}^N$ recursively as follows:
 \begin{align*}
 k_{i+1} = k_i + q+\delta_{i\neq0}+\delta_{i<r}
 \end{align*}
@@ -204,11 +204,11 @@ One problem with $y_{\Delta t}^i$ and $p_{\Delta t}^i$ existing independently on
 &=\Delta t\frac{v_0^2+v_n^2}{4} + \frac{1}{2}\sum_{i=1}^{n-1} \Delta t v_i^2 + \frac{\alpha}{2}(y_n^N-y^T)^2+\frac{\mu }{2}\sum_{i=1}^{N} (y_{k_i}^{i}-\lambda_i)^2 \label{pen disc f}
 \end{align}
 \begin{theorem}
-The gradient of (\ref{pen disc f}), $\hat J_{\mu,\Delta t}:\mathbb{R}^{N+m}\rightarrow\mathbb{R}$ consists of two parts. The second part $ \nabla\hat J_{\mu,\Delta t}(\Lambda)\in\mathbb{R}^{m-1}$ dealing with the penalty part of the control is independent of the choice of finite difference scheme, and is given by:
+The gradient of (\ref{pen disc f}), $\hat J_{\mu,\Delta t}:\mathbb{R}^{N+m}\rightarrow\mathbb{R}$ consists of two parts. The second part $ \nabla\hat J_{\mu,\Delta t}(\Lambda)\in\mathbb{R}^{N-1}$ dealing with the penalty part of the control is independent of the choice of finite difference scheme, and is given by:
 \begin{align}
 \nabla\hat J_{\mu,\Delta t}(\Lambda) = (p_{k_1}^{2}-p_{k_1}^{1},p_{k_2}^{3}-p_{k_2}^{2},...,p_{N}^{k_{N-1}}-p_{N-1}^{k_{N-1}}) \label{num_pen_grad_lam}
 \end{align} 
-The first part $ \nabla\hat J_{\mu,\Delta t}(v_{\Delta t})\in\mathbb{R}^{N+1}$, which is connected to $v_{\Delta t}$, depend on the finite difference scheme used to discretize the adjoint and state equations. If we use the Implicit Euler scheme to evaluate (\ref{pen disc f}), the $v_{\Delta t}$ part of the gradient will be:
+The first part $ \nabla\hat J_{\mu,\Delta t}(v_{\Delta t})\in\mathbb{R}^{m+1}$, which is connected to $v_{\Delta t}$, depends on the finite difference scheme used to discretize the adjoint and state equations. If we use the Implicit Euler scheme to evaluate (\ref{pen disc f}), the $v_{\Delta t}$ part of the gradient will be:
 \begin{align}
 \nabla\hat J_{\mu,\Delta t}(v_{\Delta t})= Mv_{\Delta t} + (B^1p_{\Delta t}^1,B^2p_{\Delta t}^2,...,B^Np_{\Delta t}^N) \label{num_pen_grad_v}
 \end{align}
@@ -240,12 +240,12 @@ where $\bar B^i\in \mathbb{R}^{n^i\times (n^i-1)}$ is the matrix:
 \end{align*}
 \end{theorem}
 \begin{proof}
-Let us begin with the $\Lambda$ part of the gradient. We find each component by differentiating $\hat J_{\mu,\Delta t} $ with respect to $\lambda_i$, for $i=1,...,N-1$. It turns out there are two cases, namely $i=N-1$ and $i\neq N-1$, these cases are however quite similar, so I will only do the $i\neq N-1$ case. For each $i=1,...,N-2$, there are only two terms in $\hat J_{\mu,\Delta t} $ that depend on $\lambda_i$, and these are $\lambda_i$ it self and $y_{k_{i+1}}^{i+1}$. With this in mind lets start to differentiate $\hat J_{\mu,\Delta t} $.
+Let us begin with the $\Lambda$ part of the gradient. We find each component by differentiating $\hat J_{\mu,\Delta t} $ with respect to $\lambda_i$, for $i=1,...,N-1$. It turns out there are two cases, namely $i=N-1$ and $i\neq N-1$, these cases are however quite similar, so we will only do the $i\neq N-1$ case. For each $i=1,...,N-2$, there are only two terms in $\hat J_{\mu,\Delta t} $ that depend on $\lambda_i$, and these are $\lambda_i$ it self and $y_{k_{i+1}}^{i+1}$. With this in mind lets start to differentiate $\hat J_{\mu,\Delta t} $.
 \begin{align*}
 \frac{\partial\hat J_{\mu,\Delta t}}{\partial \lambda_i}(v_{\Delta t},\Lambda) &=-\mu (y_{k_i}^i-\lambda_i) +\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})\frac{\partial y_{k_{i+1}}^{i+1}}{\partial \lambda_i}  \\
 &=\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})(\frac{1}{1-a\Delta t})^{k_{i+1}-k_i} -\mu (y_{k_i}^i-\lambda_i)
 \end{align*}
-To get the $(\frac{1}{1-a\Delta t})^{k_{i+1}-k_i}$ term I used the chain rule on $\frac{\partial y_{k_{i+1}}^{i+1}}{\partial \lambda_i}$ and the implicit Euler scheme for our particular equation given in (\ref{I_state}). The next step is done by noticing that the terms $\mu (y_{k_i}^i-\lambda_i)$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})$ are the initial conditions of the $i$th and $i+1$th adjoint equations, which means that $\mu (y_{k_i}^i-\lambda_i)=p_{k_i}^{i}$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})=p_{k_{i+1}}^{i+1}$. Inserting this we get:
+To get the $(\frac{1}{1-a\Delta t})^{k_{i+1}-k_i}$ term we used the chain rule on $\frac{\partial y_{k_{i+1}}^{i+1}}{\partial \lambda_i}$ and the implicit Euler scheme for our particular equation given in (\ref{I_state}). The next step is done by noticing that the terms $\mu (y_{k_i}^i-\lambda_i)$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})$ are the initial conditions of the $i$th and $i+1$th adjoint equations, which means that $\mu (y_{k_i}^i-\lambda_i)=p_{k_i}^{i}$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})=p_{k_{i+1}}^{i+1}$. Inserting this we get:
 \begin{align*}
 \frac{\partial\hat J_{\mu,\Delta t}}{\partial \lambda_i}(v_{\Delta t},\Lambda) &=p_{k_{i+1}}^{i+1}(\frac{1}{1-a\Delta t})^{k_{i+1}-k_i} -p_{k_i}^{i} \\
 &= p_{k_{i}}^{i+1}-p_{k_i}^{i}
@@ -265,10 +265,10 @@ As for the non-penalized gradient, the derivative of the $f$ term is quite easil
 The numerical gradient restricted to $ \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, will then be $B^ip_{\Delta t}^i$, which exactly what we claimed.
 \end{proof}
 \section{Communication without shared memory}
-If we assume that we are solving our optimal control problem in parallel on processes that do not share any memory, there will have to be communication between the processes. The parts of the algorithm that we are parallelizing using the penalty method, is the evaluation of the objective function and its gradient for a given control variable $v$. The function evaluation requires us to solve the state equation, while we to calculate the gradient need both the solution of the state and adjoint equation. the required communication between the processes are different for function and gradient evaluation, so I will describe them separately. However they both share the same starting point, which I explain below.
+If we assume that we are solving our optimal control problem in parallel on processes that do not share any memory, there will have to be communication between the processes. The parts of the algorithm that we are parallelizing, is the evaluation of the objective function and its gradient for a given control variable $v$. The function evaluation requires us to solve the state equation, while the calculation of the gradient needs both the solution of the state and adjoint equation. Since the required communication between the processes are different for function and gradient evaluation, we describe them separately. However they both share the same starting point, which is explained below.
 \\
 \\
-Lets assume that we have $N$ processes, which we name $\{P_{i}\}_{i=0}^{N-1}$. Then assume that each process $P_i$ only knows the parts of the control that are required for the process to be able to solve the state equation and to locally evaluate the objective function. This also includes the the control variables $\{\lambda_i\}_{i=1}^{N-1}$ that originates from the penalty terms in the functional. After each $P_i$ then have solved their part of the state equation, they all have the following data stored locally:
+Let us assume that we have $N$ processes, which we name $\{P_{i}\}_{i=0}^{N-1}$. Then assume that each process $P_i$ only knows the parts of the control that are required for the process to solve the state equation and to locally evaluate the objective function. This also includes the the control variables $\{\lambda_i\}_{i=1}^{N-1}$ that originates from the penalty terms in the functional. After each $P_i$ have solved their part of the state equation, they all have the following data stored locally:
 \begin{align*}
 &\textit{Control variable: } \ v_i \\
 &\textit{Penalty control variable: } \ \lambda_i \\
@@ -280,21 +280,21 @@ The penalized objective function consists of two parts:
 \begin{align*}
 \hat J_{\mu}(v,\lambda) = \hat{J}(y(v),v) + \frac{\mu}{2}\sum_{j=1}^{N-1}(y^{j}(T_j)-\lambda_j)^2
 \end{align*}
-Lets begin with the penalty term. Since each process $P_i$ only have $\lambda_i$ and $y^{i+1}(T_{i+1})$ stored locally. This means that to calculate all penalty terms the processes will have to send either $\lambda_i$ or $y^{i+1}(T_i+1)$ to one of it neighbours. For example $P_i$ could send $\lambda_i$ to $P_{i-1}$ for $i=1,...,N-1$:
+Let us begin with the penalty term. Since each process $P_i$ only have $\lambda_i$ and $y^{i+1}(T_{i+1})$ stored locally. This means that to calculate all penalty terms the processes will have to send either $\lambda_i$ or $y^{i+1}(T_i+1)$ to one of it neighbours. For example $P_i$ could send $\lambda_i$ to $P_{i-1}$ for $i=1,...,N-1$:
 \begin{align*}
 P_0\overset{\lambda_1}{\longleftarrow}P_1\overset{\lambda_2}{\longleftarrow}P_2 \overset{\lambda_3}{\longleftarrow}\cdots \overset{\lambda_{N-2}}{\longleftarrow}P_{N-2}\overset{\lambda_{N-1}}{\longleftarrow}P_{N-1}
 \end{align*} 
-For the evaluation of $ \hat{J}(y(v),v)$. lets assume that there exists functions $\hat{J}^i(y^{i+1}(v_i),v_i)$, such that:
+For the evaluation of $ \hat{J}(y(v),v)$, let us assume that there exists functions $\hat{J}^i(y^{i+1}(v_i),v_i)$, such that:
 \begin{align*}
 \hat{J}(y(v),v)= \sum_{j=0}^{N-1}\hat{J}^j(y^j(v_j),v_j)
 \end{align*}
-If this is the case we can evaluate each part of the objective function locally, and then get the global $\hat{J}_{\mu}$ by doing one summation reduction. The penalized objective function evaluation algorithm will then look like the following:
+If this is the case we can evaluate each part of the objective function locally, and then get the global $\hat{J}_{\mu}$ by doing one summation reduction. The penalized objective function evaluation algorithm is:
 \begin{align*}
 1. \ &P_i \ \textit{calculates} \ y^{i+1} \ \forall i \\
 2. \ &P_{i-1}\overset{\lambda_i}{\longleftarrow}P_{i} \ \textit{for} \ i=1,..,N-1 \\
 3. \ &\hat{J}_{\mu}^i(y^{i+1}(v_i),v_i) = \hat{J}^i(y^{i+1}(v_i),v_i) + \frac{\mu}{2}(y^{i+1}(T_{i+1})-\lambda_{i+1})^2 \ \textit{for} \ i=0,..,N-2 \\
 &\hat{J}_{\mu}^{N-1}(y^{N}(v_{N-1}),v_{N-1})= \hat{J}^{N-1}(y^{N}(v_{N-1}),v_{N-1}) \\
-4. \ &\hat{J}_{\mu}(y(u),u) = \textbf{Reduce}(\hat{J}_{\mu}^i,+)
+4. \ &\hat{J}_{\mu}(y(u),u) = \textbf{MPI\_Reduce}(\hat{J}_{\mu}^i,+)
 \end{align*}
 \subsection{Communication in gradient computation}
 The gradient of the penalized optimal control problem looks like the following:
@@ -315,8 +315,8 @@ Each process can now solve its adjoint equation locally, and we can start to act
 &\textit{Local gradient if calcualated: } \ \nabla \hat J^i=(J_v(y^{i+1}(v^i),v^i)-B^*_ip^{i+1}) \\
 6. \ &\nabla \hat J_{\mu} = \textbf{Gather}(\nabla \hat J^i,p_{i+1}(T_i) - p_{i}(T_i))
 \end{align*}
-\section{Analysing parallel performance} \label{analysis sec}
-Now that we know what type of communication is involved in objective function evaluation and gradient computation, we can try to model the expected performance of the two algorithms. One way to measure performance of algorithms is to look at their execution times. Therefore lets define $T_s$ as execution time of the sequential algorithm, and $T_p$ as parallel algorithm execution time. Let us also define the speedup $S=\frac{T_s}{T_p}$. Since we for now are only modelling performance we do not actually calculate the execution times, but we do know that the run time of the algorithms are related to the size of the problem, meaning the number of time-steps $n$. The last thing we need before we start our performance analysis, is a way to model communication between two processes. One way of modelling the communication time $T_c$ for sending a message of size $m$ between to processes, is proposed in \cite{grama2003introduction} as:
+\section{Analysing theoretical parallel performance} \label{analysis sec}
+Now that we know what type of communication is involved in objective function evaluation and gradient computation, we can try to model the expected performance of the two algorithms. One way to measure performance of algorithms is to look at their execution times. Therefore lets define $T_s$ as execution time of the sequential algorithm, and $T_p$ as parallel algorithm execution time. Let us also define the speedup $S=\frac{T_s}{T_p}$. Since we for now are only modelling performance we do not actually calculate the execution times, but we do know that the run time of the algorithms are related to the size of the problem, meaning the number of time-steps $n$. The final thing we need before we start our performance analysis, is a way to model communication between two processes. One way of modelling the communication time $T_c$ for sending a message of size $m$ between to processes, is proposed in \cite{grama2003introduction} as:
 \begin{align*}
 T_c = T_l + mT_w
 \end{align*} 
