@@ -11,7 +11,11 @@ class CrankNicolsonOCP(PararealOCP):
 
         self.a = a
 
+    def initial_adjoint(self,y):
         
+        return 1*(y - self.yT)
+
+
 
 
     def ODE_update(self,y,u,i,j,dt):
@@ -109,15 +113,29 @@ def create_simple_CN_problem(y0,yT,T,a):
 
         I = trapz((u)**2,t)
 
-        return 0.5*I + (1./2)*(y-yT)**2
+        return 0.5*I + 0.5*(y-yT)**2
 
     def grad_J(u,p,dt):
+        
+
+        B = 1-a*dt*0.5
+        A = 1+0.5*a*dt
+
         t = np.linspace(0,T,len(u))
-        grad = np.zeros(len(u))
-        grad[1:-1] = dt*(u[1:-1]+p[1:-1])
-        grad[0] = 0.5*dt*(u[0]+p[0]) 
-        grad[-1] = 0.5*dt*(u[-1]) + 0.5*dt*p[-1]
-        return grad
+        grad1 = np.zeros(len(u))
+        grad1[:-1] = dt*(u[:-1]+p[1:]*A)
+        grad1[0] = 0.5*dt*(u[0])+dt*p[1]
+        grad1[-1] = 0.5*dt*(u[-1])
+
+        grad2 = np.zeros(len(u))
+        grad2[1:] = dt*(u[1:]+p[:-1]/B)
+        grad2[0] = 0.5*dt*(u[0])
+        grad2[-1] = 0.5*dt*u[-1]+dt*p[-1]/B
+
+        return 0.5*(grad1+grad2)
+        
+
+        
 
 
 
@@ -131,8 +149,8 @@ def create_state_CN_problem(y0,yT,T,a,z):
         t = np.linspace(0,T,len(u))
         dt = float(T)/(len(u)-1)
         I1 = trapz((u)**2,t)
-        I2 = sum(dt*(y-z(t))**2)
-        #I2 = trapz((y-z(t))**2,t)
+        I2 = trapz((y-z(t))**2,t)
+        #I2 = sum(dt*(y-z(t))**2)
         return 0.5*(I1+I2) + 0.5*(y[-1]-yT)**2
 
     def grad_J(u,p,dt):
@@ -153,7 +171,7 @@ def test_CN():
     a = 1
     y0=1
     T=1
-    yT=1
+    yT=0
 
     problem = create_simple_CN_problem(y0,yT,T,a)
     problem2,_ = lin_problem(y0,yT,T,a)
@@ -174,15 +192,15 @@ def test_CN():
     plt.show()
 
 def taylorTestCN():
-    a = 1
+    a = 2
     y0=1
     T=1
     yT=1
 
-    z = lambda x : x
+    z = lambda x : 0*x
     
-    #problem = create_simple_CN_problem(y0,yT,T,a)
-    problem =create_state_CN_problem(y0,yT,T,a,z)
+    problem = create_simple_CN_problem(y0,yT,T,a)
+    #problem =create_state_CN_problem(y0,yT,T,a,z)
     
     general_taylor_test(problem)
 
