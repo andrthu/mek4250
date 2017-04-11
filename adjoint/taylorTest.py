@@ -756,7 +756,7 @@ def general_taylor_test(problem,N=100,m=10):
     table2 = {'J(u+v)-J(u)':[],'J(u+v)-J(u)-dJ(u)v':[],'rate1':['--'],
              'rate2':['--'],'e v':[]}
     eps_list = []
-    for i in range(8):
+    for i in range(9):
         eps = 1./(10**i)
         
         grad_val = abs(J(u+h*eps) - J(u) - eps*h.dot(grad_J(u)))
@@ -783,8 +783,8 @@ def general_taylor_test(problem,N=100,m=10):
     
     for i in range(10):
         eps = 1./(2**i)
-        grad_fd = finite_diff(J,u,eps)
-        grad = grad_J(u)
+        grad_fd = finite_diff(J2,u2,eps)
+        grad = grad_J2(u2)
         print max(abs(grad_fd[:]-grad[:]))
     
     data2 = pd.DataFrame(table,index=eps_list)

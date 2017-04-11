@@ -7,7 +7,7 @@ class CrankNicolsonOCP(PararealOCP):
 
     def __init__(self,y0,yT,T,a,J,grad_J,options=None):
  
-        PararealOCP.__init__(self,y0,yT,T,J,grad_J,options,implicit=True)
+        PararealOCP.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
 
         self.a = a
 
@@ -28,7 +28,7 @@ class CrankNicolsonOCP(PararealOCP):
         
         return (1+0.5*dt*a)*l[-(i+1)]/(1-0.5*dt*a)
 
-    def implicit_gather(self,l,N,m):
+    def implicit_gather2(self,l,N,m):
         L=np.zeros(N+1)
         #"""
         start=0
@@ -123,12 +123,12 @@ def create_simple_CN_problem(y0,yT,T,a):
 
         t = np.linspace(0,T,len(u))
         grad1 = np.zeros(len(u))
-        grad1[:-1] = dt*(u[:-1]+p[1:]*A)
-        grad1[0] = 0.5*dt*(u[0])+dt*p[1]
+        grad1[:-1] = dt*(u[:-1]+p[1:]/B)
+        grad1[0] = 0.5*dt*(u[0])+dt*p[1]/B
         grad1[-1] = 0.5*dt*(u[-1])
 
         grad2 = np.zeros(len(u))
-        grad2[1:] = dt*(u[1:]+p[:-1]/B)
+        grad2[1:] = dt*(u[1:]+p[1:]/B)
         grad2[0] = 0.5*dt*(u[0])
         grad2[-1] = 0.5*dt*u[-1]+dt*p[-1]/B
 
