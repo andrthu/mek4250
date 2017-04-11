@@ -36,17 +36,23 @@ Once we have these predicted initial values, we can apply the fine propagator on
 \lambda_0^k &= u_0
 \end{align}
 Updating our initial conditions $\Lambda^k$ from iteration $k$ to iteration $k+1$, requires $N$ fine propagations, which we can do in parallel, and $N$ coarse propagations, whet we need to do sequentially. We can now write up a simple algorithm for doing $K$ steps of Parareal.
-\begin{align*}
-1:\quad&\textrm{$\bold{Set}$ $\lambda_0^0=u_0$} \\
-2:\quad&\textrm{$\bold{for}$ $i=1,...,N-1$:} \\
-&\quad\bold{Set} \ \lambda_i^0=\bold G_ {\Delta T}(\lambda_{i-1}^0) \\
-3:\quad&\textrm{$\bold{for}$ $k=1,...,K$:} \\
-&\quad\textrm{$\bold{Set}$ $\lambda_0^k=u_0$} \\
-&\quad\textrm{$\bold{Do}$ $\hat \lambda_i^k=\bold F_ {\Delta T}( \lambda_{i-1}^{k-1})$ in parallel} \\
-&\quad\textrm{$\bold{for}$ $i=1,...,N-1$:} \\
-&\quad \quad \quad \bold{Set} \ \lambda_{i}^{k} = \bold G_ {\Delta T}(\lambda_{i-1}^{k})+\hat\lambda_i^{k-1}-\lambda_i^{k-1}
-\end{align*}
-In the above algorithm we do $K$ iterations, where $K$ is a pre-chosen number. If one wanted to construct an actual Parareal algorithm, the iteration should instead terminate, when a certain stopping criteria is met. In general we want the iteration to stop when the Parareal solution is sufficiently close to the sequential solution, but we also want to avoid finding the sequential solution. A good stopping criteria for the Parareal algorithms can be found in \cite{lepsa2010efficient}.
+\\
+\\
+\begin{algorithm}[H]
+$\lambda^0_0\leftarrow u_0$\;
+\For{$i=1,...,N-1$}{
+$\lambda_i^0\leftarrow \bold G_{\Delta T}(\lambda_{i-1}^0)$\;
+}
+\For{$k=1,...,K$}{
+$\lambda_0^k\leftarrow u_0$\;
+$\hat{\lambda_{i}^{k}}\leftarrow \bold F_{\Delta T}(\lambda_{i-1}^{k-1})$\tcp*[h]{In parallel}\;
+\For{$i=1,...,N-1$}{
+$\lambda_i^k\leftarrow \bold G_{\Delta T}(\lambda_{i-1}^k)+\hat{\lambda_{i}^{k}}-\lambda_{i}^{k-1}$\;
+}
+}
+\caption{K steps of Parareal algorithm\label{P_ALG}}
+\end{algorithm}
+In algorithm \ref{P_ALG} we do $K$ iterations of the Parareal algorithm, where $K$ is a pre-chosen number. If one wanted to construct an actual Parareal algorithm, the iteration should instead terminate, when a certain stopping criteria is met. In general we want the iteration to stop when the Parareal solution is sufficiently close to the sequential solution, but we also want to avoid finding the sequential solution. A good stopping criteria for the Parareal algorithms can be found in \cite{lepsa2010efficient}.
 \\
 \\
 Another important topic, that affects the performance of Parareal, that we have yet to mention, is how to choose a good coarse propagator $\bold G_{\Delta T}$. If $\bold F_{\Delta T}$ is based on a finite difference scheme method with time step $\Delta t$, one obvious choice for $\bold G_{\Delta T}$, would be to use the same scheme as the fine propagator with bigger time step. One must be careful though, since such schemes might be unstable for big time steps. One simple and safe way of choosing $\bold G_{\Delta T}$, is to use implicit Euler with time step $\Delta T$. Using this scheme for our coarse propagator in the context of problem (\ref{unbroken}), would mean that we find $\bold{G}_{\Delta T}(\lambda_i)$ by solving:

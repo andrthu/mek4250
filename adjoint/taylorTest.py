@@ -783,8 +783,8 @@ def general_taylor_test(problem,N=100,m=10):
     
     for i in range(10):
         eps = 1./(2**i)
-        grad_fd = finite_diff(J2,u2,eps)
-        grad = grad_J2(u2)
+        grad_fd = finite_diff(J,u,eps)
+        grad = grad_J(u)
         print max(abs(grad_fd[:]-grad[:]))
     
     data2 = pd.DataFrame(table,index=eps_list)

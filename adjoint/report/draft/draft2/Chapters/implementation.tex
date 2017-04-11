@@ -289,13 +289,25 @@ For the evaluation of $ \hat{J}(y(v),v)$, let us assume that there exists functi
 \hat{J}(y(v),v)= \sum_{j=0}^{N-1}\hat{J}^j(y^j(v_j),v_j)
 \end{align*}
 If this is the case we can evaluate each part of the objective function locally, and then get the global $\hat{J}_{\mu}$ by doing one summation reduction. The penalized objective function evaluation algorithm is:
-\begin{align*}
-1. \ &P_i \ \textit{calculates} \ y^{i+1} \ \forall i \\
-2. \ &P_{i-1}\overset{\lambda_i}{\longleftarrow}P_{i} \ \textit{for} \ i=1,..,N-1 \\
-3. \ &\hat{J}_{\mu}^i(y^{i+1}(v_i),v_i) = \hat{J}^i(y^{i+1}(v_i),v_i) + \frac{\mu}{2}(y^{i+1}(T_{i+1})-\lambda_{i+1})^2 \ \textit{for} \ i=0,..,N-2 \\
-&\hat{J}_{\mu}^{N-1}(y^{N}(v_{N-1}),v_{N-1})= \hat{J}^{N-1}(y^{N}(v_{N-1}),v_{N-1}) \\
-4. \ &\hat{J}_{\mu}(y(u),u) = \textbf{MPI\_Reduce}(\hat{J}_{\mu}^i,+)
-\end{align*}
+\\
+\\
+\begin{algorithm}[H]
+\KwData{Partitioned control variable $(v_i,\lambda_i)$ given as input to each process $P_i$ for $i=0,...,N-1$.}
+\Begin{
+Process $P_i$ solve state equation $y^{i+1}$ using $(v_i,\lambda_i)$\tcp*[h]{In parallel}\;
+\For{$i=1,...,N-1$}{
+$P_{i-1}\overset{\lambda_i}{\longleftarrow}P_{i}$\;
+}
+\tcp*[h]{Evaluate local objective function $\hat{J}_{\mu}^{i}$ in parallel}\;
+\eIf{$i ==N-1$}{
+$\hat{J}_{\mu}^{N-1}(y^{N}(v_{N-1}),v_{N-1})\leftarrow \hat{J}^{N-1}(y^{N}(v_{N-1}),v_{N-1}) $\;
+}{
+$\hat{J}_{\mu}^i(y^{i+1}(v_i),v_i) \leftarrow \hat{J}^i(y^{i+1}(v_i),v_i) + \frac{\mu}{2}(y^{i+1}(T_{i+1})-\lambda_{i+1})^2$
+}
+$ \hat{J}_{\mu}(y(u),u)\leftarrow\textbf{MPI\_Reduce}(\hat{J}_{\mu}^i,+)$ 
+}
+\caption{Parallel objective function evaluation}
+\end{algorithm}
 \subsection{Communication in gradient computation}
 The gradient of the penalized optimal control problem looks like the following:
 \begin{align*}
@@ -306,15 +318,28 @@ $p$ is here the solution to the adjoint equation, which has to be calculated bef
 P_0\overset{\lambda_1}{\longleftarrow}P_1\overset{\lambda_2}{\longleftarrow}P_2 \overset{\lambda_3}{\longleftarrow}\cdots \overset{\lambda_{N-2}}{\longleftarrow}P_{N-2}\overset{\lambda_{N-1}}{\longleftarrow}P_{N-1}
 \end{align*}
 Each process can now solve its adjoint equation locally, and we can start to actually evaluate the gradient. The first step, would be to send $p_{i+1}(T_{i})$ from $P_i$ to $P_{i-1}$ so that we can find the penalty part of the gradient. Each process should also be able to calculate their own part of the gradient as $\nabla \hat J^i=(J_v(y^{i+1}(v^i),v^i)-B^*_ip^{i+1})$. The final step is now to gather all the local parts of the gradient to the form the actual gradient. In summation we get the following algorithm for gradient evaluation:
-\begin{align*}
-1. \ &P_i \ \textit{calculates} \ y^{i+1} \ \forall i \\
-2. \ &P_{i-1}\overset{\lambda_i}{\longleftarrow}P_{i} \ \textit{for} \ i=1,..,N-1 \\
-3. \ &P_i \ \textit{calculates} \ p^{i+1} \ \forall i \\
-4. \ &P_{i-1}\overset{p^i(T_i)}{\longleftarrow}P_{i} \ \textit{for} \ i=1,..,N-1 \\
-5. \ &\textit{Penalty part of gradient } \ p_{i+1}(T_i) - p_{i}(T_i) \ \textit{is stored for $i\neq N-1$} \\
-&\textit{Local gradient if calcualated: } \ \nabla \hat J^i=(J_v(y^{i+1}(v^i),v^i)-B^*_ip^{i+1}) \\
-6. \ &\nabla \hat J_{\mu} = \textbf{Gather}(\nabla \hat J^i,p_{i+1}(T_i) - p_{i}(T_i))
-\end{align*}
+\\
+\\
+\begin{algorithm}[H]
+\KwData{Partitioned control variable $(v_i,\lambda_i)$ given as input to each process $P_i$ for $i=0,...,N-1$.}
+\Begin{
+Process $P_i$ solve state equation $y^{i+1}$ using $(v_i,\lambda_i)$\tcp*[h]{In parallel}\;
+\For{$i=1,...,N-1$}{
+$P_{i-1}\overset{\lambda_i}{\longleftarrow}P_{i}$\;
+}
+Process $P_i$ solve adjoint equation $p^{i+1}$ using $(y_{i+1},\lambda_{i+1})$\tcp*[h]{In parallel}\;
+\For{$i=1,...,N-1$}{
+$P_{i-1}\overset{p^i(T_i)}{\longleftarrow}P_{i}$\;
+}
+\tcp*[h]{Evaluate local gradient $\nabla \hat J_{\mu}^i$ in parallel}\;
+$\nabla \hat J^{i}_{v_i}\leftarrow J_v(y^{i+1}(v^i),v^i)-B^*_ip^{i+1}$\;
+\If{$i\neq N-1$}{
+$\nabla \hat J^{i}_{\lambda_i}\leftarrow p_{i+1}(T_i) - p_{i}(T_i)$\;
+}
+$\nabla \hat J_{\mu} \leftarrow \textbf{MPI\_Gather}(\nabla \hat J^i,p_{i+1}(T_i) - p_{i}(T_i)) $\;
+}
+\caption{Parallel gradient evaluation}
+\end{algorithm}
 \section{Analysing theoretical parallel performance} \label{analysis sec}
 Now that we know what type of communication is involved in objective function evaluation and gradient computation, we can try to model the expected performance of the two algorithms. One way to measure performance of algorithms is to look at their execution times. Therefore lets define $T_s$ as execution time of the sequential algorithm, and $T_p$ as parallel algorithm execution time. Let us also define the speedup $S=\frac{T_s}{T_p}$. Since we for now are only modelling performance we do not actually calculate the execution times, but we do know that the run time of the algorithms are related to the size of the problem, meaning the number of time-steps $n$. The final thing we need before we start our performance analysis, is a way to model communication between two processes. One way of modelling the communication time $T_c$ for sending a message of size $m$ between to processes, is proposed in \cite{grama2003introduction} as:
 \begin{align*}
