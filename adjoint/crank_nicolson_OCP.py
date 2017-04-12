@@ -40,7 +40,6 @@ class CrankNicolsonStateIntOCP(PararealOCP):
         PararealOCP.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
 
         self.a = a
-
         
         if z == None:
             self.z = lambda x : 0*x
@@ -48,6 +47,14 @@ class CrankNicolsonStateIntOCP(PararealOCP):
         else:
             self.z = z
             self.help_z=1
+
+        self.dt = 1./100
+
+    def initial_adjoint(self,y):
+        """
+        Initial condition for adjoint equation. Depends on the Functional
+        """
+        return y - self.yT + self.dt*y
 
     def implicit_gather(self,l,N,m):
         L=np.zeros(N+1)
@@ -75,11 +82,12 @@ class CrankNicolsonStateIntOCP(PararealOCP):
         z = self.z
         help_z = self.help_z
         #return (1+0.5*dt*a)*l[-(i+1)]/(1-0.5*dt*a)
-        return ((1+0.5*a*dt)*l[-(i+1)]+dt*0.5*(y[-(i+1)]+y[-(i+2)]-z(self.t[-help_z*(i+1)])-z(self.t[-help_z*(i+2)])))/(1.-0.5*dt*a)
+        return ((1+0.5*a*dt)*l[-(i+1)]+dt*(y[-(i+2)]-z(self.t[-help_z*(i+1)])))/(1.-0.5*dt*a)
 
 
         
     def func_state_part(self,u,N):
+        self.dt = self.T/float(N)
         return self.ODE_solver(u,N)
     def penalty_func_state_part(self,y,Y):
         return Y
@@ -98,8 +106,28 @@ class CrankNicolsonStateIntOCP(PararealOCP):
 
         return t,T_z
 
+    def Gradient(self,u,N):
+        l = self.adjoint_solver(u,N)
+        dt = float(self.T)/N
+        y=self.ODE_solver(u,N)
+        return self.grad_J(u,l,dt,y)
 
+    def Penalty_Gradient(self,u,N,m,mu):
+        
+        y,Y = self.ODE_penalty_solver(u,N,m)
+        l,L = self.adjoint_penalty_solver(u,N,m,mu)
+        dt = float(self.T)/N
+        Nc = len(u) - m
+        g = np.zeros(len(u))
+            
+        g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt,Y)
 
+        for j in range(m-1):
+            g[Nc+1+j]= l[j+1][0] - l[j][-1]
+                    
+        return g
+
+    Penalty_Gradient2 = Penalty_Gradient
 
 def create_simple_CN_problem(y0,yT,T,a):
     
@@ -148,11 +176,13 @@ def create_state_CN_problem(y0,yT,T,a,z):
         I2 = sum(dt*(y-z(t))**2)
         return 0.5*(I1+I2) + 0.5*(y[-1]-yT)**2
 
-    def grad_J(u,p,dt):
+    def grad_J(u,p,dt,y):
 
 
         B = 1-a*dt*0.5
         A = 1+0.5*a*dt
+        
+        
 
         t = np.linspace(0,T,len(u))
         grad1 = np.zeros(len(u))
@@ -163,7 +193,7 @@ def create_state_CN_problem(y0,yT,T,a,z):
         grad2 = np.zeros(len(u))
         grad2[1:] = dt*(u[1:]+p[1:]/B)
         grad2[0] = 0.5*dt*(u[0])
-        grad2[-1] = 0.5*dt*u[-1]+dt*p[-1]/B
+        grad2[-1] = 0.5*dt*u[-1]+dt*p[-1]/B#dt*(p[-1]+dt*y[-1])/B#dt*p[-1]/B
 
         return 0.5*(grad1+grad2)
         
