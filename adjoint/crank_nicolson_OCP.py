@@ -37,7 +37,7 @@ class CrankNicolsonOCP(PararealOCP):
 class CrankNicolsonStateIntOCP(PararealOCP):
     def __init__(self,y0,yT,T,a,J,grad_J,z=None,options=None):
  
-        PararealOCP.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
+        PararealOCP.__init__(self,y0,yT,T,J,grad_J,options,implicit=True)
 
         self.a = a
         
@@ -54,19 +54,29 @@ class CrankNicolsonStateIntOCP(PararealOCP):
         """
         Initial condition for adjoint equation. Depends on the Functional
         """
+        return self.dt*y
         return y - self.yT + self.dt*y
+
+    def initial_penalty(self,y,u,my,N,i,m=1):
+        """
+        initial conditian for the adjoint equations, when partitioning in time
+        """
+        return my*(y[i][-1]-u[-m+i+1]) +(self.T/float(N))*y[i][-1]
+
+
 
     def implicit_gather(self,l,N,m):
         L=np.zeros(N+1)
-        #"""
-        start=0
-        for i in range(m):
-            L[start:start+len(l[i])-1] = l[i][:-1]
-            if i!=0:
-                L[start] = 0.5*(l[i][0]+l[i-1][-1])
-            start = start + len(l[i])-1
-        L[-1]=l[-1][-1]
+        L[0] = l[0][0]
+        start = 0
+        L[start:start+len(l[0])-1] = l[0][1:]
+        start += len(l[0])-1
+        for i in range(1,m):
+            L[start:start+len(l[i])-1] = l[i][1:]
+            start += len(l[i])-1
         return L
+        
+        
 
 
     def ODE_update(self,y,u,i,j,dt):
@@ -82,7 +92,10 @@ class CrankNicolsonStateIntOCP(PararealOCP):
         z = self.z
         help_z = self.help_z
         #return (1+0.5*dt*a)*l[-(i+1)]/(1-0.5*dt*a)
-        return ((1+0.5*a*dt)*l[-(i+1)]+dt*(y[-(i+2)]-z(self.t[-help_z*(i+1)])))/(1.-0.5*dt*a)
+        A = 1+0.5*a*dt
+        B = 1.-0.5*dt*a
+
+        return (A*l[-(i+1)]/B+dt*(y[-(i+2)]-z(self.t[-help_z*(i+1)])))
 
 
         
@@ -174,7 +187,7 @@ def create_state_CN_problem(y0,yT,T,a,z):
         I1 = trapz((u)**2,t)
         #I2 = trapz((y-z(t))**2,t)
         I2 = sum(dt*(y-z(t))**2)
-        return 0.5*(I1+I2) + 0.5*(y[-1]-yT)**2
+        return 0.5*(I1+I2) #+ 0.5*(y[-1]-yT)**2
 
     def grad_J(u,p,dt,y):
 
