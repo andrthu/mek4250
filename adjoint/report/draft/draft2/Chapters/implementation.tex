@@ -280,7 +280,7 @@ The penalized objective function consists of two parts:
 \begin{align*}
 \hat J_{\mu}(v,\lambda) = \hat{J}(y(v),v) + \frac{\mu}{2}\sum_{j=1}^{N-1}(y^{j}(T_j)-\lambda_j)^2
 \end{align*}
-Let us begin with the penalty term. Since each process $P_i$ only have $\lambda_i$ and $y^{i+1}(T_{i+1})$ stored locally. This means that to calculate all penalty terms the processes will have to send either $\lambda_i$ or $y^{i+1}(T_i+1)$ to one of it neighbours. For example $P_i$ could send $\lambda_i$ to $P_{i-1}$ for $i=1,...,N-1$:
+Let us begin with the penalty term. Since each process $P_i$ only have $\lambda_i$ and $y^{i+1}(T_{i+1})$ stored locally. This means that to calculate all penalty terms the processes will have to send either $\lambda_i$ or $y^{i+1}(T_{i+1})$ to one of its neighbours. For example $P_i$ could send $\lambda_i$ to $P_{i-1}$ for $i=1,...,N-1$:
 \begin{align*}
 P_0\overset{\lambda_1}{\longleftarrow}P_1\overset{\lambda_2}{\longleftarrow}P_2 \overset{\lambda_3}{\longleftarrow}\cdots \overset{\lambda_{N-2}}{\longleftarrow}P_{N-2}\overset{\lambda_{N-1}}{\longleftarrow}P_{N-1}
 \end{align*} 

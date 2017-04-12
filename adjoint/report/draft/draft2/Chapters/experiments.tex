@@ -30,6 +30,9 @@ I will first solve this problem without decomposing the time interval, and then 
 Since The point of this test is to compare the effectiveness of the parareal preconditioner, I solve the decomposed problems with and without it. In the result table below I have included the total number of gradient and function evaluations for the two cases as "pc L" and "non-pc L". I also measured the relative $L^2$-norm difference between the non-penalized control solution and all the penalized control solutions. The ideal speedup (\ref{ideal S}) is calculated for preconditioned and unpreconditioned solvers.
 \\
 \\
+\begin{table}[h]
+\centering
+\caption{Comparing unpreconditioned and preconditioned solver}
 \begin{tabular}{lrrllrr}
 \toprule
 {}$N$ &  pc L &  non-pc L &       $||v_{seq}-v_{pc-par}||$ &  $||v_{seq}-v_{par}||$  &  pc $\hat{S}$ &  non-pc $\hat{S}$ \\
@@ -46,6 +49,7 @@ Since The point of this test is to compare the effectiveness of the parareal pre
 64 &     73.0 &    2021.0 &   0.00455414 &   0.00455295 &   27.178082 &        0.981692 \\
 \bottomrule
 \end{tabular}
+\end{table}
 \\
 \\
 There are several things of note about the above results. First off we see that the normed difference in control between sequential and parallel solution lies in the range from $3\cdot 10^{-4}$ to $4\cdot 10^{-3}$, and that it gets bigger when we increase $N$. Another observation about the norm difference, is that for each $N$, the preconditioned and unpreconditioned solvers seems to produce roughly the same error. 
@@ -124,4 +128,4 @@ When comparing the ideal speedup $\hat S$ with the actual achieved wall clock sp
 \end{tabular}
 \end{table}
 \\
-For $\Delta t = 0.5(10^{-5})$ and $\Delta t = 10^{-6}$, the results are a bit disappointing, however we do continue to see the a relation between ideal and actual speedup, which justifies the use of $\hat S$ as a measure of effectiveness for our algorithm. In the last table for $N=3$, we notice that the error is high, and that the number of gradient evaluations is low. The reason for this is that the last line search iteration for this specific case failed to satisfy the Wolfe conditions due to numerical numerical errors. The next natural step would then be to do a second penalty iteration with increased penalty parameter and or decreased tolerances, for line search and L-BFGS iterations. This was however not done in this case, since the set-up for the experiment was only to do one penalty iteration.
+For $\Delta t = 0.5(10^{-5})$ and $\Delta t = 10^{-6}$, the results are a bit disappointing, however we do continue to see the a relation between ideal and actual speedup, which justifies the use of $\hat S$ as a measure of effectiveness for our algorithm. In the last table for $N=3$, we notice that the error is high, and that the number of gradient evaluations is low. The reason for this is that the last line search iteration for this specific case failed to satisfy the Wolfe conditions due to numerical errors. The next natural step would then be to do a second penalty iteration with increased penalty parameter and or decreased tolerances, for line search and L-BFGS iterations. This was however not done in this case, since the set-up for the experiment was only to do one penalty iteration.
