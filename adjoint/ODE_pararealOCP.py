@@ -335,6 +335,7 @@ class PararealOCP(OptimalControlProblem):
         
         result = []
         PPC = self.PC_maker2(N,m,step=1)
+        initial_counter = self.counter.copy()
         for i in range(len(my_list)):
         
             J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
@@ -350,6 +351,7 @@ class PararealOCP(OptimalControlProblem):
                 res = Solver.solve(m)
             x0=res.x
             result.append(res)
+        res.add_FuncGradCounter(self.counter-initial_counter)
         if len(result)==1:
             #y,Y = self.ODE_penalty_solver(x0,N,m)
             #import matplotlib.pyplot as plt
