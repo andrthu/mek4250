@@ -449,7 +449,7 @@ This allows us to write up the reduced functional $\hat{\bold J}$, that only dep
 &=\Lambda^TM^TM  \Lambda - 2\Lambda^TM^Tb + b^Tb \label{T_J}
 \end{align}
 An important thing to note about the above expression, is that $M^T$ does not necessarily equal $M^*$, since $M^*$ is defined by the fine adjoint propagator $\bold F_ {\Delta T}^*$, and is not simply the transposed of $M$. Before we look further into the difference of $M^*$ and $M^T$, we write up the Hessian of $\hat{\bold J}$ in the proposition below:
-\begin{proposition}
+\begin{proposition}\label{prop_lLS}
 The Hessian of the reduced objective function $\hat{\bold J}$ (\ref{T_J}) originating from the virtual problem (\ref{virtual_func}-\ref{virtual}) is:
 \begin{align}
 \nabla^2\hat{\bold J}(\Lambda) = 2 M^TM
@@ -519,7 +519,27 @@ In order for us to get $\bar{M}^*=\bar{M}^T$, we the discretization of (\ref{vir
 \end{align*}
 In the above derivation for $\bold{G}_{\Delta T}^*(\omega)$, the forward Euler finite difference scheme is used to discretize (\ref{virtual_adjoint_exs}), but since this equation is solved backwards in time this scheme is implicit. Since $\bold{G}_{\Delta T}^*(\omega)=\bold{G}_{\Delta T}(\omega)$, we get that $\bar{M}^*=\bar{M}^T$, which means that $\bar{M}^{-1}\bar{M}^{-*}$ is a valid choice for an initial inverted Hessian approximation in the BFGS-algorithm.
 \subsection{Non-linear state equations}
-
+If the governing equation of the fine propagator $\bold F_{\Delta T}$ in system (\ref{virtual_func}-\ref{virtual}) is non-linear, the Hessian of the non-linearly constrained objective function would not be equal to the Hessian stated in proposition \ref{prop_lLS}. However, we can still use the least square formulation (\ref{vector_J}) for minimization of the reduced objective function, meaning that 
+\begin{align}
+\hat{\bold J}(\Lambda) = x(\Lambda)^Tx(\Lambda), \quad x:\mathbb{R}^{N-1}\rightarrow \mathbb{R}^{N-1} \label{non_lin_LS}
+\end{align} 
+Here the components of $x$ are defined as $x_i(\Lambda)=\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i)$, $i=0,...,N-2$. Let us now state the Hessian of the reduced objective function (\ref{non_lin_LS}) in terms of $x$, and propagator  in a proposition:
+\begin{proposition}
+The Hessian of function (\ref{non_lin_LS}) is
+\begin{align*}
+\nabla^2 \hat{\bold J}(\Lambda) &= \nabla x^T\nabla x + \sum_{i=0}^{N-2} \nabla^2 x_i(\Lambda) x_i(\Lambda)\\
+&=M(\Lambda)^TM(\Lambda) + D(\Lambda)
+\end{align*}
+Here $M(\Lambda)$ is the linearised forward model
+\begin{align*}
+M = \left[ \begin{array}{cccc}
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T} & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T} & \mathbbold{1}  \\
+   \end{array}  \right]
+\end{align*}	
+\end{proposition}
 \subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
 Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
 \begin{align}

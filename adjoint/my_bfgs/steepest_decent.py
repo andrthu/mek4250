@@ -18,6 +18,8 @@ class OptimizationControl():
 
         self.scaler = scaler
 
+        self.conter =None
+
     def update(self,x):
         
         self.x = x.copy()
