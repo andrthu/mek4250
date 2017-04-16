@@ -527,19 +527,34 @@ Here the components of $x$ are defined as $x_i(\Lambda)=\lambda_{i+1}-\bold F_{\
 \begin{proposition}
 The Hessian of function (\ref{non_lin_LS}) is
 \begin{align*}
-\nabla^2 \hat{\bold J}(\Lambda) &= \nabla x^T\nabla x + \sum_{i=0}^{N-2} \nabla^2 x_i(\Lambda) x_i(\Lambda)\\
-&=M(\Lambda)^TM(\Lambda) + D(\Lambda)
+\nabla^2 \hat{\bold J}(\Lambda) &= 2\nabla x^T\nabla x + 2\sum_{i=0}^{N-2} \nabla^2 x_i(\Lambda) x_i(\Lambda)\\
+&=2M(\Lambda)^TM(\Lambda) + 2D(\Lambda)
 \end{align*}
-Here $M(\Lambda)$ is the linearised forward model
+Here $D(\Lambda)$ is a diagonal matrix with diagonal entries 
 \begin{align*}
-M = \left[ \begin{array}{cccc}
+D_i=-\bold{F}_{\Delta T}''(\lambda_i)(\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i)) \quad i=1,...,N-1,
+\end{align*}
+while $M(\Lambda)$ is the linearised forward model:
+\begin{align*}
+M(\Lambda) &= \left[ \begin{array}{cccc}
    \mathbbold{1} & 0 & \cdots & 0 \\  
-   -\bold{F}_{\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
-   0 &-\bold{F}_{\Delta T} & \mathbbold{1}  & \cdots \\
-   0 &\cdots &-\bold{F}_{\Delta T} & \mathbbold{1}  \\
+   -\bold{F}_{\Delta T}'(\lambda_{1}) & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T}'(\lambda_{2}) & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T}'(\lambda_{N-1}) & \mathbbold{1}  \\
    \end{array}  \right]
 \end{align*}	
 \end{proposition}
+\begin{proof}
+We start by differentiating $\hat{\bold J}$:
+\begin{align*}
+\nabla \hat{\bold J}(\Lambda) &= 2 \nabla x(\Lambda)^T x(\Lambda)\\
+&=2\sum_{i=0}^{N-2} \nabla x_i(\Lambda) x_i(\Lambda)
+\end{align*}
+If we now differentiate $\nabla \hat{\bold J}$, we get:
+\begin{align*}
+\nabla^2 \hat{\bold J}(\Lambda) &= 2\nabla x^T\nabla x + 2\sum_{i=0}^{N-2} \nabla^2 x_i(\Lambda) x_i(\Lambda)
+\end{align*}
+\end{proof}
 \subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
 Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
 \begin{align}
