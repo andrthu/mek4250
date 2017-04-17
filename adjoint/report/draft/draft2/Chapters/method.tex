@@ -519,15 +519,15 @@ In order for us to get $\bar{M}^*=\bar{M}^T$, we the discretization of (\ref{vir
 \end{align*}
 In the above derivation for $\bold{G}_{\Delta T}^*(\omega)$, the forward Euler finite difference scheme is used to discretize (\ref{virtual_adjoint_exs}), but since this equation is solved backwards in time this scheme is implicit. Since $\bold{G}_{\Delta T}^*(\omega)=\bold{G}_{\Delta T}(\omega)$, we get that $\bar{M}^*=\bar{M}^T$, which means that $\bar{M}^{-1}\bar{M}^{-*}$ is a valid choice for an initial inverted Hessian approximation in the BFGS-algorithm.
 \subsection{Non-linear state equations}
-If the governing equation of the fine propagator $\bold F_{\Delta T}$ in system (\ref{virtual_func}-\ref{virtual}) is non-linear, the Hessian of the non-linearly constrained objective function would not be equal to the Hessian stated in proposition \ref{prop_lLS}. However, we can still use the least square formulation (\ref{vector_J}) for minimization of the reduced objective function, meaning that 
+If the governing equation of the fine propagator $\bold F_{\Delta T}$ in system (\ref{virtual_func}-\ref{virtual}) is non-linear, the Hessian of the non-linearly constrained objective function would not be equal to the Hessian stated in proposition \ref{prop_lLS}. However, we can still use the least square formulation (\ref{vector_J}) for minimization of the reduced objective function, which looks like: 
 \begin{align}
 \hat{\bold J}(\Lambda) = x(\Lambda)^Tx(\Lambda), \quad x:\mathbb{R}^{N-1}\rightarrow \mathbb{R}^{N-1} \label{non_lin_LS}
 \end{align} 
-Here the components of $x$ are defined as $x_i(\Lambda)=\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i)$, $i=0,...,N-2$. Let us now state the Hessian of the reduced objective function (\ref{non_lin_LS}) in terms of $x$, and propagator  in a proposition:
-\begin{proposition}
+Here the components of $x$ are defined as $x_i(\Lambda)=\lambda_{i}-\bold F_{\Delta T}(\lambda_{i-1})$, $i=1,...,N-1$. Let us now state the Hessian of the reduced objective function (\ref{non_lin_LS}) in terms of $x$, and the propagator in a proposition:
+\begin{proposition}\label{NonLin_prop}
 The Hessian of function (\ref{non_lin_LS}) is
 \begin{align*}
-\nabla^2 \hat{\bold J}(\Lambda) &= 2\nabla x^T\nabla x + 2\sum_{i=0}^{N-2} \nabla^2 x_i(\Lambda) x_i(\Lambda)\\
+\nabla^2 \hat{\bold J}(\Lambda) &= 2\nabla x^T\nabla x + 2\sum_{i=1}^{N-1} \nabla^2 x_i(\Lambda) x_i(\Lambda)\\
 &=2M(\Lambda)^TM(\Lambda) + 2D(\Lambda)
 \end{align*}
 Here $D(\Lambda)$ is a diagonal matrix with diagonal entries 
@@ -548,13 +548,34 @@ M(\Lambda) &= \left[ \begin{array}{cccc}
 We start by differentiating $\hat{\bold J}$:
 \begin{align*}
 \nabla \hat{\bold J}(\Lambda) &= 2 \nabla x(\Lambda)^T x(\Lambda)\\
-&=2\sum_{i=0}^{N-2} \nabla x_i(\Lambda) x_i(\Lambda)
+&=2\sum_{i=1}^{N-1} \nabla x_i(\Lambda) x_i(\Lambda)
 \end{align*}
 If we now differentiate $\nabla \hat{\bold J}$, we get:
 \begin{align*}
-\nabla^2 \hat{\bold J}(\Lambda) &= 2\nabla x^T\nabla x + 2\sum_{i=0}^{N-2} \nabla^2 x_i(\Lambda) x_i(\Lambda)
+\nabla^2 \hat{\bold J}(\Lambda) &= 2\nabla x^T\nabla x + 2\sum_{i=1}^{N-1} \nabla^2 x_i(\Lambda) x_i(\Lambda)
 \end{align*}
+We see that $\nabla x(\Lambda)=M(\Lambda)$, by looking at $\frac{\partial x_i}{\partial \lambda_j}$
+\begin{align*}
+\frac{\partial x_i}{\partial \lambda_j} = \left\{
+     \begin{array}{lr}
+		1 \quad\quad\quad\quad\quad i=j\\
+		-\bold F_{\Delta T}'(\lambda_{j}) \quad i>1 \wedge j=i-1 \\
+		0 \quad\quad\quad\quad\quad i\neq j \vee j\neq i-1
+	\end{array}
+   \right.	
+\end{align*}
+We can similarly find $\nabla^2 x_i$ by differentiating $x$ twice:
+\begin{align*}
+\frac{\partial^2 x_i}{\partial \lambda_j\partial\lambda_k} = \left\{
+     \begin{array}{lr}
+		-\bold F_{\Delta T}''(\lambda_{j}) \quad i>1 \wedge j=k=i-1 \\
+		0 \quad\textrm{in all other cases}
+	\end{array}
+   \right.	
+\end{align*}
+Now summing up the terms $\nabla^2 x_i(\Lambda)x_i(\Lambda)$ would yield the diagonal matrix $D(\Lambda)$ described in proposition \ref{NonLin_prop}.
 \end{proof}
+This 
 \subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
 Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
 \begin{align}
