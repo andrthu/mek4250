@@ -32,11 +32,11 @@ def compare_pc_and_nonpc_for_different_m():
     except:
         N = 1000
         mu = N
-        tol1 = 1e-7
-        tol2 = 1e-3
+        tol1 = 1e-5
+        tol2 = 1e-2
     M = [1,2,3,4,5,6,8,16,32,64]
     #M = [1,2,3]
-    res1 = problem.solve(N,Lbfgs_options={'jtol':tol1})
+    res1 = problem.solve(N,algorithm='my_steepest_decent',Lbfgs_options={'jtol':tol1})
     t = np.linspace(0,T,N+1)
     res1_norm = l2_norm(res1.x,t)
     
@@ -59,7 +59,7 @@ def compare_pc_and_nonpc_for_different_m():
              'non-pc fu'      : ['--'],
              'pc err'          : ['--'],
              'non-pc err'      : ['--'],
-             'non-penalty itr' : [res1['iteration']],}
+             'non-penalty itr' : [res1.niter],}
 
     table2 = {#'pc fu'          : [res1.counter()[0]],
               #'non-pc fu'      : [res1.counter()[0]],
@@ -80,8 +80,8 @@ def compare_pc_and_nonpc_for_different_m():
 
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
-        pc_res = problem.PPCLBFGSsolve(N,m,[mu,mu*100,mu**2*100],tol_list=[tol2,tol2/100,(tol2**2)/100],options=opt)
-        nonpc_res = problem.PPCSDsolve(N,m,[1,mu,mu*100],options=opt)
+        nonpc_res = problem.penalty_solve(N,m,[1,10,100,500],algorithm='my_steepest_decent',Lbfgs_options=opt)
+        pc_res = problem.PPCSDsolve(N,m,[1,10,100,500],options=opt)
         
         if type(pc_res)==list:
             pc_res=pc_res[-1]
@@ -95,8 +95,8 @@ def compare_pc_and_nonpc_for_different_m():
         
         S1 = float(fu_gr_sum)/((pc_fugr[0]+pc_fugr[1])/float(m))
         S2 = float(fu_gr_sum)/((npc_fugr[0]+npc_fugr[1])/float(m))
-        err1 = l2_diff_norm(res1['control'].array(),pc_res.x[:N+1],t)/res1_norm
-        err2 = l2_diff_norm(res1['control'].array(),nonpc_res.x[:N+1],t)/res1_norm
+        err1 = l2_diff_norm(res1.x,pc_res.x[:N+1],t)/res1_norm
+        err2 = l2_diff_norm(res1.x,nonpc_res.x[:N+1],t)/res1_norm
 
         table['pc fu'].append(pc_res.niter)
         table['non-pc fu'].append(nonpc_res.niter)
@@ -127,11 +127,11 @@ def compare_pc_and_nonpc_for_different_m():
     Order = ['pc fugr','npc fugr','pc err','non-pc err','ideal pc-S','ideal non-pc-S']
     data3 = data2.reindex_axis(Order, axis=1)
     print data3
-    data3.to_latex('report/draft/parareal/scaled_nonScaled_iterations_'+str(N)+'.tex')
+    #data3.to_latex('report/draft/parareal/scaled_nonScaled_iterations_'+str(N)+'.tex')
 
 
     plt.figure()
-    plt.plot(t,res1['control'].array(),'r--')
+    plt.plot(t,res1.x,'r--')
     for i in range(len(res2)):
         plt.plot(t,res2[i].x[:N+1])
     plt.legend(M,loc=4)
@@ -139,7 +139,7 @@ def compare_pc_and_nonpc_for_different_m():
     plt.show()
     
     plt.figure()
-    plt.plot(t,res1['control'].array(),'r--')
+    plt.plot(t,res1.x,'r--')
     for i in range(len(res2)):
         plt.plot(t,res3[i].x[:N+1])
     plt.legend(M,loc=4)
