@@ -1,16 +1,16 @@
 \chapter{Verification}\label{Verification chapter}
 \section{Taylor test}
-A good way to test whether a proposed gradient of a function actually is the correct gradient, is to use the Taylor test. The test is as its name implies connected with Taylor expansions of a function, or more precisely the following two observations:
+The Taylor test is a good way to test the correctness of the gradient of a function. The test is as its name implies connected with Taylor expansions of a function, or more precisely the following two observations:
 \begin{align*}
-|J(v+\epsilon w)-J(v)| &= O(\epsilon) \\
-|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w| &= O(\epsilon^2)
+|J(v+\epsilon w)-J(v)| &= \mathcal{O}(\epsilon) \\
+|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w| &= \mathcal{O}(\epsilon^2)
 \end{align*}
 Here $w$ is a random direction in the same space as $v$, while $\epsilon$ is some constant. 
 \\
 \\
-The test is carried out, by evaluating $D=|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w|$ for decreasing $\epsilon$s, and if $D$ approaches 0 at 2nd order rate, we consider the test as passed.
+The test is carried out by evaluating $D=|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w|$ for decreasing $\epsilon$'s, and if $D$ approaches 0 at 2nd order rate, we consider the test as passed.
 \subsection{Verifying the numerical gradient using the Taylor test}
-I will now use the Taylor test on the numerical gradient (\ref{num_grad}) that we get when solving the following problem:
+we will now use the Taylor test on the numerical gradient (\ref{num_grad}) that we get when solving the following problem:
 \begin{align}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2\\
 &\left\{
@@ -20,7 +20,7 @@ I will now use the Taylor test on the numerical gradient (\ref{num_grad}) that w
      \end{array}
    \right. 
 \end{align}
-I then discretize in time using $\Delta t=\frac{1}{100}$, and I set $v_i=1 \ \forall i$, while $w_i$ are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
+We then discretize in time using $\Delta t=\frac{1}{100}$, and we set $v_i=1 \ \forall i$, while $w_i$ are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
 \begin{align*}
 D_1(\epsilon) &= |J(v+\epsilon w)-J(v)|\\
 D_2(\epsilon) &=|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|
@@ -43,14 +43,14 @@ yielded the following:
 \end{tabular}
 \\
 \\
-The above table clearly shows that $J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and my implementation of it are correct. Let us then check if this is also the case for the penalized problem.
+The above table clearly shows that $J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and the implementation of it are correct. Let us then check if this is also the case for the penalized problem.
 \begin{figure}[h]
 \caption{Plots showing the gradient, with focus on the two ends. Also included is a plot with a finite difference approximation to the gradient.}
 \centering
 \includegraphics[scale=0.5]{num_grad.png}
 \end{figure}
 \subsection{Verifying the penalized numerical gradient using the Taylor test}
-I will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the following problem:
+We will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the following problem:
 \begin{align}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2\\
 &\left\{
@@ -60,7 +60,7 @@ I will now use the Taylor test on the penalized numerical gradient (\ref{num_pen
      \end{array}
    \right. 
 \end{align}
-I then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and I set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
+We then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and we set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
 \begin{align*}
 D_1(\epsilon) &= |J(v+\epsilon w)-J(v)|\\
 D_2(\epsilon) &=|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|
@@ -90,8 +90,8 @@ Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges
 \centering
 \includegraphics[scale=0.5]{pen_num_grad.png}
 \end{figure}
-\section{Verifying function and gradient evaluation speedup} \label{ver S sec}
-In \ref{analysis sec} I derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if my implementation is able to achieve the theoretical speedup for our example problem. The specific problem I will do the test on, will be:
+\section{Verifying function and gradient evaluation speedups} \label{ver S sec}
+In \ref{analysis sec} we derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if the implementation achieves the theoretical speedup for our example problem. The specific problem is:
 \begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
 &\left\{
@@ -101,7 +101,7 @@ In \ref{analysis sec} I derived the theoretical speedup for numerical gradient a
      \end{array}
    \right. 
 \end{align*}
-Available to me, is a computer with 6 cores, so I will do gradient and function evaluation for $N=1,2,...,6$ decompositions, for different time step sizes $\Delta t$. For each combination of $N$ and $\Delta t$, I will run the function and gradient evaluations ten times, and then choose the the smallest execution time produced by the ten runs. The speedup is then calculated by dividing the sequential execution time by the parallel execution time. Below follows tables showing runtime and speedup for both gradient and function evaluation for different $\Delta t$s and $N$s. All evaluations are done with control input $v=1$ and $\lambda_i=1$.  
+A computer with 6 cores was used to verify the results of section \ref{analysis sec}. Having 6 cores means that we can do gradient and function evaluation for $N=1,2,...,6$ decompositions with different time step sizes $\Delta t$. For each combination of $N$ and $\Delta t$, we will run the function and gradient evaluations ten times, and then choose the the smallest execution time produced by the ten runs. The speedup is then calculated by dividing the sequential execution time by the parallel execution time. Below follows tables showing runtime and speedup for both gradient and function evaluation for different $\Delta t$s and $N$s. All evaluations are done with control input $v=1$ and $\lambda_i=1$.  
 \\
 \begin{table}[!h]
 \centering
@@ -289,7 +289,7 @@ Available to me, is a computer with 6 cores, so I will do gradient and function 
 \end{table}
 \\
 \\
-In all parallel algorithms there will be overhead, which means that for small problems parallelization does not produce any improvement in execution time. This is reflected in the above results, where we for $\Delta t = 10^{-2}$ see an increased execution time when running function and gradient evaluation in parallel. For $\Delta t = 10^{-3}$ and $\Delta t = 10^{-4}$ we see only a modest speedup, that is significantly lower than the expected speedup from section \ref{analysis sec}. For $\Delta t \leq 10^{-5}$, however we see speedup results in line with what we expect from the theory.  
+Since the parallel algorithm has some overhead, we do not expect any improvements for small problems. This is reflected in the above results, where we for $\Delta t = 10^{-2}$ see an increased execution time when running function and gradient evaluation in parallel. For $\Delta t = 10^{-3}$ and $\Delta t = 10^{-4}$ we see only a modest speedup, that is significantly lower than the expected speedup from section \ref{analysis sec}. For $\Delta t \leq 10^{-5}$, however we see speedup results in line with what we expect from the theory.  
 \section{Consistency}
 When we introduced the penalty method in section \ref{penalty_sec}, we also presented a result showing that the iterates $\{v^k\}$ stemming from the penalty algorithmic framework converged towards the solution of the non-penalized problem $v$. We can write this up as:
 \begin{align*}
@@ -299,7 +299,7 @@ An alternative way of looking at this, is to let $v^{\mu}$ be the minimizer of $
 \begin{align}
 \lim_{\mu\rightarrow\infty} v^{\mu} = v \label{mu con}
 \end{align}
-The interpretation of the above limit, is that solving the penalized problem with an ever increasing penalty parameter $\mu$ should result in a solution that is getting closer and closer to the solution of the non-penalized problem. This would mean that the penalty algorithm is consistent, since it produces the same solution as the ordinary non-decomposed problem. It might therefore be worth checking if our implementation of the penalized problem actually has the property (\ref{mu con}). The particular problem, that I will do the consistency test on, is: 
+The interpretation of the above limit, is that solving the penalized problem with an ever increasing penalty parameter $\mu$ should result in a solution that is getting closer and closer to the solution of the non-penalized problem. This means that the penalty algorithm is consistent, since it produces the same solution as the ordinary non-decomposed problem. It is therefore worth checking if the implementation of the penalized problem actually has the property (\ref{mu con}). The particular problem, that we will do the consistency test on, is: 
 \begin{align}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1.5)^2 \label{con J} \\
 &\left\{
@@ -309,7 +309,7 @@ The interpretation of the above limit, is that solving the penalized problem wit
      \end{array}
    \right. \label{con E}
 \end{align}
-Then I set the time step to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of decomposed subintervals. I solved problem (\ref{con J}-\ref{con E}) for increasing $\mu$ values, and looked at different ways to compare the the solutions $v$ and $v^{\mu}$. I compared the function value these controls gave for both the penalized and non-penalized objective function, and the relative difference between $v$ and $v^{\mu}$ in numerical $L^2$-norm. I also looked at the maximal jump difference in the decomposed state equation for each penalized control solution. The results were as follows:
+Then we set the time step to be $\Delta t = 10^{-2}$ and let $N=2$ be the number of decomposed subintervals. we solved problem (\ref{con J}-\ref{con E}) for increasing $\mu$ values, and looked at different ways to compare the the solutions $v$ and $v^{\mu}$. We compared the function value these controls gave for both the penalized and non-penalized objective function, and the relative difference between $v$ and $v^{\mu}$ in numerical $L^2$-norm. We also looked at the maximal jump difference in the decomposed state equation for each penalized control solution. The results were as follows:
 \\
 \begin{table}[h]
 \centering
@@ -344,5 +344,5 @@ Then I set the time step to be $\Delta t = 10^{-2}$ and let $N=2$ be the number 
 \end{tabular}
 \end{table}
 \\
-What we need to note about the results in table \ref{Cosistency_table}, is that while difference in function value and state equation jump approach machine precision, the relative norm difference $\frac{||v_{\mu}-v||}{||v||}$ does not hit machine precision. The explanation of this is that all the terms in our functional are squared, and a difference of $10^{-8}$ is therefore actually quite close to machine precision, when you square it. The jump differences are also squared, however the $\mu$ penalty counter balances this for these terms.
+What we need to note about the results in table \ref{Cosistency_table}, is that while difference in function value and state equation jump approach machine precision, the relative norm difference $\frac{||v_{\mu}-v||}{||v||}$ does not hit machine precision. The explanation of this is that all the terms in our functional are squared, and a difference of $10^{-8}$ is therefore actually quite close to machine precision, when squared. The jump differences are also squared, however the $\mu$ penalty counter balances this for these terms.
 

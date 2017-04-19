@@ -347,43 +347,43 @@ T_c = T_l + mT_w
 \end{align*} 
 Here $T_l$ is a constant representing latency or startup time, while $T_w$ is a constant representing the per message-unit transfer time. With these tools, we can now start analysing the performance of our algorithms.
 \subsection{Objective function evaluation speedup}
-The function evaluation consists of solving the state equation, which requires $O(n)$ operations, and then applying the functional on the control and the state on all $n+1$ time points, which probably also requires $O(n)$ operations, we can assume that the sequential objective function evaluation execution time is 
+The function evaluation consists of solving the state equation, which requires $\mathcal{O}(n)$ operations, and then applying the functional on the control and the state on all $n+1$ time points, which probably also requires $\mathcal{O}(n)$ operations, we can assume that the sequential objective function evaluation execution time is 
 \begin{align*}
-T_s = O(n)
+T_s = \mathcal{O}(n)
 \end{align*}
-For our parallel algorithm we also solve the state equation and apply the functional, but since we divide the time steps equally between all processes, solving the state equation and applying the functional only requires $O(\frac{n}{N})$ operations. Since we also have penalty terms in our functional we get additional $O(N)$ operations. Now for the communication. We are doing two communication steps one is sharing the $\lambda$s between process neighbours, and the other is reducing the local function values into one global function value. The send and receive time is given by $T_c = T_l + \textit{dim}(\lambda_i)T_w$, which requires $O(1)$ operations, while the reduction time $T_{red}$ can be modelled as:
+For our parallel algorithm we also solve the state equation and apply the functional, but since we divide the time steps equally between all processes, solving the state equation and applying the functional only requires $\mathcal{O}(\frac{n}{N})$ operations. Since we also have penalty terms in our functional we get additional $\mathcal{O}(N)$ operations. Now for the communication. We are doing two communication steps one is sharing the $\lambda$s between process neighbours, and the other is reducing the local function values into one global function value. The send and receive time is given by $T_c = T_l + \textit{dim}(\lambda_i)T_w$, which requires $\mathcal{O}(1)$ operations, while the reduction time $T_{red}$ can be modelled as:
 \begin{align*}
 T_{red} &= \log N (T_l+T_w) \\
-&= O(\log N)
+&= \mathcal{O}(\log N)
 \end{align*} 
 Here we assume that the parallel architecture is made in a certain way, and that the local functional value is a float. This results in parallel function evaluation execution time:
 \begin{align*}
-T_p &= O(\frac{n}{N}) +O(N) + O(\log N) + O(1) \\
-&=O(\frac{n}{N}) +O(N)
+T_p &= \mathcal{O}(\frac{n}{N}) +\mathcal{O}(N) + \mathcal{O}(\log N) +\mathcal{O} (1) \\
+&=\mathcal{O}(\frac{n}{N}) +\mathcal{O}(N)
 \end{align*}
 The speedup is then:
 \begin{align*}
-S &= \frac{T_s}{T_p} = \frac{O(n)}{O(\frac{n}{N}) +O(N)} \\
-&=O(N)
+S &= \frac{T_s}{T_p} = \frac{\mathcal{O}(n)}{\mathcal{O}(\frac{n}{N}) +\mathcal{O}(N)} \\
+&=\mathcal{O}(N)
 \end{align*}
 This is an optimal speedup.
 \subsection{Gradient speedup}
 When we calculate the objective function gradient sequentially, we solve both the state and adjoint equations. Still the required operations are still in the order of number of time-steps, i.e:
 \begin{align*}
-T_s = O(n)
+T_s = \mathcal{O}(n)
 \end{align*}
-For the parallel algorithm the operations required to solve the local state and adjoint equations are $O(\frac{n}{N})$. We then have two $O(1)$ send-receive communications similar to the send and receive for function evaluation. Lastly we need to model the gathering of the gradient. First define $L$ to be the length of the gradient. The run time of the gather $T_{gather}$, can then be modelled as:
+For the parallel algorithm the operations required to solve the local state and adjoint equations are $\mathcal{O}(\frac{n}{N})$. We then have two $\mathcal{O}(1)$ send-receive communications similar to the send and receive for function evaluation. Lastly we need to model the gathering of the gradient. First define $L$ to be the length of the gradient. The run time of the gather $T_{gather}$, can then be modelled as:
 \begin{align*}
 T_{gather} &= T_l\log N + \frac{L}{N}T_w(N-1) \\
-&= O(\log N) + O(L)
+&= \mathcal{O}(\log N) + \mathcal{O}(L)
 \end{align*}
 The execution time of the parallel algorithm is therefore:
 \begin{align*}
-T_p = O(\frac{n}{N}) + O(\log N) + O(L)
+T_p = \mathcal{O}(\frac{n}{N}) + \mathcal{O}(\log N) + \mathcal{O}(L)
 \end{align*}
 Again we find speedup by dividing $T_s$ by $T_p$:
 \begin{align*}
-S &= \frac{T_s}{T_p} = \frac{O(n)}{O(\frac{n}{N}) + O(\log N) + O(L)} \\
+S &= \frac{T_s}{T_p} = \frac{\mathcal{O}(n)}{\mathcal{O}(\frac{n}{N}) + \mathcal{O}(\log N) + \mathcal{O}(L)} \\
 &=\frac{1}{\frac{1}{N} + \frac{\log N}{n}+\frac{L}{n}} = \frac{1}{\frac{1}{N} +\frac{L}{n}}
 \end{align*}
-If $L$ is independent of $n$, the speedup for gradient evaluation is $O(N)$, like it is for function evaluation, however if $L$ is dependent on $n$, this is not the case, and we would instead get speedup $S=O(\frac{n}{L(n)})$. In a case where the control for example is the source term in the state equation, we would actually get $S=O(1)$, which is really bad, and we would not expect any improvement when using parallel, at least for large $n$ values. There is however a way to get around this problem, which is to store both the gradient and the control locally, which means that you never have to do a gather call. If this is done, and if a solution spread between all processes is accepted, the speedup for gradient evaluation will also be $O(N)$.
+If $L$ is independent of $n$, the speedup for gradient evaluation is $\mathcal{O}(N)$, like it is for function evaluation, however if $L$ is dependent on $n$, this is not the case, and we would instead get speedup $S=\mathcal{O}(\frac{n}{L(n)})$. In a case where the control for example is the source term in the state equation, we would actually get $S=\mathcal{O}(1)$, which is really bad, and we would not expect any improvement when using parallel, at least for large $n$ values. There is however a way to get around this problem, which is to store both the gradient and the control locally, which means that you never have to do a gather call. If this is done, and if a solution spread between all processes is accepted, the speedup for gradient evaluation will also be $\mathcal{O}(N)$.

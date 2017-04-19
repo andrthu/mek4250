@@ -1,7 +1,6 @@
 from ODE_pararealOCP import PararealOCP
 import numpy as np
 from scipy.integrate import trapz
-from taylorTest import general_taylor_test,lin_problem
 from parallelOCP import u_part,interval_partition
 class CrankNicolsonOCP(PararealOCP):
 
@@ -241,6 +240,7 @@ def test_CN():
     plt.show()
 
 def taylorTestCN():
+    from taylorTest import general_taylor_test,lin_problem
     a = 2
     y0=1
     T=1

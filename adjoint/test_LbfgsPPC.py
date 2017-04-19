@@ -9,7 +9,7 @@ from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
 from parallelOCP import v_comm_numbers
-
+from crank_nicolson_OCP import create_simple_CN_problem
 class GeneralPowerEndTermPCP(SimplePpcProblem):
 
     """
@@ -169,12 +169,13 @@ def compare_pc_and_nonpc_for_different_m():
     y0 = 3.2
     yT = 1.5
     T  = 1
-    a  = .009
+    a  = -1.9
     p = 2
 
 
     
-    problem = non_lin_problem(y0,yT,T,a,p,c=20)
+    #problem = non_lin_problem(y0,yT,T,a,p,c=20)
+    problem = create_simple_CN_problem(y0,yT,T,a)
     try:
         N = int(sys.argv[1])
         mu = N
@@ -184,7 +185,7 @@ def compare_pc_and_nonpc_for_different_m():
     except:
         N = 1000
         mu = N
-        tol1 = 1e-7
+        tol1 = 1e-10
         tol2 = 1e-4
     M = [1,2,3,4,5,6,8,16,32,64]
     #M = [1,2,3]
@@ -232,8 +233,8 @@ def compare_pc_and_nonpc_for_different_m():
 
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
-        pc_res = problem.PPCLBFGSsolve(N,m,[mu,mu*100,mu**2*100],tol_list=[tol2,tol2/100,(tol2**2)/100],options=opt)
-        nonpc_res = problem.penalty_solve(N,m,[mu,mu*100],Lbfgs_options=opt)
+        pc_res = problem.PPCLBFGSsolve(N,m,[mu*100,10*mu**2],tol_list=[tol2,tol2/100,(tol2**2)/100],options=opt)
+        nonpc_res = problem.penalty_solve(N,m,[mu*100,10*mu**2],tol_list=[tol2,tol2/100,(tol2**2)/100],Lbfgs_options=opt)
         
         if type(pc_res)==list:
             pc_res=pc_res[-1]

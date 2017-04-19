@@ -1,19 +1,19 @@
 \chapter{Experiments}\label{Experiments chapter}
-In this chapter I will through experiments investigate what speedup one might get by using the algorithm for parallelizing optimal control problems with  time dependent DE constraints in temporal direction, introduced in previous chapters. Unlike the parallel performance of gradient and objective function evaluation, the parallel performance of our overall algorithm is difficult to model. This is due to the fact, that it is difficult to say how many gradient and function evaluations are needed in our line search methods, to reach the different stopping criteria. I am therefore unable to derive any theoretical expected speedup.
+In this chapter we will through experiments investigate what speedup one might get by using the algorithm for parallelizing optimal control problems with  time dependent DE constraints in temporal direction, introduced in previous chapters. Unlike the parallel performance of gradient and objective function evaluation, the parallel performance of our overall algorithm is difficult to model. The reason for this is that it is difficult to say how many gradient and function evaluations are needed for the optimization algorithms to terminate. We am therefore unable to derive any theoretical expected speedup.
 \\
 \\
-In section \ref{analysis sec} I explained that the best way of measuring performance of a parallel algorithm is to compare its execution time to the sequential execution time of the best sequential algorithm. When solving optimal control problems with DE constraints, the runtime of our solution algorithm will depend on how many times we have to evaluate the objective function and its gradient, since these evaluations require either the solution of the state equation or the state and adjoint equations. We know from theory in section \ref{analysis sec} and verification in section \ref{ver S sec}, that the speedup of parallel gradient and function evaluation depends linearly on the number of processes we use. An alternative way of measuring parallel performance is therefore to compare the sum of gradient and function evaluations in the sequential and parallel algorithms. Let us give this numbers a name:
+In section \ref{analysis sec} we explained that the best way of measuring performance of a parallel algorithm is to compare its execution time to the sequential execution time of the best sequential algorithm. When solving optimal control problems with DE constraints, the runtime of our solution algorithm will depend on how many times we have to evaluate the objective function and its gradient, since these evaluations require either the solution of the state equation or the state and adjoint equations. We know from theory in section \ref{analysis sec} and verification in section \ref{ver S sec}, that the speedup of parallel gradient and function evaluation depends linearly on the number of processes we use. An alternative way of measuring parallel performance is therefore to compare the sum of gradient and function evaluations in the sequential and parallel algorithms. Let us give this numbers a name:
 \begin{align*}
 L_s &= \textit{Number of function and gradient evaluations for sequantial algorithm}\\
 L_{p_N} &= \textit{Number of function and gradient evaluations for parallel algorithm using N processes}
 \end{align*} 
-Using these definitions I will define what I will call ideal speedup $\hat{S}$, as the speedup one would expect based on $L_s$ and $L_{p_N}$ and the speedup results we have for function and gradient evaluations:
+Using these definitions we define the ideal speedup $\hat{S}$, as the speedup one would expect based on $L_s$ and $L_{p_N}$ and the speedup results we have for function and gradient evaluations:
 \begin{align}
 \hat S = \frac{NL_s}{L_{p_N}} \label{ideal S}
 \end{align}
-With $\hat S$, it is possible to say something about the performance of the parallel algorithm without having to time it, or actually run it in parallel. It might also be useful to compare the ideal speedup, to the actual speedup, which we get when we look at execution time.
+With $\hat S$, it is possible to say something about the performance of the parallel algorithm without having to time it, or actually run it in parallel. This is also be useful to compare the ideal speedup, to the actual speedup, which we get when we look at execution time.
 \section{L-BFGS with and without parareal preconditioner}
-In section \ref{pc sec} I introduced the parareal preconditioner, as an approximation to the Hessian. Using this preconditioner in our L-BFGS solver we hope that the number of gradient and function evaluations needed in our algorithm will be smaller than if we do not use it. To test this, let us again write up an example problem to be solved:
+In section \ref{pc sec} we introduced the parareal preconditioner, as an approximation to the Hessian. Using this preconditioner in our L-BFGS solver we hope that the number of gradient and function evaluations needed in our algorithm will be smaller than if we do not use it. To test this, let us again write up an example problem to be solved:
 \begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1.5)^2 \\
 &\left\{
@@ -23,11 +23,11 @@ In section \ref{pc sec} I introduced the parareal preconditioner, as an approxim
      \end{array}
    \right. 
 \end{align*}
-I will first solve this problem without decomposing the time interval, and then solve the decomposed problem using $N=2,3,4,5,6,8,16,32,64$ and penalty parameter $\mu=10^4$. This means that I will only use one penalty iteration, as I have found this to be the most effective way to solve the decomposed problem for this specific problem. For both the penalized and non-penalized problems I use L-BFGS with stop criteria:
+We will first solve this problem without decomposing the time interval, and then solve the decomposed problem using $N=2,3,4,5,6,8,16,32,64$ and penalty parameter $\mu=10^4$. This means that we will only use one penalty iteration, as we have found this to be the most effective way to solve the decomposed problem for this specific problem. For both the penalized and non-penalized problems we use L-BFGS with stop criteria:
 \begin{align*}
 ||\nabla J||_{l^2} <10^{-6}
 \end{align*}  
-Since The point of this test is to compare the effectiveness of the parareal preconditioner, I solve the decomposed problems with and without it. In the result table below I have included the total number of gradient and function evaluations for the two cases as "pc L" and "non-pc L". I also measured the relative $L^2$-norm difference between the non-penalized control solution and all the penalized control solutions. The ideal speedup (\ref{ideal S}) is calculated for preconditioned and unpreconditioned solvers.
+Since the point of this test is to compare the effectiveness of the parareal preconditioner, we solve the decomposed problems with and without it. In the result table below we have included the total number of gradient and function evaluations for the two cases as "pc L" and "non-pc L". We also measured the relative $L^2$-norm difference between the non-penalized control solution and all the penalized control solutions. The ideal speedup (\ref{ideal S}) is calculated for preconditioned and unpreconditioned solvers.
 \\
 \\
 \begin{table}[h]
@@ -67,11 +67,11 @@ In the previous section we measured the effectiveness of the parareal preconditi
      \end{array}
    \right. 
 \end{align*}
-This time I only use the preconditioned solver, but now we also measure the execution time so that it is possible to calculate the speedup. The time measurement is done by running each solver ten times and choosing the lowest time. Also included in the results is the number of function and gradient evaluations L, the ideal speedup $\hat S$, the relative difference in function value and between sequential and parallel solutions and the relative $l^2$-norm difference in control between sequential and parallel solutions. I used the same strict end criteria for the L-BFGS iteration on all solvers:
+This time we only use the preconditioned solver, but now we also measure the execution time so that it is possible to calculate the speedup. The time measurement is done by running each solver ten times and choosing the lowest time. Also included in the results is the number of function and gradient evaluations L, the ideal speedup $\hat S$, the relative difference in function value and between sequential and parallel solutions and the relative $l^2$-norm difference in control between sequential and parallel solutions. We used the same strict end criteria for the L-BFGS iteration on all solvers:
 \begin{align*}
 ||\nabla J||<10^{-10}
 \end{align*}
-I solved penalized problem using only one penalty iteration setting the penalty parameter $\mu=\frac{1}{\Delta t}$. Finally, I ran my experiments using $\Delta t =10^{-5},0.5(10^{-5}),10^{-6}$. The results follow below:
+We solved the penalized problem using only one penalty iteration setting the penalty parameter $\mu=\frac{1}{\Delta t}$. Finally, we ran my experiments using $\Delta t =10^{-5},0.5(10^{-5}),10^{-6}$. The results follow below:
 \\
 \\
 \begin{table}[h]
