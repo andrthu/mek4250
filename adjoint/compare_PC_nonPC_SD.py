@@ -17,12 +17,12 @@ def compare_pc_and_nonpc_for_different_m():
     y0 = 3.2
     yT = 1.5
     T  = 1
-    a  = .9
+    a  = -1.9
     p = 2
 
 
     
-    problem = non_lin_problem(y0,yT,T,a,p,c=20)
+    problem = non_lin_problem(y0,yT,T,a,p,c=0)
     try:
         N = int(sys.argv[1])
         mu = N
@@ -33,8 +33,9 @@ def compare_pc_and_nonpc_for_different_m():
         N = 1000
         mu = N
         tol1 = 1e-5
-        tol2 = 1e-2
-    M = [1,2,3,4,5,6,8,16,32,64]
+        tol2 = 1e-3
+    M = [1,2,3,4,5,6,8,16,32]
+    M = [1,64,128]
     #M = [1,2,3]
     res1 = problem.solve(N,algorithm='my_steepest_decent',Lbfgs_options={'jtol':tol1})
     t = np.linspace(0,T,N+1)
@@ -74,15 +75,15 @@ def compare_pc_and_nonpc_for_different_m():
 
     res2 = []
     res3 = []
-    opt = {'mem_lim':10,'jtol':tol2,'beta_scale':True,'maxiter':150}
+    opt = {'mem_lim':10,'jtol':tol2,'beta_scale':True,'maxiter':1000}
     fu_gr_sum = res1.counter()[0]+res1.counter()[1]
     for m in M[1:]:
 
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
-        nonpc_res = problem.penalty_solve(N,m,[1,10,100,500],algorithm='my_steepest_decent',Lbfgs_options=opt)
-        pc_res = problem.PPCSDsolve(N,m,[1,10,100,500],options=opt)
-        
+        #nonpc_res = problem.penalty_solve(N,m,[10,1000],algorithm='my_steepest_decent',Lbfgs_options=opt)
+        pc_res = problem.scaled_PPCSDsolve(N,m,[10,1000],tol_list=[tol2,tol2/10,tol2/100,tol2/500],options=opt)
+        nonpc_res=pc_res
         if type(pc_res)==list:
             pc_res=pc_res[-1]
             nonpc_res=nonpc_res[-1]

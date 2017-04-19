@@ -175,7 +175,7 @@ def compare_pc_and_nonpc_for_different_m():
 
     
     #problem = non_lin_problem(y0,yT,T,a,p,c=20)
-    problem = create_simple_CN_problem(y0,yT,T,a)
+    problem = create_simple_CN_problem(y0,yT,T,a,c=20)
     try:
         N = int(sys.argv[1])
         mu = N
@@ -185,9 +185,9 @@ def compare_pc_and_nonpc_for_different_m():
     except:
         N = 1000
         mu = N
-        tol1 = 1e-10
+        tol1 = 1e-7
         tol2 = 1e-4
-    M = [1,2,3,4,5,6,8,16,32,64]
+    M = [1,2,3,4,5,6,8,16,32,64,128]
     #M = [1,2,3]
     res1 = problem.solve(N,Lbfgs_options={'jtol':tol1})
     t = np.linspace(0,T,N+1)
@@ -233,8 +233,8 @@ def compare_pc_and_nonpc_for_different_m():
 
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
-        pc_res = problem.PPCLBFGSsolve(N,m,[mu*100,10*mu**2],tol_list=[tol2,tol2/100,(tol2**2)/100],options=opt)
-        nonpc_res = problem.penalty_solve(N,m,[mu*100,10*mu**2],tol_list=[tol2,tol2/100,(tol2**2)/100],Lbfgs_options=opt)
+        pc_res = problem.PPCLBFGSsolve(N,m,[mu*100],tol_list=[tol2,tol2/10,(tol2**2)/100],options=opt)
+        nonpc_res = problem.penalty_solve(N,m,[mu*100],tol_list=[tol2,tol2/10,(tol2**2)/100],Lbfgs_options=opt)
         
         if type(pc_res)==list:
             pc_res=pc_res[-1]

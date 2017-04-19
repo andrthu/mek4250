@@ -327,7 +327,7 @@ class PararealOCP(OptimalControlProblem):
         else:
             return result
 
-    def PPCSDsolve(self,N,m,my_list,x0=None,options=None,split=True):
+    def PPCSDsolve(self,N,m,my_list,x0=None,tol_list=None,options=None,split=False):
 
         dt=float(self.T)/N
         if x0==None:
@@ -341,8 +341,15 @@ class PararealOCP(OptimalControlProblem):
             J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
 
             self.update_SD_options(options)
-            SDopt = self.SD_options
+            
+            if tol_list!=None:
+                try:
+                    opt = {'jtol':tol_list[i]}
+                    self.update_SD_options(opt)
+                except:
+                    print 'no good tol_list'
 
+            SDopt = self.SD_options
             Solver = PPCSteepestDecent(J,grad_J,x0.copy(),PPC,
                                        decomp=m,options=SDopt)
             if split:
@@ -361,7 +368,7 @@ class PararealOCP(OptimalControlProblem):
         else:
             return result
 
-    def scaled_PPCSDsolve(self,N,m,my_list,x0=None,options=None):
+    def scaled_PPCSDsolve(self,N,m,my_list,tol_list=None,x0=None,options=None):
 
         dt=float(self.T)/N
         if x0==None:
@@ -369,6 +376,7 @@ class PararealOCP(OptimalControlProblem):
         
         result = []
         PPC = self.PC_maker2(N,m,step=1)
+        initial_counter = self.counter.copy()
         for i in range(len(my_list)):
         
             J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
@@ -387,6 +395,7 @@ class PararealOCP(OptimalControlProblem):
             
             x0=res.x
             result.append(res)
+        res.add_FuncGradCounter(self.counter-initial_counter)
         if len(result)==1:
             #y,Y = self.ODE_penalty_solver(x0,N,m)
             #import matplotlib.pyplot as plt

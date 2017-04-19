@@ -141,12 +141,12 @@ class CrankNicolsonStateIntOCP(PararealOCP):
 
     Penalty_Gradient2 = Penalty_Gradient
 
-def create_simple_CN_problem(y0,yT,T,a):
+def create_simple_CN_problem(y0,yT,T,a,c=0):
     
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
 
-        I = trapz((u)**2,t)
+        I = trapz((u-c)**2,t)
 
         return 0.5*I + 0.5*(y-yT)**2
 
@@ -158,14 +158,14 @@ def create_simple_CN_problem(y0,yT,T,a):
 
         t = np.linspace(0,T,len(u))
         grad1 = np.zeros(len(u))
-        grad1[:-1] = dt*(u[:-1]+p[1:]/B)
-        grad1[0] = 0.5*dt*(u[0])+dt*p[1]/B
+        grad1[:-1] = dt*(u[:-1]-c+p[1:]/B)
+        grad1[0] = 0.5*dt*(u[0]-c)+dt*p[1]/B
         grad1[-1] = 0.5*dt*(u[-1])
 
         grad2 = np.zeros(len(u))
-        grad2[1:] = dt*(u[1:]+p[1:]/B)
-        grad2[0] = 0.5*dt*(u[0])
-        grad2[-1] = 0.5*dt*u[-1]+dt*p[-1]/B
+        grad2[1:] = dt*(u[1:]-c+p[1:]/B)
+        grad2[0] = 0.5*dt*(u[0]-c)
+        grad2[-1] = 0.5*dt*(u[-1]-c)+dt*p[-1]/B
 
         return 0.5*(grad1+grad2)
         
