@@ -176,3 +176,76 @@ The matrix $\bar{M}\in\mathbb{R}^{N\times N}$ is the $\bold{G}_{\Delta T}$ versi
    0 &\cdots &-\bold{G}_{\Delta T} & I   \\
    \end{array}  \right]
 \end{align}
+
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-3}$}
+\begin{tabular}{lrr}
+\toprule
+{}$N$ &  function speedup &     function time \\
+\midrule
+1 &  1.000000 &  0.000974 \\
+2 &  1.699825 &  0.000573 \\
+3 &  1.887597 &  0.000516 \\
+4 &  1.940239 &  0.000502 \\
+5 &  1.800370 &  0.000541 \\
+6 &  1.702797 &  0.000572 \\
+\bottomrule
+\end{tabular}
+\begin{tabular}{lrr}
+\toprule
+{} &  gradient speedup &    gradient time \\
+\midrule
+1 &  1.000000 &  0.001541 \\
+2 &  1.671367 &  0.000922 \\
+3 &  2.096599 &  0.000735 \\
+4 &  2.293155 &  0.000672 \\
+5 &  2.331316 &  0.000661 \\
+6 &  2.334848 &  0.000660 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-6}$}
+\begin{tabular}{lrr}
+\toprule
+{} $N$&  function speedup &    function time \\
+\midrule
+1 &  1.000000 &  0.867973 \\
+2 &  1.977376 &  0.438952 \\
+3 &  2.917517 &  0.297504 \\
+4 &  3.801797 &  0.228306 \\
+5 &  4.674438 &  0.185685 \\
+6 &  5.331202 &  0.162810 \\
+\bottomrule
+\end{tabular}
+\begin{tabular}{lrr}
+\toprule
+{} &  gradient speedup &    gradient time \\
+\midrule
+1 &  1.000000 &  1.504033 \\
+2 &  1.943738 &  0.773784 \\
+3 &  2.937054 &  0.512089 \\
+4 &  3.928148 &  0.382886 \\
+5 &  4.766144 &  0.315566 \\
+6 &  5.651349 &  0.266137 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[!h]
+\centering
+\caption{$\Delta t=10^{-8}$}
+\begin{tabular}{lrr}
+\toprule
+{} $N$&  function speedup &      function time \\
+\midrule
+1 &  1.000000 &  87.568009 \\
+2 &  2.129080 &  41.129505 \\
+3 &  2.988265 &  29.303966 \\
+4 &  4.125267 &  21.227233 \\
+5 &  4.824215 &  18.151763 \\
+6 &  5.735492 &  15.267741 \\
+\bottomrule
+\end{tabular}
+\end{table}

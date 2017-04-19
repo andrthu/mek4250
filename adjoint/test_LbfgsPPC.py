@@ -460,7 +460,7 @@ def test_adaptive_ppc():
     y0 = 3.2
     yT = 1.5
     T  = 1
-    a  = 0.9
+    a  = -3.9
     p = 4
 
     y0_2 = 24.6
@@ -585,10 +585,10 @@ def test_adaptive_ppc():
 
 def jump_difference():
     import sys
-    y0 = 3.2
-    yT = 1.5
+    y0 = 0.2
+    yT = 111.5
     T  = 1
-    a  = 0.9
+    a  = -3.9
     p = 2
     
     problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 0*x)#10*np.sin(np.pi*2*x))
@@ -602,8 +602,8 @@ def jump_difference():
     
     dt = float(T)/N
 
-    seq_opt = {'jtol':0,'maxiter':50}
-    opt = {'jtol':0,'scale_factor':1,'mem_lim':10,'scale_hessian':True,'maxiter':40}
+    seq_opt = {'jtol':0,'maxiter':50,'mem_lim':50}
+    opt = {'jtol':0,'scale_factor':1,'mem_lim':50,'scale_hessian':False,'maxiter':90}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
     table = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
@@ -683,6 +683,8 @@ def jump_difference():
     print val1
     data = pd.DataFrame(table,index = mu_list)
 
+    
+
     #data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'_2.tex')
     print data
     plt.show()
@@ -702,8 +704,14 @@ def jump_difference():
         plt.plot(np.array(all_jump_diff2[i]))
     """
     plt.show()
+    plt.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
+    plt.loglog(np.array(mu_list),np.array(table['jumps']),'.')
+    plt.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x')
+    plt.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
+    plt.legend(['J','jump','v','jmu'])
 
-
+    plt.show()
+    
 def l2_norm(u,t=None):
     #return max(abs(u))
     return np.sqrt(trapz(u**2,t))
@@ -711,7 +719,7 @@ def l2_norm(u,t=None):
 def look_at_gradient():
 
 
-    y0 = 3.2
+    y0 = 30.2
     yT = 1.5
     T  = 1
     a  = 0.9
@@ -830,11 +838,11 @@ if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    compare_pc_and_nonpc_for_different_m()
+    #compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    #jump_difference()
+    jump_difference()
     #look_at_gradient()
     #count_grad_func_eval()
     #split_test()
