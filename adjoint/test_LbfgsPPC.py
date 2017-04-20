@@ -585,8 +585,8 @@ def test_adaptive_ppc():
 
 def jump_difference():
     import sys
-    y0 = 0.2
-    yT = 111.5
+    y0 = 3.2
+    yT = 11.5
     T  = 1
     a  = -3.9
     p = 2
@@ -601,9 +601,11 @@ def jump_difference():
     part_start,_,_,_ = v_comm_numbers(N+1,m)
     
     dt = float(T)/N
-
-    seq_opt = {'jtol':0,'maxiter':50,'mem_lim':50}
-    opt = {'jtol':0,'scale_factor':1,'mem_lim':50,'scale_hessian':False,'maxiter':90}
+    ls = {"ftol": 1e-12, "gtol": 1-1e-12, "xtol": 0.01, "start_stp": 1}
+    seq_opt = {'jtol':0,'maxiter':50,'mem_lim':50,"line_search_options":ls}
+    
+    opt = {'jtol':0,'scale_factor':1,'mem_lim':50,'scale_hessian':False,'maxiter':90,
+           "line_search_options":ls}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
     table  = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
@@ -627,14 +629,14 @@ def jump_difference():
     #mu_list = [1e5,5e5,1e6,1e7]
     res2 =  problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
     
-    MORE = False
+    MORE = True
     seq_norm = l2_norm(res['control'].array(),t)
     y_end=problem.ODE_solver(res['control'].array(),N)
     val1=problem.J(res['control'].array(),y_end[-1],yT,T)
     if MORE:
         res22 = problem.PPCLBFGSsolve(N,10,mu_list,options=opt)
         res23 = problem.PPCLBFGSsolve(10*N,2,mu_list,options=opt)
-        res24 = problem.PPCLBFGSsolve(10*N,10,mu_list,options=opt)
+        res24 = problem.PPCLBFGSsolve(10*N,7,mu_list,options=opt)
 
         res21 = problem.solve(10*N,Lbfgs_options=seq_opt)
         t2 = np.linspace(0,T,10*N+1)
@@ -776,43 +778,60 @@ def jump_difference():
     #plt.show()
 
     if MORE:
-        plt.figure(figsize=(6,8))
-        ax1 = plt.subplot(211)
-        ax1.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
-        ax1.loglog(np.array(mu_list),np.array(table['jumps']),'.')
-        ax1.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
-        ax1.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
-        ax1.legend(['J','jump','jmu','v'])
-        table = TAB[0]
-        ax2 = plt.subplot(212)
-        ax2.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
-        ax2.loglog(np.array(mu_list),np.array(table['jumps']),'.')
-        ax2.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
-        ax2.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
-        table = TAB[1]
-        plt.figure(figsize=(6,8))
-        ax3 = plt.subplot(211)
-        ax3.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
-        ax3.loglog(np.array(mu_list),np.array(table['jumps']),'.')
-        ax3.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
-        ax3.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
-        ax3.legend(['J','jump','jmu','v'])
-        table = TAB[2]
-        ax4 = plt.subplot(212)
-        ax4.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
-        ax4.loglog(np.array(mu_list),np.array(table['jumps']),'.')
-        ax4.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
-        ax4.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
+        #plt.locator_params(axis='x', nticks=8)
+        Legg = ['A','B','C','D']
+        plt.figure(figsize=(12,6))
+        ax1 = plt.subplot(121)
+        ax1.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
+        ax1.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
+        ax1.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
+        ax1.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
         
+        ax1.xaxis.set_ticks(10**np.arange(2,17,2))
+        ax1.set_title('N=2')
+        table = TAB[0]
+        ax2 = plt.subplot(122)
+        ax2.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
+        ax2.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
+        ax2.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
+        ax2.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
+        
+        ax2.xaxis.set_ticks(10**np.arange(2,17,2))
+        ax2.legend(Legg)
+        ax2.set_title('N=10')
+        table = TAB[1]
+        plt.savefig('report/draft/draft2/consistency1.png')
+
+        
+        plt.figure(figsize=(12,6))
+        ax3 = plt.subplot(121)
+        ax3.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
+        ax3.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
+        ax3.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
+        ax3.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
+        
+        ax3.set_title('N=2')
+        ax3.xaxis.set_ticks(10**np.arange(2,17,2))
+        table = TAB[2]
+        ax4 = plt.subplot(122)
+        ax4.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
+        ax4.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
+        ax4.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
+        ax4.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
+        
+        ax4.xaxis.set_ticks(10**np.arange(2,17,2))
+        ax4.legend(Legg)
+        ax4.set_title('N=7')
+        plt.savefig('report/draft/draft2/consistency2.png')
         plt.show()
     else:
         plt.figure(figsize=(6,8))
         #plt = plt.subplot(211)
-        plt.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
+        plt.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
         plt.loglog(np.array(mu_list),np.array(table['jumps']),'.')
-        plt.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
+        plt.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'x-')
         plt.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
-        plt.legend(['J','jump','jmu','v'])
+        plt.legend(Legg)
         plt.show()
 def l2_norm(u,t=None):
     #return max(abs(u))
