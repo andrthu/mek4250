@@ -591,7 +591,7 @@ def jump_difference():
     a  = -3.9
     p = 2
     
-    problem = non_lin_problem(y0,yT,T,a,p,func=lambda x : 0*x)#10*np.sin(np.pi*2*x))
+    problem = create_simple_CN_problem(y0,yT,T,a)#non_lin_problem(y0,yT,T,a,p,func=lambda x : 0*x)#10*np.sin(np.pi*2*x))
     try:
         N = int(sys.argv[1])
         m = int(sys.argv[2])
@@ -606,12 +606,14 @@ def jump_difference():
     opt = {'jtol':0,'scale_factor':1,'mem_lim':50,'scale_hessian':False,'maxiter':90}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
-    table = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
-
+    table  = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
+    table2 = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
+    table3 = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
+    table4 = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
     t = np.linspace(0,T,N+1)
     y_seq = problem.ODE_solver(res['control'].array(),N)
-    plt.figure()
-    plt.plot(t,y_seq,'r--')
+    #plt.figure()
+    #plt.plot(t,y_seq,'r--')
     
     end_crit = lambda mu0,dt,m : mu0<(1./dt)**2
     #mu_updater1=lambda mu,dt,m,last_iter : mu + 10000
@@ -621,7 +623,44 @@ def jump_difference():
                                           mu_updater=mu_updater1,mu0=N)
     """
     mu_list = [N,2*N,5*N,10*N,50*N,70*N,200*N,2000*N,3000*N,4000*N,5000*N,6000*N,10000*N,100000*N,200000*N,1000000*N,1e11,1e12,1e13,1e14,1e16]
-    res2 = problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
+    mu_list = [1e1,1e2,1e3,1e4,2e4,5e4,7e4,1e5,2e5,3e5,4e5,5e5,6e5,7e5,8e5,9e5,1e6,1.5e6,2e6,3e6,5e6,7e6,9e6,1e7,1.5e7,2e7,5e7,8e7,1e8,5e8,7e8,1e9,2e9,3e9,7e9,1e10,2e10,3e10,5e10,7e10,1e11,2e11,3e11,4e11,6e11,9e11,1e12,2e12,5e12,8e12,1e13,2e13,5e13,1e14,1e15,1e16]
+    #mu_list = [1e5,5e5,1e6,1e7]
+    res2 =  problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
+    
+    MORE = False
+    seq_norm = l2_norm(res['control'].array(),t)
+    y_end=problem.ODE_solver(res['control'].array(),N)
+    val1=problem.J(res['control'].array(),y_end[-1],yT,T)
+    if MORE:
+        res22 = problem.PPCLBFGSsolve(N,10,mu_list,options=opt)
+        res23 = problem.PPCLBFGSsolve(10*N,2,mu_list,options=opt)
+        res24 = problem.PPCLBFGSsolve(10*N,10,mu_list,options=opt)
+
+        res21 = problem.solve(10*N,Lbfgs_options=seq_opt)
+        t2 = np.linspace(0,T,10*N+1)
+        seq_norm2 = l2_norm(res21['control'].array(),t2)
+        y_seq2 = problem.ODE_solver(res21['control'].array(),10*N)
+
+        
+        val21=problem.J(res21['control'].array(),y_seq2[-1],yT,T)
+
+        Y_SEQ = [y_seq,y_seq2,y_seq2]
+        SEQN = [seq_norm,seq_norm2,seq_norm2]
+        SEQ_RES = [res,res21,res21]
+        VAL = [val1,val21,val21]
+        RES = [res22,res23,res24]
+        TAB = [table2,table3,table4]
+        TIME = [t,t2,t2]
+        N2 = [N,10*N,10*N]
+        jump_diff2 = [[],[],[]]
+        state_diff2 = [[],[],[]]
+
+        all_jump_diff21 = [[],[],[]]
+        all_jump_diff22 = [[],[],[]]
+
+        all_state_diff21 = [[],[],[]]
+        all_state_diff22 = [[],[],[]]
+
     #res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt)
     #res3 = problem.penalty_solve(N,m,[1,100,1000,10000])
     all_jump_diff = []
@@ -631,8 +670,7 @@ def jump_difference():
     all_state_diff2 = []
     s = 0
     
-    y_end=problem.ODE_solver(res['control'].array(),N)
-    val1=problem.J(res['control'].array(),y_end[-1],yT,T)
+    
     y2_end,Y = problem.ODE_penalty_solver(res2[-1].x,N,m)
     val2=  problem.J(res2[-1].x[:N+1],y2_end[-1][-1],yT,T)
     
@@ -646,7 +684,7 @@ def jump_difference():
     print val3,val4
     print val3-val4
     
-    seq_norm = l2_norm(res['control'].array(),t)
+    
     for i in range(len(res2)):
         y,Y = problem.ODE_penalty_solver(res2[i].x,N,m)
         
@@ -661,7 +699,8 @@ def jump_difference():
 
         all_state_diff.append((max(state_diff),min(state_diff)))
         all_state_diff2.append(state_diff)
-        plt.plot(t,Y)
+        #plt.plot(t,Y)
+        
 
         err = l2_diff_norm(res['control'].array(),res2[i].x[:N+1],t)/seq_norm
         #res2[i].J_func(res2[i].x)
@@ -676,6 +715,35 @@ def jump_difference():
         table['Jmu(v_mu)-Jmu(v)/Jmu(v)'].append((f_val1-val1)/val1)
 
         s+=res2[i].niter
+        if MORE:
+            for l in range(len(RES)):
+                y,Y = problem.ODE_penalty_solver(RES[l][i].x,N2[l],m)
+                
+               
+                for j in range(len(y)-1):
+                    state_diff2[l].append(abs(y[j+1][0]-Y_SEQ[l][part_start[j+1]]))
+                    #state_diff.append(max(abs(Y-y_seq)))
+                    jump_diff2[l].append(abs(y[j][-1]-y[j+1][0]))
+                all_jump_diff21[l].append((max(jump_diff),min((jump_diff))))
+                all_jump_diff22[l].append(jump_diff)
+
+                all_state_diff21[l].append((max(state_diff),min(state_diff)))
+                all_state_diff22[l].append(state_diff)
+                #plt.plot(t,Y)
+        
+
+                err = l2_diff_norm(SEQ_RES[l]['control'].array(),RES[l][i].x[:N2[l]+1],TIME[l])/SEQN[l]
+                #RES[l][i].J_func(RES[l][i].x)
+        
+                f_val1 = RES[l][i].J_func(RES[l][i].x)
+                f_val2 = problem.Functional(RES[l][i].x[:N2[l]+1],N2[l])
+                print RES[l][i].niter,(f_val2-val1)/val1,all_jump_diff21[l][i][0],err
+
+                TAB[l]['J(vmu)-J(v)/J(v)'].append((f_val2-VAL[l])/VAL[l])
+                TAB[l]['||v_mu-v||'].append(err)
+                TAB[l]['jumps'].append(all_jump_diff21[l][i][0])
+                TAB[l]['Jmu(v_mu)-Jmu(v)/Jmu(v)'].append((f_val1-VAL[l])/VAL[l])
+        
     print all_jump_diff
     print
     #print all_state_diff2
@@ -684,14 +752,16 @@ def jump_difference():
     data = pd.DataFrame(table,index = mu_list)
 
     
-
+    
     #data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'_2.tex')
     print data
+    """
     plt.show()
     plt.plot(t,res['control'].array(),'r--')
     for i in range(len(res2)):
         plt.plot(t,res2[i].x[:N+1])
     plt.show()
+    """
     """
     for i in range(len(res3)):
         err=l2_diff_norm(res['control'].array(),res3[i]['control'].array()[:N+1],t)
@@ -703,15 +773,47 @@ def jump_difference():
         plt.figure()
         plt.plot(np.array(all_jump_diff2[i]))
     """
-    plt.show()
-    plt.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
-    plt.loglog(np.array(mu_list),np.array(table['jumps']),'.')
-    plt.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x')
-    plt.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
-    plt.legend(['J','jump','v','jmu'])
+    #plt.show()
 
-    plt.show()
-    
+    if MORE:
+        plt.figure(figsize=(6,8))
+        ax1 = plt.subplot(211)
+        ax1.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
+        ax1.loglog(np.array(mu_list),np.array(table['jumps']),'.')
+        ax1.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
+        ax1.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
+        ax1.legend(['J','jump','jmu','v'])
+        table = TAB[0]
+        ax2 = plt.subplot(212)
+        ax2.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
+        ax2.loglog(np.array(mu_list),np.array(table['jumps']),'.')
+        ax2.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
+        ax2.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
+        table = TAB[1]
+        plt.figure(figsize=(6,8))
+        ax3 = plt.subplot(211)
+        ax3.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
+        ax3.loglog(np.array(mu_list),np.array(table['jumps']),'.')
+        ax3.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
+        ax3.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
+        ax3.legend(['J','jump','jmu','v'])
+        table = TAB[2]
+        ax4 = plt.subplot(212)
+        ax4.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
+        ax4.loglog(np.array(mu_list),np.array(table['jumps']),'.')
+        ax4.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
+        ax4.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
+        
+        plt.show()
+    else:
+        plt.figure(figsize=(6,8))
+        #plt = plt.subplot(211)
+        plt.loglog(np.array(mu_list),abs(np.array(table['J(vmu)-J(v)/J(v)'])),'--')
+        plt.loglog(np.array(mu_list),np.array(table['jumps']),'.')
+        plt.loglog(np.array(mu_list),abs(np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'])),'x-')
+        plt.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
+        plt.legend(['J','jump','jmu','v'])
+        plt.show()
 def l2_norm(u,t=None):
     #return max(abs(u))
     return np.sqrt(trapz(u**2,t))
