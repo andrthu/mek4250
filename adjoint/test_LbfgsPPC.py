@@ -601,14 +601,15 @@ def jump_difference():
     part_start,_,_,_ = v_comm_numbers(N+1,m)
     
     dt = float(T)/N
-    ls = {"ftol": 1e-12, "gtol": 1-1e-12, "xtol": 0.01, "start_stp": 1}
+    ls = {"ftol": 1e-3, "gtol": 1-1e-1, "xtol": 0.1, "start_stp": 1}
     seq_opt = {'jtol':0,'maxiter':50,'mem_lim':50,"line_search_options":ls}
     
     opt = {'jtol':0,'scale_factor':1,'mem_lim':50,'scale_hessian':False,'maxiter':90,
            "line_search_options":ls}
     res = problem.solve(N,Lbfgs_options=seq_opt)
 
-    table  = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
+    table  = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[],'A rate':['--'],
+              'C rate':['--'],'B rate':['--'] }
     table2 = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
     table3 = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
     table4 = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
@@ -628,8 +629,8 @@ def jump_difference():
     mu_list = [1e1,1e2,1e3,1e4,2e4,5e4,7e4,1e5,2e5,3e5,4e5,5e5,6e5,7e5,8e5,9e5,1e6,1.5e6,2e6,3e6,5e6,7e6,9e6,1e7,1.5e7,2e7,5e7,8e7,1e8,5e8,7e8,1e9,2e9,3e9,7e9,1e10,2e10,3e10,5e10,7e10,1e11,2e11,3e11,4e11,6e11,9e11,1e12,2e12,5e12,8e12,1e13,2e13,5e13,1e14,1e15,1e16]
     #mu_list = [1e5,5e5,1e6,1e7]
     res2 =  problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
-    
-    MORE = True
+    #res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt)
+    MORE = False
     seq_norm = l2_norm(res['control'].array(),t)
     y_end=problem.ODE_solver(res['control'].array(),N)
     val1=problem.J(res['control'].array(),y_end[-1],yT,T)
@@ -715,6 +716,10 @@ def jump_difference():
         table['||v_mu-v||'].append(err)
         table['jumps'].append(all_jump_diff[i][0])
         table['Jmu(v_mu)-Jmu(v)/Jmu(v)'].append((f_val1-val1)/val1)
+        if i>0:
+            table['A rate'].append(np.log(table['J(vmu)-J(v)/J(v)'][i]/table['J(vmu)-J(v)/J(v)'][i-1])/np.log(mu_list[i]/mu_list[i-1]))
+            table['B rate'].append(np.log(table['Jmu(v_mu)-Jmu(v)/Jmu(v)'][i]/table['Jmu(v_mu)-Jmu(v)/Jmu(v)'][i-1])/np.log(mu_list[i]/mu_list[i-1]))
+            table['C rate'].append(np.log(table['||v_mu-v||'][i]/table['||v_mu-v||'][i-1])/np.log(mu_list[i]/mu_list[i-1]))
 
         s+=res2[i].niter
         if MORE:
@@ -751,12 +756,14 @@ def jump_difference():
     #print all_state_diff2
     print float(T)/N
     print val1
+    pd.set_option('display.float_format', '{:.6e}'.format)
     data = pd.DataFrame(table,index = mu_list)
-
     
+    data2 = data.ix[:,['J(vmu)-J(v)/J(v)','||v_mu-v||','A rate','C rate']].head(12)
     
     #data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'_2.tex')
     print data
+    data2.to_latex('report/whyNotEqual/consistency_rate.tex')
     """
     plt.show()
     plt.plot(t,res['control'].array(),'r--')
@@ -776,7 +783,7 @@ def jump_difference():
         plt.plot(np.array(all_jump_diff2[i]))
     """
     #plt.show()
-
+    Legg = ['A','B','C','D']
     if MORE:
         #plt.locator_params(axis='x', nticks=8)
         Legg = ['A','B','C','D']
@@ -786,6 +793,7 @@ def jump_difference():
         ax1.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         ax1.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         ax1.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
+        ax1.set_xlabel(r"$\mu$")
         
         ax1.xaxis.set_ticks(10**np.arange(2,17,2))
         ax1.set_title('N=2')
@@ -795,7 +803,8 @@ def jump_difference():
         ax2.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         ax2.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         ax2.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
-        
+        ax2.set_xlabel(r"$\mu$")
+
         ax2.xaxis.set_ticks(10**np.arange(2,17,2))
         ax2.legend(Legg)
         ax2.set_title('N=10')
@@ -809,7 +818,8 @@ def jump_difference():
         ax3.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         ax3.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         ax3.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
-        
+        ax3.set_xlabel(r"$\mu$")
+
         ax3.set_title('N=2')
         ax3.xaxis.set_ticks(10**np.arange(2,17,2))
         table = TAB[2]
@@ -818,7 +828,8 @@ def jump_difference():
         ax4.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         ax4.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         ax4.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
-        
+        ax4.set_xlabel(r"$\mu$")
+
         ax4.xaxis.set_ticks(10**np.arange(2,17,2))
         ax4.legend(Legg)
         ax4.set_title('N=7')
@@ -831,7 +842,10 @@ def jump_difference():
         plt.loglog(np.array(mu_list),np.array(table['jumps']),'.')
         plt.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'x-')
         plt.loglog(np.array(mu_list),np.array(table['||v_mu-v||']))
+        plt.loglog()
         plt.legend(Legg)
+        plt.plot(np.array(mu_list),4e-5/(np.array(mu_list)**2))
+        plt.plot(np.array(mu_list),1./(np.array(mu_list)))
         plt.show()
 def l2_norm(u,t=None):
     #return max(abs(u))

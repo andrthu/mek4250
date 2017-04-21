@@ -211,7 +211,7 @@ class PararealOCP(OptimalControlProblem):
         initial_counter = self.counter.copy()
         for i in range(len(my_list)):
         
-            J,grad_J = self.generate_reduced_penalty2(dt,N,m,my_list[i])
+            J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
 
             self.update_Lbfgs_options(options)
             Lbfgsopt = self.Lbfgs_options

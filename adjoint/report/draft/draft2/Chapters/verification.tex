@@ -245,20 +245,50 @@ The interpretation of the above limit, is that solving the penalized problem wit
 We want to compare the solution we get by decomposing and then applying the penalty method on problem (\ref{con J}-\ref{con E}) with the solution we get by solving the undecomposed problem. To do this we discretize (\ref{con J}-\ref{con E}) using two different time steps. First we let $\Delta t = 10^{-2}$ and apply the penalty method for $N=2$ and $N=10$ decompositions, we then let $\Delta t = 10^{-3}$ and test the penalty method on $N=2$ and $N=7$ decompositions. For both time steps, the Crank-Nicolson will be used to discretize the state and adjoint equations. We use different metrics to compare the non-penalized and penalized solutions, so that we better see how the solution of the penalized problem behaves when we solve it for an increasing sequence of $\mu$ values. We define the metrics as follows:
 \begin{align*}
 \textrm{Realtive objective function differnce:}\quad A &= \frac{\hat{J}(v_{\mu})-\hat{J}(v)}{\hat{J}(v)}\\
-\textrm{Realtive penalized objective function differnce:}\quad B &= \frac{\hat{J}_{\mu}(v_{\mu})-\hat{J}_{\mu}(v)}{\hat{J}_{\mu}(v)}\\
+\textrm{Realtive penalized objective function differnce:}\quad B &= \frac{\hat{J}_{\mu}(v)-\hat{J}_{\mu}(v_{\mu})}{\hat{J}_{\mu}(v)}\\
 \textrm{Relative control $L^2$-norm difference:}\quad C&=\frac{||v_{\mu}-v||_ {L^2}}{||v||_{L^2}} \\
 \textrm{Maximal jump in decomposed state equation:}\quad D&= \sup_i\{y_{k_i}^i-y_{k_i}^{i+1}\}\\
 \end{align*}
-The results of the above detailed experiment are presented in figure \ref{Cons1_fig} and \ref{Cons2_fig}.
-\begin{figure}[h]
+Notice that both $A$ and $B$ should be grater than $0$, since $v$ and $v_{\mu}$ are the minimizers of $\hat J$ and $\hat J_ {\mu}$. The measure of jumps in the state equation $D$ is added to check that the penalty solution approaches a feasible solution in context of the continuity constraints (\ref{Extra constraints}). The results of the above detailed experiment are presented through logarithmic plots in figure \ref{Cons1_fig} and \ref{Cons2_fig}. 
+\\
+\\
+\begin{figure}[!h]
 \centering
 \includegraphics[scale=0.5]{consistency1.png}
-\caption{Consistency}
+\caption{Logarithmic plot showing how solution of penalty method applied to problem (\ref{con J}-\ref{con E}) develops for $\Delta t = 10^{-2}$.}
 \label{Cons1_fig}
 \end{figure}
-\begin{figure}[h]
+\begin{figure}[!h]
 \centering
 \includegraphics[scale=0.5]{consistency2.png}
-\caption{Consistency}
+\caption{Same as figure \ref{Cons1_fig}, only now $\Delta t = 10^{-3}$.}
 \label{Cons2_fig}
 \end{figure}
+The plots in figure \ref{Cons1_fig} and \ref{Cons2_fig} all show a similar picture, and we observe that all measures decrease when the penalty parameter is increased. Still there are several parts of the plots worthy of note. The measure $A$ related to the unpenalised objective function is the value that converges to zero the fastest. If we look at the vales of $A$ before the machine precision is reached we see that $A$ is proportional to $\frac{C}{\mu^2}$. The convergence rate of $A$ for $\Delta t=10^{-2}$ and $N=2$ is shown in table \ref{Cosn_rate_table} together with the rate convergence rate of $C$. $C$ and the other measures converge to zero at a rate of one, however we see that the relative error between the controls $v$ and $v_{\mu}$ $C$ stops to decrease long before the machine precision is reached. It seems that this barrier is hit around the same time as $A$ approaches machine precision. The reason for this probably is that small changes in the control $v_{mu}$ no longer registers in $\hat J_{\mu}$, and it is therefore difficult to find an appropriate step length in the line search method.
+\\
+\\
+$B$ and $D$ on the other hand continue to decrease steadily towards zero, even after $A$ has hit machine precision. The $B$ and $C$ metrics are both related to the $\frac{\mu }{2}\sum_{i=1}^{N-1}(y^i(T_{i})-\lambda_i)^2$, which is the part that enforces the continuity constraints (\ref{Extra constraints}). This means that after a certain point, the penalty method only improves the $\Lambda$ part of the control, while $v$  
+\begin{table}[!h]
+\centering
+\caption{Convergence rates for $\Delta t=10^{-2}$ and $N=2$.}
+\label{Cosn_rate_table}
+\begin{tabular}{lrrll}
+\toprule
+{} &  $\frac{J(v_{\mu})-J(v)}{J(v)}$ &   $||v_{\mu}-v||$ &        A rate &        C rate \\
+\midrule
+1.000000e+01 &      4.105697e-07 & 1.790231e-03 &            -- &            -- \\
+1.000000e+02 &      4.119052e-09 & 1.793140e-04 & -1.998590 & -0.9992948 \\
+1.000000e+03 &      4.120272e-11 & 1.793401e-05 & -1.999871 & -0.9999368 \\
+1.000000e+04 &      4.137632e-13 & 1.796793e-06 & -1.998174 & -0.9991795 \\
+2.000000e+04 &      1.058008e-13 & 9.076756e-07 & -1.967455 & -0.9851756 \\
+5.000000e+04 &      1.789909e-14 & 3.733858e-07 & -1.939131 & -0.9694245 \\
+7.000000e+04 &      7.968773e-15 & 2.444327e-07 & -2.405011 & -1.259160 \\
+1.000000e+05 &      4.045685e-15 & 1.730018e-07 & -1.900553 & -0.9690555 \\
+2.000000e+05 &      4.045685e-15 & 1.721746e-07 &  0.000000 & -0.0069153 \\
+3.000000e+05 &      3.923088e-15 & 1.719606e-07 & -0.007589 & -0.0030671 \\
+4.000000e+05 &      3.800492e-15 & 1.718652e-07 & -0.110360 & -0.0019278 \\
+5.000000e+05 &      3.677895e-16 & 4.545076e-08 & -10.46580 & -5.960652e \\
+\bottomrule
+\end{tabular}
+
+\end{table}
