@@ -628,8 +628,8 @@ def jump_difference():
     mu_list = [N,2*N,5*N,10*N,50*N,70*N,200*N,2000*N,3000*N,4000*N,5000*N,6000*N,10000*N,100000*N,200000*N,1000000*N,1e11,1e12,1e13,1e14,1e16]
     mu_list = [1e1,1e2,1e3,1e4,2e4,5e4,7e4,1e5,2e5,3e5,4e5,5e5,6e5,7e5,8e5,9e5,1e6,1.5e6,2e6,3e6,5e6,7e6,9e6,1e7,1.5e7,2e7,5e7,8e7,1e8,5e8,7e8,1e9,2e9,3e9,7e9,1e10,2e10,3e10,5e10,7e10,1e11,2e11,3e11,4e11,6e11,9e11,1e12,2e12,5e12,8e12,1e13,2e13,5e13,1e14,1e15,1e16]
     #mu_list = [1e5,5e5,1e6,1e7]
-    res2 =  problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
-    #res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt)
+    #res2 =  problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
+    res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt)
     MORE = False
     seq_norm = l2_norm(res['control'].array(),t)
     y_end=problem.ODE_solver(res['control'].array(),N)
@@ -708,7 +708,7 @@ def jump_difference():
         err = l2_diff_norm(res['control'].array(),res2[i].x[:N+1],t)/seq_norm
         #res2[i].J_func(res2[i].x)
         
-        f_val1 = res2[i].J_func(res2[i].x)
+        f_val1 = problem.Penalty_Functional(res2[i].x,N,m,mu_list[i])#res2[i].J_func(res2[i].x)
         f_val2 = problem.Functional(res2[i].x[:N+1],N)
         print res2[i].niter,(f_val2-val1)/val1,all_jump_diff[i][0],err
 

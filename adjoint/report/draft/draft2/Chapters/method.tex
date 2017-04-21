@@ -1,5 +1,5 @@
 \chapter{Parareal BFGS preconditioner}
-In the previous chapter we saw that the parareal scheme allows us to parallelize time dependent differential equations in their temporal direction. In this chapter we will look at how to parallelize optimal control problems with time dependent differential equation constraints in temporal direction.  
+In the previous chapter we saw that the parareal scheme allows us to parallelize time dependent differential equations in their temporal direction. In this chapter we will look at how to parallelize optimal control problems with time dependent differential equation constraints in temporal direction. 
 \section{Optimal control problem with time-dependent DE constraints on a decomposed time interval}
 Before we start to decompose the time interval, let us again state the general problem that we want to solve:
 \begin{align}
@@ -25,7 +25,7 @@ Assuming that the decomposed state equations also can be uniquely resolved $\for
 &y^{i-1}(T_i)=\lambda_i \ \ \forall i \label{constrained reduced}
 \end{align} 
 \section{The penalty method} \label{penalty_sec}
-To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained reduced}), we will use the penalty method, which transforms constrained problems into a series of unconstrained problems by incorporating the constraints into the functional. Incorporating the constraints means penalizing not satisfying the constraints. To use the penalty method on (\ref{constrained reduced j}-\ref{constrained reduced}) we first introduce the initial conditions to the decomposed state equations as variables $\Lambda = (\lambda_1,..,\lambda_{N-1})^T$, and then define the penalized objective function $\hat J_{\mu}$:
+To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained reduced}), we will use the penalty method\cite{nocedal2006numerical}, which transforms constrained problems into a series of unconstrained problems by incorporating the constraints into the functional. Incorporating the constraints means penalizing not satisfying the constraints. To use the penalty method on (\ref{constrained reduced j}-\ref{constrained reduced}) we first introduce the initial conditions to the decomposed state equations as variables $\Lambda = (\lambda_1,..,\lambda_{N-1})^T$, and then define the penalized objective function $\hat J_{\mu}$:
 \begin{align}
 \hat J_{\mu}(v,\Lambda) = \hat J(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2 \label{pen_obj_J}
 \end{align}
@@ -235,7 +235,7 @@ For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the 
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kQ\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method2}
 \end{align}
 For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. Before we write up what $Q_ {\Lambda}$ is, we need to revisit the algebraic formulation of the Parareal scheme defined in chapter \ref{parareal_chap}.
-\subsection{Virtual problem}
+\subsection{Virtual problem} \label{vir_sec}
 In order for us to be able to derive the preconditioner from \cite{maday2002parareal}, we define the virtual optimal control problem. In the virtual control problem the objective function is only the penalty part of (\ref{pen_obj_J}). The problem was already written up in section \ref{algebraic_sec}, let us however restate it here:
 \begin{align}
 &\min_{\Lambda}\bold{J}(\Lambda,y) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2 \label{virtual_func} \\
@@ -357,7 +357,7 @@ Q = \left[ \begin{array}{cc}
 	\end{array} \right]
 \end{align}  
 We have derived $Q$ by trying to find a good preconditioner for the fix point iteration for solving $\hat {\bold J}'(\Lambda)=0$. Whether $\bar{M}^{-1}\bar{M}^{-*}$ has anything to do with the inverse Hessian of $\hat J'$ is however not clear. It turns out that $M^*M$ actually is related to the Hessian of the virtual problem, which we will show in the next subsection.
-\subsection{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian}
+\subsection{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian} 
 In order for us to make it easier to differentiate the gradient of the reduced objective function (\ref{reduced_viritual}), we try to write up $\hat{\bold J}$ on vector notation. Even though the propagator $\bold F$ is generally defined, and might very well be non-linear, we will now and for the rest of this subsection assume that the propagator is linear. Let us first define the vector $x(\Lambda)\in\mathbb{R}^{N-1}$ as:
 \begin{align}
 x(\Lambda)= \left( \begin{array}{c}  
@@ -578,7 +578,7 @@ Now summing up the terms $\nabla^2 x_i(\Lambda)x_i(\Lambda)$ would yield the dia
 As we have seen the Hessian of the non-linear problem consists of two parts. One is the linearised forward model multiplied with its adjoint, while the second part is a diagonal matrix related to the second derivative of the propagator $\bold F_{\Delta T}$, and the residuals $\lambda_i-\bold F_{\Delta T}$. The first part of $\nabla^2 \bold{\hat{J}}$ is analogue to the Hessian of the linear problem. It is symmetric positive definite, and taking its inverse corresponds to first applying the backwards model, and then the forward model. What makes the Hessian of the non-linear problematic is therefore its second term. The first issue with the diagonal matrix $D(\Lambda)$, is how to calculate $\bold F_{\Delta T}''$. Another issue is that we can not guarantee that the sum of $M(\Lambda)^TM(\Lambda)$ and $D(\Lambda)$ is a positive matrix, and the same problem would arise in a coarse approximation of $\nabla^2 \bold{\hat{J}}$. The lack of positivity is a problem since we want to use the coarse approximation as an initial inverted Hessian approximation in the BFGS-algorithm.
 \\
 \\
-A way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constrained problem, is simply to ignore it. This leaves us with the only the $M(\Lambda)^TM(\Lambda)$, which we know how to deal with. Ignoring the term depending on the second derivative and the residual is actually a known strategy for for solving non-linear least square problems. Details can be found in \cite{nocedal2006numerical}. A justification for this approach, is that at least in instances where we are close to a solution, the $\lambda_i-\bold F_{\Delta T}$ terms will be close to zero, and the $M(\Lambda)^TM(\Lambda)$ term will therefore dominate the Hessian. Ignoring the $D(\Lambda)$ term means that we can define an inverse Hessian approximation based on a coarse propagator $\bold G_{\Delta T}$ in the same way as we did for the problem with linear state equation constraints. This means that we define a matrix $\bar M(\Lambda)$:
+A way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constrained problem, is simply to ignore it. This leaves us with the $M(\Lambda)^TM(\Lambda)$ term, which we know how to deal with. Ignoring the term depending on the second derivative and the residual is actually a known strategy for for solving non-linear least square problems. Details can be found in \cite{nocedal2006numerical}. A justification for this approach, is that at least in instances where we are close to a solution, the $\lambda_i-\bold F_{\Delta T}$ terms will be close to zero, and the $M(\Lambda)^TM(\Lambda)$ term will therefore dominate the Hessian. Ignoring the $D(\Lambda)$ term means that we can define an inverse Hessian approximation based on a coarse propagator $\bold G_{\Delta T}$ in the same way as we did for the problem with linear state equation constraints. This means that we define a matrix $\bar M(\Lambda)$:
 \begin{align*}
 \bar M(\Lambda) &= \left[ \begin{array}{cccc}
    \mathbbold{1} & 0 & \cdots & 0 \\  
@@ -587,6 +587,7 @@ A way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constr
    0 &\cdots &-\bold{G}_{\Delta T}'(\lambda_{N-1}) & \mathbbold{1}  \\
    \end{array}  \right]
 \end{align*}
+The term $\bar{M}(\Lambda)^{-1}\bar{M}(\Lambda)^{-*}$ can then be used in an approximation of the inverse Hessian, as detailed in section \ref{vir_sec}.
 \subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
 Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
 \begin{align}

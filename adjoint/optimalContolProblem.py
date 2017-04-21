@@ -576,7 +576,7 @@ class OptimalControlProblem():
         initial_counter = self.counter.copy()
 
         for i in range(len(my_list)):
-            
+            #"""
             def J(u):   
                 self.counter[0]+=1
                 return self.Penalty_Functional(u,N,m,my_list[i])
@@ -584,18 +584,8 @@ class OptimalControlProblem():
             def grad_J(u):
                 self.counter[1]+=1
                 return self.Penalty_Gradient(u,N,m,my_list[i])
-                """
-                l,L = self.adjoint_penalty_solver(u,N,m,my_list[i])
-
-                g = np.zeros(len(u))
-                Nc = len(u) - m
-                g[:Nc+1]=self.grad_J(u[:Nc+1],L,dt)
-
-                for j in range(m-1):
-                    g[Nc+1+j]= l[j+1][0] - l[j][-1]
-                    
-                return g
-                """
+                #"""
+                
             #J,grad_J = self.generate_reduced_penalty(dt,N,m,my_list[i])
             if algorithm=='my_lbfgs':
                 self.update_Lbfgs_options(Lbfgs_options)
