@@ -1,5 +1,8 @@
 \chapter{Parareal BFGS preconditioner}
 In the previous chapter we saw that the parareal scheme allows us to parallelize time dependent differential equations in their temporal direction. In this chapter we will look at how to parallelize optimal control problems with time dependent differential equation constraints in temporal direction. 
+\\
+\\
+The chapter consists of three parts. In the first part we decompose the time domain as we did in section \ref{Para_dcomp_sec}, only now in the context of control problems with time-dependent DE constraints. Decomposing the time interval leads to a reformulation of the control problem that includes extra constraints on the state equation. How to handle these new constraints are dealt with in the second part. We use the same approach as \cite{maday2002parareal} namely the penalty method. This is a simplified version of the augmented Lagrangian approach used in \cite{rao2016time} for parallel in time 4d variational data assimilation. 
 \section{Optimal control problem with time-dependent DE constraints on a decomposed time interval}
 Before we start to decompose the time interval, let us again state the general problem that we want to solve:
 \begin{align}
