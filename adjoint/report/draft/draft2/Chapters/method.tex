@@ -604,7 +604,7 @@ Q = \left[ \begin{array}{cc}
 	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
 	\end{array} \right] 
 \end{align*}
-$Q$ is a preconditioner for optimization algorithms, and is supposed to be applied to the the gradient $\nabla \hat J_{\mu}$ at  
+$Q$ is a preconditioner for optimization algorithms, and is supposed to be applied to the the gradient $\nabla \hat J_{\mu}(v,\Lambda)\in\mathbb{R}^{N+n}$ at every iteration. We see that $Q$ only effects the last part of the gradient, which is the $\Lambda$ part of the gradient. One important thing of note about $Q$, is that when $N=2$ both $\bar M$ and $\bar M^*$ are the identity, which means that for $N=2$, $Q=\mathbbold{1}$. 
 \subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
 Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
 \begin{align}
