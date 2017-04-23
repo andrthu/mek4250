@@ -357,7 +357,7 @@ $\bar{M}^{-1}\bar{M}^{-*}$ could then be thought of as the preconditioner of the
 Q = \left[ \begin{array}{cc}
 	\mathbbold{1} & 0 \\
 	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
-	\end{array} \right]
+	\end{array} \right] \label{Q_PC}
 \end{align}  
 We have derived $Q$ by trying to find a good preconditioner for the fix point iteration for solving $\hat {\bold J}'(\Lambda)=0$. Whether $\bar{M}^{-1}\bar{M}^{-*}$ has anything to do with the inverse Hessian of $\hat J'$ is however not clear. It turns out that $M^*M$ actually is related to the Hessian of the virtual problem, which we will show in the next subsection.
 \subsection{$\bar{M}^{*}\bar{M}$ as an approximation of the Hessian} 
@@ -591,6 +591,20 @@ A way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constr
    \end{array}  \right]
 \end{align*}
 The term $\bar{M}(\Lambda)^{-1}\bar{M}(\Lambda)^{-*}$ can then be used in an approximation of the inverse Hessian, as detailed in section \ref{vir_sec}.
+\subsection{Summary and remarks}
+We end this chapter with a short summary of section \ref{pc sec} and with some remarks on the proposed preconditioner $Q$ in (\ref{Q_PC}). The starting point of the section is the decomposed optimal control problem with time dependent DE constraints on the form:
+\begin{align}
+&\min_{(v,\Lambda)}\hat J_{\mu}(v,\Lambda) =\hat{J}(v)+ \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2  \\
+&\textrm{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 
+\end{align}
+We have presented a the preconditoner $Q\in\mathbb{R}^{n+N\times n+N}$, where $n+1$ is the dimension of the space where the discretized control variable $v$ lives, while $N$ is the number of decomposed subintervals. $Q$ was defined in (\ref{Q_PC}) based on the matrices $\bar M,\bar M^*\in\mathbb{R}^{N-1\times N-1}$, and on block form $Q$ reads as the following:
+\begin{align*}
+Q = \left[ \begin{array}{cc}
+	\mathbbold{1} & 0 \\
+	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
+	\end{array} \right] 
+\end{align*}
+$Q$ is a preconditioner for optimization algorithms, and is supposed to be applied to the the gradient $\nabla \hat J_{\mu}$ at  
 \subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
 Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
 \begin{align}
