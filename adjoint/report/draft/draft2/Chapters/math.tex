@@ -143,13 +143,19 @@ Since $L_v[\cdot,\phi]$ is symmetric, $E_v^*=E_v$, and strongly formulated, $E_v
 &= p+v. 
 \end{align*} 
 \end{proof}
-Evaluating the gradient of our example problem can now be boiled down to the following procedure:
+Evaluating the gradient of our example problem can now be boiled down to the following three steps:
 \begin{align*}
 1.\quad & \textrm{Solve the state equation for $y$}\\
 2.\quad & \textrm{Use $y$ to solve the adjoint equation for $p$}\\
 3.\quad & \textrm{Insert $p$ and control $v$ into gradient formula (\ref{exsample_grad})}
 \end{align*}
-Looking at the above procedure for gradient evaluation, we can see why the adjoint approach is computationally efficient. No matter the problem size, we only need to solve two ODEs to find the gradient. In comparison evaluating the gradient using finite difference for example, would force us to solve the state equation one time for each component of the control. In a setting where the control is the source term of the state equation, using finite difference would mean that the number of ODEs we would have to solve would be equal to the number of time steps we used do discretize the problem.
+To see why the above procedure is computationally effective, let us compare it with the finite difference approach to evaluating the gradient. Using finite difference we can find an approximation of the directional derivative of $(\hat J'(v),h)_V$ in direction $h\in V$, by choosing a small $\epsilon>0$ and setting:
+\begin{align*}
+(\hat J'(v), h)_V\approx\frac{\hat J(v+\epsilon h)-\hat J(v)}{\epsilon}
+\end{align*} 
+Looking at the above procedure for gradient evaluation, we can see why the adjoint approach is computationally efficient. No matter the problem size, we only need to solve two ODEs to find the gradient. One alternative to the adjoint approach is to find the gradient using finite difference.  In comparison evaluating the gradient using finite difference for example, would force us to solve the state equation one time for each component of the control. In a setting where the control is the source term of the state equation, using finite difference would mean that the number of ODEs we would have to solve would be equal to the number of time steps we used do discretize the problem.
+\subsection{Exact solution of the example problem}
+
 \section{Optimization algorithms}
 Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here we will only mention line search methods that are useful to me in the thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
 \subsection{Line search methods and steepest descent}

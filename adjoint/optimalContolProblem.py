@@ -1014,6 +1014,24 @@ class OptimalControlProblem():
             results.append(res)
         return results
 
+    def simple_problem_exact_solution(self,N):
+        
+        T = self.T
+        yT = self.yT
+        a = self.a
+        y0 = self.y0
+        
+        D = 1. + (np.exp(a*T)**2-1)/(2.*a)
+
+        C = (yT*np.exp(a*T)-y0*np.exp(a*T)**2)/D
+
+        u_f = lambda x : C*np.exp(a*(-t))
+        
+
+        t = np.linspace(0,T,N+1)
+        u = u_f(t)
+
+        return u,t,u_f
 
         
 class Problem1(OptimalControlProblem):
