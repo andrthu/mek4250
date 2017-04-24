@@ -22,7 +22,7 @@ def check_exact():
     u0 = res.x[-1]
 
     u_test = lambda x : u0*np.exp(a*(T-t))
-    print max(abs(res.x-u_test(t))),max(abs(res.x-ue))
+    print max(abs(res.x[1:-1]-ue[1:-1]))
     plt.plot(t,ue,'--')
     plt.plot(t,res.x)
     #plt.plot(t,u_test(t),'.')

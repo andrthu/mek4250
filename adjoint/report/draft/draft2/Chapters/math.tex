@@ -23,7 +23,7 @@ The state equation $E(y,v)=0$ is a linear, first order equation with the control
 \begin{align}
 \left\{
      \begin{array}{lr}
-       	y'(t)=ay(t) + v(t) \ \textrm{for } \ t\in(0,T),\\
+       	y'(t)=ay(t) + v(t) \ \textrm{for } \quad t\in(0,T),\\
        	y(0)=y_0.
      \end{array}
    \right. \label{exs_E}
@@ -65,10 +65,10 @@ Evaluating the gradient for a control variable $v\in V$ typically requires solvi
 We want to derive the gradient of problem (\ref{exs_J}-\ref{exs_E}), and in order to do so, we need the adjoint equation of the problem, which we now state in the theorem below, followed by its derivation.
 \begin{theorem}
 The adjoint equation of the problem (\ref{exs_J}-\ref{exs_E}) is:
-\begin{align*}     
--p'(t) &= ap(t) \\
-p(T) &= \alpha(y(T)-y^T)     
-\end{align*}
+\begin{align}     
+-p'(t) &= ap(t) \label{exs_adjoint_eq}\\
+p(T) &= \alpha(y(T)-y^T)   \label{exs_adjoint_ic}  
+\end{align}
 \end{theorem}
 \begin{proof}
 Before we calculate the different terms used to derive the adjoint equation, we want to fit our ODE into an expression $E$. We do this by writing up the weak formulation of the equation:
@@ -138,24 +138,74 @@ J_v &= v \\
 E_v &= L_v[\cdot,\phi] = -(\cdot,\phi).
 \end{align*}
 Since $L_v[\cdot,\phi]$ is symmetric, $E_v^*=E_v$, and strongly formulated, $E_v=-1$. By inserting relevant terms into (\ref{gradient}), we get the gradient:
-\begin{align*}
+\begin{align}
 \hat{J}'(v)&=-E_v^*p + J_v \\
-&= p+v. 
-\end{align*} 
+&= p+v. \label{exs_grad}
+\end{align} 
 \end{proof}
 Evaluating the gradient of our example problem can now be boiled down to the following three steps:
 \begin{align*}
-1.\quad & \textrm{Solve the state equation for $y$}\\
-2.\quad & \textrm{Use $y$ to solve the adjoint equation for $p$}\\
-3.\quad & \textrm{Insert $p$ and control $v$ into gradient formula (\ref{exsample_grad})}
+1.\quad & \textrm{Solve the state equation for $y$.}\\
+2.\quad & \textrm{Use $y$ to solve the adjoint equation for $p$.}\\
+3.\quad & \textrm{Insert $p$ and control $v$ into gradient formula (\ref{exsample_grad}).}
 \end{align*}
-To see why the above procedure is computationally effective, let us compare it with the finite difference approach to evaluating the gradient. Using finite difference we can find an approximation of the directional derivative of $(\hat J'(v),h)_V$ in direction $h\in V$, by choosing a small $\epsilon>0$ and setting:
+To see why the above procedure is computationally effective, let us compare it with the finite difference approach to evaluating the gradient. Using finite difference we can find an approximation of the directional derivative $(\hat J'(v),h)_V$ in direction $h\in V$, by choosing a small $\epsilon>0$ and setting:
+\begin{align}
+(\hat J'(v), h)_V\approx\frac{\hat J(v+\epsilon h)-\hat J(v)}{\epsilon} \label{FD_approach}
+\end{align} 
+To calculate the above expression, we need to evaluate the objective function at $v+\epsilon h$ and $v$. Since objective function evaluation requires the solution of the state equation, finding the directional derivative of $\hat J$ in a direction $h$ involves solving two ODEs. We are however interested in the gradient of $\hat J$, not its directional derivatives. To find $\hat J'(v)$ we calculate (\ref{FD_approach}) for all unit vectors in $V$. This assumes that $V$ is a finite space, which is always true in the discrete case. If we now look at the discrete case and assume that $V=\mathbb{R}^n$ we can write up a recipe for finding $\hat J'(v)$ using finite difference. Let $e_i$ denote the i-th unit vector of $\mathbb{R}^n$. $\hat J'(v)$ can then be found in the following way:
 \begin{align*}
-(\hat J'(v), h)_V\approx\frac{\hat J(v+\epsilon h)-\hat J(v)}{\epsilon}
-\end{align*} 
-Looking at the above procedure for gradient evaluation, we can see why the adjoint approach is computationally efficient. No matter the problem size, we only need to solve two ODEs to find the gradient. One alternative to the adjoint approach is to find the gradient using finite difference.  In comparison evaluating the gradient using finite difference for example, would force us to solve the state equation one time for each component of the control. In a setting where the control is the source term of the state equation, using finite difference would mean that the number of ODEs we would have to solve would be equal to the number of time steps we used do discretize the problem.
+1.\quad & \textrm{Evaluate $\hat J(v)$.}\\
+2.\quad & \textrm{Evaluate $\hat J(v+\epsilon e_i)$ for $i=1,...,n$. }\\
+3.\quad & \textrm{Set the i-th component of $\hat J'(v)$ to be $\frac{\hat J(v+\epsilon e_i)-\hat J(v)}{\epsilon}$.}
+\end{align*}
+To execute the above steps, we need to solve the state equation for $n+1$ different control variables. In comparison finding $\hat J'(v)$ using the adjoint approach only requires us to solve the state and adjoint equations once, independently of the dimension of $V$. For finite difference the computational cost of one gradient evaluation therfore depends linearly on the number of components in the control variable $v$, while the computational cost of the adjoint approach is independent of the size of $v$.
 \subsection{Exact solution of the example problem}
-
+It turns out that we can find the exact solution of problem (\ref{exs_J}-\ref{exs_J}) by utilizing the adjoint equation (\ref{exs_adjoint_eq}-\ref{exs_adjoint_ic}) and the gradient of the reduced objective function (\ref{exs_grad}). Finding an exact solution to our example problem will be useful for us in chapter \ref{Verification chapter}, where we will be testing verifying different aspects of our algorithm. The derivation of the solution is based on two key observations. The first observation is a relation between the optimal control $\bar v$ and the adjoint $p$, which is a result from the trivial fact that $\hat J'(\bar v)=0$ is a necessary condition for $\bar v$ being a minimizer of $\hat J$. Inserting expression (\ref{exs_grad}) into $\hat J'(\bar v)=0$ yields:
+\begin{align}
+\bar v(t)=-p(t). \label{obs1}
+\end{align} 
+The second observation concerns the solution of the adjoint equation (\ref{exs_adjoint_eq}-\ref{exs_adjoint_ic}). Given a state $y(t)$, the solution of the adjoint equation is:
+\begin{align}
+p(t) = \alpha(y(T)-y^T)e^{a(T-t)} = \omega e^{-at}. \label{obs2}
+\end{align}
+Combining observation (\ref{obs1}) with observation (\ref{obs2}) suggests that a minimizer $\bar v$ of $\hat J$ can be written on the form:
+\begin{align}
+\bar v = C_0 e^{-at}. \label{v_ansatz}
+\end{align}
+It turns out that plugging anstatz (\ref{v_ansatz}) into the state equation, and then using the resulting state to solve the adjoint equation makes us able to find the solution of our example problem. The solution is stated in proposition \ref{exact_prop} followed its derivation.
+\begin{proposition} \label{exact_prop}
+Assume $a\neq0$. Then the solution of optimal control problem(\ref{exs_J}-\ref{exs_J}) is the following function:
+\begin{align}
+\bar v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT})}e^{-at}
+\end{align}
+\end{proposition}
+\begin{proof}
+We start the proof by writing up state state equation (\ref{exs_E}) with (\ref{v_ansatz}) as source term:  
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	y'(t)=ay(t) + C_0 e^{-at}\quad \textrm{for } \ t\in(0,T),\\
+       	y(0)=y_0.
+     \end{array}
+   \right. 
+\end{align*}
+This is a first order linear ODE with solution:
+\begin{align}
+y(t) = y_0e^{at} +\frac{C_0}{2a}(e^{at}-e^{-at}) \label{C_state}
+\end{align}
+If we insert the state (\ref{C_state}) into the formula for the adjoint (\ref{obs2}), we can express the adjoint $p(t)$ in terms of the constant $C_0$:
+\begin{align}
+p(t) &=  \alpha(y(T)-y^T)e^{a(T-t)} \\
+&= \alpha e^{aT}(y_0e^{aT} +\frac{C_0}{2a}(e^{aT}-e^{-aT})-y^T)e^{-at} \label{C_adjoint}
+\end{align}
+The last step is to $v(t) =C_0 e^{-at}$ and $p(t)$ from (\ref{C_adjoint}) into observation (\ref{obs1}) and then solve for $C_0$:
+\begin{align*}
+v(t)=-p(t) &\iff C_0 e^{-at} = -\alpha e^{aT}(y_0e^{aT} +\frac{C_0}{2a}(e^{aT}-e^{-aT})-y^T)e^{-at}\\
+&\iff C_0(1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT})) = \alpha e^{aT}(y^T-y_0e^{aT}) \\
+&\iff C_0 = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT})}
+\end{align*}
+\end{proof} 
 \section{Optimization algorithms}
 Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here we will only mention line search methods that are useful to me in the thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
 \subsection{Line search methods and steepest descent}
