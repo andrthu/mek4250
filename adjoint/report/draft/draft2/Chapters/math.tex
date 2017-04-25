@@ -161,7 +161,7 @@ To calculate the above expression, we need to evaluate the objective function at
 \end{align*}
 To execute the above steps, we need to solve the state equation for $n+1$ different control variables. In comparison finding $\hat J'(v)$ using the adjoint approach only requires us to solve the state and adjoint equations once, independently of the dimension of $V$. For finite difference the computational cost of one gradient evaluation therfore depends linearly on the number of components in the control variable $v$, while the computational cost of the adjoint approach is independent of the size of $v$.
 \subsection{Exact solution of the example problem}
-It turns out that we can find the exact solution of problem (\ref{exs_J}-\ref{exs_J}) by utilizing the adjoint equation (\ref{exs_adjoint_eq}-\ref{exs_adjoint_ic}) and the gradient of the reduced objective function (\ref{exs_grad}). Finding an exact solution to our example problem will be useful for us in chapter \ref{Verification chapter}, where we will be testing verifying different aspects of our algorithm. The derivation of the solution is based on two key observations. The first observation is a relation between the optimal control $\bar v$ and the adjoint $p$, which is a result from the trivial fact that $\hat J'(\bar v)=0$ is a necessary condition for $\bar v$ being a minimizer of $\hat J$. Inserting expression (\ref{exs_grad}) into $\hat J'(\bar v)=0$ yields:
+It turns out that we can find the exact solution of problem (\ref{exs_J}-\ref{exs_J}) by utilizing the adjoint equation (\ref{exs_adjoint_eq}-\ref{exs_adjoint_ic}) and the gradient of the reduced objective function (\ref{exs_grad}). Finding an exact solution to our example problem will be useful for us in chapter \ref{Verification chapter}, where we will be testing and verifying different aspects of our algorithm. The derivation of the solution is based on two key observations. The first observation is a relation between the optimal control $\bar v$ and the adjoint $p$, which is a result from the trivial fact that $\hat J'(\bar v)=0$ is a necessary condition for $\bar v$ being a minimizer of $\hat J$. Inserting expression (\ref{exs_grad}) into $\hat J'(\bar v)=0$ yields:
 \begin{align}
 \bar v(t)=-p(t). \label{obs1}
 \end{align} 
@@ -169,19 +169,19 @@ The second observation concerns the solution of the adjoint equation (\ref{exs_a
 \begin{align}
 p(t) = \alpha(y(T)-y^T)e^{a(T-t)} = \omega e^{-at}. \label{obs2}
 \end{align}
-Combining observation (\ref{obs1}) with observation (\ref{obs2}) suggests that a minimizer $\bar v$ of $\hat J$ can be written on the form:
+Combining observation (\ref{obs1}) with observation (\ref{obs2}) suggests that a minimizer $\bar v$ of $\hat J$ should be on the form:
 \begin{align}
 \bar v = C_0 e^{-at}. \label{v_ansatz}
 \end{align}
-It turns out that plugging anstatz (\ref{v_ansatz}) into the state equation, and then using the resulting state to solve the adjoint equation makes us able to find the solution of our example problem. The solution is stated in proposition \ref{exact_prop} followed its derivation.
+It turns out that plugging anstatz (\ref{v_ansatz}) into the state equation, and then using the resulting state to solve the adjoint equation makes us able to find the solution of our example problem. The solution is stated in proposition \ref{exact_prop} followed by its derivation.
 \begin{proposition} \label{exact_prop}
-Assume $a\neq0$. Then the solution of optimal control problem(\ref{exs_J}-\ref{exs_J}) is the following function:
+Assume $a\neq0$ and $\alpha>0$. Then the solution of optimal control problem(\ref{exs_J}-\ref{exs_J}) is the following function:
 \begin{align}
 \bar v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT})}e^{-at}
 \end{align}
 \end{proposition}
 \begin{proof}
-We start the proof by writing up state state equation (\ref{exs_E}) with (\ref{v_ansatz}) as source term:  
+We start the proof by writing up the state equation (\ref{exs_E}) with (\ref{v_ansatz}) as source term:  
 \begin{align*}
 \left\{
      \begin{array}{lr}
@@ -199,13 +199,22 @@ If we insert the state (\ref{C_state}) into the formula for the adjoint (\ref{ob
 p(t) &=  \alpha(y(T)-y^T)e^{a(T-t)} \\
 &= \alpha e^{aT}(y_0e^{aT} +\frac{C_0}{2a}(e^{aT}-e^{-aT})-y^T)e^{-at} \label{C_adjoint}
 \end{align}
-The last step is to $v(t) =C_0 e^{-at}$ and $p(t)$ from (\ref{C_adjoint}) into observation (\ref{obs1}) and then solve for $C_0$:
+The last step is to plug $v(t) =C_0 e^{-at}$ and $p(t)$ from (\ref{C_adjoint}) into observation (\ref{obs1}) and then solve for $C_0$:
 \begin{align*}
 v(t)=-p(t) &\iff C_0 e^{-at} = -\alpha e^{aT}(y_0e^{aT} +\frac{C_0}{2a}(e^{aT}-e^{-aT})-y^T)e^{-at}\\
 &\iff C_0(1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT})) = \alpha e^{aT}(y^T-y_0e^{aT}) \\
 &\iff C_0 = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT})}
 \end{align*}
+Division by $(1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT}))$ is always allowed, since $\frac{1}{a}(e^{aT}-e^{-aT})>0, \forall a\neq0$ and $\forall T>0$. 
 \end{proof} 
+\section{Finite difference}
+To be able to solve optimal control problems numerically, we need to discretize the objective function and the state and adjoint equations. We are mainly interested in time dependent equations, and the standard way of discretizing ODEs or PDEs in temporal direction, is to use a finite difference method. Since the objective function includes an integral term, we also methods for numerical integration. In this section we will only look at first order equations on the following form:
+\begin{align}
+\frac{\partial}{\partial t} y(t) = F(y(t),t),\quad t\in I \label{general_1st_ODE}
+\end{align}
+Both the state and adjoint equation of our example problem can be formulated as an equation on form (\ref{general_1st_ODE}), and . Before we introduce numerical methods for solving ODEs and evaluating integrals, we need to explain how we discritize the time domain $I=[0,T]$. We do this by dividing $I$ into $n$ parts of length $\Delta t=\frac{T}{n}$, and then setting $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Numerically solving a differential equation for $y$ on $I_{\Delta t}$ means that we try to find $y(t_k)$ for $k=0,...,n+1$. For the rest of this section we let the notation $y_k$ denote evaluating the function $y$ at time $t_k$.
+\subsection{Discretizing ODEs using finite difference}
+
 \section{Optimization algorithms}
 Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here we will only mention line search methods that are useful to me in the thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
 \subsection{Line search methods and steepest descent}

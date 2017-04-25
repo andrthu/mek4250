@@ -17,7 +17,7 @@ from mpiVectorOCP import MpiVectorOCP,simpleMpiVectorOCP,generate_problem,local_
 from my_bfgs.mpiVector import MPIVector
 from test_LbfgsPPC import GeneralPowerEndTermPCP,non_lin_problem
 from runge_kutta_OCP import RungeKuttaProblem
-
+from order_one_integration import exp_int,imp_int
 def lin_problem(y0,yT,T,a):
     
     
@@ -25,7 +25,7 @@ def lin_problem(y0,yT,T,a):
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
 
-        I = trapz((u)**2,t)
+        I = imp_int(u**2,t)#trapz((u)**2,t)
 
         return 0.5*I + (1./2)*(y-yT)**2
 
@@ -33,8 +33,8 @@ def lin_problem(y0,yT,T,a):
         t = np.linspace(0,T,len(u))
         grad = np.zeros(len(u))
         grad[1:] = dt*(u[1:]+p[:-1])
-        grad[0] = 0.5*dt*(u[0]) 
-        grad[-1] = 0.5*dt*(u[-1]) + dt*p[-2]
+        grad[0] = 0#0.5*dt*(u[0]) 
+        grad[-1] =  dt*p[-2]+dt*(u[-1])#0.5*dt*(u[-1])
         return grad
 
     def runge_grad(u,p,dt):

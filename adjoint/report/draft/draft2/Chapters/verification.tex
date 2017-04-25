@@ -267,14 +267,14 @@ Notice that both $A$ and $B$ should be grater than $0$, since $v$ and $v_{\mu}$ 
 The plots in figure \ref{Cons1_fig} and \ref{Cons2_fig} all show a similar picture, and we observe that all measures decrease when the penalty parameter is increased. Still there are several parts of the plots worthy of note. The measure $A$ related to the unpenalised objective function is the value that converges to zero the fastest. If we look at the vales of $A$ before the machine precision is reached we see that $A$ is proportional to $\frac{C}{\mu^2}$. The convergence rate of $A$ for $\Delta t=10^{-2}$ and $N=2$ is shown in table \ref{Cosn_rate_table} together with the rate convergence rate of $C$. $C$ and the other measures converge to zero at a rate of one, however we see that the relative error between the controls $v$ and $v_{\mu}$ $C$ stops to decrease long before the machine precision is reached. It seems that this barrier is hit around the same time as $A$ approaches machine precision. The reason for this probably is that small changes in the control $v_{mu}$ no longer registers in $\hat J_{\mu}$, and it is therefore difficult to find an appropriate step length in the line search method.
 \\
 \\
-$B$ and $D$ on the other hand continue to decrease steadily towards zero, even after $A$ has hit machine precision. The $B$ and $C$ metrics are both related to the $\frac{\mu }{2}\sum_{i=1}^{N-1}(y^i(T_{i})-\lambda_i)^2$, which is the part that enforces the continuity constraints (\ref{Extra constraints}). This means that after a certain point, the penalty method only improves the $\Lambda$ part of the control, while $v$  
+$B$ and $D$ on the other hand continue to decrease steadily towards zero, even after $A$ has hit machine precision. The $B$ and $C$ metrics are both related to the $\frac{\mu }{2}\sum_{i=1}^{N-1}(y^i(T_{i})-\lambda_i)^2$ term, which is the part that enforces the continuity constraints (\ref{Extra constraints}). This means that after a certain point, the penalty method only improves the $\Lambda$ part of the control, while $v$ remains the same. 
 \begin{table}[!h]
 \centering
-\caption{Convergence rates for $\Delta t=10^{-2}$ and $N=2$.}
+\caption{Convergence rates for $\Delta t=10^{-2}$ and $N=2$. Notice how the $||v_{\mu}-v||$ stops to decrease at around the same time as $\frac{J(v_{\mu})-J(v)}{J(v)}$ hits machine precision.}
 \label{Cosn_rate_table}
 \begin{tabular}{lrrll}
 \toprule
-{} &  $\frac{J(v_{\mu})-J(v)}{J(v)}$ &   $||v_{\mu}-v||$ &        A rate &        C rate \\
+{} $\mu$&  $\frac{J(v_{\mu})-J(v)}{J(v)}$ &   $||v_{\mu}-v||$ &        A rate &        C rate \\
 \midrule
 1.000000e+01 &      4.105697e-07 & 1.790231e-03 &            -- &            -- \\
 1.000000e+02 &      4.119052e-09 & 1.793140e-04 & -1.998590 & -0.9992948 \\
