@@ -45,6 +45,8 @@ def euler_con(y0,yT,T,a):
 
     problem,_ = lin_problem(y0,yT,T,a)#non_lin_problem(y0,yT,T,a,2,func=lambda x : 0*x)
     gen_con(problem,name='euler_exact_convergence')
+
+
 def gen_con(problem,name='exact_convergence'):
 
     N_val = [50,100,1000,10000,100000]#,1000000]

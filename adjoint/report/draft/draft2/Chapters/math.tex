@@ -210,11 +210,59 @@ Division by $(1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT}))$ is always allowed, si
 \section{Finite difference}
 To be able to solve optimal control problems numerically, we need to discretize the objective function and the state and adjoint equations. We are mainly interested in time dependent equations, and the standard way of discretizing ODEs or PDEs in temporal direction, is to use a finite difference method. Since the objective function includes an integral term, we also methods for numerical integration. In this section we will only look at first order equations on the following form:
 \begin{align}
-\frac{\partial}{\partial t} y(t) = F(y(t),t),\quad t\in I \label{general_1st_ODE}
+\left\{
+     \begin{array}{lr}
+	\frac{\partial}{\partial t} y(t) = F(y(t),t),\quad t\in I \\
+	y(0)=y_0 
+	\end{array}
+\right.\label{general_1st_ODE}
 \end{align}
-Both the state and adjoint equation of our example problem can be formulated as an equation on form (\ref{general_1st_ODE}), and . Before we introduce numerical methods for solving ODEs and evaluating integrals, we need to explain how we discritize the time domain $I=[0,T]$. We do this by dividing $I$ into $n$ parts of length $\Delta t=\frac{T}{n}$, and then setting $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Numerically solving a differential equation for $y$ on $I_{\Delta t}$ means that we try to find $y(t_k)$ for $k=0,...,n+1$. For the rest of this section we let the notation $y_k$ denote evaluating the function $y$ at time $t_k$.
-\subsection{Discretizing ODEs using finite difference}
-
+Both the state and adjoint equation of our example problem can be formulated as an equation on form (\ref{general_1st_ODE}), and understanding the numerics of (\ref{general_1st_ODE}) is therefore sufficient for the purposes of this thesis. Before we introduce numerical methods for solving ODEs and evaluating integrals, we need to explain how we discritize the time domain $I=[0,T]$. We do this by dividing $I$ into $n$ parts of length $\Delta t=\frac{T}{n}$, and then setting $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Numerically solving a differential equation for $y$ on $I_{\Delta t}$ means that we try to find $y(t_k)$ for $k=0,...,n+1$. For the rest of this section we let the notation $y_k$ denote evaluating the function $y$ at time $t_k$.
+\subsection{Discretizing ODEs using finite difference} \label{FD_sub_sec}
+Finite difference is a tool for approximating derivatives of functions. When we have a discretized domain $I_{\Delta t}$ with time step $\Delta t$, the derivative of a function $y$ at point $t_k$ is approximated by:
+\begin{align}
+\frac{\partial}{\partial t} y(t_k) \approx \frac{y_k-y_{k-1}}{\Delta t}. \label{FD_diff_approx}
+\end{align}
+By exploiting approximation (\ref{FD_diff_approx}) we can create methods for solving ODEs. This is done by relating $y_k$ to neighbouring values $y_j$, $j\neq k$ through the ODE. The most simplistic examples of such finite difference methods are the explicit and implicit Euler methods. We write up these methods applied to (\ref{general_1st_ODE}) in definition \ref{Euler_def} below.
+\begin{definition} \label{Euler_def}
+Explicit Euler applied to equation (\ref{general_1st_ODE}) means that for $k=1,...,n$ the value of $y_k$ is determined by the following formula:
+\begin{align}
+y_k = y_{k-1} +\Delta tF(y_{k-1},t_{k-1}).\label{EE_formula}
+\end{align} 
+If one instead uses implicit Euler the expression for $y_k$ is:
+\begin{align}
+y_k = y_{k-1} +\Delta tF(y_{k},t_{k}). \label{IE_formula}
+\end{align}
+\end{definition}
+We say that both the explicit and implicit Euler methods have an accuracy of order one. To explain what we mean by this, let us assume that we know that the function $\hat y$ solves equation (\ref{general_1st_ODE}) for a given $F$, and that $\hat y$ is sufficiently smooth. If we then use method (\ref{EE_formula}) or (\ref{IE_formula}) with some $\Delta t$ to solve (\ref{general_1st_ODE}) numerically, there exists a constant $C$ such that following error bound between $\hat{y}$ and numerical solution $y$ holds:
+\begin{align}
+\max_{k=0,...,n}|y_k-\hat y(t_k)|\leq C\Delta t \label{E_error_bound}
+\end{align}
+A more accurate but still simple alternative to the Explicit and implicit Euler finite difference methods, is the so called Crank-Nicolson method\cite{crank1947practical}. We write up this method in a definition:
+\begin{definition}
+The Crank-Nicolson finite difference scheme on equation (\ref{general_1st_ODE}) is defined by the following formula for $y_k$:
+\begin{align}
+y_k = y_{k-1} +\frac{\Delta t}{2}(F(y_{k},t_{k})+F(y_{k-1},t_{k-1})). \label{CN_formula}
+\end{align}
+\end{definition}
+When comparing (\ref{CN_formula}) with (\ref{EE_formula}) and (\ref{IE_formula}) we notice that the formula for $y_k$ in the Crank-Nicolson method is simply the average between the formulas for $y_k$ in the explicit and implicit Euler methods. We improve the accuracy by one order if we use Crank-Nicolson instead of the Euler methods. This means that the bound stated in (\ref{E_error_bound}) is improved to:
+\begin{align}
+\max_{k=0,...,n}|y_k-\hat y(t_k)|\leq C\Delta t^2 \label{CN_error_bound}
+\end{align}
+Other more accurate finite difference schemes exist, but in this thesis restrict the usage of finite difference methods to the ones presented in this section. 
+\subsection{Numerical integration}
+In this subsection we present three simple methods for numerical integration. We need such methods since the objective function in our example problem (\ref{exs_J}) includes an integral. The methods that we present in definition \ref{num_int_def} are called the left-hand rectangle method, the right-hand rectangle method and the trapezoid rule. Their names stem from the geometrical objects used to estimate the area under the function we want to integrate.
+\begin{definition} \label{num_int_def}
+\begin{align}
+S_l = \Delta t\sum_{k=0}^{n-1} v_k
+\end{align}
+\begin{align}
+S_r = \Delta t\sum_{k=1}^{n} v_k
+\end{align}
+\begin{align}
+S_{trap} = \Delta t\frac{v_0+v_n}{2}+\Delta t\sum_{k=1}^{n-1} v_k
+\end{align}
+\end{definition}
 \section{Optimization algorithms}
 Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here we will only mention line search methods that are useful to me in the thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
 \subsection{Line search methods and steepest descent}
