@@ -208,7 +208,7 @@ v(t)=-p(t) &\iff C_0 e^{-at} = -\alpha e^{aT}(y_0e^{aT} +\frac{C_0}{2a}(e^{aT}-e
 Division by $(1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT}))$ is always allowed, since $\frac{1}{a}(e^{aT}-e^{-aT})>0, \forall a\neq0$ and $\forall T>0$. 
 \end{proof} 
 \section{Finite difference}
-To be able to solve optimal control problems numerically, we need to discretize the objective function and the state and adjoint equations. We are mainly interested in time dependent equations, and the standard way of discretizing ODEs or PDEs in temporal direction, is to use a finite difference method. Since the objective function includes an integral term, we also methods for numerical integration. In this section we will only look at first order equations on the following form:
+To be able to solve optimal control problems numerically, we need to discretize the objective function and the state and adjoint equations. We are mainly interested in time dependent equations, and the standard way of discretizing ODEs or PDEs in temporal direction, is to use a finite difference method. Since the objective function includes an integral term, we also need methods for numerical integration. In this section we will only look at first order equations on the following form:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -234,35 +234,54 @@ If one instead uses implicit Euler the expression for $y_k$ is:
 y_k = y_{k-1} +\Delta tF(y_{k},t_{k}). \label{IE_formula}
 \end{align}
 \end{definition}
+By looking at expression (\ref{EE_formula}) and (\ref{IE_formula}) we see the origin of the names of the Euler methods. In the formula for implicit Euler, $y_k$ appears on both sides of the equal sign, and is therefore implicitly defined. For the explicit Euler scheme $y_k$ only appears on the left-hand side of expression (\ref{EE_formula}), which means $y_k$ is defined explicitly, and hence the name explicit Euler. Another thing to notice about the finite difference schemes in definition \ref{Euler_def}, is that they solve the equation forwardly. This means that given $y$ at time $t_K$, we can use (\ref{EE_formula}) and (\ref{IE_formula}) to find $y_j$ for $j>K$. The adjoint equation of optimal control problem with time dependent DE constraints is however solved backwards in time. We therefore need finite difference schemes for solving ODEs backwards. This is easily achieved by rearranging expression (\ref{EE_formula}) and (\ref{IE_formula}) in definition \ref{Euler_def}. A backwards solving explicit Euler scheme is found by adjusting the forward solving implicit Euler scheme, while a backwards implicit Euler method is derived by rearranging the forward explicit Euler formula. These modified backwards solving schemes are written up in definition \ref{Euler_adjoint_def}. 
+\begin{definition} \label{Euler_adjoint_def}
+An explicit Euler finite difference scheme for equation (\ref{general_1st_ODE}) with initial condition at $t=T$ instead of $t=0$ yields the following formula for $y_k$:
+\begin{align}
+y_k = y_{k+1} -\Delta tF(y_{k-1},t_{k-1}).\label{EE_adjoint_formula}
+\end{align} 
+If one instead uses implicit Euler the expression for $y_k$ is:
+\begin{align}
+y_k = y_{k+1} -\Delta tF(y_{k},t_{k}). \label{IE_adjoint_formula}
+\end{align}
+\end{definition}
 We say that both the explicit and implicit Euler methods have an accuracy of order one. To explain what we mean by this, let us assume that we know that the function $\hat y$ solves equation (\ref{general_1st_ODE}) for a given $F$, and that $\hat y$ is sufficiently smooth. If we then use method (\ref{EE_formula}) or (\ref{IE_formula}) with some $\Delta t$ to solve (\ref{general_1st_ODE}) numerically, there exists a constant $C$ such that following error bound between $\hat{y}$ and numerical solution $y$ holds:
 \begin{align}
 \max_{k=0,...,n}|y_k-\hat y(t_k)|\leq C\Delta t \label{E_error_bound}
 \end{align}
 A more accurate but still simple alternative to the Explicit and implicit Euler finite difference methods, is the so called Crank-Nicolson method\cite{crank1947practical}. We write up this method in a definition:
 \begin{definition}
-The Crank-Nicolson finite difference scheme on equation (\ref{general_1st_ODE}) is defined by the following formula for $y_k$:
+The Crank-Nicolson finite difference scheme applied to equation (\ref{general_1st_ODE}) produces the following formula for $y_k$:
 \begin{align}
 y_k = y_{k-1} +\frac{\Delta t}{2}(F(y_{k},t_{k})+F(y_{k-1},t_{k-1})). \label{CN_formula}
+\end{align}
+In a setting where we are solving (\ref{general_1st_ODE}) backwards in time, the expression for $y_k$ is changed to: 
+\begin{align}
+y_k = y_{k+1} -\frac{\Delta t}{2}(F(y_{k},t_{k})+F(y_{k-1},t_{k-1})). \label{CN_adjoint_formula}
 \end{align}
 \end{definition}
 When comparing (\ref{CN_formula}) with (\ref{EE_formula}) and (\ref{IE_formula}) we notice that the formula for $y_k$ in the Crank-Nicolson method is simply the average between the formulas for $y_k$ in the explicit and implicit Euler methods. We improve the accuracy by one order if we use Crank-Nicolson instead of the Euler methods. This means that the bound stated in (\ref{E_error_bound}) is improved to:
 \begin{align}
 \max_{k=0,...,n}|y_k-\hat y(t_k)|\leq C\Delta t^2 \label{CN_error_bound}
 \end{align}
-Other more accurate finite difference schemes exist, but in this thesis restrict the usage of finite difference methods to the ones presented in this section. 
-\subsection{Numerical integration}
+Other more accurate finite difference schemes exist, but in this thesis we restrict the usage of finite difference methods to the ones presented in this section. 
+\subsection{Numerical integration} \label{num_int_sub_sec}
 In this subsection we present three simple methods for numerical integration. We need such methods since the objective function in our example problem (\ref{exs_J}) includes an integral. The methods that we present in definition \ref{num_int_def} are called the left-hand rectangle method, the right-hand rectangle method and the trapezoid rule. Their names stem from the geometrical objects used to estimate the area under the function we want to integrate.
 \begin{definition} \label{num_int_def}
+We want to estimate the integral $S=\int_0^T v(t) dt$ numerically with a discretized time domain $I_{\Delta t}=\{t_k\}_{k=0}^{n}$. The left-hand rectangle method approximates $S$ using the following formula:
 \begin{align}
-S_l = \Delta t\sum_{k=0}^{n-1} v_k
+S_l = \Delta t\sum_{k=0}^{n-1} v_k \label{LH_INT}
 \end{align}
+A slightly different approach to estimating $S$ is the right-hand rectangle method, defined by a formula similar to (\ref{LH_INT}): 
 \begin{align}
-S_r = \Delta t\sum_{k=1}^{n} v_k
+S_r = \Delta t\sum_{k=1}^{n} v_k \label{RH_INT}
 \end{align}
+A third way of approximating $S$ is the trapezoid rule:
 \begin{align}
-S_{trap} = \Delta t\frac{v_0+v_n}{2}+\Delta t\sum_{k=1}^{n-1} v_k
+S_{trap} = \Delta t\frac{v_0+v_n}{2}+\Delta t\sum_{k=1}^{n-1} v_k \label{TRAP_INT}
 \end{align}
 \end{definition}
+The rectangle methods in definition \ref{num_int_def} are of accuracy order one, while the trapezoid rule is of second order. It turns out that the above presented numerical methods are analogue to the three finite difference schemes stated in section \ref{FD_sub_sec}. The left- and right-hand rectangle methods are related to the explicit and implicit Euler schemes, while the trapezoid rule is connected with Crank-Nicolson. When making numerical solvers for optimal control problems it therefore makes sense to discretize the differential equation and integral evaluation using analogue methods. 
 \section{Optimization algorithms}
 Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here we will only mention line search methods that are useful to me in the thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
 \subsection{Line search methods and steepest descent}

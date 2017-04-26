@@ -592,6 +592,8 @@ def jump_difference():
     p = 2
     
     problem = create_simple_CN_problem(y0,yT,T,a)#non_lin_problem(y0,yT,T,a,p,func=lambda x : 0*x)#10*np.sin(np.pi*2*x))
+    
+    
     try:
         N = int(sys.argv[1])
         m = int(sys.argv[2])
@@ -607,7 +609,10 @@ def jump_difference():
     opt = {'jtol':0,'scale_factor':1,'mem_lim':50,'scale_hessian':False,'maxiter':90,
            "line_search_options":ls}
     res = problem.solve(N,Lbfgs_options=seq_opt)
-
+    u_exact,t,_ = problem.simple_problem_exact_solution(N)
+    
+    exact_error = l2_diff_norm(u_exact[1:-1],res.x[1:-1],t[1:-1])
+    
     table  = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[],'A rate':['--'],
               'C rate':['--'],'B rate':['--'] }
     table2 = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[] }
@@ -628,9 +633,9 @@ def jump_difference():
     mu_list = [N,2*N,5*N,10*N,50*N,70*N,200*N,2000*N,3000*N,4000*N,5000*N,6000*N,10000*N,100000*N,200000*N,1000000*N,1e11,1e12,1e13,1e14,1e16]
     mu_list = [1e1,1e2,1e3,1e4,2e4,5e4,7e4,1e5,2e5,3e5,4e5,5e5,6e5,7e5,8e5,9e5,1e6,1.5e6,2e6,3e6,5e6,7e6,9e6,1e7,1.5e7,2e7,5e7,8e7,1e8,5e8,7e8,1e9,2e9,3e9,7e9,1e10,2e10,3e10,5e10,7e10,1e11,2e11,3e11,4e11,6e11,9e11,1e12,2e12,5e12,8e12,1e13,2e13,5e13,1e14,1e15,1e16]
     #mu_list = [1e5,5e5,1e6,1e7]
-    #res2 =  problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
-    res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt)
-    MORE = False
+    res2 =  problem.PPCLBFGSsolve(N,m,mu_list,options=opt)
+    #res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt)
+    MORE = True
     seq_norm = l2_norm(res['control'].array(),t)
     y_end=problem.ODE_solver(res['control'].array(),N)
     val1=problem.J(res['control'].array(),y_end[-1],yT,T)
@@ -763,7 +768,7 @@ def jump_difference():
     
     #data.to_latex('report/whyNotEqual/jump_func_Neql'+str(N)+'meql'+str(m)+'_2.tex')
     print data
-    data2.to_latex('report/whyNotEqual/consistency_rate.tex')
+    #data2.to_latex('report/whyNotEqual/consistency_rate.tex')
     """
     plt.show()
     plt.plot(t,res['control'].array(),'r--')
@@ -793,6 +798,8 @@ def jump_difference():
         ax1.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         ax1.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         ax1.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
+        help_var11 = np.zeros(len(mu_list)) + exact_error
+        ax1.loglog(np.array(mu_list),help_var11)
         ax1.set_xlabel(r"$\mu$")
         
         ax1.xaxis.set_ticks(10**np.arange(2,17,2))
@@ -809,7 +816,7 @@ def jump_difference():
         ax2.legend(Legg)
         ax2.set_title('N=10')
         table = TAB[1]
-        plt.savefig('report/draft/draft2/consistency1.png')
+        #plt.savefig('report/draft/draft2/consistency1.png')
 
         
         plt.figure(figsize=(12,6))
@@ -833,7 +840,7 @@ def jump_difference():
         ax4.xaxis.set_ticks(10**np.arange(2,17,2))
         ax4.legend(Legg)
         ax4.set_title('N=7')
-        plt.savefig('report/draft/draft2/consistency2.png')
+        #plt.savefig('report/draft/draft2/consistency2.png')
         plt.show()
     else:
         plt.figure(figsize=(6,8))

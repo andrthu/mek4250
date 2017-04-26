@@ -811,12 +811,12 @@ def general_taylor_test(problem,N=100,m=10):
 
 if __name__ == '__main__':
     #taylor_test_non_penalty()
-    #taylor_penalty_test()
+    taylor_penalty_test()
     #quad_end()
     #runge_kutta_test()
     #taylor_test_mpi()
     #taylor_quadratic_state()
-    general_non_linear_test()
+    #general_non_linear_test()
 """
 J(u+eh) = J(u) + O(e)
 

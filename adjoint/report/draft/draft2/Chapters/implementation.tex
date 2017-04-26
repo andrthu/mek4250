@@ -32,52 +32,41 @@ where $p$ is the solution of the adjoint equation:
 \end{align}
 We now want to discretize (\ref{equation}-\ref{adjoint}), so we can solve the problem numerically. What we particularly want, is an expression for the gradient. 
 \subsection{Finite difference schemes for state and adjoint equations}
-Before we state what the numerical gradient will be for the implicit end explicit Euler schemes, we write these schemes for our equations (\ref{equation}) and (\ref{adjoint}). First the implicit Euler applied to the state equation yields:
+To evaluate the gradient of our example problem numerically, we need to discretize its state(\ref{equation}) and adjoint(\ref{adjoint}) equation. We do this by applying the finite difference schemes introduced in section \ref{FD_sub_sec}. We denote the discrete state as $y_{\Delta t}=\{y^k\}_{k=0}^{n+1}$ and the discrete adjoint as $p_{\Delta t}=\{p^k\}_{k=0}^{n+1}$. With explicit Euler, implicit Euler and Crank-Nicholson we get three different expressions for $y^{k+1}$ and $p^{k-1}$, and with these expressions we can solve (\ref{equation}) and (\ref{adjoint}) numerically. We start with the explicit Euler scheme(\ref{EE_formula}):
 \begin{align}
-\frac{y^k-y^{k-1}}{\Delta t} &= a y^{k} + v^{k} \\
-(1-a\Delta t)y^{k} &= y^{k-1} +\Delta t v^{k} \\
-y^k &=\frac{y^{k-1} +\Delta t v^{k}}{1-a\Delta t} \label{I_state}
-\end{align}
-Implicit Euler for the adjoint equation:
-\begin{align}
--\frac{p^k-p^{k-1}}{\Delta t} -a p^{k-1} &=0 \\
-(1-\Delta ta)p^{k-1}&=p^k \\
-p^{k-1} &= \frac{p^k}{1-\Delta ta} \label{I_adjoint}
-\end{align}
-The explicit scheme for the state equation reads:
-\begin{align}
-\frac{y^{k+1}-y^{k}}{\Delta t} &= a y^{k} + v^{k} \\
-y^{k+1}&=(1 +\Delta ta) y^{k} + \Delta t v^{k}\label{E_state}
-\end{align} 
-and the for the adjoint we have:
-\begin{align}
--\frac{p^k-p^{k-1}}{\Delta t} -a p^{k} &=0 \\
+y^{k+1}&=(1 +\Delta ta) y^{k} + \Delta t v^{k}\label{E_state} \\
 p^{k-1} &=p^k(1 +\Delta ta)\label{E_adjoint}
 \end{align}
-With these formulas in mind lets find the numerical gradient of our example problem.
-\subsection{Numerical gradient}
-Now that we have discretized both the domain and the equations, we are forced to also evaluate the objective function (\ref{problem}) numerically. Since integration is involved in (\ref{problem}), we need to choose a numerical integration rule. The easiest way of integrating a vectorized function $x_{\Delta t} = (x_0,x_1,...,x_n)$ is the so called trapezoid rule defined as:
+Applying the implicit Euler scheme to (\ref{equation}) and (\ref{adjoint}) yields:
 \begin{align}
-trapz(x_{\Delta t})=\Delta t\frac{x_0+x_n}{2} +\sum_{i=1}^{n-1} \Delta t x_i \label{trap}
+y^{k+1} &=\frac{y^{k} +\Delta t v^{k+1}}{1-a\Delta t} \label{I_state} \\
+p^{k-1} &= \frac{p^k}{1-\Delta ta} \label{I_adjoint}
 \end{align}
-Using the trapezoid rule, we can define a discretized version of the objective function (\ref{problem}):
+When we use Crank-Nicolson the expressions for $y^{k+1}$ and $p^{k-1}$ are:
+\begin{align}
+y^{k+1} &= \frac{(1+\frac{\Delta ta}{2})y^k +\frac{\Delta ta}{2}(v^{k+1}+v^{k})}{1-\frac{\Delta t a}{2}}\label{CN_FD_state} \\
+p^{k-1} &= \frac{1+\frac{\Delta ta}{2}}{1-\frac{\Delta t a}{2}}p^k\label{CN_FD_adjoint}
+\end{align}
+The expressions for the state $y^{k+1}$ stems from the forward solving schemes (\ref{EE_formula}), (\ref{IE_formula}) and (\ref{CN_formula}), while $p^{k-1}$ were found using (\ref{EE_adjoint_formula}), (\ref{IE_adjoint_formula}) and (\ref{CN_adjoint_formula}).
+\subsection{Numerical gradient}
+We have discretized both the domain and the equations, but we also need to evaluate the objective function (\ref{problem}) numerically. Since integration is involved in (\ref{problem}), we have to choose a numerical integration rule. In we introduced three different methods for numerical integration, namely the left- and right-hand rectangle rule, as well as the trapezoid rule. Which of the methods we use in our discrete objective function depends on which finite difference scheme we used to discretize the ODEs. For explicit Euler we use the left-hand rule, for implicit Euler we use the right-hand rule, and for Crank-Nicholson we use the trapezoid rule. If we for example used Crank-Nicholson and the trapezoid rule to discretize problem (\ref{problem}), the discretized objective function would look like the following:
 \begin{align}
 \hat J_{\Delta t}(v_{\Delta t})&=\frac{1}{2} trapz(v_{\Delta t}^2)+ \frac{\alpha}{2}(y_n-y^T)^2 \\
-&=\Delta t\frac{v_0^2+v_n^2}{4} + \frac{1}{2}\sum_{i=1}^{n-1} \Delta t v_i^2 + \frac{1}{2}(y_n-y^T)^2 \label{disc f}
+&=\Delta t\frac{v_0^2+v_n^2}{4} + \frac{1}{2}\sum_{i=1}^{n-1} \Delta t v_i^2 + \frac{\alpha}{2}(y_n-y^T)^2 \label{disc f}
 \end{align}
-The hope is now that the gradient of the above defined numerical objective function is somehow related to the gradient of the continuous objective function stated in (\ref{gradiant}). The next result shows that this is indeed the case. 
-\begin{theorem}
-If the implicit Euler finite difference scheme is used to evaluate the numerical objective function (\ref{disc f}), the gradient $\nabla \hat J_{\Delta t}$ of (\ref{disc f}) will be given as:
+We now want to find the gradient of the discrete objective function for the different combinations of finite difference schemes and integration rules, so that we can minimize (\ref{equation}-\ref{problem}) numerically. The gradients for the different discretizations are stated in terms of the discrete control $v_{\Delta t}$ and discrete adjoint $p_{\Delta t}$ in theorem \ref{Theorem_num_grad} below.
+\begin{theorem} \label{Theorem_num_grad}
+If the implicit Euler finite difference scheme together with the right-hand rectangle rule is used to evaluate the numerical objective function, the gradient $\nabla \hat J_{\Delta t}$ of (\ref{disc f}) will be given as:
 \begin{align}
-\nabla \hat J_{\Delta t}(v_{\Delta t}) = Mv_{\Delta t} + Bp_{\Delta t} \label{num_grad}
+\nabla \hat J_{\Delta t}(v_{\Delta t}) = M_0v_{\Delta t} + Bp_{\Delta t} \label{num_grad}
 \end{align}
 where $M$ and $B$ are the matrices:
 \begin{align*}
-M=\left[ \begin{array}{cccc}
-   \frac{1}{2}\Delta t & 0 & \cdots & 0 \\  
+M_{\theta}=\left[ \begin{array}{cccc}
+   \theta\Delta t & 0 & \cdots & 0 \\  
    0& \Delta t & 0 & \cdots \\ 
    0 &0 & \Delta t  & \cdots \\
-   0 &\cdots &0 & \frac{1}{2}\Delta t   \\
+   0 &\cdots &0 & (1-\theta)\Delta t   \\
    \end{array}  \right] 
 ,B = \left[ \begin{array}{cccc}
    0& 0 & \cdots & 0 \\  
@@ -86,9 +75,13 @@ M=\left[ \begin{array}{cccc}
    0 &\cdots & \Delta t& 0   \\
    \end{array}  \right] 
 \end{align*}
-If one instead uses the explicit Euler finite difference scheme on the differential equations, the gradient will instead look like:
+If one instead uses the explicit Euler finite difference scheme on the differential equations and the left-hand rectangle rule for integration, the gradient will instead look like:
 \begin{align*}
-\nabla \hat J_{\Delta t}(v_{\Delta t}) = Mv_{\Delta t} + B^*p_{\Delta t}
+\nabla \hat J_{\Delta t}(v_{\Delta t}) = M_1v_{\Delta t} + B^Tp_{\Delta t}
+\end{align*}
+Lastly if the state and adjoint equation of problem (\ref{equation}-\ref{problem}) is discretized using the Crank-Nicholson scheme, while numerical integration is done using the trapezoid rule, the numerical gradient is:
+\begin{align*}
+\nabla \hat J_{\Delta t}(v_{\Delta t}) = M_{\frac{1}{2}}v_{\Delta t} + \frac{1}{2}( \frac{1}{1-\frac{\Delta t a}{2}} B+\frac{1}{1+\frac{\Delta t a}{2}}B^T)p_{\Delta t}
 \end{align*}
 \end{theorem}
 \begin{proof}
