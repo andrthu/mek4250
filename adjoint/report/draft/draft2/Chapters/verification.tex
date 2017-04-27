@@ -95,6 +95,24 @@ Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges
 \centering
 \includegraphics[scale=0.5]{pen_num_grad.png}
 \end{figure}
+\section{Convergence rate of solution}
+\begin{table}[h]
+\label{CN_convergence}
+\caption{Convergence of numerical sequential solver of optimal control problem.}
+\centering
+\begin{tabular}{lrrll}
+\toprule
+{} &          norm &           val &   norm r &    val r \\
+\midrule
+\midrule
+0.02000 &  4.177702e-02 &  2.309886e-03 &       -- &       -- \\
+0.01000 &  1.109500e-02 &  3.383020e-04 &  -1.9128 & -2.77144 \\
+0.00100 &  1.189515e-04 &  3.931451e-07 & -1.96976 & -2.93475 \\
+0.00010 &  1.421834e-06 &  3.992950e-10 & -1.92252 & -2.99326 \\
+0.00001 &  1.480190e-08 &  3.978299e-13 & -1.98253 &  -3.0016 \\
+\bottomrule
+\end{tabular}
+\end{table}
 \section{Verifying function and gradient evaluation speedups} \label{ver S sec}
 In \ref{analysis sec} we derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if the implementation achieves the theoretical speedup for our example problem. The specific problem is:
 \begin{align*}

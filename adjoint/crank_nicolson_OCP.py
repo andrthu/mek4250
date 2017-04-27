@@ -248,8 +248,8 @@ def taylorTestCN():
 
     z = lambda x : 0*x
     
-    #problem = create_simple_CN_problem(y0,yT,T,a)
-    problem =create_state_CN_problem(y0,yT,T,a,z)
+    problem = create_simple_CN_problem(y0,yT,T,a)
+    #problem =create_state_CN_problem(y0,yT,T,a,z)
     
     general_taylor_test(problem)
 

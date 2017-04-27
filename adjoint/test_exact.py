@@ -8,28 +8,30 @@ from taylorTest import lin_problem
 def check_exact():
 
     y0 = 3.2
-    yT = 1.5
-    T = 1
+    yT = 10.5
+    T = 10
     a = -2
 
-    #problem = create_simple_CN_problem(y0,yT,T,a,c=0)
-    problem = non_lin_problem(y0,yT,T,a,2,func=lambda x : 0*x)
+    problem = create_simple_CN_problem(y0,yT,T,a,c=0)
+    #problem = non_lin_problem(y0,yT,T,a,2,func=lambda x : 0*x)
 
-    N = 1000
+    N = 1000*T
 
     ue,t,_ = problem.simple_problem_exact_solution(N)
 
     res = problem.solve(N,Lbfgs_options={'jtol':1e-10})
+    res2 = problem.PPCLBFGSsolve(N,80,[10000,200000],tol_list=[1e-5,1e-8,1e-8],options={'jtol':1e-5})[-1]
     val1=problem.Functional(ue,N)
     val2 = problem.Functional(res.x,N)
     print val1,val2,val1-val2
-    
+    print res.counter(),res2.counter()
     u0 = res.x[-1]
-
+    y = problem.ODE_solver(res.x,N)
     u_test = lambda x : u0*np.exp(a*(T-t))
-    print max(abs(res.x[1:-1]-ue[1:-1])),np.sqrt(trapz((res.x[1:-1]-ue[1:-1])**2,t[1:-1]))
+    print max(abs(res.x[1:-1]-ue[1:-1])),np.sqrt(trapz((res.x[1:-1]-ue[1:-1])**2,t[1:-1])),max(abs(res2.x[1:N]-ue[1:-1]))
     plt.plot(t,ue,'--')
     plt.plot(t,res.x)
+    plt.plot(t,res2.x[:N+1])
     #plt.plot(t,u_test(t),'.')
     plt.show()
 
@@ -57,20 +59,20 @@ def gen_con(problem,name='exact_convergence'):
         res = problem.solve(N_val[i],Lbfgs_options={'jtol':1e-10})
         val1=problem.Functional(ue,N_val[i])
         val2 = problem.Functional(res.x,N_val[i])
-
-        table['norm'].append(max(abs(res.x[1:-1]-ue[1:-1])))
-        table['val'].append(val1-val2)
+        exact_norm = max(abs(ue[1:-1]))
+        table['norm'].append(max(abs(res.x[1:-1]-ue[1:-1]))/exact_norm)
+        table['val'].append((val1-val2)/val1)
         plt.plot(t,res.x-ue)
-        plt.show()
+        #plt.show()
         if i>0:
             table['norm r'].append(np.log(table['norm'][i]/table['norm'][i-1])/np.log(N_val[i]/N_val[i-1]))
             table['val r'].append(np.log(table['val'][i]/table['val'][i-1])/np.log(N_val[i]/N_val[i-1]))
 
-    
-    data = pd.DataFrame(table,index = N_val)
+    dt_val = 1./np.array(N_val)
+    data = pd.DataFrame(table,index = dt_val)
     data =data.ix[:,['norm','val','norm r','val r']]
 
-    #data.to_latex('report/whyNotEqual/'+name+'.tex')
+    data.to_latex('report/whyNotEqual/'+name+'.tex')
 
     print data
 if __name__ =='__main__':
@@ -79,5 +81,5 @@ if __name__ =='__main__':
     yT = 1.5
     T = 10
     a = -2
-    #crank_con(y0,yT,T,a)
-    euler_con(y0,yT,T,a)
+    crank_con(y0,yT,T,a)
+    #euler_con(y0,yT,T,a)

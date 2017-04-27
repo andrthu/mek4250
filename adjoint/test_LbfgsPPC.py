@@ -611,7 +611,7 @@ def jump_difference():
     res = problem.solve(N,Lbfgs_options=seq_opt)
     u_exact,t,_ = problem.simple_problem_exact_solution(N)
     
-    exact_error = l2_diff_norm(u_exact[1:-1],res.x[1:-1],t[1:-1])
+    
     
     table  = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[],'A rate':['--'],
               'C rate':['--'],'B rate':['--'] }
@@ -637,6 +637,7 @@ def jump_difference():
     #res2 = problem.penalty_solve(N,m,mu_list,Lbfgs_options=opt)
     MORE = True
     seq_norm = l2_norm(res['control'].array(),t)
+    exact_error = l2_diff_norm(u_exact[1:-1],res.x[1:-1],t[1:-1])/seq_norm
     y_end=problem.ODE_solver(res['control'].array(),N)
     val1=problem.J(res['control'].array(),y_end[-1],yT,T)
     if MORE:
