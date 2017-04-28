@@ -1,5 +1,5 @@
 \chapter{Verification}\label{Verification chapter}
-\section{Taylor test}
+\section{Taylor test} \label{Taylor_sec}
 The Taylor test is a good way to test the correctness of the gradient of a function. The test is as its name implies connected with Taylor expansions of a function, or more precisely the following two observations:
 \begin{align*}
 |J(v+\epsilon w)-J(v)| &= \mathcal{O}(\epsilon) \\
@@ -95,15 +95,34 @@ Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges
 \centering
 \includegraphics[scale=0.5]{pen_num_grad.png}
 \end{figure}
-\section{Convergence rate of solution}
+\section{Convergence rate of solver for the non-penalized problem}
+In section \ref{Taylor_sec} we demonstrated that our implementation of the gradients for different discretizations of the objective function introduced in theorem \ref{Theorem_num_grad} and \ref{Theorem_penalty_grad} satisfy the Taylor test. Since the discretized objective function $\hat J_{\Delta t}$ and its gradient pass the Taylor test, we expect that we can find the minimizer $\bar v$ of $\hat J_{\Delta t}$ by using an optimization algorithm. What we now want to find if the minimizer of the discrete objective function converges towards the exact minimizer derived in section \ref{exact_sec}. We investigate this by solving optimal control problem (OBS! OBS!) using both a Crank-Nicolson and an implicit Euler discretization. To measure the difference between exact optimal control $v_e$ and the numerical optimal control $v$ we look at the relative maximal difference between $v_e$ and $v$ for $t\in(0,T)$, meaning
+\begin{align}
+||v|| = \max_{k=1,...,n-1}|v_k| \label{inner_norm}
+\end{align} 
+We also look at the relative difference in objective function value between the controls. For both these measures, we calculate at what rate they converge to zero for decreasing $\Delta t$ values. The results for the implicit Euler discirization is found in table \ref{IE_convergence}, while Crank-Nicolson results are given in table \ref{CN_convergence}.
 \begin{table}[h]
-\label{CN_convergence}
-\caption{Convergence of numerical sequential solver of optimal control problem.}
+\caption{Convergence of implicit Euler numerical sequential solver of optimal control problem.}\label{IE_convergence}
 \centering
 \begin{tabular}{lrrll}
 \toprule
-{} &          norm &           val &   norm r &    val r \\
+{} $\Delta t$&    $\frac{||v_e-v||}{||v||}$ &  $\frac{\hat J(v_e)-\hat J(v)}{\hat J(v_e)}$ &   norm rate &    functional rate \\
 \midrule
+0.02000 &  0.212619 &  1.709101e-02 &        -- &       -- \\
+0.01000 &  0.136096 &  4.506561e-03 & -0.643642 & -1.92314 \\
+0.00100 &  0.017469 &  4.703915e-05 & -0.891585 & -1.98139 \\
+0.00010 &  0.001795 &  4.722900e-07 &   -0.9883 & -1.99825 \\
+0.00001 &  0.000180 &  4.724790e-09 &  -0.99882 & -1.99983 \\
+\bottomrule
+\end{tabular}
+\end{table}
+Notice that the convergence rate of the norm difference in table \ref{IE_convergence} approaches one when $\Delta t$ tends to zero. This is consistent with what we would expect for a finite difference scheme of first order. We also notice that the difference in function value converges an order of one faster towards zero than the control difference.  
+\begin{table}[h]
+\caption{Convergence of Crank-Nicolson numerical sequential solver of optimal control problem.}\label{CN_convergence}
+\centering
+\begin{tabular}{lrrll}
+\toprule
+{} $\Delta t$&    $\frac{||v_e-v||}{||v||}$ &  $\frac{\hat J(v_e)-\hat J(v)}{\hat J(v_e)}$ &   norm r &    val r \\
 \midrule
 0.02000 &  4.177702e-02 &  2.309886e-03 &       -- &       -- \\
 0.01000 &  1.109500e-02 &  3.383020e-04 &  -1.9128 & -2.77144 \\
@@ -113,6 +132,7 @@ Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges
 \bottomrule
 \end{tabular}
 \end{table}
+The results of table \ref{CN_convergence} show results similar to the ones in table \ref{IE_convergence}, however the convergence rates using a Crank-Nicolson scheme to discretize the ODEs are one order higher than the rates we got using implicit Euler. This is again expected since the Crank-Nicolson scheme is of order two. In both tables we observe that $\frac{\hat J(v_e)-\hat J(v)}{\hat J(v)}$ is always positive, which means that $\hat J(v_e)>\hat J(v)$. This makes sense, since $\hat J$ here means the discrete objective function, and $v$ is the minimum of this function, while $v_e$ is the minimum of the continuous objective function. One last remark concerns the choice of norm (\ref{inner_norm}). This norm excludes the values of $v$ and $v_e$ at $t=0$ and $t=T$. If these points are included, we do not see the convergence rates given in table \ref{IE_convergence} and \ref{CN_convergence}. 
 \section{Verifying function and gradient evaluation speedups} \label{ver S sec}
 In \ref{analysis sec} we derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if the implementation achieves the theoretical speedup for our example problem. The specific problem is:
 \begin{align*}

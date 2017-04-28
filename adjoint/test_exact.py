@@ -81,5 +81,5 @@ if __name__ =='__main__':
     yT = 1.5
     T = 10
     a = -2
-    crank_con(y0,yT,T,a)
-    #euler_con(y0,yT,T,a)
+    #crank_con(y0,yT,T,a)
+    euler_con(y0,yT,T,a)

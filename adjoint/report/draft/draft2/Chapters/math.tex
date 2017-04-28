@@ -160,7 +160,7 @@ To calculate the above expression, we need to evaluate the objective function at
 3.\quad & \textrm{Set the i-th component of $\hat J'(v)$ to be $\frac{\hat J(v+\epsilon e_i)-\hat J(v)}{\epsilon}$.}
 \end{align*}
 To execute the above steps, we need to solve the state equation for $n+1$ different control variables. In comparison finding $\hat J'(v)$ using the adjoint approach only requires us to solve the state and adjoint equations once, independently of the dimension of $V$. For finite difference the computational cost of one gradient evaluation therfore depends linearly on the number of components in the control variable $v$, while the computational cost of the adjoint approach is independent of the size of $v$.
-\subsection{Exact solution of the example problem}
+\subsection{Exact solution of the example problem} \label{exact_sec}
 It turns out that we can find the exact solution of problem (\ref{exs_J}-\ref{exs_J}) by utilizing the adjoint equation (\ref{exs_adjoint_eq}-\ref{exs_adjoint_ic}) and the gradient of the reduced objective function (\ref{exs_grad}). Finding an exact solution to our example problem will be useful for us in chapter \ref{Verification chapter}, where we will be testing and verifying different aspects of our algorithm. The derivation of the solution is based on two key observations. The first observation is a relation between the optimal control $\bar v$ and the adjoint $p$, which is a result from the trivial fact that $\hat J'(\bar v)=0$ is a necessary condition for $\bar v$ being a minimizer of $\hat J$. Inserting expression (\ref{exs_grad}) into $\hat J'(\bar v)=0$ yields:
 \begin{align}
 \bar v(t)=-p(t). \label{obs1}
