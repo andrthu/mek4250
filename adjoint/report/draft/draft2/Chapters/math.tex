@@ -40,6 +40,7 @@ Where H,V are Hilbert spaces, Y,Z are Banach spaces, $q\in H$, $g\in Z$ and $A:Y
 \begin{proof}
 See \cite{hinze2008optimization}
 \end{proof}
+\noindent
 It is obvious, that the objective function (\ref{exs_J}) of our example problem is a quadratic function that fits into the setting of the above theorem, and since the equation (\ref{exs_E}) is linear, with solution $y(t) = e^{a t}(C(y_0)+\int_0^te^{-a\tau}v(\tau)d\tau)$, which is unique for every integrable $v$, it is clear that problem (\ref{exs_J}-\ref{exs_E}) is a linear quadratic optimization problem. 
 \section{The adjoint equation and the gradient}
 The usual way of finding the minimum(or maximum) value of a function $J$, is to solve the equation $J'(x)=0$. Solving this equation usually requires us to be able to evaluate, or have an expression for the derivative of $J$. With this in mind let us try to find the gradient $\hat{J}'(v)$ of the reduced problem (\ref{reduced problem}).
@@ -124,6 +125,7 @@ Using this we get the strong formulation:
    \right.
 \end{align*}
 \end{proof}
+\noindent
 With the adjoint we can find the gradient of $\hat{J}$. Lets state the result first.
 \begin{theorem}
 The gradient of the reduced objective function $\hat{J}$ with respect to v is
@@ -143,6 +145,7 @@ Since $L_v[\cdot,\phi]$ is symmetric, $E_v^*=E_v$, and strongly formulated, $E_v
 &= p+v. \label{exs_grad}
 \end{align} 
 \end{proof}
+\noindent
 Evaluating the gradient of our example problem can now be boiled down to the following three steps:
 \begin{align*}
 1.\quad & \textrm{Solve the state equation for $y$.}\\
@@ -234,6 +237,7 @@ If one instead uses implicit Euler the expression for $y_k$ is:
 y_k = y_{k-1} +\Delta tF(y_{k},t_{k}). \label{IE_formula}
 \end{align}
 \end{definition}
+\noindent
 By looking at expression (\ref{EE_formula}) and (\ref{IE_formula}) we see the origin of the names of the Euler methods. In the formula for implicit Euler, $y_k$ appears on both sides of the equal sign, and is therefore implicitly defined. For the explicit Euler scheme $y_k$ only appears on the left-hand side of expression (\ref{EE_formula}), which means $y_k$ is defined explicitly, and hence the name explicit Euler. Another thing to notice about the finite difference schemes in definition \ref{Euler_def}, is that they solve the equation forwardly. This means that given $y$ at time $t_K$, we can use (\ref{EE_formula}) and (\ref{IE_formula}) to find $y_j$ for $j>K$. The adjoint equation of optimal control problem with time dependent DE constraints is however solved backwards in time. We therefore need finite difference schemes for solving ODEs backwards. This is easily achieved by rearranging expression (\ref{EE_formula}) and (\ref{IE_formula}) in definition \ref{Euler_def}. A backwards solving explicit Euler scheme is found by adjusting the forward solving implicit Euler scheme, while a backwards implicit Euler method is derived by rearranging the forward explicit Euler formula. These modified backwards solving schemes are written up in definition \ref{Euler_adjoint_def}. 
 \begin{definition} \label{Euler_adjoint_def}
 An explicit Euler finite difference scheme for equation (\ref{general_1st_ODE}) with initial condition at $t=T$ instead of $t=0$ yields the following formula for $y_k$:
@@ -245,6 +249,7 @@ If one instead uses implicit Euler the expression for $y_k$ is:
 y_k = y_{k+1} -\Delta tF(y_{k},t_{k}). \label{IE_adjoint_formula}
 \end{align}
 \end{definition}
+\noindent
 We say that both the explicit and implicit Euler methods have an accuracy of order one. To explain what we mean by this, let us assume that we know that the function $\hat y$ solves equation (\ref{general_1st_ODE}) for a given $F$, and that $\hat y$ is sufficiently smooth. If we then use method (\ref{EE_formula}) or (\ref{IE_formula}) with some $\Delta t$ to solve (\ref{general_1st_ODE}) numerically, there exists a constant $C$ such that following error bound between $\hat{y}$ and numerical solution $y$ holds:
 \begin{align}
 \max_{k=0,...,n}|y_k-\hat y(t_k)|\leq C\Delta t \label{E_error_bound}
@@ -260,6 +265,7 @@ In a setting where we are solving (\ref{general_1st_ODE}) backwards in time, the
 y_k = y_{k+1} -\frac{\Delta t}{2}(F(y_{k},t_{k})+F(y_{k-1},t_{k-1})). \label{CN_adjoint_formula}
 \end{align}
 \end{definition}
+\noindent
 When comparing (\ref{CN_formula}) with (\ref{EE_formula}) and (\ref{IE_formula}) we notice that the formula for $y_k$ in the Crank-Nicolson method is simply the average between the formulas for $y_k$ in the explicit and implicit Euler methods. We improve the accuracy by one order if we use Crank-Nicolson instead of the Euler methods. This means that the bound stated in (\ref{E_error_bound}) is improved to:
 \begin{align}
 \max_{k=0,...,n}|y_k-\hat y(t_k)|\leq C\Delta t^2 \label{CN_error_bound}
@@ -281,6 +287,7 @@ A third way of approximating $S$ is the trapezoid rule:
 S_{trap} = \Delta t\frac{v_0+v_n}{2}+\Delta t\sum_{k=1}^{n-1} v_k \label{TRAP_INT}
 \end{align}
 \end{definition}
+\noindent
 The rectangle methods in definition \ref{num_int_def} are of accuracy order one, while the trapezoid rule is of second order. It turns out that the above presented numerical methods are analogue to the three finite difference schemes stated in section \ref{FD_sub_sec}. The left- and right-hand rectangle methods are related to the explicit and implicit Euler schemes, while the trapezoid rule is connected with Crank-Nicolson. When making numerical solvers for optimal control problems it therefore makes sense to discretize the differential equation and integral evaluation using analogue methods. 
 \section{Optimization algorithms}
 Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can now solve our optimal control problems by using some optimization algorithm. There exists many different optimization algorithms, but here we will only mention line search methods that are useful to me in the thesis. These are the steepest descent method, the related BFGS and L-BFGS methods.  
@@ -354,6 +361,7 @@ If $\epsilon=0$ we say that $\{x^k\}$ converges superlinearly to $L$. Lastly we 
 \lim_{k\rightarrow\infty}\frac{||x^{k+1}-L||}{||x^k-L||^2} =\epsilon.
 \end{align*}
 \end{definition}
+\noindent
 Using the above definition we note that the convergence result for steepest descent from theorem \ref{SD_con} can be restated as: $f(x^k)$ converges linearly towards $f(x^*)$, with $\epsilon=(\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1})^2$. For problems where $\nabla^2 f(x^*)$ is badly conditioned this number is close to 1, and we would then experience bad convergence. Let us now continue with convergence results for Newton and quasi-Newton methods starting with Newton.
 \begin{theorem}
 \label{Newton_con}
@@ -367,6 +375,7 @@ Suppose $f:\mathbb{R}^n\rightarrow\mathbb{R}$ is twice continuously differentiab
 \begin{proof}
 \cite{nocedal2006numerical}
 \end{proof}
+\noindent
 The quadratic convergence of the Newton iteration is big improvement in comparison with steepest descent, however theorem \ref{Newton_con} also highlights one of the problems with the method. Since we need to invert $\nabla^2 f(x^k)$ to find the search direction at $x^k$, we need an initial $x^0$ sufficiently close to the actual solution for the iteration to even work. This problem does not arise in BFGS and L-BFGS, since the Hessian approximation is designed to be invertible. Unfortunately though, these quasi-Newton methods does not have the convergence properties of Newtons method, as the next result shows.
 \begin{theorem}
 Assume $f:\mathbb{R}^n\rightarrow\mathbb{R}$ is three times differentiable. Consider then the quasi-Newton iteration $x^{k+1}=x^k-\alpha_k B_k^{-1}\nabla f(x^k)$, where $B_k$ is an approximation of the Hessian along the search direction $p_k=-B_k^{-1}\nabla f(x^k)$, satisfying the condition:
@@ -378,4 +387,5 @@ If the sequence $\{x^k\}$ originating from the quasi-Newton iteration converges 
 \begin{proof}
 \cite{nocedal2006numerical}
 \end{proof}
+\noindent
 Even though quasi-Newton methods do not posses the quadratic convergence of the Newton method, superlinear convergence is still a lot better than the linear one for steepest descent.

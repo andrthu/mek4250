@@ -47,6 +47,7 @@ Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
 }
 \caption{Penalty framework\label{PEN_ALG}}
 \end{algorithm}
+\noindent
 Assuming that we have a solution $v$ minimizing $\hat J$, one would hope that the iterates $\{v^k\}$ from the penalty method converges to the solution of the non-penalized problem, that is:
 \begin{align*}
 \lim_{k\rightarrow \infty} v^k =v
@@ -58,6 +59,7 @@ Assume $v^k$ is the exact global minimizer of $J_{\mu_k}$, then each limit point
 \begin{proof}
 \cite{nocedal2006numerical}
 \end{proof}
+\noindent
 The above result shows that penalty algorithm framework actually produces a solution to the original problem. There are however parts of the above framework, that still needs special attention, namely how to find $(v^k,\Lambda^k)$ in each iteration, how to update $\mu_k$ and $\tau_k$ and how to choose an adequate stopping criteria. Finding the optimal control for each iteration is done by applying an optimization method for unconstrained problems, that is dependent on the gradient at $(v^k,\Lambda^k)$. Let us therefore differentiate the penalized objective function.
 \subsection{The gradient of the penalized objective function}
 To find the gradient of \ref{pen_obj_J} we start by differentiating $\hat J_{\mu}(v,\Lambda)$:
@@ -181,6 +183,7 @@ $i\neq N$ cases:
 \end{align*}
 This gives us the ODEs we wanted.
 \end{proof}
+\noindent
 With the adjont equations we can find the gradient.
 \begin{theorem}
 The gradient of (\ref{penalty_func}), $\hat J_{\mu}'$, with respect to the control $(v,\Lambda)$ is:
@@ -468,6 +471,7 @@ Notice that if we assume that $M^T=M^*$, setting $\nabla\hat{J}(\Lambda)=0$ give
 \nabla^2 \hat{\bold J}(\Lambda) = 2 M^TM
 \end{align}
 \end{proof}
+\noindent
 This means that if $M^*=M^T$, then $M^*M$ is the Hessian of $\frac{1}{2}\hat{\bold J}$, and since $\bar{M}$ and $\bar{M}^*$ approximates $M$ and $M^*$, the matrix $\bar{M}^{*}\bar{M}$ should be an approximation of $\frac{1}{2}\nabla^2 \hat{\bold J}$, which means its inverse $\bar{M}^{-1}\bar{M}^{-*}$ should approximate the inverse Hessian. However as we have already said, these conclusions are based on the assumption that $M^*=M^T$. Let us therefore investigate if this assumption holds when we solve the virtual problem (\ref{virtual_func}-\ref{virtual}) for equation (\ref{virtual_exs}). 
 \\
 \\
@@ -491,7 +495,7 @@ M^* =\left[ \begin{array}{cccc}
   	 0 &\cdots &\cdots &  \mathbbold{1}  \\
   	 \end{array}  \right]
 \end{align*}
-Looking at the $M$ and $M^*$ matrices above, it is quite clear that $M^*=M^T$, which means that for the virtual problem (\ref{virtual_func}-\ref{virtual}) governed by the equation (\ref{virtual_exs}), the assumption $M^*=M^T$ holds, when the fine propagator and the fine adjoint propagator solved the state and adjoint equations exactly. If one instead let the underlying solvers of $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$ be based on some numerical method, the $M$ and $M^*$ matrices will of course depend on the choice of method. When we discretize the state and adjoint equations, we want the matrices $M$ and $M^*$ to behave as they did for non-discrete $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$.
+Looking at the $M$ and $M^*$ matrices above, it is quite clear that $M^*=M^T$, which means that for the virtual problem (\ref{virtual_func}-\ref{virtual}) governed by the equation (\ref{virtual_exs}), the assumption $M^*=M^T$ holds, when the fine propagator and the fine adjoint propagator solved the state and adjoint equations exactly. If one instead let the underlying solvers of $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$ be based on some numerical method, the $M$ and $M^*$ matrices will of course depend on the choice of this method. When we discretize the state and adjoint equations, we want the matrices $M$ and $M^*$ to behave as they did for non-discrete $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$.
 \\
 \\
 Since $\bar{M}$ and $\bar{M}^{*}$ are only approximations of $M$ and $M^*$, we might think that $\bar{M}^*=\bar{M}^T$ is unnecessary. However since we want to use $\bar{M}^{-1}\bar{M}^{-*}$ as an initial inverse Hessian approximation in our BFGS-optimization algorithm, we need $\bar{M}^{-1}\bar{M}^{-*}$ to be symmetric positive definite. This is true if $\bar{M}^*=\bar{M}^T$, because the matrix product between an invertible matrix and its transpose always is positive definite. This holds because:
@@ -578,6 +582,7 @@ We can similarly find $\nabla^2 x_i$ by differentiating $x$ twice:
 \end{align*}
 Now summing up the terms $\nabla^2 x_i(\Lambda)x_i(\Lambda)$ would yield the diagonal matrix $D(\Lambda)$ described in proposition \ref{NonLin_prop}.
 \end{proof}
+\noindent
 As we have seen the Hessian of the non-linear problem consists of two parts. One is the linearised forward model multiplied with its adjoint, while the second part is a diagonal matrix related to the second derivative of the propagator $\bold F_{\Delta T}$, and the residuals $\lambda_i-\bold F_{\Delta T}$. The first part of $\nabla^2 \bold{\hat{J}}$ is analogue to the Hessian of the linear problem. It is symmetric positive definite, and taking its inverse corresponds to first applying the backwards model, and then the forward model. What makes the Hessian of the non-linear problematic is therefore its second term. The first issue with the diagonal matrix $D(\Lambda)$, is how to calculate $\bold F_{\Delta T}''$. Another issue is that we can not guarantee that the sum of $M(\Lambda)^TM(\Lambda)$ and $D(\Lambda)$ is a positive matrix, and the same problem would arise in a coarse approximation of $\nabla^2 \bold{\hat{J}}$. The lack of positivity is a problem since we want to use the coarse approximation as an initial inverted Hessian approximation in the BFGS-algorithm.
 \\
 \\

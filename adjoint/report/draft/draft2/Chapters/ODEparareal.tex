@@ -52,6 +52,7 @@ $\lambda_i^k\leftarrow \bold G_{\Delta T}(\lambda_{i-1}^k)+\hat{\lambda_{i}^{k}}
 }
 \caption{K steps of Parareal algorithm\label{P_ALG}}
 \end{algorithm}
+\noindent
 In algorithm \ref{P_ALG} we do $K$ iterations of the Parareal algorithm, where $K$ is a pre-chosen number. If one wanted to construct an actual Parareal algorithm, the iteration should instead terminate, when a certain stopping criteria is met. In general we want the iteration to stop when the Parareal solution is sufficiently close to the sequential solution, but we also want to avoid finding the sequential solution. A good stopping criteria for the Parareal algorithms can be found in \cite{lepsa2010efficient}.
 \\
 \\
@@ -117,6 +118,7 @@ Let us decompose $I=[0,T]$ into $N$ subintervals of length $\Delta T = \frac{T}{
 \forall \ i,0\leq i\leq N-1 \quad |\lambda_i^k-y(T_i)| + \max_{t\in[T_{i},T^{i+1}]}|y_{i+1}^k(t)-y(t)| \leq c_k\Delta T^{k+1} \label{P_error_bound}
 \end{align}
 \end{proposition}
+\noindent
 It is important to note that the error bound given in proposition \ref{P_con_prop} only holds for fixed $k$s, since the constant $c_k$ grows with $k$. This means that if we do $k$ iterations of Parareal, the algorithm converges to the exact solution(or rather the fine numerical solution), when $\Delta T$ goes to zero at a rate of $\mathcal{O}(\Delta T^{k+1})$. We can therefore say that $k$ iterations behaves like a numerical method of order $k+1$. In \cite{lions2001resolution}, they used a first order implicit Euler scheme for their coarse propagator. It turns out that if one instead uses a scheme of order $p$, the convergence bound (\ref{P_error_bound}) after $k$ iterations is improved to $\mathcal{O}(\Delta T^{p(k+1)})$. This was shown in \cite{bal2005convergence}, where the bounds were derived for more general equations. 
 \\
 \\
