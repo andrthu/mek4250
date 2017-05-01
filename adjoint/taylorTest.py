@@ -8,7 +8,7 @@ from my_bfgs.splitLbfgs import SplitLbfgs
 from penalty import partition_func
 from scipy.integrate import trapz
 from scipy.optimize import minimize
-from optimalContolProblem import OptimalControlProblem,Problem1
+from optimalContolProblem import OptimalControlProblem,Problem1,Explicit_problem1
 from scipy import linalg
 from non_linear import Explicit_quadratic,Explicit_sine,ExplicitNonLinear
 
@@ -18,7 +18,8 @@ from my_bfgs.mpiVector import MPIVector
 from test_LbfgsPPC import GeneralPowerEndTermPCP,non_lin_problem
 from runge_kutta_OCP import RungeKuttaProblem
 from order_one_integration import exp_int,imp_int
-def lin_problem(y0,yT,T,a):
+
+def lin_problem(y0,yT,T,a,implicit=True):
     
     
     
@@ -53,9 +54,23 @@ def lin_problem(y0,yT,T,a):
 
 
     problem1 = RungeKuttaProblem(y0,yT,T,a,J,runge_grad)
-    problem2 = SimplePpcProblem(y0,yT,T,a,J,grad_J)
-    problem2 = Problem1(y0,yT,T,a,J,grad_J)
+    if implicit:
+        problem2 = SimplePpcProblem(y0,yT,T,a,J,grad_J)
+        problem2 = Problem1(y0,yT,T,a,J,grad_J)
+    else:
+        def grad_J(u,p,dt):
+            t = np.linspace(0,T,len(u))
+            grad = np.zeros(len(u))
+            grad[:-1] = dt*(u[:-1]+p[1:])
+            
+            return grad
+        
+        problem2 =Explicit_problem1(y0,yT,T,a,J,grad_J)
     return problem2,problem1
+
+
+
+
 
 def quadratic_state(y0,yT,T,a):
     

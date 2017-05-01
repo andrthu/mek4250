@@ -2,7 +2,10 @@
 In the previous chapter we saw that the parareal scheme allows us to parallelize time dependent differential equations in their temporal direction. In this chapter we will look at how to parallelize optimal control problems with time dependent differential equation constraints in temporal direction. 
 \\
 \\
-This chapter consists of three sections. In the first section we decompose the time domain as we did in section \ref{Para_dcomp_sec}, only now in the context of control problems with time-dependent DE constraints. Decomposing the time interval leads to a reformulation of the control problem that includes extra constraints on the state equation. How to handle these new constraints are dealt with in section \ref{penalty_sec}. We use the same approach as \cite{maday2002parareal} namely the penalty method. This is a simplified version of the augmented Lagrangian approach used in \cite{rao2016time} for parallel in time 4d variational data assimilation. In the last section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ides from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. 
+This chapter consists of three sections. In the first section we decompose the time domain as we did in section \ref{Para_dcomp_sec}, only now in the context of control problems with time-dependent DE constraints. Decomposing the time interval leads to a reformulation of the control problem that includes extra constraints on the state equation. How to handle these new constraints are dealt with in section \ref{penalty_sec}. We use the same approach as \cite{maday2002parareal} namely the penalty method. This is a simplified version of the augmented Lagrangian approach used in \cite{rao2016time} for parallel in time 4d variational data assimilation. We demonstrate the use of the penalty method by revisiting the example problem from section \ref{example_sec}.
+\\
+\\
+In the last section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ides from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. 
 \section{Optimal control problem with time-dependent DE constraints on a decomposed time interval}
 Before we start to decompose the time interval, let us again state the general problem that we want to solve:
 \begin{align}
@@ -609,101 +612,20 @@ Q = \left[ \begin{array}{cc}
 	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
 	\end{array} \right] 
 \end{align*}
-$Q$ is a preconditioner for optimization algorithms, and is supposed to be applied to the the gradient $\nabla \hat J_{\mu}(v,\Lambda)\in\mathbb{R}^{N+n}$ at every iteration. We see that $Q$ only effects the last part of the gradient, which is the $\Lambda$ part of the gradient. One important thing of note about $Q$, is that when $N=2$ both $\bar M$ and $\bar M^*$ are the identity, which means that for $N=2$, $Q=\mathbbold{1}$. 
-\subsection{The meaning of $\bar{M}^{-1}$ and $\bar{M}^{-*}$}
-Since neither $\bar{M}$ nor $\bar{M}^{*}$ are normal matrices, it might be smart to explain what is meant by taking their inverse. Lets do this by looking at an example, where we try to solve a $4\times 4$ system $\bar{M}x = y$:
-\begin{align}
-\left[ \begin{array}{cccc}
-   I & 0 & 0 & 0 \\  
-   -\bold{G}_{\Delta T} & I & 0 & 0 \\ 
-   0 &-\bold{G}_{\Delta T} & I  & 0 \\
-   0 &0 &-\bold{G}_{\Delta T} & I   \\
-   \end{array}  \right]
-   \left( \begin{array}{c}
-   x_0 \\
-   x_1 \\
-   x_2 \\
-   x_3 \\
-   \end{array} \right) =
-   \left( \begin{array}{c}
-   y_0 \\
-   y_1 \\
-   y_2 \\
-   y_3 \\
-   \end{array} \right)	
-\end{align}  
-If we apply $\bar{M}$ to $x$, we get:
-\begin{align}
-\left( \begin{array}{c}
-   x_0 \\
-   x_1 -\bold{G}_{\Delta T}(x_0) \\
-   x_2 -\bold{G}_{\Delta T}(x_1)\\
-   x_3 -\bold{G}_{\Delta T}(x_2)\\
-   \end{array} \right) =
-   \left( \begin{array}{c}
-   y_0 \\
-   y_1 \\
-   y_2 \\
-   y_3 \\
-   \end{array} \right)
-\end{align}
-This yields the following solution:
-\begin{align*}
-x_0 &=y_0 \\
-x_1 &=y_1 + \bold{G}_{\Delta T}(y_0) \\
-x_2 &=y_2 + \bold{G}_{\Delta T}(y_1 + \bold{G}_{\Delta T}(y_0)) \\
-x_3 &=y_3 + \bold{G}_{\Delta T}(y_2 + \bold{G}_{\Delta T}(y_1 + \bold{G}_{\Delta T}(y_0))) 
-\end{align*}
-To better see the connection with \cite{lions2001resolution}, note that we can solve the above system with the propagation technique, i.e. define a $\delta$ and solve:
-\begin{align}
-\left\{
-     \begin{array}{lr}
-		\frac{\delta^{n+1} -\delta^n }{\Delta T } + A\delta^{n+1} = \frac{y^n}{\Delta T} \\
-		\delta^0 = 0
-	\end{array} \right.
-\end{align} 
-Then the solution of the system would be 
-\begin{align*}
-x_0 &=y_0 +\delta^0\\
-x_1 &=y_1 + \delta^1 \\
-x_2 &=y_2 +\delta^2\\
-x_3 &=y_3 + \delta^3 
-\end{align*}
-For $\bar{M}^{*}$, the system $\bar{M}^{*}x=y$, has a solution that looks similar:
-\begin{align*}
-x_0 &=y_0 +\bold{G}_{\Delta T}^*(y_1 + \bold{G}_{\Delta T}^*(y_2 + \bold{G}_{\Delta T}^*(y_ 3)))\\
-x_1 &=y_1 + \bold{G}_{\Delta T}^*(y_2 + \bold{G}_{\Delta T}^*(y_ 3))\\
-x_2 &=y_2 + \bold{G}_{\Delta T}^*(y_ 3) \\
-x_3 &=y_3 
-\end{align*}
-The propagator for the adjoint system would look like this:
-\begin{align}
-\left\{
-     \begin{array}{lr}
-		\frac{\delta^{i-1} -\delta^i }{\Delta T } + A^*\delta^{i-1} = \frac{y^i}{\Delta T} \\
-		\delta^{N-1} = 0
-	\end{array} \right.
-\end{align} 
-The solution would then again be:
-\begin{align*}
-x_0 &=y_0 +\delta^0\\
-x_1 &=y_1 + \delta^1 \\
-x_2 &=y_2 +\delta^2\\
-x_3 &=y_3 + \delta^3 
-\end{align*}
-The above setting is quite general. Lets consider an example where we want to use the parareal preconditioner on an optimal control problem with a time domain $I=[0,T]$ decomposed into four sub-intervals $[T_0,T_1], [T_1,T_2], [T_2,T_3]$ and $[T_3,T_4]$. To enforce continuity at the overlapping boundaries, we need three variables $\lambda_1,\lambda_2$ and $\lambda_3$, that represents the initial condition of the state equation at $T_1,T_2$ and $T_3$. We then add quadratic penalty terms to our functional, and the gradient of our new functional $J(v,\Lambda)$, would then have three components $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$. These are the components of the gradient that we wish to use (\ref{PC}) on. As far as I understand it, applying $\bar{M}^{*}\bar{M}$ to $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$, means first to resolve this system:
-\begin{align*}
-\bar{J_{\lambda_1}} &=J_{\lambda_1} +\bold{G}_{\Delta T}^*(J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3} + \bold{G}_{\Delta T}^*(0)))\\
-\bar{J_{\lambda_2}} &=J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3} + \bold{G}_{\Delta T}^*(0))\\
-\bar{J_{\lambda_3}} &=J_{\lambda_3} + \bold{G}_{\Delta T}^*(0) \\
-\end{align*} 
-Then you apply the forward system:
-\begin{align*}
-\bar{\bar{J_{\lambda_1}}}&=\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0) \\
-\bar{\bar{J_{\lambda_2}}}&=\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)) \\
-\bar{\bar{J_{\lambda_3}}}&=\bar{J_{\lambda_3}} + \bold{G}_{\Delta T}(\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}} + \bold{G}_{\Delta T}(0)))
-\end{align*} 
-The $\Lambda$ part of the gradient is then updated to be $\bar{\bar{J_{\lambda_1}}}, \bar{\bar{J_{\lambda_2}}},\bar{\bar{J_{\lambda_3}}}$. Notice that we in the last line of the adjoint system use $\bold{G}_{\Delta T}^*(0)$, and that we in the first line in the forward system use $\bold{G}_{\Delta T}(0)$. The zeros here represent information at time $T_0=0$ and $T_4=T$. At these times, we really have no information relating to the $\Lambda$ part of the gradient of $J$. We are therefore forced to choose zero.
+$Q$ is a preconditioner for optimization algorithms, and is supposed to be applied to the the gradient $\nabla \hat J_{\mu}(v,\Lambda)\in\mathbb{R}^{N+n}$ at every iteration. We see that $Q$ only effects the last part of the gradient, which is the $\Lambda$ part of the gradient. One important thing of note about $Q$, is that when $N=2$ both $\bar M$ and $\bar M^*$ are the identity, which means that for $N=2$, $Q=\mathbbold{1}$. Since $Q$ has no effect for $N=2$, we might also expect that for "small" $N$, the effect of $Q$ is only modest, and that the usefulness of only materializes for higher values of decomposed subintervals $N$. The last remark on our preconditionr will be a quick explanation of how we typically apply it to the gradient. We do this through a simple example.   
 \\
 \\
-Since we are only using our coarse solver use $\bold{G}_{\Delta T}$ on the inner points of the interval $I=[0,T]$, when we are applying the inverse of $\bar{M}^{*}$ and $\bar{M}$ on the $\Lambda$ part of the gradient, the coarse model is only used on the interval $[T_1,T_{N-1}]$. This means that we are not using the first and last parts $[0,T_1]$ and $[T_{N-1},T]$ of $I$. A consequence of this is that it refining our coarse solver for each interval $\bold{G}_{\Delta T}$, has little effect since $[0,T_1]$ and $[T_{N-1},T]$ have length $\Delta T$, and when we are not using these intervals the coarse solver has a natural built in error of $\Delta T$, even if we use a finer resolution on $[T_1,T_{N-1}]$. 
+Assume that we decompose $I=[0,T]$ into four sub-intervals $[T_0,T_1], [T_1,T_2], [T_2,T_3]$ and $[T_3,T_4]$. To enforce continuity at the overlapping boundaries, we need three variables $\lambda_1,\lambda_2$ and $\lambda_3$, that represents the initial condition of the state equation at $T_1,T_2$ and $T_3$. We then add quadratic penalty terms to our functional as outlined in section \ref{penalty_sec}. The gradient of our new functional $J(v,\Lambda)$ would then have three components $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$. These are the components of the gradient that we wish to apply $Q$ on. Applying $Q$ is then done in two steps. We first resolve the backward system that we get from $\bar M^{-*}$:
+\begin{align*}
+\bar{J_{\lambda_1}} &=J_{\lambda_1} +\bold{G}_{\Delta T}^*(J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3}))\\
+\bar{J_{\lambda_2}} &=J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3})\\
+\bar{J_{\lambda_3}} &=J_{\lambda_3} 
+\end{align*} 
+Then second step is to apply the forward system:
+\begin{align*}
+\bar{\bar{J_{\lambda_1}}}&=\bar{J_{\lambda_1}} \\
+\bar{\bar{J_{\lambda_2}}}&=\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}}) \\
+\bar{\bar{J_{\lambda_3}}}&=\bar{J_{\lambda_3}} + \bold{G}_{\Delta T}(\bar{J_{\lambda_2}}+ \bold{G}_{\Delta T}(\bar{J_{\lambda_1}}))
+\end{align*} 
+The result of using $Q$ on the gradient, is that $\Lambda$ part of the gradient is changed to $\bar{\bar{J_{\lambda_1}}}, \bar{\bar{J_{\lambda_2}}},\bar{\bar{J_{\lambda_3}}}$.  
+
