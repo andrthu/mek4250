@@ -434,6 +434,32 @@ class SimplePpcProblem(PararealOCP):
         return (l[-(i+1)]+rhs[-(i+1)])/(1-dt*a)
 
 
+class SimpleExplicitPpcProblem(PararealOCP):
+    """
+    optimal control with ODE y'=ay+u
+    """
+
+    def __init__(self,y0,yT,T,a,J,grad_J,options=None):
+
+        PararealOCP.__init__(self,y0,yT,T,J,grad_J,options,implicit=False)
+
+        self.a = a
+
+    def ODE_update(self,y,u,i,j,dt):
+        a = self.a
+        return (1.+dt*a)*y[i] +dt*u[j]
+
+        
+    def adjoint_update(self,l,y,i,dt):
+        a = self.a
+        return l[-(i+1)]*(1.+dt*a)
+
+    def adjoint_propogator_update(self,l,rhs,i,dt):
+        a = self.a
+        return (l[-(i+1)](1.+dt*a)+rhs[-(i+1)])
+
+
+
 def find_gradient2():
     import matplotlib.pyplot as plt
     y0 = 1

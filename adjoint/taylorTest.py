@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from ODE_pararealOCP import SimplePpcProblem,PararealOCP
+from ODE_pararealOCP import SimplePpcProblem,PararealOCP,SimpleExplicitPpcProblem
 from my_bfgs.lbfgs import Lbfgs
 from my_bfgs.my_vector import SimpleVector
 from my_bfgs.splitLbfgs import SplitLbfgs
@@ -56,7 +56,7 @@ def lin_problem(y0,yT,T,a,implicit=True):
     problem1 = RungeKuttaProblem(y0,yT,T,a,J,runge_grad)
     if implicit:
         problem2 = SimplePpcProblem(y0,yT,T,a,J,grad_J)
-        problem2 = Problem1(y0,yT,T,a,J,grad_J)
+        #problem2 = Problem1(y0,yT,T,a,J,grad_J)
     else:
         def grad_J(u,p,dt):
             t = np.linspace(0,T,len(u))
@@ -65,7 +65,7 @@ def lin_problem(y0,yT,T,a,implicit=True):
             
             return grad
         
-        problem2 =Explicit_problem1(y0,yT,T,a,J,grad_J)
+        problem2 =SimpleExplicitPpcProblem(y0,yT,T,a,J,grad_J)#Explicit_problem1(y0,yT,T,a,J,grad_J)
     return problem2,problem1
 
 
