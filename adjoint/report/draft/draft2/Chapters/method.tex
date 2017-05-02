@@ -6,7 +6,7 @@ This chapter consists of three sections. In the first section we decompose the t
 \\
 \\
 In the last section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ides from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. 
-\section{Optimal control problem with time-dependent DE constraints on a decomposed time interval}
+\section{Optimal control problem with time-dependent DE constraints on a decomposed time interval} \label{decomp_sec}
 Before we start to decompose the time interval, let us again state the general problem that we want to solve:
 \begin{align}
 \underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v) \label{initial problem1}\\
@@ -243,14 +243,17 @@ For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the 
 \begin{align}
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kQ\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method2}
 \end{align}
-For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. Before we write up what $Q_ {\Lambda}$ is, we need to revisit the algebraic formulation of the Parareal scheme defined in chapter \ref{parareal_chap}.
+For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. 
+\\
+\\
+We derive $Q$ by looking at a constructed optimal control problem that we call the virtual problem. The virtual problem is a decomposed as detailed in section \ref{decomp_sec}, but its objective function $\bold J$ is set to be the penalty term, and therefore only depends on $\Lambda$. We already stated this problem in section \ref{algebraic_sec}, and by utilizing the algebraic Parareal formulation, we will try to find a good candidate for $Q_{\Lambda}$.
 \subsection{Virtual problem} \label{vir_sec}
-In order for us to be able to derive the preconditioner from \cite{maday2002parareal}, we define the virtual optimal control problem. In the virtual control problem the objective function is only the penalty part of (\ref{pen_obj_J}). The problem was already written up in section \ref{algebraic_sec}, let us however restate it here:
+In order for us to be able to derive the preconditioner from \cite{maday2002parareal}, we need the virtual optimal control problem from section \ref{algebraic_sec}. For reference let us restate it below:
 \begin{align}
 &\min_{\Lambda}\bold{J}(\Lambda,y) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2 \label{virtual_func} \\
 &\textrm{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
 \end{align}
-Where $\Lambda=(\lambda_0=y_0,\lambda_1,...,\lambda_ {N-1}$ and $\bold F_{\Delta T}$ is the fine propagator from section \ref{Parareal_sec}. In the context of the virtual problem (\ref{virtual_func}-\ref{virtual}), $\bold F_{\Delta T}(\omega)$ propagates $\omega$ one time step of length $\Delta T$ using the equation:
+Here $\Lambda=(\lambda_0=y_0,\lambda_1,...,\lambda_ {N-1})$ and $\bold F_{\Delta T}$ is the fine propagator from section \ref{Parareal_sec}. In the context of the virtual problem (\ref{virtual_func}-\ref{virtual}), $\bold F_{\Delta T}(\omega)$ propagates $\omega$ one time step of length $\Delta T$ using the equation:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -259,11 +262,11 @@ Where $\Lambda=(\lambda_0=y_0,\lambda_1,...,\lambda_ {N-1}$ and $\bold F_{\Delta
      \end{array}
    \right. \label{virtual_exs}
 \end{align} 
-Chapter \ref{parareal_chap} explained how this could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
+In chapter \ref{parareal_chap} we explained how the virtual problem could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)\label{par_mat_sys}
 \end{align}
-Where $M$ and $\bar{M}$ are matrix representation of the fine and coarse resolution propagators $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1})$:
+Where $M$ and $\bar{M}$ are matrix representations of the fine and coarse resolution propagators $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1})$:
 \begin{align*}
 M = \left[ \begin{array}{cccc}
    \mathbbold{1} & 0 & \cdots & 0 \\  
@@ -278,7 +281,7 @@ M = \left[ \begin{array}{cccc}
    0 &\cdots &-\bold{G}_{\Delta T} & \mathbbold{1}   \\
    \end{array}  \right]
 \end{align*}
-In section \ref{algebraic_sec} we said that $\bar M^{-1}$ can be seen as a preconditioner for the fix point iteration solving $\bold{J}(\Lambda,y)=0$. Solving the virtual problem in this way, is only possible since we know that the minimum value of $\bold{J}(\Lambda,y)$ is zero. A more natural approach of solving this problem would first be to reduce $\bold J$, to only depend on $\Lambda$, and then solve $\hat {\bold J}'(\Lambda)=0$. If we could find a preconditioner to a fix point iteration solving $\hat{ \bold J} '(\Lambda)=0$, this would be a candidate for $Q_{\Lambda}$. Let us start by writing up the reduced version of (\ref{virtual_func}-\ref{virtual}):
+In section \ref{algebraic_sec} we said that $\bar M^{-1}$ can be seen as a preconditioner for the fix point iteration solving $\bold{J}(\Lambda,y)=0$. Solving the virtual problem in this way is only possible since we know that the minimum value of $\bold{J}(\Lambda,y)$ is zero. A more natural approach to solving this problem, would first be to reduce $\bold J$ to only depend on $\Lambda$, and then solve $\hat {\bold J}'(\Lambda)=0$. If we could find a preconditioner to a fix point iteration solving $\hat{ \bold J} '(\Lambda)=0$, this would be a candidate for $Q_{\Lambda}$. Let us start by writing up the reduced version of (\ref{virtual_func}-\ref{virtual}):
 \begin{align}
 \min_{\Lambda\in\mathbb{R}^{N-1}}\hat {\bold J}(\Lambda) = \sum_{i=1}^{N-1} (\bold F_{\Delta T}(\lambda_{i-1})-\lambda_{i})^2,\quad \lambda_0=y_0 \label{reduced_viritual}
 \end{align} 

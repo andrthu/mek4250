@@ -6,16 +6,16 @@ from taylorTest import lin_problem
 
 def unstable():
 
-    a = -0.02
+    a = -.2
     T = 100
 
-    y0=3
+    y0=300
     yT= 100
 
-    problem,_ = lin_problem(y0,yT,T,a,implicit=True)
+    problem,_ = lin_problem(y0,yT,T,a,c=10,implicit=False)
     
     N = 10000
-    m = 50
+    m = 30
     res = problem.PPCLBFGSsolve(N,m,[100,1000],options={'jtol':1e-5})[-1]
     #res = problem.penalty_solve(N,m,[100,1000],Lbfgs_options={'jtol':1e-6})[-1]
     res2 = problem.solve(N,Lbfgs_options={'jtol':1e-10})
@@ -27,5 +27,55 @@ def unstable():
     plt.plot(t,res2.x,'--')
     #plt.plot(np.linspace(0,T,m+1),Y)
     plt.show()
+
+def backwards(x,val):
+    
+    y = np.zeros(len(x))
+    y = x.copy()
+    for i in range(1,len(x)):
+        y[-(i+1)] = y[-(i+1)] + val*y[-i]
+
+    return y
+
+def foreward(x,val):
+    
+    y = np.zeros(len(x))
+    y = x.copy()
+    for i in range(1,len(x)):
+        y[i] = y[i] + val*y[i-1]
+
+    return y
+
+
+
+def test_PC_creator():
+
+    a = -0.02
+    T = 100
+
+    y0=300
+    yT= 100
+
+    problem,_ = lin_problem(y0,yT,T,a,c=10,implicit=False)
+    
+    m = 6
+    N =10000
+    x = np.random.random(m-1)
+
+    pc = problem.PC_maker4(N,m)
+    val = 1./(1-a*T/float(m))
+    val = (1+a*T/float(m))
+    y=pc(x.copy())
+    y1=backwards(x,val)
+    y2 = foreward(y1,val)
+    plt.plot(x)
+    plt.plot(y1)
+    plt.plot(y2)
+    plt.plot(y,'.')
+    plt.show()
+
+    
+
 if __name__ == '__main__':
-    unstable()
+    #unstable()
+    test_PC_creator()
