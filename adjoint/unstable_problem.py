@@ -49,22 +49,22 @@ def foreward(x,val):
 
 
 def test_PC_creator():
-
-    a = -0.02
+    m = 100
+    
     T = 100
-
+    a = -float(m)/T -0.1
     y0=300
     yT= 100
 
-    problem,_ = lin_problem(y0,yT,T,a,c=10,implicit=False)
+    problem,_ = lin_problem(y0,yT,T,a,c=10,implicit=True)
     
-    m = 6
+    
     N =10000
-    x = np.random.random(m-1)
-
+    x = 10*(np.random.random(m-1)-0.5)
+    res = problem.PPCLBFGSsolve(N,m,[1])
     pc = problem.PC_maker4(N,m)
     val = 1./(1-a*T/float(m))
-    val = (1+a*T/float(m))
+    #val = (1+a*T/float(m))
     y=pc(x.copy())
     y1=backwards(x,val)
     y2 = foreward(y1,val)
@@ -74,7 +74,11 @@ def test_PC_creator():
     plt.plot(y,'.')
     plt.show()
 
+
     
+    print res.counter()
+    plt.plot(res.x[:N+1])
+    #plt.show()
 
 if __name__ == '__main__':
     #unstable()

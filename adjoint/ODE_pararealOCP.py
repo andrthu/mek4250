@@ -119,7 +119,7 @@ class PararealOCP(OptimalControlProblem):
             #print 'step 2: ',S
             #S[-2]+=self.end_start_adjoint
             #S = S/(1-self.a*dt)
-            print x,S
+            #print x,S
             x[:]=S.copy()[1:-1]
             return x
         #"""
