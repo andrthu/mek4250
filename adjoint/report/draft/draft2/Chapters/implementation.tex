@@ -32,22 +32,22 @@ where $p$ is the solution of the adjoint equation:
 \end{align}
 We now want to discretize (\ref{equation}-\ref{adjoint}), so we can solve the problem numerically. What we particularly want, is an expression for the gradient. 
 \subsection{Finite difference schemes for state and adjoint equations}
-To evaluate the gradient of our example problem numerically, we need to discretize its state(\ref{equation}) and adjoint(\ref{adjoint}) equation. We do this by applying the finite difference schemes introduced in section \ref{FD_sub_sec}. We denote the discrete state as $y_{\Delta t}=\{y^k\}_{k=0}^{n+1}$ and the discrete adjoint as $p_{\Delta t}=\{p^k\}_{k=0}^{n+1}$. With explicit Euler, implicit Euler and Crank-Nicholson we get three different expressions for $y^{k+1}$ and $p^{k-1}$, and with these expressions we can solve (\ref{equation}) and (\ref{adjoint}) numerically. We start with the explicit Euler scheme(\ref{EE_formula}):
+To evaluate the gradient of our example problem numerically, we need to discretize its state(\ref{equation}) and adjoint(\ref{adjoint}) equation. We do this by applying the finite difference schemes introduced in section \ref{FD_sub_sec}. We denote the discrete state as $y_{\Delta t}=\{y_k\}_{k=0}^{n}$ and the discrete adjoint as $p_{\Delta t}=\{p_k\}_{k=0}^{n}$. With explicit Euler, implicit Euler and Crank-Nicholson we get three different expressions for $y_{k+1}$ and $p_{k-1}$, and with these expressions we can solve (\ref{equation}) and (\ref{adjoint}) numerically. We start with the explicit Euler scheme(\ref{EE_formula}):
 \begin{align}
-y^{k+1}&=(1 +\Delta ta) y^{k} + \Delta t v^{k}\label{E_state} \\
-p^{k-1} &=p^k(1 +\Delta ta)\label{E_adjoint}
+y_{k+1}&=(1 +\Delta ta) y_{k} + \Delta t v_{k}\label{E_state} \\
+p_{k-1} &=p_k(1 +\Delta ta)\label{E_adjoint}
 \end{align}
 Applying the implicit Euler scheme to (\ref{equation}) and (\ref{adjoint}) yields:
 \begin{align}
-y^{k+1} &=\frac{y^{k} +\Delta t v^{k+1}}{1-a\Delta t} \label{I_state} \\
-p^{k-1} &= \frac{p^k}{1-\Delta ta} \label{I_adjoint}
+y_{k+1} &=\frac{y_{k} +\Delta t v_{k+1}}{1-a\Delta t} \label{I_state} \\
+p_{k-1} &= \frac{p_k}{1-\Delta ta} \label{I_adjoint}
 \end{align}
 When we use Crank-Nicolson the expressions for $y^{k+1}$ and $p^{k-1}$ are:
 \begin{align}
-y^{k+1} &= \frac{(1+\frac{\Delta ta}{2})y^k +\frac{\Delta t}{2}(v^{k+1}+v^{k})}{1-\frac{\Delta t a}{2}}\label{CN_FD_state} \\
-p^{k-1} &= \frac{1+\frac{\Delta ta}{2}}{1-\frac{\Delta t a}{2}}p^k\label{CN_FD_adjoint}
+y_{k+1} &= \frac{(1+\frac{\Delta ta}{2})y_k +\frac{\Delta t}{2}(v_{k+1}+v_{k})}{1-\frac{\Delta t a}{2}}\label{CN_FD_state} \\
+p_{k-1} &= \frac{1+\frac{\Delta ta}{2}}{1-\frac{\Delta t a}{2}}p_k\label{CN_FD_adjoint}
 \end{align}
-The expressions for the state $y^{k+1}$ stems from the forward solving schemes (\ref{EE_formula}), (\ref{IE_formula}) and (\ref{CN_formula}), while $p^{k-1}$ were found using (\ref{EE_adjoint_formula}), (\ref{IE_adjoint_formula}) and (\ref{CN_adjoint_formula}).
+The expressions for the state $y_{k+1}$ stems from the forward solving schemes (\ref{EE_formula}), (\ref{IE_formula}) and (\ref{CN_formula}), while $p_{k-1}$ were found using (\ref{EE_adjoint_formula}), (\ref{IE_adjoint_formula}) and (\ref{CN_adjoint_formula}).
 \subsection{Numerical gradient}
 We have discretized both the domain and the equations, but we also need to evaluate the objective function (\ref{problem}) numerically. Since integration is involved in (\ref{problem}), we have to choose a numerical integration rule. In section \ref{num_int_sub_sec} we introduced three different methods for numerical integration, namely the left- and right-hand rectangle rule, as well as the trapezoid rule. Which of the methods we use in our discrete objective function depends on which finite difference scheme we used to discretize the ODEs. For explicit Euler we use the left-hand rule, for implicit Euler we use the right-hand rule, and for Crank-Nicholson we use the trapezoid rule. If we for example used Crank-Nicholson and the trapezoid rule to discretize problem (\ref{problem}), the discretized objective function would look like the following:
 \begin{align}
@@ -85,7 +85,7 @@ Lastly if the state and adjoint equation of problem (\ref{equation}-\ref{problem
 \end{align*}
 \end{theorem}
 \begin{proof}
-Let us start with the $M_{\theta}v$ terms of the gradients. These terms comes from the integral $\int_0^T v(t)^2dt$, which we approximate using the numerical integration rules stated in section \ref{num_int_sub_sec}. It turns out that we can define the three integration rules using the matrix $M_{\theta}$:
+Let us start with the $M_{\theta}v$ terms of the gradients. These terms comes from the integral $\int_0^T v(t)^2dt$, which we approximate using the numerical integration rules stated in section \ref{num_int_sub_sec}. It turns out that we can define the three integration rules applied to $v_{\Delta t}^2$ using the matrix $M_{\theta}$:
 \begin{align*}
 \int_0^T v(t)^2dt\approx  \Delta t(\theta v_0 +(1-\theta)v_n) + \sum_{i=1}^{n-1} \Delta t v_i^2 = v_{\Delta t}^TM_{\theta} v_{\Delta t}
 \end{align*} 
@@ -109,14 +109,14 @@ since $v_0$ is not part of the scheme, $\frac{\partial g(v)}{\partial v_0}=0$. I
 &= p_n(\frac{\partial y_{i}}{\partial v_{i}}(\frac{1+\frac{\Delta ta }{2}}{1-\frac{\Delta ta }{2}})^{n-i}+\frac{\partial y_{i+1}}{\partial v_{i}}(\frac{1+\frac{\Delta ta }{2}}{1-\frac{\Delta ta }{2}})^{n-i+1}) \\
 &=\frac{\Delta t}{2(1-\frac{\Delta t a}{2})}(p_i+p_{i+1}) = \frac{\Delta t}{2}(\frac{p_{i-1}}{1+ \frac{\Delta t a}{2}}+\frac{p_{i+1}}{1- \frac{\Delta t a}{2}})
 \end{align*}
-For $i=1,...,n-1$, the last expression of the above calculation is equal to the $i$-th component of $ \frac{1}{2}( \frac{1}{1+\frac{\Delta t a}{2}} B+\frac{1}{1-\frac{\Delta t a}{2}}B^T)p_{\Delta t}$, which is what we wanted to show. By doing similar calculations we see that the Crank-Nicholson gradient stated in theorem \ref{Theorem_num_grad} is also correct for $i=0$ and $i=m$.
+For $i=1,...,n-1$, the last expression of the above calculation is equal to the $i$-th component of $ \frac{1}{2}( \frac{1}{1+\frac{\Delta t a}{2}} B+\frac{1}{1-\frac{\Delta t a}{2}}B^T)p_{\Delta t}$, which is what we wanted to show. By doing similar calculations we see that the Crank-Nicholson gradient stated in theorem \ref{Theorem_num_grad} is also correct for $i=0$ and $i=n$.
 \end{proof}
 \section{Discretizing the decomposed time-domain}
 Decomposing the time interval $I=[0,T]$ into $N$ equally sized subintervals $I_i=[T_i,T_{i+1}]$, and solving the state and adjoint equations separately on each subinterval, is what allows our algorithm to be run in parallel. Decomposing $I$ is simple in the continuous case, however we are solving these equations numerically, and in the discrete case, partitioning $I$ is more involved. To explain how we decompose $I$ in the discrete case, lets look at how to do it for a general differential equation $F$:
 \begin{align*}
 \left\{
      \begin{array}{lr}
-		F(y(t),v(t))=0 \	\textit{For $t \in [0,T]$} \\
+		F(y(t),v(t))=0 \quad	\textrm{For $t \in [0,T]$} \\
 		y(0)=y_0
 	\end{array}
    \right.	
@@ -125,8 +125,8 @@ We then decompose $I$, and assume that we have $N-1$ intermediate initial condit
 \begin{align*}
 \left\{
      \begin{array}{lr}
-		F^i(y_i(t),v(t))=0 \	\textit{For $t \in [T_i,T_{i+1}]$} \\
-		y(T_i)=\lambda_i
+		F^i(y^i(t),v(t))=0 \quad \textrm{For $t \in [T_i,T_{i+1}]$} \\
+		y^i(T_i)=\lambda_i
 	\end{array}
    \right.	
 \end{align*} 
@@ -134,8 +134,8 @@ Now lets look at what happens when we discretize $I$. Lets divide $I$ into $n$ p
     \begin{align*}
 \left\{
      \begin{array}{lr}
-		F_{\Delta t}(y^k,v(t_k))=0 \	\textit{For $k=1,...,n$} \\
-		y^0=y_0
+		F_{\Delta t}(y(t_k),v(t_k))=0 \quad	\textrm{For $k=1,...,n$} \\
+		y(t_0)=y_0
 	\end{array}
    \right.	
 \end{align*} 
@@ -143,19 +143,19 @@ The next step is to decompose the discrete interval $I_{\Delta t}$ into $N$ disc
 \begin{align*}
 \left\{
      \begin{array}{lr}
-		F_{\Delta t}^i(y_i(t_k),v(t_k))=0 \	\textit{For $k \in \{k_i,k_i+1,...,k_{i+1} \}$} \\
-		y(t_{k_i})=\lambda_i
+		F_{\Delta t}^i(y^i(t_k),v(t_k))=0 \quad	\textrm{For $k \in \{k_i,k_i+1,...,k_{i+1} \}$} \\
+		y^i(t_{k_i})=\lambda_i
 	\end{array}
    \right.	
 \end{align*} 
-There is one minor issue with decomposing $I_{\Delta t}$, which I did not mention above, and that has to do with the choice of the subsequence $\{t_{k_i}\}_{i=0}^N$. In theory, one could of course freely chose any subsequence of $I_{\Delta t}$, but we generally want the difference $t_{k_i} -t_{k_{i+1}}$ to be constant for all $i$. This is however not always possible, since there is no guarantee that $n$ is divisible by $N$.
+There is one minor issue with decomposing $I_{\Delta t}$, which we did not mention above, and that has to do with the choice of the subsequence $\{t_{k_i}\}_{i=0}^N$. In theory, one could of course freely chose any subsequence of $I_{\Delta t}$, but we generally want the difference $t_{k_i} -t_{k_{i+1}}$ to be constant for all $i$. This is however not always possible, since there is no guarantee that $n$ is divisible by $N$.
 \subsection{Partitioning}
 The general rule for partitioning a task between $N$ processes, is to distribute the work of the task as evenly as possible. The task in the above setting is solving $ F_{\Delta t}$, and the work to be distributed, is the computations required to move the solution from one time step to the next for all time steps. Since there are $n$ time steps, we should be able to say that the main task of solving $F_{\Delta t}$ can be divided into $n$ subtasks, and it is these $n$ tasks that we want to distribute between the $N$ processes. Now deciding how many subtasks each process should get is quite simple. Start with defining the numbers:
 \begin{align*}
 q &= \lfloor \frac{n}{N}\rfloor \\
 r &= N \mod n
 \end{align*} 
-Then we give each process $q$ tasks, and then add one task to $r$ processes. To which processes you give the extra task does not really matter, but the most straightforward way of doing it is just to give the first $r$ processes the extra task. We however chose to look at the distributing problem slightly different, by instead of trying to distribute the $n$ tasks, looking at how to evenly divide the $n+1$ points $\{t_k\}_{k=0}^{n}$ among the $N$ processes. We redefine $q$ and $r$ as:
+Then we give each process $q$ tasks, and then add one task to $r$ processes. To which processes you give the extra task does not really matter, but the most straightforward way of doing it is just to give the first $r$ processes the extra task. We however chose to look at the distributing problem slightly different. Instead of trying to distribute the $n$ tasks, we try to evenly divide the $n+1$ points $\{t_k\}_{k=0}^{n}$ among the $N$ processes. We redefine $q$ and $r$ as:
 \begin{align*}
 q &= \lfloor \frac{n+1}{N}\rfloor \\
 r &= N \mod n+1
@@ -191,7 +191,7 @@ Let us also remember the gradient of (\ref{penalty_func2}) stated in (\ref{penal
 \begin{align}
 \hat J_{\mu}'(v,\lambda) = (v+p,p_{2}(T_1) -p_{1}(T_1),..., p_{N}(T_{N-1}) -p_{N}(T_{N-1})) \label{penalty grad2}
 \end{align}
-We now want to discretize the objective function (\ref{penalty_func2}) and find its discrete gradient for different the differnt finite difference schemes and integration rules, as we did for the non-penalized problem. Discretizing the decomposed ODEs is straight forward, however the solution of the state and adjoint equations now consists of independent solution $y_{\Delta t}^i$ and $p_{\Delta t}^i$ on each subinterval $I_{\Delta t}^i$, where 
+We now want to discretize the objective function (\ref{penalty_func2}) and find its discrete gradient for the different finite difference schemes and integration rules, as we did for the non-penalized problem. Discretizing the decomposed ODEs is straight forward, however the solution of the state and adjoint equations now consists of independent solution $y_{\Delta t}^i$ and $p_{\Delta t}^i$ on each subinterval $I_{\Delta t}^i$, where 
 \begin{align*}
 y_{\Delta t}^i &= (y_{k_{i-1}}^i,y_{k_{i-1}+1}^i,...,y_{k_{i}}^i) \ \text{and} \\
 p_{\Delta t}^i &= (p_{k_{i-1}}^i,p_{k_{i-1}+1}^i,...,p_{k_{i}}^i)
@@ -270,7 +270,7 @@ Let us begin with the $\Lambda$ part of the gradient. We find each component by 
 \frac{\partial\hat J_{\mu,\Delta t}}{\partial \lambda_i}(v_{\Delta t},\Lambda) &=-\mu (y_{k_i}^i-\lambda_i) +\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})\frac{\partial y_{k_{i+1}}^{i+1}}{\partial \lambda_i}  \\
 &=\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})(\frac{1}{1-a\Delta t})^{k_{i+1}-k_i} -\mu (y_{k_i}^i-\lambda_i)
 \end{align*}
-To get the $(\frac{1}{1-a\Delta t})^{k_{i+1}-k_i}$ term we used the chain rule on $\frac{\partial y_{k_{i+1}}^{i+1}}{\partial \lambda_i}$ and the implicit Euler scheme for our particular equation given in (\ref{I_state}). The next step is done by noticing that the terms $\mu (y_{k_i}^i-\lambda_i)$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})$ are the initial conditions of the $i$th and $i+1$th adjoint equations, which means that $\mu (y_{k_i}^i-\lambda_i)=p_{k_i}^{i}$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})=p_{k_{i+1}}^{i+1}$. Inserting this we get:
+To get the $(\frac{1}{1-a\Delta t})^{k_{i+1}-k_i}$ term we used the chain rule on $\frac{\partial y_{k_{i+1}}^{i+1}}{\partial \lambda_i}$ and the implicit Euler scheme for our particular equation given in (\ref{I_state}). The next step is done by noticing that the terms $\mu (y_{k_i}^i-\lambda_i)$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})$ are the initial conditions of the $i$-th and $i+1$-th adjoint equations, which means that $\mu (y_{k_i}^i-\lambda_i)=p_{k_i}^{i}$ and $\mu(y_{k_{i+1}}^{i+1}-\lambda_{i+1})=p_{k_{i+1}}^{i+1}$. Inserting this we get:
 \begin{align*}
 \frac{\partial\hat J_{\mu,\Delta t}}{\partial \lambda_i}(v_{\Delta t},\Lambda) &=p_{k_{i+1}}^{i+1}(\frac{1}{1-a\Delta t})^{k_{i+1}-k_i} -p_{k_i}^{i} \\
 &= p_{k_{i}}^{i+1}-p_{k_i}^{i}
@@ -282,7 +282,7 @@ The $v_{\Delta t}$ part of the gradient is almost equal to the non-penalized gra
 \begin{align*}
 g(v_{\Delta t}) = \frac{\alpha}{2}(y_n^N-y^T)^2+\frac{\mu }{2}\sum_{i=1}^{N} (y_{k_i}^{i}-\lambda_i)^2
 \end{align*} 
-As for the non-penalized gradient, the derivative of the $f$ term is quite easily seen to be $M_{\theta}v_{\Delta t}$, the problems start when we want to differentiate $g$ with respect to a specific component $v_k$ in $v_{\Delta t}$. If we are using the implicit Euler scheme to dicretize the state and adjoint equations, the $k$-th component of $v_{\Delta t}$ only affects the solution of one of the $i$ state equations. If $k\in \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, $v_k$ is used to find $y_{\Delta t}^i$, which means that the only term in $g$, that depend on $v_k$, is  $\frac{\mu }{2}(y_{k_i}^{i}-\lambda_i)^2$ if $i\neq N$, or $\frac{1}{2}(y_n^N-y^T)^2$ if $i=N$. If we now assume that $i\neq N$ and $k\in \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, we can differentiate $g$ with respect to $v_k$:
+As for the non-penalized gradient, the derivative of the $f$ term is quite easily seen to be $M_{\theta}v_{\Delta t}$, the problems start when we want to differentiate $g$ with respect to a specific component $v_k$ in $v_{\Delta t}$. If we are using the implicit Euler scheme to dicretize the state and adjoint equations, the $k$-th component of $v_{\Delta t}$ only affects the solution of one of the $n$ state equations. If $k\in \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, $v_k$ is used to find $y_{\Delta t}^i$, which means that the only term in $g$, that depend on $v_k$, is  $\frac{\mu }{2}(y_{k_i}^{i}-\lambda_i)^2$ if $i\neq N$, or $\frac{1}{2}(y_n^N-y^T)^2$ if $i=N$. If we now assume that $i\neq N$ and $k\in \{k_{i-1}+1,k_{i-1}+2,...,k_{i}\}$, we can differentiate $g$ with respect to $v_k$:
 \begin{align*}
 \frac{\partial g}{\partial v_k} &=\mu( y_{k_i}^{i}-\lambda_i) (\prod_{l=k+1}^{k_{i+1}}\frac{\partial y_{l}}{\partial y_{l-1}}) \frac{\partial y_k}{\partial v_{k}} = \frac{p_{k_i}^i}{(1-a\Delta t)^{k_{i}-k}}\frac{\Delta t}{1-a\Delta t} \\
 &= \frac{p_{k_i}^i\Delta t}{(1-a\Delta t)^{k_i-k+1}}=\Delta t p_{k-1}^i

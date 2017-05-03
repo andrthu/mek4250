@@ -21,7 +21,7 @@ Decomposing the interval $I$ means dividing the interval into $N$ subintervals $
 \end{align}
 Here $\lambda^0=u_0$. If $\Lambda=(\lambda_0,..,\lambda_{N-1})$ are known values, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the previous intervals, and need to be calculated by solving the equation. The Parareal scheme is a way of getting around this.
 \section{Parareal}\label{Parareal_sec}
-We see that when we decompose the time domain, the original initial value problem (\ref{unbroken}) brakes down to a set of $N$ initial value problems on the form (\ref{broken}). The idea of \cite{baffico2002parallel} is then first to define a fine solution operator $\bold F_{\Delta T}$, which when given an initial condition $\lambda_{i-1}$ at time $T_{i-1}$, evolves $\lambda_i$, using a fine scheme applied to the $i$th equation (\ref{broken}), from time $T_i$ to $T_{i+1}$. Meaning:
+We see that when we decompose the time domain, the original initial value problem (\ref{unbroken}) brakes down to a set of $N$ initial value problems on the form (\ref{broken}). The idea of \cite{baffico2002parallel} is then first to define a fine solution operator $\bold F_{\Delta T}$, which when given an initial condition $\lambda_{i-1}$ at time $T_{i-1}$, evolves $\lambda_i$, using a fine scheme applied to the $i$-th equation (\ref{broken}), from time $T_i$ to $T_{i+1}$. Meaning:
 \begin{align*}
 \hat \lambda_{i}= u^i(T_{i})=\bold F_{\Delta T}(\lambda_{i-1})
 \end{align*} 
@@ -35,7 +35,7 @@ Once we have these predicted initial values, we can apply the fine propagator on
 \lambda_{i}^{k+1} &= \bold G_ {\Delta T}(\lambda_{i-1}^{k+1})+\bold F_ {\Delta T}( \lambda_{i-1}^{k})-\bold G_ {\Delta T}( \lambda_{i-1}^{k}), \quad i=1,...,N-1 \label{pred_corr_PR} \\
 \lambda_0^k &= u_0
 \end{align}
-Updating our initial conditions $\Lambda^k$ from iteration $k$ to iteration $k+1$, requires $N$ fine propagations, which we can do in parallel, and $N$ coarse propagations, whet we need to do sequentially. We can now write up a simple algorithm for doing $K$ steps of Parareal.
+Updating our initial conditions $\Lambda^k$ from iteration $k$ to iteration $k+1$, requires $N$ fine propagations, which we can do in parallel, and $N$ coarse propagations, that we need to do sequentially. We can now write up a simple algorithm for doing $K$ steps of Parareal.
 \\
 \\
 \begin{algorithm}[H]
@@ -113,7 +113,7 @@ In this section we look at some of the convergence properties of the Parareal al
 \end{align}
 We state their findings in the proposition below:
 \begin{proposition} \label{P_con_prop}
-Let us decompose $I=[0,T]$ into $N$ subintervals of length $\Delta T = \frac{T}{N}$, and then let $\bold F_{\Delta T}$ and $\bold G_{\Delta T}$ be the fine and coarse propagator solving equation (\ref{convergence_ODE}). If $\bold G_{\Delta T}(\omega)$  is evaluated using the implicit Euler scheme (\ref{G_Backward}), there exist for all integers $k$ a constant $c_k$ such that the error between the $k$th iterate of the Parareal algorithm (\ref{pred_corr_PR}) and the exact solution of (\ref{convergence_ODE}) $y$ is bounded in the following way:
+Let us decompose $I=[0,T]$ into $N$ subintervals of length $\Delta T = \frac{T}{N}$, and then let $\bold F_{\Delta T}$ and $\bold G_{\Delta T}$ be the fine and coarse propagator solving equation (\ref{convergence_ODE}). If $\bold G_{\Delta T}(\omega)$  is evaluated using the implicit Euler scheme (\ref{G_Backward}), there exist for all integers $k$ a constant $c_k$ such that the error between the $k$-th iterate of the Parareal algorithm (\ref{pred_corr_PR}) and the exact solution of (\ref{convergence_ODE}) $y$ is bounded in the following way:
 \begin{align}
 \forall \ i,0\leq i\leq N-1 \quad |\lambda_i^k-y(T_i)| + \max_{t\in[T_{i},T^{i+1}]}|y_{i+1}^k(t)-y(t)| \leq c_k\Delta T^{k+1} \label{P_error_bound}
 \end{align}

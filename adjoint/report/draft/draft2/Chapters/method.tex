@@ -2,7 +2,7 @@
 In the previous chapter we saw that the parareal scheme allows us to parallelize time dependent differential equations in their temporal direction. In this chapter we will look at how to parallelize optimal control problems with time dependent differential equation constraints in temporal direction. 
 \\
 \\
-This chapter consists of three sections. In the first section we decompose the time domain as we did in section \ref{Para_dcomp_sec}, only now in the context of control problems with time-dependent DE constraints. Decomposing the time interval leads to a reformulation of the control problem that includes extra constraints on the state equation. How to handle these new constraints are dealt with in section \ref{penalty_sec}. We use the same approach as \cite{maday2002parareal} namely the penalty method. This is a simplified version of the augmented Lagrangian approach used in \cite{rao2016time} for parallel in time 4d variational data assimilation. We demonstrate the use of the penalty method by revisiting the example problem from section \ref{example_sec}.
+This chapter consists of three sections. In the first section we decompose the time domain as we did in section \ref{Para_dcomp_sec}, only now in the context of control problems with time dependent DE constraints. Decomposing the time interval leads to a reformulation of the control problem that includes extra constraints on the state equation. How to handle these new constraints are dealt with in section \ref{penalty_sec}. We use the same approach as \cite{maday2002parareal} namely the penalty method. This is a simplified version of the augmented Lagrangian approach used in \cite{rao2016time} for parallel in time 4d variational data assimilation. We demonstrate the use of the penalty method by revisiting the example problem from section \ref{example_sec}.
 \\
 \\
 In the last section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ides from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. 
@@ -10,12 +10,12 @@ In the last section a Parareal based preconditioner to be used in the optimizati
 Before we start to decompose the time interval, let us again state the general problem that we want to solve:
 \begin{align}
 \underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v) \label{initial problem1}\\
-\textit{Subject to:} \ &E(y(t),v)=0 \ \quad t\in [0,T] \label{initial problem}
+\textrm{Subject to:} \ &E(y(t),v)=0  \quad t\in [0,T] \label{initial problem}
 \end{align}
 To introduce parallelism, we decompose $I=[0,T]$ into $N$ subintervals $I_i=[T_{i-1},T_i]$, with $T_0=0$ and $T_N=T$. To be able to solve the differential equation $E$ on each interval $I_i$, we introduce intermediate initial conditions $y(T_i)=\lambda_i$ for $i=1,...,N-1$. This means that instead of finding $y$ by solving $E$ on the entire time domain $I$, we can now find $y$ by solving $E$ separately on on each subinterval $I_i$. The problem (\ref{initial problem}) now reads:
 \begin{align}
 \underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v)  \label{decomposed problem1}\\
-\textit{Subject to:} \ &E^i(y^i(t),v)=0 \ t\in [T_{i-1},T_i] \ \forall i \label{decomposed problem}
+\textrm{Subject to:} \ &E^i(y^i(t),v)=0 \quad t\in [T_{i-1},T_i] \quad \forall i \label{decomposed problem}
 \end{align} 
 Since we want the state $y$ to be continuous, we also need the following conditions:
 \begin{align}
@@ -63,7 +63,7 @@ Assume $v^k$ is the exact global minimizer of $J_{\mu_k}$, then each limit point
 \cite{nocedal2006numerical}
 \end{proof}
 \noindent
-The above result shows that penalty algorithm framework actually produces a solution to the original problem. There are however parts of the above framework, that still needs special attention, namely how to find $(v^k,\Lambda^k)$ in each iteration, how to update $\mu_k$ and $\tau_k$ and how to choose an adequate stopping criteria. Finding the optimal control for each iteration is done by applying an optimization method for unconstrained problems, that is dependent on the gradient at $(v^k,\Lambda^k)$. Let us therefore differentiate the penalized objective function.
+The above result shows that the penalty algorithmic framework actually produces a solution to the original problem. There are however parts of the above framework, that still needs special attention, namely how to find $(v^k,\Lambda^k)$ in each iteration, how to update $\mu_k$ and $\tau_k$ and how to choose an adequate stopping criteria. Finding the optimal control for each iteration is done by applying an optimization method for unconstrained problems, that is dependent on the gradient at $(v^k,\Lambda^k)$. Let us therefore differentiate the penalized objective function.
 \subsection{The gradient of the penalized objective function}
 To find the gradient of \ref{pen_obj_J} we start by differentiating $\hat J_{\mu}(v,\Lambda)$:
 \begin{align}
@@ -83,7 +83,7 @@ Where $p$ is the solution of the adjoint equation:
 \begin{align*}
 E_y^*p=\frac{\partial}{\partial y}J_{\mu}
 \end{align*} 
-Notice that the state equation $E$ consists of several equations defined separately on the each of the decomposed subintervals. The result is that the adjoint equation also consists of several equations defined on each interval. To see this clearly we will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
+Notice that the state equation $E$ consists of several equations defined separately on each of the decomposed subintervals. The result is that the adjoint equation also consists of several equations defined on each interval. To see this clearly we will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
 \subsection{Deriving the adjoint for the example problem}
 Let us first recall the example optimal control problem with ODE constraints:
 \begin{align*}
@@ -99,7 +99,7 @@ We can now decompose the interval $[0,T]$ into $N$ subintervals $\{[T_{i-1},T_{i
 \begin{align}
 \left\{
      \begin{array}{lr}
-       	\frac{\partial}{\partial t} y^i(t)=a y^i(t) + v(t) \ t\in(T_{i-1},T_{i})\\
+       	\frac{\partial}{\partial t} y^i(t)=a y^i(t) + v(t) \quad t\in(T_{i-1},T_{i})\\
        	y^i(T_{i-1})=\lambda_{i-1}
      \end{array}
    \right. \label{decomp_E}
@@ -131,10 +131,10 @@ On $[T_{i-1},T_i]$ the adjoint equation is:
 \begin{proof}
 Lets begin as we did for the non-penalty approach, by writing up the weak formulation of the state equations:
 \begin{gather*}
-\textit{Find $y_i \in L^2(T_{i-1},T_i)$ such that }\\
+\textrm{Find $y_i \in L^2(T_{i-1},T_i)$ such that }\\
 L^i[y_i,\phi] = \int_{T_{i-1}}^{T_{i}}-y_i(t)(\phi'(t) +a \phi(t))+v(t)\phi(t)dt -\lambda_{i-1}\phi(T_{i-1})+ y_i(T_i)\phi(T_i) =0\\ \forall \ \phi \in C^{\infty}((T_{i-1},T_{i}))
 \end{gather*} 
-To find the adjoint equations we differentiate the $E^i$s and the functional $\hat J_{\mu}$ with respect to $y$. To simplify notation easier, let $(\cdot,\cdot)_i$ be the $L^2$ inner product of the interval $[T_{i-1},T_i]$. 
+To find the adjoint equations we differentiate the $E^i$s and the functional $\hat J_{\mu}$ with respect to $y$. To simplify notation, let $(\cdot,\cdot)_i$ be the $L^2$ inner product of the interval $[T_{i-1},T_i]$. 
 \begin{align*}
 E_y^i=L_y^i[\cdot,\phi]=(\cdot,-(\frac{\partial}{\partial t} + a - \delta_{T_i})\phi)_i 
 \end{align*}
@@ -159,13 +159,13 @@ this means that $(E_y^i)^*=(L_y^i)^*[\cdot,\psi]$. The weak form of the adjoint 
 \\
 $i=N$ case:
 \begin{align*}
-&\textit{Find $p_N \in L^2(T_{N-1},T_N)$ such that }\forall \ \psi \in C^{\infty}((T_{N-1},T_N)) \\
+&\textrm{Find $p_N \in L^2(T_{N-1},T_N)$ such that }\forall \ \psi \in C^{\infty}((T_{N-1},T_N)) \\
 &\int_{T_N-1}^{T_N}p_N(t)\psi'(t)-a p_N(t)\psi(t)dt +p_N(T_{N-1})\psi(T_{N-1})
 = \alpha(y(T_N)-y^T)\psi(T_N)\ 
 \end{align*}
 $i\neq N$ cases:
 \begin{align*}
-&\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
+&\textrm{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
 &\int_{T_i-1}^{T_i}p_i(t)\psi'(t)-a p_i(t)\psi(t)dt +p_i(T_{i-1})\psi(T_{i-1})
 = \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
 \end{align*}
@@ -180,7 +180,7 @@ The strong formulation, is obtained by partial integration:
 \end{align*}
 $i\neq N$ cases:
 \begin{align*}
-&\textit{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
+&\textrm{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
 &\int_{T_i-1}^{T_i}-p_i'(t)\psi(t)-a p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
 = \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
 \end{align*}
@@ -246,7 +246,7 @@ For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the 
 For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. 
 \\
 \\
-We derive $Q$ by looking at a constructed optimal control problem that we call the virtual problem. The virtual problem is a decomposed as detailed in section \ref{decomp_sec}, but its objective function $\bold J$ is set to be the penalty term, and therefore only depends on $\Lambda$. We already stated this problem in section \ref{algebraic_sec}, and by utilizing the algebraic Parareal formulation, we will try to find a good candidate for $Q_{\Lambda}$.
+We derive $Q$ by looking at a constructed optimal control problem that we call the virtual problem. The virtual problem is a control problem decomposed as detailed in section \ref{decomp_sec}, but its objective function $\bold J$ is set to be the penalty term, and therefore only depends on $\Lambda$. We already stated this problem in section \ref{algebraic_sec}, and by utilizing the algebraic Parareal formulation, we will try to find a good candidate for $Q_{\Lambda}$.
 \subsection{Virtual problem} \label{vir_sec}
 In order for us to be able to derive the preconditioner from \cite{maday2002parareal}, we need the virtual optimal control problem from section \ref{algebraic_sec}. For reference let us restate it below:
 \begin{align}
@@ -327,7 +327,7 @@ M \ H-\Lambda  = \left( \begin{array}{c}
 	\bold{F}_{\Delta T}(\lambda_{N-2})-\lambda_{N-1} 
 	\end{array} \right)
 \end{align}
-We recognise $\bold{F}_{\Delta T}(\lambda_{i-1})-\lambda_i=y^i(T_i) -\lambda_i$, $i=1,...,N-1$ as the initial conditions of the adjoint equations (\ref{exs_adjoint}). This means that $\bold{F}_{\Delta T}(\lambda_{i-1})-\lambda_i=p^i(T_i)$. This means that: 
+We recognise $\bold{F}_{\Delta T}(\lambda_{i-1})-\lambda_i=y^i(T_i) -\lambda_i$, $i=1,...,N-1$ as the initial conditions of the adjoint equations (\ref{exs_adjoint}). This means that $\bold{F}_{\Delta T}(\lambda_{i-1})-\lambda_i=p^i(T_i)$, and that: 
 \begin{align}
 M \ H-\Lambda  = \left( \begin{array}{c}
 	y_0-\lambda_0  \\
@@ -357,7 +357,7 @@ M^* (M \ H-\Lambda)&=
 	p_{N-1}(T_{N-1})
 	\end{array} \right)
 \end{align}
-The last vector, can be recognised as the negative gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices, which shows that solving (\ref{vir_grad_sys}) is thae same as solving $\hat {\bold J}'(\Lambda)=0$. If we then created a fix point iteration for (\ref{vir_grad_sys}), in a similar fashion as (\ref{par_mat_sys}), it would look like this:
+The last vector, can be recognised as the negative gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices, which shows that solving (\ref{vir_grad_sys}) is the same as solving $\hat {\bold J}'(\Lambda)=0$. If we then created a fix point iteration for (\ref{vir_grad_sys}), in a similar fashion as (\ref{par_mat_sys}), it would look like this:
 \begin{align*}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}\bar M^{-*}(H-M^*M\Lambda^k)
 \end{align*}
