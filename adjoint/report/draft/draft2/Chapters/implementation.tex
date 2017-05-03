@@ -47,7 +47,22 @@ When we use Crank-Nicolson the expressions for $y^{k+1}$ and $p^{k-1}$ are:
 y_{k+1} &= \frac{(1+\frac{\Delta ta}{2})y_k +\frac{\Delta t}{2}(v_{k+1}+v_{k})}{1-\frac{\Delta t a}{2}}\label{CN_FD_state} \\
 p_{k-1} &= \frac{1+\frac{\Delta ta}{2}}{1-\frac{\Delta t a}{2}}p_k\label{CN_FD_adjoint}
 \end{align}
-The expressions for the state $y_{k+1}$ stems from the forward solving schemes (\ref{EE_formula}), (\ref{IE_formula}) and (\ref{CN_formula}), while $p_{k-1}$ were found using (\ref{EE_adjoint_formula}), (\ref{IE_adjoint_formula}) and (\ref{CN_adjoint_formula}).
+The expressions for the state $y_{k+1}$ stems from the forward solving schemes (\ref{EE_formula}), (\ref{IE_formula}) and (\ref{CN_formula}), while $p_{k-1}$ were found using (\ref{EE_adjoint_formula}), (\ref{IE_adjoint_formula}) and (\ref{CN_adjoint_formula}). One issue that becomes apparent when looking at the finite difference scheme formulas above is the question of stability. For all the schemes certain combinations of $\Delta t$ and $a$ will result in division by zero, or unnatural oscillations. These numerical artefacts can be removed by decreasing $\Delta t$. We summarize the different stability requirements of the three schemes in table \ref{stability_table}, where we for each scheme have written up the stable values of $\Delta t$ for positive and negative $a$ values.  
+\begin{table}[!h]
+\caption{Stability domains for finite difference schemes}
+\label{stability_table}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+{} & $a<0$   & $a>0$  \\
+\midrule
+Explicit Euler & $0<\Delta t<-\frac{1}{a}$ & $\Delta t>0$ \\
+Implicit Euler & $\Delta t>0$ & $0<\Delta t<\frac{1}{a}$ \\
+Crank-Nicolson & $0<\Delta t<-\frac{2}{a}$ & $0<\Delta t<\frac{2}{a}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+We notice that the implicit Euler scheme is stable for all $\Delta t$ values when $a<0$, and that the same holds true for explicit Euler in the case where $a>0$. This makes these schemes attractive candidates for use in course propagators in the context of the Parareal algorithm or preconditioner. 
 \subsection{Numerical gradient}
 We have discretized both the domain and the equations, but we also need to evaluate the objective function (\ref{problem}) numerically. Since integration is involved in (\ref{problem}), we have to choose a numerical integration rule. In section \ref{num_int_sub_sec} we introduced three different methods for numerical integration, namely the left- and right-hand rectangle rule, as well as the trapezoid rule. Which of the methods we use in our discrete objective function depends on which finite difference scheme we used to discretize the ODEs. For explicit Euler we use the left-hand rule, for implicit Euler we use the right-hand rule, and for Crank-Nicholson we use the trapezoid rule. If we for example used Crank-Nicholson and the trapezoid rule to discretize problem (\ref{problem}), the discretized objective function would look like the following:
 \begin{align}

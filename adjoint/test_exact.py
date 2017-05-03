@@ -68,11 +68,11 @@ def gen_con(problem,name='exact_convergence'):
             table['norm r'].append(np.log(table['norm'][i]/table['norm'][i-1])/np.log(N_val[i]/N_val[i-1]))
             table['val r'].append(np.log(table['val'][i]/table['val'][i-1])/np.log(N_val[i]/N_val[i-1]))
 
-    dt_val = 1./np.array(N_val)
+    dt_val = float(problem.T)/np.array(N_val)
     data = pd.DataFrame(table,index = dt_val)
     data =data.ix[:,['norm','val','norm r','val r']]
 
-    data.to_latex('report/whyNotEqual/'+name+'.tex')
+    #data.to_latex('report/whyNotEqual/'+name+'.tex')
 
     print data
 if __name__ =='__main__':

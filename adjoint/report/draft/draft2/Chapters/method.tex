@@ -192,14 +192,10 @@ With the adjont equations we can find the gradient.
 The gradient of (\ref{penalty_func}), $\hat J_{\mu}'$, with respect to the control $(v,\Lambda)$ is:
 \begin{align}
 \hat J_{\mu}'(v,\Lambda) = (v+p,p_{2}(T_1) -p_{1}(T_1),..., p_{N}(T_{N-1}) -p_{N}(T_{N-1})) \label{penalty grad}
-\end{align} 
-and the directional derivative with respect to $L^2$-norm in direction $(s,l)$ is:
-\begin{align*}
-\langle \hat J_{\mu}'(v,\Lambda), (s,l)\rangle = \int_0^T (v+p)s \ dt +\sum_{i=1}^{N-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
-\end{align*}
+\end{align}
 \end{theorem}
 \begin{proof}
-If we first find $E_v^*$, $E_{\lambda}^*$, $J_v$ and $J_{\lambda}$ find the gradient by simply inserting these expression into (\ref{pen_abs_grad}). We can begin with the $E$ terms:
+If we first find $E_v^*$, $E_{\lambda}^*$, $J_v$ and $J_{\lambda}$ we can derive the gradient by simply inserting these expression into (\ref{pen_abs_grad}). We begin with the $E$ terms:
 \begin{align*}
 E_v &= L_v[\cdot,\phi] = -(\cdot,\phi) \\
 E_{\lambda_{i-1}}^i &= L_{y_{i-1}}^i[\cdot,\phi] = -(\cdot,\delta_{T_{i-1}}\phi)_i
@@ -209,19 +205,23 @@ Notice that both of these forms are symmetric, and we therefore do not need to d
 E_v &=-1 \\
 E_{\lambda_{i-1}}^i &= -\delta_{T_{i-1}}
 \end{align*}
-Then lets differentiate $\hat J_{\mu}$:
+Then lets differentiate $ J_{\mu}$:
 \begin{align*}
-\frac{\partial}{\partial v}\hat J_{\mu} &= v \\
-\frac{\partial}{\partial \Lambda}\hat J_{\mu} &= - \mu \sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)
+\frac{\partial}{\partial v} J_{\mu} &= v \\
+\frac{\partial}{\partial \lambda_i}J_{\mu} &= - \mu (y_{i}(T_i)-\lambda_i)
 \end{align*}
-Let us now insert these into (\ref{pen_abs_grad}), and firstly find the directional derivative:
+We can insert the above derived expressions into formula (\ref{pen_abs_grad}) to find the gradient. To make it simple we separate the $v$ and $\Lambda$ terms. First we look at the gradient associated with the source term $v$:
 \begin{align*}
-\langle \hat J_{\mu}'(v,\lambda), (s,l)\rangle&=\langle -(E_v+E_{\lambda})p, (s,l)\rangle + \langle J_v+J_{\lambda}, (s,l)\rangle \\
-&= \langle (p+\sum_{i=1}^{N-1} \delta_{T_i}p_{i+1}) , (s,l)\rangle+ \int_0^T us \ dt - \mu \sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)l_i\\
-&=\int_0^T (v+p)s \ dt +\sum_{i=1}^{N-1}(p_{i+1}(T_i) -\mu(y_{i}(T_i)-\lambda_i) )l_i \\
-&= \int_0^T (v+p)s \ dt +\sum_{i=1}^{N-1}(p_{i+1}(T_i) -p_{i}(T_i) )l_i
-\end{align*} 
-Here we use that $p_i(T_i) = \mu(y_{i}(T_i)-\lambda_i)$. We also see from this, that the gradient has the form we stated above.
+\frac{\partial}{\partial v} \hat J_{\mu}(v,\Lambda) &= -E_vp +  \frac{\partial}{\partial v} J_{\mu} \\
+&=p+v
+\end{align*}
+We then find the components of the gradient related to $\lambda_i$.
+\begin{align*}
+\frac{\partial}{\partial \lambda_i} \hat J_{\mu}(v,\Lambda) &= -E_{\lambda_i} p +  \frac{\partial}{\partial \lambda_i} J_{\mu} \\
+&= p_{i+1}(T_i)-\mu (y_{i}(T_i)-\lambda_i)\\
+ &= p_{i+1}(T_i)-p_i(T_i)
+\end{align*}
+Combining $\frac{\partial}{\partial v} \hat J_{\mu}$ and $ \frac{\partial}{\partial \lambda_i}$ for $i=1,..,N-1$ gives us the gradient \ref{penalty grad}.
 \end{proof} 
 \section{Parareal preconditioner} \label{pc sec}
 Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. We can for example use the steepest descent method (\ref{SD_itr}), which would create the following iteration for each penalized control problem:

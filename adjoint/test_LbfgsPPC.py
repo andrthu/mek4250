@@ -583,15 +583,15 @@ def test_adaptive_ppc():
     data2.to_latex('report/draft/parareal/adaptive2.tex')
     plt.show()
 
-def jump_difference():
+def jump_difference(problem=None):
     import sys
     y0 = 3.2
     yT = 11.5
     T  = 1
     a  = -3.9
     p = 2
-    
-    problem = create_simple_CN_problem(y0,yT,T,a)#non_lin_problem(y0,yT,T,a,p,func=lambda x : 0*x)#10*np.sin(np.pi*2*x))
+    if problem==None:
+        problem = create_simple_CN_problem(y0,yT,T,a)#non_lin_problem(y0,yT,T,a,p,func=lambda x : 0*x)#10*np.sin(np.pi*2*x))
     
     
     try:

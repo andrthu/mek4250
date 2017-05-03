@@ -1,5 +1,5 @@
 \chapter{Experiments}\label{Experiments chapter}
-In this chapter we will through experiments investigate what speedup one might get by using the algorithm for parallelizing optimal control problems with  time dependent DE constraints in temporal direction, introduced in previous chapters. Unlike the parallel performance of gradient and objective function evaluation, the parallel performance of our overall algorithm is difficult to model. The reason for this is that it is difficult to say how many gradient and function evaluations are needed for the optimization algorithms to terminate. We am therefore unable to derive any theoretical expected speedup.
+In this chapter we will through experiments investigate what speedup one might get by using the algorithm for parallelizing optimal control problems with  time dependent DE constraints in temporal direction, introduced in previous chapters. Unlike the parallel performance of gradient and objective function evaluation, the parallel performance of our overall algorithm is difficult to model. The reason for this is that it is difficult to say how many gradient and function evaluations are needed for the optimization algorithms to terminate. We are therefore unable to derive any theoretical expected speedup.
 \\
 \\
 In section \ref{analysis sec} we explained that the best way of measuring performance of a parallel algorithm is to compare its execution time to the sequential execution time of the best sequential algorithm. When solving optimal control problems with DE constraints, the runtime of our solution algorithm will depend on how many times we have to evaluate the objective function and its gradient, since these evaluations require either the solution of the state equation or the state and adjoint equations. We know from theory in section \ref{analysis sec} and verification in section \ref{ver S sec}, that the speedup of parallel gradient and function evaluation depends linearly on the number of processes we use. An alternative way of measuring parallel performance is therefore to compare the sum of gradient and function evaluations in the sequential and parallel algorithms. Let us give this numbers a name:
@@ -11,7 +11,7 @@ Using these definitions we define the ideal speedup $\hat{S}$, as the speedup on
 \begin{align}
 \hat S = \frac{NL_s}{L_{p_N}} \label{ideal S}
 \end{align}
-With $\hat S$, it is possible to say something about the performance of the parallel algorithm without having to time it, or actually run it in parallel. This is also be useful to compare the ideal speedup, to the actual speedup, which we get when we look at execution time.
+With $\hat S$, it is possible to say something about the performance of the parallel algorithm without having to time it, or actually run it in parallel. It will also be useful to compare the ideal speedup with the measured speedup, as a way to check if the parallel implementation implemented efficiently.
 \section{L-BFGS with and without parareal preconditioner}
 In section \ref{pc sec} we introduced the parareal preconditioner, as an approximation to the Hessian. Using this preconditioner in our L-BFGS solver we hope that the number of gradient and function evaluations needed in our algorithm will be smaller than if we do not use it. To test this, let us again write up an example problem to be solved:
 \begin{align*}
@@ -25,7 +25,7 @@ In section \ref{pc sec} we introduced the parareal preconditioner, as an approxi
 \end{align*}
 We will first solve this problem without decomposing the time interval, and then solve the decomposed problem using $N=2,3,4,5,6,8,16,32,64$ and penalty parameter $\mu=10^4$. This means that we will only use one penalty iteration, as we have found this to be the most effective way to solve the decomposed problem for this specific problem. For both the penalized and non-penalized problems we use L-BFGS with stop criteria:
 \begin{align*}
-||\nabla J||_{l^2} <10^{-6}
+||\nabla J||_{L^2} <10^{-6}
 \end{align*}  
 Since the point of this test is to compare the effectiveness of the parareal preconditioner, we solve the decomposed problems with and without it. In the result table below we have included the total number of gradient and function evaluations for the two cases as "pc L" and "non-pc L". We also measured the relative $L^2$-norm difference between the non-penalized control solution and all the penalized control solutions. The ideal speedup (\ref{ideal S}) is calculated for preconditioned and unpreconditioned solvers.
 \\
@@ -33,6 +33,7 @@ Since the point of this test is to compare the effectiveness of the parareal pre
 \begin{table}[h]
 \centering
 \caption{Comparing unpreconditioned and preconditioned solver}
+\label{compare_table}
 \begin{tabular}{lrrllrr}
 \toprule
 {}$N$ &  pc L &  non-pc L &       $||v_{seq}-v_{pc-par}||$ &  $||v_{seq}-v_{par}||$  &  pc $\hat{S}$ &  non-pc $\hat{S}$ \\
@@ -52,12 +53,12 @@ Since the point of this test is to compare the effectiveness of the parareal pre
 \end{table}
 \\
 \\
-There are several things of note about the above results. First off we see that the normed difference in control between sequential and parallel solution lies in the range from $3\cdot 10^{-4}$ to $4\cdot 10^{-3}$, and that it gets bigger when we increase $N$. Another observation about the norm difference, is that for each $N$, the preconditioned and unpreconditioned solvers seems to produce roughly the same error. 
+There are several things of note about the results in table \ref{compare_table}. First off we see that the normed difference in control between sequential and parallel solution lies in the range from $3\cdot 10^{-4}$ to $4\cdot 10^{-3}$, and that it gets bigger when we increase $N$. Another observation about the norm difference, is that for each $N$, the preconditioned and unpreconditioned solvers seems to produce roughly the same error. 
 \\
 \\
-When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=1,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned case solver get speedup for all decompositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is consistently less then half of $N$. Another thing that we notice when looking at the sum of gradient and function evaluations for the preconditioned solver it increases steadily up to $N=8$, and then starts to decline again for higher $N$s. The reason for this is that when increase the number of decomposed subintervals, we also make the coarse solver in the parareal preconditioner finer. This means that the preconditioner becomes a better approximation of the Hessian, which makes the L-BFGS iteration converge faster. 
+When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=1,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned solver get speedup for all decompositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is consistently less then half of $N$. Another thing that we notice when looking at the sum of gradient and function evaluations for the preconditioned solver, is that it increases steadily up to $N=8$, and then starts to decline again for higher $N$s. The reason for this is that when we increase the number of decomposed subintervals, we also make the coarse solver in the parareal preconditioner finer. This means that the preconditioner becomes a better approximation of the Hessian, which makes the L-BFGS iteration converge faster. 
 \section{Speedup results for $N=1,...,6$}
-In the previous section we measured the effectiveness of the parareal preconditioner using the ideal speedup (\ref{ideal S}), for a quite large time step $\Delta t =10^{-3}$. From section \ref{ver S sec}, we know that we need smaller time steps than that to get any benefit from the parallelization. This means that if we want to get actual wall clock time speedup, we need to use smaller time steps. Let us again write up the version of the example problem that we want to solve for this experiment:
+In the previous section we measured the effectiveness of the parareal preconditioner using the ideal speedup (\ref{ideal S}), for a quite large time step $\Delta t =10^{-3}$, which for $T=1$ translates to $n=1000$ timesteps. From section \ref{ver S sec}, we know that we need more time steps than that to get any benefit from the parallelization. This means that if we want to get actual wall clock time speedup, we need to use smaller time steps, or solve the equation on larger time interval. Let us again write up the version of the example problem that we want to solve for this experiment:
 \begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
 &\left\{
@@ -71,12 +72,13 @@ This time we only use the preconditioned solver, but now we also measure the exe
 \begin{align*}
 ||\nabla J||<10^{-10}
 \end{align*}
-We solved the penalized problem using only one penalty iteration setting the penalty parameter $\mu=\frac{1}{\Delta t}$. Finally, we ran my experiments using $\Delta t =10^{-5},0.5(10^{-5}),10^{-6}$. The results follow below:
+We solved the penalized problem using only one penalty iteration setting the penalty parameter $\mu=\frac{1}{\Delta t}$. Finally, we ran my experiments using \\$\Delta t =10^{-5}, 0.5(10^{-5}), 10^{-6}$. The results follow in table \ref{actual_speedup_1}-\ref{actual_speedup_3}.
 \\
 \\
 \begin{table}[h]
 \centering
 \caption{$\Delta t = 10^{-5}$}
+\label{actual_speedup_1}
 \begin{tabular}{lrrllrr}
 \toprule
 {} $N$&   L &        $\hat S$ &          $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&   speedup &      time \\
@@ -91,12 +93,10 @@ We solved the penalized problem using only one penalty iteration setting the pen
 \end{tabular}
 \end{table}
 \\
-When comparing the ideal speedup $\hat S$ with the actual achieved wall clock speedup in the above results, we see that the ideal speedup is a lot higher. We do however notice that both ideal and actual speedup increase for larger $N$, which indicates that they might be somewhat related.
-\\
-\\
 \begin{table}[h]
 \centering
 \caption{$\Delta t = 0.5(10^{-5})$}
+\label{actual_speedup_2}
 \begin{tabular}{lrrllrr}
 \toprule
 {} $N$&   L &        $\hat S$ &         $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&speedup &       time \\
@@ -114,6 +114,7 @@ When comparing the ideal speedup $\hat S$ with the actual achieved wall clock sp
 \begin{table}[h]
 \centering
 \caption{$\Delta t = 10^{-6}$}
+\label{actual_speedup_3}
 \begin{tabular}{lrrllrr}
 \toprule
 {} $N$&   L &        $\hat S$ &          $\frac{J(v_1)-J(v_N)}{J(v_1)}$ &    $\frac{||v_1-v_N||_{l^2}}{||v_1||_{l^2}}$&speedup &       time \\
@@ -127,5 +128,8 @@ When comparing the ideal speedup $\hat S$ with the actual achieved wall clock sp
 \bottomrule
 \end{tabular}
 \end{table}
+\\
+When comparing the ideal speedup $\hat S$ with the actual achieved wall clock speedup in the results found in \ref{actual_speedup_1}, we see that the ideal speedup is a lot higher. We do however notice that both ideal and actual speedup increase for larger $N$, which indicates that they might be somewhat related.
+\\
 \\
 For $\Delta t = 0.5(10^{-5})$ and $\Delta t = 10^{-6}$, the results are a bit disappointing, however we do continue to see the a relation between ideal and actual speedup, which justifies the use of $\hat S$ as a measure of effectiveness for our algorithm. In the last table for $N=3$, we notice that the error is high, and that the number of gradient evaluations is low. The reason for this is that the last line search iteration for this specific case failed to satisfy the Wolfe conditions due to numerical errors. The next natural step would then be to do a second penalty iteration with increased penalty parameter and or decreased tolerances, for line search and L-BFGS iterations. This was however not done in this case, since the set-up for the experiment was only to do one penalty iteration.

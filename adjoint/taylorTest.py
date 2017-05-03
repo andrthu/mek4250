@@ -812,15 +812,28 @@ def general_taylor_test(problem,N=100,m=10):
     import matplotlib.pyplot as plt
 
 
-    
+    t = np.linspace(0,problem.T,N+1)
+
 
     #grad2 = grad_J2(u)
+    plt.figure(figsize=(12,6))
+    ax1 = plt.subplot(211)
+    ax1.plot(t,grad[:N+1])
+    ax2 = plt.subplot(212)
+    ax2.plot(grad[N+1:])
+
+
+    plt.figure(figsize=(12,6))
+
+    plt.plot(t,grad_J(u))
+    """
     plt.plot(grad)
     plt.plot(grad_fd,'r--')
     #plt.plot(grad2)
     plt.legend(['num grad','finite diff grad'],loc=4)
     plt.xlabel('gradient index')
     plt.ylabel('gradient value')
+    """
     plt.show()
 
 
