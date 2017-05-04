@@ -801,7 +801,9 @@ def general_taylor_test(problem,N=100,m=10):
         grad_fd = finite_diff(J2,u2,eps)
         grad = grad_J2(u2)
         print max(abs(grad_fd[:]-grad[:]))
-    
+
+    grad_fd2 = finite_diff(J,u,eps)
+
     data2 = pd.DataFrame(table,index=eps_list)
     #data2.to_latex('report/draft/discertizedProblem/taylorTest1.tex')
     data3 = pd.DataFrame(table2,index=eps_list)
@@ -819,13 +821,22 @@ def general_taylor_test(problem,N=100,m=10):
     plt.figure(figsize=(12,6))
     ax1 = plt.subplot(211)
     ax1.plot(t,grad[:N+1])
+    ax1.set_xlabel('t')
+    ax1.set_ylabel(r'$\nabla\hat J_{v}(v,\Lambda)$',fontsize=20)
     ax2 = plt.subplot(212)
     ax2.plot(grad[N+1:])
-
+    ax2.set_xlabel('i')
+    ax2.set_ylabel(r'$\nabla\hat J_{\lambda_i}(v,\Lambda)$',fontsize=20)
+    #plt.savefig('report/draft/draft2/pen_num_grad.png')
 
     plt.figure(figsize=(12,6))
 
     plt.plot(t,grad_J(u))
+    plt.plot(t,grad_fd2,'r--')
+    plt.xlabel('t')
+    plt.ylabel(r'$\nabla\hat J$',fontsize=20)
+    plt.legend([r'$\nabla\hat J(v)$',r'$\frac{J(v+\epsilon w)-J(v)}{\epsilon}$'])
+    #plt.savefig('report/draft/draft2/num_grad.png')
     """
     plt.plot(grad)
     plt.plot(grad_fd,'r--')

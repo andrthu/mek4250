@@ -489,19 +489,19 @@ p(t)&=p(\Delta T) e^{a(\Delta T-t)}
 This means that $\bold F_{\Delta T}(\omega)=y(\Delta T)=\omega e^{a\Delta T}$, and that $\bold F_{\Delta T}^*(\omega)=p(0)=\omega e^{a\Delta T}$. If we insert these expressions into $M$ and $M^*$, we get:
 \begin{align*}
 M = \left[ \begin{array}{cccc}
-   \mathbbold{1} & 0 & \cdots & 0 \\  
-   -e^{a\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
-   0 &-e^{a\Delta T} & \mathbbold{1}  & \cdots \\
-   0 &\cdots &-e^{a\Delta T} & \mathbbold{1}  \\
+   1 & 0 & \cdots & 0 \\  
+   -e^{a\Delta T} & 1 & 0 & \cdots \\ 
+   0 &-e^{a\Delta T} & 1  & \cdots \\
+   0 &\cdots &-e^{a\Delta T} & 1  \\
    \end{array}  \right],
 M^* =\left[ \begin{array}{cccc}
-   	\mathbbold{1} & - e^{a\Delta T} & 0 & 0 \\  
-  	 0 & \mathbbold{1} & - e^{a\Delta T} & \cdots \\ 
-  	 \cdots &0 &  \mathbbold{1} & - e^{a\Delta T} \\
-  	 0 &\cdots &\cdots &  \mathbbold{1}  \\
+   	 1& - e^{a\Delta T} & 0 & 0 \\  
+  	 0 & 1 & - e^{a\Delta T} & \cdots \\ 
+  	 \cdots &0 &  1 & - e^{a\Delta T} \\
+  	 0 &\cdots &\cdots &  1  \\
   	 \end{array}  \right]
 \end{align*}
-Looking at the $M$ and $M^*$ matrices above, it is quite clear that $M^*=M^T$, which means that for the virtual problem (\ref{virtual_func}-\ref{virtual}) governed by the equation (\ref{virtual_exs}), the assumption $M^*=M^T$ holds, when the fine propagator and the fine adjoint propagator solved the state and adjoint equations exactly. If one instead let the underlying solvers of $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$ be based on some numerical method, the $M$ and $M^*$ matrices will of course depend on the choice of this method. When we discretize the state and adjoint equations, we want the matrices $M$ and $M^*$ to behave as they did for non-discrete $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$.
+Looking at the $M$ and $M^*$ matrices above, it is quite clear that $M^*=M^T$. If one instead let the underlying solvers of $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$ be based on a numerical method, the $M$ and $M^*$ matrices will depend on the choice of this method. When we discretize the state and adjoint equations, we want the matrices $M$ and $M^*$ to behave as they did for non-discrete $\bold F_{\Delta T}$ and $\bold F_{\Delta T}^*$. We must therefore chose consistent numerical schemes when discretizing the state and adjoint equations. 
 \\
 \\
 Since $\bar{M}$ and $\bar{M}^{*}$ are only approximations of $M$ and $M^*$, we might think that $\bar{M}^*=\bar{M}^T$ is unnecessary. However since we want to use $\bar{M}^{-1}\bar{M}^{-*}$ as an initial inverse Hessian approximation in our BFGS-optimization algorithm, we need $\bar{M}^{-1}\bar{M}^{-*}$ to be symmetric positive definite. This is true if $\bar{M}^*=\bar{M}^T$, because the matrix product between an invertible matrix and its transpose always is positive definite. This holds because:
@@ -509,7 +509,7 @@ Since $\bar{M}$ and $\bar{M}^{*}$ are only approximations of $M$ and $M^*$, we m
 x^TM^TMx=(Mx)^TMx=||Mx||^2\geq &0, \quad \textrm{and} \\
 ||Mx||^2=0 \iff x=&0
 \end{align*}
-The second requirement for positive definiteness is true if $M$ is invertible, which is trivially true, since $M$ is a triangular matrix with the identity on its diagonal, and this means that $M$ has a non-zero determinant. Since $\bar{M}^*=\bar{M}^T$ guaranties that $\bar{M}^{-1}\bar{M}^{-*}$ is positive definite, we want to choose coarse propagators that gives us this property. Let us try to find out how we need to define $\bold G_{\Delta T}^*$, when we use the coarse propagator suggested in \cite{lions2001resolution} written up in (\ref{G_Backward}) based on the implicit Euler finite difference scheme. For equation (\ref{virtual_exs}), we can use (\ref{G_Backward}) to derive an expression for evaluating the coarse propagator $\bold G_{\Delta T}(\omega)$:
+The second requirement for positive definiteness is true if $M$ is invertible, which is trivially true, since $M$ is a triangular matrix with the identity on its diagonal, and this means that $M$ has a non-zero determinant. Since $\bar{M}^*=\bar{M}^T$ guaranties that $\bar{M}^{-1}\bar{M}^{-*}$ is positive definite, we want to choose a coarse propagators that gives us this property. Let us try to find out how we need to define $\bold G_{\Delta T}^*$, when we use the coarse propagator suggested in \cite{lions2001resolution} written up in (\ref{G_Backward}) based on the implicit Euler finite difference scheme. For equation (\ref{virtual_exs}), we can use (\ref{G_Backward}) to derive an expression for evaluating the coarse propagator $\bold G_{\Delta T}(\omega)$:
 \begin{align}
 \frac{\bold{G}_{\Delta T}(\omega) -\omega}{\Delta T } - a \bold{G}_{\Delta T}(\omega) &= 0 \\
 \bold{G}_{\Delta T}(\omega)(1-a\Delta T)&= \omega \\
@@ -615,10 +615,10 @@ Q = \left[ \begin{array}{cc}
 	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
 	\end{array} \right] 
 \end{align*}
-$Q$ is a preconditioner for optimization algorithms, and is supposed to be applied to the the gradient $\nabla \hat J_{\mu}(v,\Lambda)\in\mathbb{R}^{N+n}$ at every iteration. We see that $Q$ only effects the last part of the gradient, which is the $\Lambda$ part of the gradient. One important thing of note about $Q$, is that when $N=2$ both $\bar M$ and $\bar M^*$ are the identity, which means that for $N=2$, $Q=\mathbbold{1}$. Since $Q$ has no effect for $N=2$, we might also expect that for "small" $N$, the effect of $Q$ is only modest, and that the usefulness of only materializes for higher values of decomposed subintervals $N$. The last remark on our preconditionr will be a quick explanation of how we typically apply it to the gradient. We do this through a simple example.   
+$Q$ is a preconditioner for optimization algorithms, and is supposed to be applied to the the gradient $\nabla \hat J_{\mu}(v,\Lambda)\in\mathbb{R}^{N+n}$ at every iteration. We see that $Q$ only effects the last part of the gradient, which is the $\Lambda$ part of the gradient. One important thing of note about $Q$, is that when $N=2$ both $\bar M$ and $\bar M^*$ are the identity, which means that for $N=2$, $Q=\mathbbold{1}$. Since $Q$ has no effect for $N=2$, we might also expect that for "small" $N$, the effect of $Q$ is only modest, and that the usefulness of $Q$ only materializes for higher values of decomposed subintervals $N$. The last remark on our preconditionr will be a quick explanation of how we typically apply it to the gradient. We do this through a simple example.   
 \\
 \\
-Assume that we decompose $I=[0,T]$ into four sub-intervals $[T_0,T_1], [T_1,T_2], [T_2,T_3]$ and $[T_3,T_4]$. To enforce continuity at the overlapping boundaries, we need three variables $\lambda_1,\lambda_2$ and $\lambda_3$, that represents the initial condition of the state equation at $T_1,T_2$ and $T_3$. We then add quadratic penalty terms to our functional as outlined in section \ref{penalty_sec}. The gradient of our new functional $J(v,\Lambda)$ would then have three components $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$. These are the components of the gradient that we wish to apply $Q$ on. Applying $Q$ is then done in two steps. We first resolve the backward system that we get from $\bar M^{-*}$:
+Assume that we decompose $I=[0,T]$ into four sub-intervals $[T_0,T_1], [T_1,T_2], [T_2,T_3]$ and $[T_3,T_4]$. To enforce continuity at the overlapping boundaries, we need three variables $\lambda_1,\lambda_2$ and $\lambda_3$, that represents the initial condition of the state equation at $T_1,T_2$ and $T_3$. We then add quadratic penalty terms to our functional as outlined in section \ref{penalty_sec}. The gradient of our new functional $J(v,\Lambda)$ would then have three components $J_{\lambda_1}, J_{\lambda_2}, J_{\lambda_3}$. These are the components of the gradient that we wish to apply $Q$ to. Applying $Q$ is then done in two steps. We first resolve the backward system that we get from $\bar M^{-*}$:
 \begin{align*}
 \bar{J_{\lambda_1}} &=J_{\lambda_1} +\bold{G}_{\Delta T}^*(J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3}))\\
 \bar{J_{\lambda_2}} &=J_{\lambda_2} + \bold{G}_{\Delta T}^*(J_{\lambda_3})\\

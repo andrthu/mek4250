@@ -1,7 +1,7 @@
 \chapter{Verification}\label{Verification chapter}
 In this chapter we will verify implementations of the algorithm presented in chapter \ref{method_chap} using the discritization detailed in chapter \ref{disc_chap}. All implementations are done in the python programming language, and the numerics is done using the NumPy\cite{walt2011numpy} library. Plots are created using the matplotlib\cite{Hunter:2007} package, tables are auto generated using Pandas\cite{mckinney2010data} and the parallel parts are implemented using the mpi4py\cite{dalcin2007mpi4py} library. We test our algorithm using the example problem (\ref{exs_J}-\ref{exs_E}), with the following parameters:
 \begin{align}
-&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-11.5)^2 \label{test_J}\\
+&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-11.5)^2 \label{test_J}\\
 &\left\{
      \begin{array}{lr}
        	y'(t) = -3.9y(t)+v(t) \ t\in(0,1)\\
@@ -16,10 +16,7 @@ The Taylor test is a good way to test the correctness of the gradient of a funct
 |J(v+\epsilon w)-J(v)| &= \mathcal{O}(\epsilon) \\
 |J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w| &= \mathcal{O}(\epsilon^2)
 \end{align*}
-Here $w$ is a random direction in the same space as $v$, while $\epsilon$ is some constant. 
-\\
-\\
-The test is carried out by evaluating $D=|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w|$ for decreasing $\epsilon$'s, and if $D$ approaches 0 at 2nd order rate, we consider the test as passed.
+Here $w$ is a vector in the same space as $v$, while $\epsilon>0$ is a constant. The test is carried out by evaluating $D=|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w|$ for decreasing $\epsilon$'s, and if $D$ approaches 0 at 2nd order rate, we consider the test as passed.
 \subsection{Verifying the numerical gradient using the Taylor test}
 We will now use the Taylor test on the discrete gradient stemming from problem (\ref{test_J}-\ref{test_E}). We discretize this problem using the Crank-Nicolson scheme for the state and adjoint equation, and the trapezoid rule for numerical integration, as suggested in chapter \ref{disc_chap}. We let the time step be $\Delta t=\frac{1}{100}$, and evaluate the objective function and its gradient using the control variable $v=1$. To apply the Taylor test, we need a direction $w\in\mathbb{R}^{101}$, which we set to be a vector with components randomly chosen from numbers between 0 and 100. To make table \ref{Taylor_tab1} more readable we define the following measures:
 \begin{align}
@@ -29,7 +26,7 @@ D_2(\epsilon) &=|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|\label{D2}
 We evaluate $D_1(\epsilon)$ and $D_2(\epsilon)$ for decreasing $\epsilon$s, and list the results in table \ref{Taylor_tab1}.
 \\
 \begin{table}[h]
-\caption{Taylor test}
+\caption{Taylor test for non-penalized discrete objective function}
 \label{Taylor_tab1}
 \centering
 \begin{tabular}{lrrrll}
@@ -59,7 +56,7 @@ Table \ref{Taylor_tab1} clearly shows that $|J(v+\epsilon w)-J(v)-\epsilon \nabl
 We will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the same problem as in the test for the gradient of the non-penalized objective function (\ref{test_J}-\ref{test_E}). We then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and we set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. The results of applying the Taylor test to this problem are given in table \ref{Taylor_tab2}. Here $D_1$ and $D_2$ are again defined as in (\ref{D1}-\ref{D2}).
 \\
 \begin{table}[!h]
-\caption{Taylor test}
+\caption{Taylor test for penalized discrete objective function}
 \centering
 \label{Taylor_tab2}
 \begin{tabular}{lrrrll}
@@ -81,18 +78,18 @@ We will now use the Taylor test on the penalized numerical gradient (\ref{num_pe
 \\
 \\
 Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate, meaning that the penalized numerical gradient also passes the Taylor test.
-\begin{figure}[h]
+\begin{figure}[!h]
 \caption{Plots showing the $\Lambda$ and control part of the numerical gradient found using formula (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) and finite difference}
 \centering
 \includegraphics[scale=0.5]{pen_num_grad.png}
 \end{figure}
 \section{Convergence rate of solver for the non-penalized problem}
-In section \ref{Taylor_sec} we demonstrated that our implementation of the gradients for different discretizations of the objective function introduced in theorem \ref{Theorem_num_grad} and \ref{Theorem_penalty_grad} satisfy the Taylor test. Since the discretized objective function $\hat J_{\Delta t}$ and its gradient pass the Taylor test, we expect that we can find the minimizer $\bar v$ of $\hat J_{\Delta t}$ by using an optimization algorithm. What we now want to find out, is if the minimizer of the discrete objective function converges towards the exact minimizer derived in section \ref{exact_sec}. We investigate this by solving optimal control problem (OBS! OBS!) using both a Crank-Nicolson and an implicit Euler discretization. To measure the difference between exact optimal control $v_e$ and the numerical optimal control $v$ we look at the relative maximal difference between $v_e$ and $v$ for $t\in(0,T)$, meaning
+In section \ref{Taylor_sec} we demonstrated that our implementation of the gradients for different discretizations of the objective function introduced in theorem \ref{Theorem_num_grad} and \ref{Theorem_penalty_grad} satisfy the Taylor test. Since the discretized objective function $\hat J_{\Delta t}$ and its gradient pass the Taylor test, we expect that we can find the minimizer $\bar v$ of $\hat J_{\Delta t}$ by using an optimization algorithm. What we now want to find out, is if the minimizer of the discrete objective function converges towards the exact minimizer derived in section \ref{exact_sec}. We investigate this by solving optimal control problem (\ref{test_J}-\ref{test_E}) using both a Crank-Nicolson and an implicit Euler discretization. To measure the difference between exact optimal control $v_e$ and the numerical optimal control $v$ we look at the relative maximal difference between $v_e$ and $v$ for $t\in(0,T)$, meaning
 \begin{align}
 ||v|| = \max_{k=1,...,n-1}|v_k| \label{inner_norm}
 \end{align} 
 We also look at the relative difference in objective function value between the controls. For both these measures, we calculate at what rate they converge to zero for decreasing $\Delta t$ values. The results for the implicit Euler discirization is found in table \ref{IE_convergence}, while Crank-Nicolson results are given in table \ref{CN_convergence}.
-\begin{table}[h]
+\begin{table}[!h]
 \caption{Convergence of implicit Euler numerical sequential solver of optimal control problem.}\label{IE_convergence}
 \centering
 \begin{tabular}{lrrll}
@@ -108,7 +105,7 @@ We also look at the relative difference in objective function value between the 
 \end{tabular}
 \end{table}
 Notice that the convergence rate of the norm difference in table \ref{IE_convergence} approaches one when $\Delta t$ tends to zero. This is consistent with what we would expect for a finite difference scheme of first order. We also notice that the difference in function value converges an order of one faster towards zero than the control difference.  
-\begin{table}[h]
+\begin{table}[!h]
 \caption{Convergence of Crank-Nicolson numerical sequential solver of optimal control problem.}\label{CN_convergence}
 \centering
 \begin{tabular}{lrrll}
@@ -263,17 +260,10 @@ An alternative way of looking at this, is to let $v^{\mu}$ be the minimizer of $
 \begin{align}
 \lim_{\mu\rightarrow\infty} v^{\mu} = v \label{mu con}
 \end{align}
-The interpretation of the above limit, is that solving the penalized problem with an ever increasing penalty parameter $\mu$ should result in a solution that is getting closer and closer to the solution of the non-penalized problem. This means that the penalty algorithm is consistent, since it produces the same solution as the ordinary non-decomposed problem. It is therefore worth checking if the implementation of the penalized problem actually has the property (\ref{mu con}). The particular problem, that we will do the consistency test on, is: 
-\begin{align}
-&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-11.5)^2 \label{con J} \\
-&\left\{
-     \begin{array}{lr}
-       	y'(t)=-3.9y(t) + v(t) \ t\in(0,1)\\
-       	y(0)=3.2
-     \end{array}
-   \right. \label{con E}
-\end{align}
-We want to compare the solution we get by decomposing and then applying the penalty method on problem (\ref{con J}-\ref{con E}) with the solution we get by solving the undecomposed problem. To do this we discretize (\ref{con J}-\ref{con E}) using two different time steps. First we let $\Delta t = 10^{-2}$ and apply the penalty method for $N=2$ and $N=10$ decompositions, we then let $\Delta t = 10^{-3}$ and test the penalty method on $N=2$ and $N=7$ decompositions. For both time steps, the Crank-Nicolson will be used to discretize the state and adjoint equations. We use different metrics to compare the non-penalized and penalized solutions, so that we better see how the solution of the penalized problem behaves when we solve it for an increasing sequence of $\mu$ values. We define the metrics as follows:
+The interpretation of the above limit, is that solving the penalized problem with an ever increasing penalty parameter $\mu$ should result in a solution that is getting closer and closer to the solution of the non-penalized problem. This means that the penalty algorithm is consistent, since it produces the same solution as the ordinary non-decomposed problem. It is therefore worth checking if the implementation of the penalized problem actually has the property (\ref{mu con}). We investigate this by comparing the solution we get by decomposing and then applying the penalty method on problem (\ref{test_J}-\ref{test_E}) with the solution we get by solving the undecomposed problem. 
+\\
+\\
+We discretize (\ref{test_J}-\ref{test_E}) using Crank-Nicolson and the trapezoid rule for two different time steps. First we let $\Delta t = 10^{-2}$ and apply the penalty method for $N=2$ and $N=10$ decompositions, we then let $\Delta t = 10^{-3}$ and test the penalty method on $N=2$ and $N=7$ decompositions. We use different metrics to compare the non-penalized and penalized solutions, so that we better see how the solution of the penalized problem behaves when we solve it for an increasing sequence of $\mu$ values. We define the metrics as follows:
 \begin{align*}
 \textrm{Realtive objective function differnce:}\quad A &= \frac{\hat{J}(v_{\mu})-\hat{J}(v)}{\hat{J}(v)}\\
 \textrm{Realtive penalized objective function differnce:}\quad B &= \frac{\hat{J}_{\mu}(v)-\hat{J}_{\mu}(v_{\mu})}{\hat{J}_{\mu}(v)}\\
@@ -286,7 +276,7 @@ Notice that both $A$ and $B$ should be grater than $0$, since $v$ and $v_{\mu}$ 
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.5]{consistency1.png}
-\caption{Logarithmic plot showing how solution of penalty method applied to problem (\ref{con J}-\ref{con E}) develops for $\Delta t = 10^{-2}$.}
+\caption{Logarithmic plot showing how solution of penalty method applied to problem (\ref{test_J}-\ref{test_E}) develops for $\Delta t = 10^{-2}$.}
 \label{Cons1_fig}
 \end{figure}
 \begin{figure}[!h]
