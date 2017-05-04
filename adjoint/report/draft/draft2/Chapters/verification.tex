@@ -1,4 +1,15 @@
 \chapter{Verification}\label{Verification chapter}
+In this chapter we will verify implementations of the algorithm presented in chapter \ref{method_chap} using the discritization detailed in chapter \ref{disc_chap}. All implementations are done in the python programming language, and the numerics is done using the NumPy\cite{walt2011numpy} library. Plots are created using the matplotlib\cite{Hunter:2007} package, tables are auto generated using Pandas\cite{mckinney2010data} and the parallel parts are implemented using the mpi4py\cite{dalcin2007mpi4py} library. We test our algorithm using the example problem (\ref{exs_J}-\ref{exs_E}), with the following parameters:
+\begin{align}
+&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-11.5)^2 \label{test_J}\\
+&\left\{
+     \begin{array}{lr}
+       	y'(t) = -3.9y(t)+v(t) \ t\in(0,1)\\
+       	y(0)=3.2
+     \end{array}
+   \right. \label{test_E}
+\end{align}
+Using this problem we will first test the numerical gradients stated in section \ref{num_grad_sec1} and \ref{num_grad_sec2}, and then investigate if the minimizer of the discretized objective function converges to the exact minimizer derived in section \ref{exact_sec}. We also check if the theoretical speedup for objective function and gradient evaluation suggested in \ref{analysis sec} is in line with actual measurements. The last test done is on the consistency of the penalty framework. 
 \section{Taylor test} \label{Taylor_sec}
 The Taylor test is a good way to test the correctness of the gradient of a function. The test is as its name implies connected with Taylor expansions of a function, or more precisely the following two observations:
 \begin{align*}
@@ -10,22 +21,12 @@ Here $w$ is a random direction in the same space as $v$, while $\epsilon$ is som
 \\
 The test is carried out by evaluating $D=|J(v+\epsilon w)-J(v)-\epsilon\nabla J(v)\cdot w|$ for decreasing $\epsilon$'s, and if $D$ approaches 0 at 2nd order rate, we consider the test as passed.
 \subsection{Verifying the numerical gradient using the Taylor test}
-we will now use the Taylor test on the numerical gradient (\ref{num_grad}) that we get when solving the following problem:
-\begin{align}
-&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-1.5)^2 \label{taylor_J}\\
-&\left\{
-     \begin{array}{lr}
-       	y'(t)=0.9y(t) +v(t), \ t \in (0,1)\\
-       	   y(0)=3.2
-     \end{array}
-   \right. \label{taylor_State}
-\end{align}
-We then discretize in time using $\Delta t=\frac{1}{100}$, and we set $v_i=1 \ \forall i$, while $w_i$ are chosen randomly from numbers between 0 and 100. Applying the Taylor test to this problem, and setting:
+We will now use the Taylor test on the discrete gradient stemming from problem (\ref{test_J}-\ref{test_E}). We discretize this problem using the Crank-Nicolson scheme for the state and adjoint equation, and the trapezoid rule for numerical integration, as suggested in chapter \ref{disc_chap}. We let the time step be $\Delta t=\frac{1}{100}$, and evaluate the objective function and its gradient using the control variable $v=1$. To apply the Taylor test, we need a direction $w\in\mathbb{R}^{101}$, which we set to be a vector with components randomly chosen from numbers between 0 and 100. To make table \ref{Taylor_tab1} more readable we define the following measures:
 \begin{align}
 D_1(\epsilon) &= |J(v+\epsilon w)-J(v)| \label{D1} \\
 D_2(\epsilon) &=|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|\label{D2}
 \end{align} 
-yielded the following:
+We evaluate $D_1(\epsilon)$ and $D_2(\epsilon)$ for decreasing $\epsilon$s, and list the results in table \ref{Taylor_tab1}.
 \\
 \begin{table}[h]
 \caption{Taylor test}
@@ -48,14 +49,14 @@ yielded the following:
 \end{table}
 \\
 \\
-The above table clearly shows that $J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and the implementation of it are correct. Let us then check if this is also the case for the penalized problem.
+Table \ref{Taylor_tab1} clearly shows that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and the implementation of it are correct. Let us then check if this is also the case for the penalized problem.
 \begin{figure}[h]
 \caption{Gradient of non-penalized objective function, with focus on the two ends. Also included is a plot with a finite difference approximation to the gradient.}
 \centering
 \includegraphics[scale=0.5]{num_grad.png}
 \end{figure}
 \subsection{Verifying the penalized numerical gradient using the Taylor test}
-We will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the same problem as in the test for the gradient of the non-penalized objective function (\ref{taylor_J}-\ref{taylor_State}). We then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and we set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. The results of applying the Taylor test to this problem are given in table \ref{Taylor_tab2}. Here $D_1$ and $D_2$ are again defined as in (\ref{D1}-\ref{D2}).
+We will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the same problem as in the test for the gradient of the non-penalized objective function (\ref{test_J}-\ref{test_E}). We then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and we set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. The results of applying the Taylor test to this problem are given in table \ref{Taylor_tab2}. Here $D_1$ and $D_2$ are again defined as in (\ref{D1}-\ref{D2}).
 \\
 \begin{table}[!h]
 \caption{Taylor test}

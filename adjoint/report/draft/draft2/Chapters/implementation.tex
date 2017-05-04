@@ -63,7 +63,7 @@ Crank-Nicolson & $0<\Delta t<-\frac{2}{a}$ & $0<\Delta t<\frac{2}{a}$ \\
 \end{tabular}
 \end{table}
 We notice that the implicit Euler scheme is stable for all $\Delta t$ values when $a<0$, and that the same holds true for explicit Euler in the case where $a>0$. This makes these schemes attractive candidates for use in course propagators in the context of the Parareal algorithm or preconditioner. 
-\subsection{Numerical gradient}
+\subsection{Numerical gradient} \ref{num_grad_sec1}
 We have discretized both the domain and the equations, but we also need to evaluate the objective function (\ref{problem}) numerically. Since integration is involved in (\ref{problem}), we have to choose a numerical integration rule. In section \ref{num_int_sub_sec} we introduced three different methods for numerical integration, namely the left- and right-hand rectangle rule, as well as the trapezoid rule. Which of the methods we use in our discrete objective function depends on which finite difference scheme we used to discretize the ODEs. For explicit Euler we use the left-hand rule, for implicit Euler we use the right-hand rule, and for Crank-Nicholson we use the trapezoid rule. If we for example used Crank-Nicholson and the trapezoid rule to discretize problem (\ref{problem}), the discretized objective function would look like the following:
 \begin{align}
 \hat J_{\Delta t}(v_{\Delta t})&=\frac{1}{2} trapz(v_{\Delta t}^2)+ \frac{\alpha}{2}(y_n-y^T)^2 \\
@@ -189,7 +189,7 @@ Here the $\delta$s are conditional functions defined as:
    \right.	
 \end{align*} 
 We now have a way of decomposing the discrete time interval, and therefore also a way of partitioning the finite difference solver of the state equation in temporal direction. However both when we want try to find the gradient in a penalized optimal control problem, or when we just want to parallelize solving a differential equation using the parareal scheme, some communication between the processes is required. 
-\subsection{Numerical gradient of the penalized example problem}
+\subsection{Numerical gradient of the penalized example problem} \label{num_grad_sec2}
 Let us restate the decomposed example ODE, and the penalized objective function defined in (\ref{decomp_E}-\ref{penalty_func})
 \begin{align}
 \left\{
