@@ -35,7 +35,7 @@ To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained r
 \begin{align}
 \hat J_{\mu}(v,\Lambda) = \hat J(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2 \label{pen_obj_J}
 \end{align}
-With $\mu>0$. If we now minimize $\hat{J}_{\mu}$ with respect to $(v,\Lambda)$, while letting $\mu$ tend to infinity, we hope that the solution satisfies the conditions (\ref{Extra constraints}), while also minimizing the actual problem (\ref{constrained reduced j}-\ref{constrained reduced}). The algorithmic framework of this reads:
+With $\mu>0$. Since the new control variables are created by us, and do not exist in the original control problem, we call $\Lambda$ the virtual control. The control $v$ of the original problem will form now on be referred to as the real control. If we now minimize $\hat{J}_{\mu}$ with respect to $(v,\Lambda)$, while letting $\mu$ tend to infinity, we hope that the solution satisfies the conditions (\ref{Extra constraints}), while also minimizing the actual problem (\ref{constrained reduced j}-\ref{constrained reduced}). The algorithmic framework of this reads:
 \\
 \\
 \begin{algorithm}[H]
@@ -232,21 +232,21 @@ Alternatively we could use a BFGS iteration (\ref{BFGS_itr}), which would result
 \begin{align}
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kH^{k}\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{bfgs_method}
 \end{align}
-Where $H^k$ is the inverse Hessian approximation defined in (\ref{inv_H_apr}). In order to improve convergence of the unconstrained optimization solvers, we include a preconditioner based on Parareal, proposed in \cite{maday2002parareal}, in our optimization algorithms. The preconditioner $Q$ will be on the form:
+Where $H^k$ is the inverse Hessian approximation defined in (\ref{inv_H_apr}). To improve convergence of the unconstrained optimization solvers, we include the Parareal-based preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. The preconditioner $Q$ will be on the form:
 \begin{align}
 Q = \left[ \begin{array}{cc}
 	\mathbbold{1} & 0 \\
 	0 & Q_{\Lambda} \\
-	\end{array} \right],\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1} \label{PC_form}
+	\end{array} \right]\in \mathbb{R}^{n+N\times n+N},\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1} \label{PC_form}
 \end{align} 
-For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the following way:
+We see that $Q$ only affects the $N-1$ last components of the gradient, which is the part connected with the $\Lambda$ part of the control. The original control $v$ is therefore not directly affected by $Q$. For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the following way:
 \begin{align}
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kQ\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method2}
 \end{align}
 For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. 
 \\
 \\
-We derive $Q$ by looking at a constructed optimal control problem that we call the virtual problem. The virtual problem is a control problem decomposed as detailed in section \ref{decomp_sec}, but its objective function $\bold J$ is set to be the penalty term, and therefore only depends on $\Lambda$. We already stated this problem in section \ref{algebraic_sec}, and by utilizing the algebraic Parareal formulation, we will try to find a good candidate for $Q_{\Lambda}$.
+We derive $Q$ by looking at a constructed optimal control problem that we call the virtual problem. The virtual problem is a control problem decomposed as detailed in section \ref{decomp_sec}, but its objective function $\bold J$ is set to be the penalty term, which only depends on the virtual control $\Lambda$. We already stated this problem in section \ref{algebraic_sec}, and by utilizing the algebraic Parareal formulation, we will try to find a good candidate for $Q_{\Lambda}$.
 \subsection{Virtual problem} \label{vir_sec}
 In order for us to be able to derive the preconditioner from \cite{maday2002parareal}, we need the virtual optimal control problem from section \ref{algebraic_sec}. For reference let us restate it below:
 \begin{align}
@@ -359,7 +359,7 @@ M^* (M \ H-\Lambda)&=
 \end{align}
 The last vector, can be recognised as the negative gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices, which shows that solving (\ref{vir_grad_sys}) is the same as solving $\hat {\bold J}'(\Lambda)=0$. If we then created a fix point iteration for (\ref{vir_grad_sys}), in a similar fashion as (\ref{par_mat_sys}), it would look like this:
 \begin{align*}
-\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}\bar M^{-*}(H-M^*M\Lambda^k)
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}\bar M^{-*}(M^*H-M^*M\Lambda^k)
 \end{align*}
 $\bar{M}^{-1}\bar{M}^{-*}$ could then be thought of as the preconditioner of the iteration, in the sense that $\bar{M}^{-1}\bar{M}^{-*}M^*M$ would be close to $\mathbbold{1}$. If $\bar{M}^{-1}\bar{M}^{-*}$ works as a preconditioner for  $\hat {\bold J}'(\Lambda)=0$ where $\hat {\bold J}$ is the objective function in the virtual problem, \cite{maday2002parareal} proposes $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for the penalized optimal control problem (\ref{decomp_E}-\ref{penalty_func}). Meaning that we set $Q$ to be:
 \begin{align}

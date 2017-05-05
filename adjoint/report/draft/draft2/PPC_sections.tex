@@ -1,0 +1,185 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amsfonts,amssymb,amsthm, gensymb}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{color, array, threeparttable}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+ 
+\usepackage{cite}
+
+\usepackage[ruled]{algorithm2e}
+
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+\DeclareMathAlphabet{\mathbbold}{U}{bbold}{m}{n}    
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+
+
+\usepackage{graphicx}
+
+%\cite{maday2002parareal}
+% 4.3 \ref{algebraic_sec}
+\begin{document}
+\section{definition}
+\begin{definition}[Fine and coarse propagator]
+Let $f(u(t),t)=0$ be a time dependent differential equation. Given $\Delta T$ and an initial condition $\omega$, let $u_f$ and $u_c$ be a fine and a coarse numerical solution of the initial value problem:
+\begin{align}
+ \left\{
+     \begin{array}{lr}
+		f(u(t),t)=0 \ \quad \textrm{For $t \in (0,\Delta T)$} \\
+		u(0)=\omega
+	\end{array}
+	\right.	
+\end{align}
+We then define the fine propagator as $\bold F_{\Delta T}(\omega) = u_f(\Delta T)$ and the coarse propagator as $\bold G_{\Delta T}(\omega) = u_c(\Delta T)$.
+\end{definition}
+\section{PPC}
+\subsection{Virtual problem} \label{vir_sec}
+The Parareal-based preconditioner only affects the part of the gradient connected to the virtual control $\Lambda$. To motivate and derive $Q$, we therefore consider an optimal control problem where the real control $v$ is removed, and the objective function only depends on $\Lambda$. We have already presented this problem in section \ref{algebraic_sec}, but we restate it here for future reference. However, before we do this let us first properly define the fine coarse propagators.
+\begin{definition}[Fine and coarse propagator]
+Let $f(y(t),t)=0$ be a time dependent differential equation. Given $\Delta T$ and an initial condition $\omega$, let $y_f$ and $y_c$ be a fine and a coarse numerical solution of the initial value problem:
+\begin{align}
+ \left\{
+     \begin{array}{lr}
+		f(y(t),t)=0 \ \quad \textrm{For $t \in (0,\Delta T)$} \\
+		y(0)=\omega
+	\end{array}
+	\right.	
+\end{align}
+We then define the fine propagator as $\bold F_{\Delta T}(\omega) = y_f(\Delta T)$ and the coarse propagator as $\bold G_{\Delta T}(\omega) = y_c(\Delta T)$.
+\end{definition}
+We then use the fine propagator $\bold F_{\Delta T}(\omega)$ to define the virtual problem.
+\begin{definition}[Virtual problem]
+Given a fine propagator $\bold F_{\Delta T}$, that solves a time dependent differential equation $f(y(t),t)=0$, an initial condition $\lambda_0=y_0$ and the control variable $\Lambda=(\lambda_1,...,\lambda_ {N-1})$. The virtual control problem is defined as follows: 
+\begin{align}
+&\min_{\Lambda}\bold{J}(\Lambda,y) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2 \label{virtual_func} \\
+&\textrm{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
+\end{align}
+\end{definition}
+Here $\Lambda=(\lambda_1,...,\lambda_ {N-1})$, $\lambda_0=y_0$ and $\bold F_{\Delta T}$ is the fine propagator from section \ref{Parareal_sec}. In the context of the virtual problem (\ref{virtual_func}-\ref{virtual}), $\bold F_{\Delta T}(\omega)$ propagates $\omega$ one time step of length $\Delta T$ using the equation:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	\frac{\partial}{\partial t} y(t)-ay(t)=0  \ \textrm{for } \ t\in(0,\Delta T),\\
+       	y(0)=\omega.
+     \end{array}
+   \right. \label{virtual_exs}
+\end{align} 
+In chapter \ref{parareal_chap} we explained how the virtual problem could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\hat{J}(\Lambda)=0$. This eventually led us to the parareal scheme, defined on matrix form as:
+\begin{align}
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)\label{par_mat_sys}
+\end{align}
+Where $M$ and $\bar{M}$ are matrix representations of the fine and coarse resolution propagators $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$ and  $\lambda_i= \bold G_{\Delta T}(\lambda_{i-1})$:
+\begin{align*}
+M = \left[ \begin{array}{cccc}
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T} & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T} & \mathbbold{1}  \\
+   \end{array}  \right],
+\bar{M} = \left[ \begin{array}{cccc}
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -\bold{G}_{\Delta T} & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{G}_{\Delta T} & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{G}_{\Delta T} & \mathbbold{1}   \\
+   \end{array}  \right]
+\end{align*}
+In section \ref{algebraic_sec} we said that $\bar M^{-1}$ can be seen as a preconditioner for the fix point iteration solving $\bold{J}(\Lambda,y)=0$. Solving the virtual problem in this way is only possible since we know that the minimum value of $\bold{J}(\Lambda,y)$ is zero. A more natural approach to solving this problem, would first be to reduce $\bold J$ to only depend on $\Lambda$, and then solve $\hat {\bold J}'(\Lambda)=0$. If we could find a preconditioner to a fix point iteration solving $\hat{ \bold J} '(\Lambda)=0$, this would be a candidate for $Q_{\Lambda}$. Let us start by writing up the reduced version of (\ref{virtual_func}-\ref{virtual}):
+\begin{align}
+\min_{\Lambda\in\mathbb{R}^{N-1}}\hat {\bold J}(\Lambda) = \sum_{i=1}^{N-1} (\bold F_{\Delta T}(\lambda_{i-1})-\lambda_{i})^2,\quad \lambda_0=y_0 \label{reduced_viritual}
+\end{align} 
+Now that we have an expression for the reduced objective function $\hat {\bold J}$, we can try to find its gradient. Luckily for us we have already derived the gradient for the more general problem (\ref{exs_J}-\ref{exs_E}) in (\ref{penalty grad}). We get the virtual control problem from the more general problem if we remove the control variable $v$ from the state and objective function of (\ref{exs_J}-\ref{exs_E}). $\hat {\bold J}'(\Lambda)$ is therefore given as:
+\begin{align*}
+\hat{\bold J}'(\Lambda) = \{p_i(T_i)-p_{i-1}(T_i)\}_{i=1}^{N-1}
+\end{align*}
+Here $p^i$ are the solutions of the adjoint equations (\ref{exs_adjoint}). Since we need the adjoints, let us define the fine adjoint propagator $\bold{F}_{\Delta T}^*(\omega)$ as we did for $\bold{F}_{\Delta T}$, but now $\omega$ is propagated backwards one time step of length $\Delta T$, and the equation $\bold{F}_{\Delta T}^*$ solves is:   
+\begin{align}
+\left\{
+     \begin{array}{lr}
+	\frac{\partial }{\partial t}p +ap=0,\quad t\in (0,\Delta T)  \\
+	p(\Delta T) = \omega
+	\end{array}
+   \right. \label{virtual_adjoint_exs}
+\end{align}
+We also define $\bold G_{\Delta T}^*$ as the fine adjoint propagators coarse counterpart. Next we can define the matrices $M^*$ and $\bar M^*$ as:
+\begin{align*}
+M^*= \left[ \begin{array}{cccc}
+   \mathbbold{1} & -\bold{F}_{\Delta T}^* & 0 & 0 \\  
+   0 & \mathbbold{1} & -\bold{F}_{\Delta T}^* & \cdots \\ 
+   \cdots &0 &  \mathbbold{1} & -\bold{F}_{\Delta T}^* \\
+   0 &\cdots &\cdots &  \mathbbold{1}  \\
+   \end{array}  \right],
+\bar M^*= \left[ \begin{array}{cccc}
+   \mathbbold{1} & -\bold{G}_{\Delta T}^* & 0 & 0 \\  
+   0 & \mathbbold{1} & -\bold{G}_{\Delta T}^* & \cdots \\ 
+   \cdots &0 &  \mathbbold{1} & -\bold{G}_{\Delta T}^* \\
+   0 &\cdots &\cdots &  \mathbbold{1}  \\
+   \end{array}  \right]
+\end{align*}
+It then turns out that solving $\hat{J}'(\Lambda)=0$ is the same as solving the system:
+\begin{align}
+M^* \ M \ \Lambda \ = \ M^* \ H \label{vir_grad_sys}
+\end{align}
+The reason we see by moving $M^*H$ to the left hand side of (\ref{vir_grad_sys}) and writing out what $M^*( \ M \ \Lambda-H)$ means. Firstly:
+\begin{align}
+M \ H-\Lambda  = \left( \begin{array}{c}
+	y_0-\lambda_0  \\
+	 \bold{F}_{\Delta T}(\lambda_0)-\lambda_1 \\
+	 \bold{F}_{\Delta T}(\lambda_1)-\lambda_2  \\
+	\cdots \\
+	\bold{F}_{\Delta T}(\lambda_{N-2})-\lambda_{N-1} 
+	\end{array} \right)
+\end{align}
+We recognise $\bold{F}_{\Delta T}(\lambda_{i-1})-\lambda_i=y^i(T_i) -\lambda_i$, $i=1,...,N-1$ as the initial conditions of the adjoint equations (\ref{exs_adjoint}). This means that $\bold{F}_{\Delta T}(\lambda_{i-1})-\lambda_i=p^i(T_i)$, and that: 
+\begin{align}
+M \ H-\Lambda  = \left( \begin{array}{c}
+	y_0-\lambda_0  \\
+	 p^1(T_1) \\
+	 p^2( T_2) \\
+	\cdots \\
+	p^{N-1}(T_{N-1}) 
+	\end{array} \right)
+\end{align}
+If we then apply $M^*$ to $M \ H-\Lambda$, we get:
+\begin{align}
+M^* (M \ H-\Lambda)&=
+	\left( \begin{array}{c}
+	y_0-\lambda_0 -\bold{F}_{\Delta T}^*(p^1(T_1))\\
+	 p^1(T_1)-\bold{F}_{\Delta T}^*(p^2( T_2))\\
+	p^2( T_2)-\bold{F}_{\Delta T}^*(p^3( T_3))\\
+	\cdots \\
+	p^{N-1}(T_{N-1})
+	\end{array} \right)
+	\\
+	&=\left( \begin{array}{c}
+	y_0-\lambda_0 - p_1(T_0)\\
+	p_1(T_1)-p_2(T_2)\\
+	p_3(T_2)-p_2(T_2)\\
+	\cdots \\
+	p_{N-2}(T_{N-2})-p_{N-1}(T_{N-2}) \\
+	p_{N-1}(T_{N-1})
+	\end{array} \right)
+\end{align}
+The last vector, can be recognised as the negative gradient of (\ref{virtual_func}) in its 2nd to $(N-1)$th indices, which shows that solving (\ref{vir_grad_sys}) is the same as solving $\hat {\bold J}'(\Lambda)=0$. If we then created a fix point iteration for (\ref{vir_grad_sys}), in a similar fashion as (\ref{par_mat_sys}), it would look like this:
+\begin{align*}
+\Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}\bar M^{-*}(M^*H-M^*M\Lambda^k)
+\end{align*}
+$\bar{M}^{-1}\bar{M}^{-*}$ could then be thought of as the preconditioner of the iteration, in the sense that $\bar{M}^{-1}\bar{M}^{-*}M^*M$ would be close to $\mathbbold{1}$. If $\bar{M}^{-1}\bar{M}^{-*}$ works as a preconditioner for  $\hat {\bold J}'(\Lambda)=0$ where $\hat {\bold J}$ is the objective function in the virtual problem, \cite{maday2002parareal} proposes $\bar{M}^{-1}\bar{M}^{-*}$ as a preconditioner for the penalized optimal control problem (\ref{decomp_E}-\ref{penalty_func}). Meaning that we set $Q$ to be:
+\begin{align}
+Q = \left[ \begin{array}{cc}
+	\mathbbold{1} & 0 \\
+	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
+	\end{array} \right] \label{Q_PC}
+\end{align}  
+We have derived $Q$ by trying to find a good preconditioner for the fix point iteration for solving $\hat {\bold J}'(\Lambda)=0$. Whether $\bar{M}^{-1}\bar{M}^{-*}$ has anything to do with the inverse Hessian of $\hat J'$ is however not clear. It turns out that $M^*M$ actually is related to the Hessian of the virtual problem, which we will show in the next subsection.
+\end{document}
