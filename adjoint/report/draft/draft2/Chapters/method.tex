@@ -19,7 +19,7 @@ To introduce parallelism, we decompose $I=[0,T]$ into $N$ subintervals $I_i=[T_{
 \end{align} 
 Since we want the state $y$ to be continuous, we also need the following conditions:
 \begin{align}
-y^{i-1}(T_i)=y^i(T_i)=\lambda_i \ \ i=1,..,N-1 \label{Extra constraints}
+y^{i}(T_i)=y^{i+1}(T_i)=\lambda_i \quad \ i=1,..,N-1 \label{Extra constraints}
 \end{align} 
 Both the problems (\ref{initial problem1}-\ref{initial problem}) and (\ref{decomposed problem1}-\ref{Extra constraints}) are constrained problems, which we solve by reducing them to unconstrained problems. In the original setting this can easily be done if we assume that each control variable $v$ corresponds to a unique solution $y$ of the state equation $E$. We can then define a reduced objective function $\hat{J}(v)$, and minimize it with respect to $v$, i.e solve the unconstrained problem:
 \begin{align*}
@@ -28,7 +28,7 @@ Both the problems (\ref{initial problem1}-\ref{initial problem}) and (\ref{decom
 Assuming that the decomposed state equations also can be uniquely resolved $\forall v$, we can again define a reduced objective function  $\hat{J}$. However because of the extra conditions (\ref{Extra constraints}) the reduction of (\ref{decomposed problem}) still produces a constrained problem:
 \begin{align}
 &\underset{v\in V}{\text{min}} \ \hat J(v) \label{constrained reduced j}\\
-&y^{i-1}(T_i)=\lambda_i \ \ \forall i \label{constrained reduced}
+&y^{i-1}(T_i)=\lambda_i \ \quad \forall i \label{constrained reduced}
 \end{align} 
 \section{The penalty method} \label{penalty_sec}
 To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained reduced}), we will use the penalty method\cite{nocedal2006numerical}, which transforms constrained problems into a series of unconstrained problems by incorporating the constraints into the functional. Incorporating the constraints means penalizing not satisfying the constraints. To use the penalty method on (\ref{constrained reduced j}-\ref{constrained reduced}) we first introduce the initial conditions to the decomposed state equations as variables $\Lambda = (\lambda_1,..,\lambda_{N-1})^T$, and then define the penalized objective function $\hat J_{\mu}$:
@@ -39,7 +39,7 @@ With $\mu>0$. Since the new control variables are created by us, and do not exis
 \\
 \\
 \begin{algorithm}[H]
-\KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$}
+\KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
 \For{$k=1,2,...$}{
 Find $(v^k,\Lambda^k)$ s.t. $\parallel\nabla \hat J_{\mu_{k-1}}(v^k,\Lambda^k)\parallel<\tau_{k-1}$\;
 \eIf{STOP CRITERION satisfied}{
@@ -377,7 +377,7 @@ x(\Lambda)= \left( \begin{array}{c}
    \lambda_2 - y_2(T_2) \\
    \cdots  \\
    \lambda_{N-1} -y_{N-1}(T_{N-1})  \\
-   \end{array}  \right)
+   \end{array}  \right).
 \end{align} 
 We can then formulate the problem (\ref{reduced_viritual}) as a least square problem:
 \begin{align}
