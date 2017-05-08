@@ -218,11 +218,11 @@ One problem with $y_{\Delta t}^i$ and $p_{\Delta t}^i$ existing independently on
 \end{align}
 We now write up the gradient of the discitized objective function (\ref{pen disc f}) in theorem \ref{Theorem_penalty_grad} expressed in terms of the discrete adjoint $p_{\Delta t}$.
 \begin{theorem} \label{Theorem_penalty_grad}
-The gradient of (\ref{pen disc f}), $\hat J_{\mu,\Delta t}:\mathbb{R}^{N+m}\rightarrow\mathbb{R}$ consists of two parts. The second part $ \nabla\hat J_{\mu,\Delta t}(\Lambda)\in\mathbb{R}^{N-1}$ dealing with the penalty part of the control is independent of the choice of finite difference scheme, and is given by:
+The gradient of (\ref{pen disc f}), $\hat J_{\mu,\Delta t}:\mathbb{R}^{N+m}\rightarrow\mathbb{R}$ consists of two parts. The second part $ \nabla\hat J_{\mu,\Delta t}(\Lambda)\in\mathbb{R}^{N-1}$ related to the virtual control is independent of the choice of finite difference scheme, and is given by:
 \begin{align}
 \nabla\hat J_{\mu,\Delta t}(\Lambda) = (p_{k_1}^{2}-p_{k_1}^{1},p_{k_2}^{3}-p_{k_2}^{2},...,p_{N}^{k_{N-1}}-p_{N-1}^{k_{N-1}}). \label{num_pen_grad_lam}
 \end{align} 
-The first part $ \nabla\hat J_{\mu,\Delta t}(v_{\Delta t})\in\mathbb{R}^{m+1}$, which is connected to $v_{\Delta t}$, depends on the finite difference scheme used to discretize the adjoint and state equations. If we use the implicit Euler scheme to evaluate (\ref{pen disc f}), the $v_{\Delta t}$ part of the gradient will be:
+The first part $ \nabla\hat J_{\mu,\Delta t}(v_{\Delta t})\in\mathbb{R}^{m+1}$, which is connected to the real control variable  $v_{\Delta t}$, depends on the finite difference scheme used to discretize the adjoint and state equations. If we use the implicit Euler scheme to evaluate (\ref{pen disc f}), the $v_{\Delta t}$ part of the gradient will be:
 \begin{align}
 \nabla\hat J_{\mu,\Delta t}(v_{\Delta t})= M_{0}v_{\Delta t} + (B^1p_{\Delta t}^1,B^2p_{\Delta t}^2,...,B^Np_{\Delta t}^N), \label{num_pen_grad_v}
 \end{align}
