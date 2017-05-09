@@ -117,5 +117,63 @@ def main():
                             with_norm=with_norm,ideal_S=ideal_S)
         print data
         data.to_latex('latexTables/'+name[:-3]+'tex')
+
+
+def read_func_and_grad():
+
+    names = sys.argv[1:]
+    
+    n = len(names)
+    
+    names1 = names[:n/2]
+    names2 = names[n/2:]
+    #print names1
+    #print
+    #print names2
+
+    for i in range(len(names1)):
+        table = {'functinal time(s)':[],
+                 'gradient time(s)':[],
+                 'functional speedup':[],
+                 'gradient speedup':[], }
+
+        func_lines = read_file(names1[i])
+        grad_lines = read_file(names2[i])
+        
+        first_func = func_lines[0].split()
+        func_seq = float(first_func[1])
+        table['functinal time(s)'].append(func_seq)
+        table['functional speedup'].append(1)
+        
+        first_grad = grad_lines[0].split()
+        grad_seq = float(first_grad[1])
+        table['gradient time(s)'].append(grad_seq)
+        table['gradient speedup'].append(1)
+        
+        index = [1]
+        
+        for j in range(1,len(func_lines)):
+            func_line = func_lines[j].split()
+            func_time = float(func_line[2])
+            table['functinal time(s)'].append(func_time)
+            table['functional speedup'].append(func_seq/func_time)
+            
+            grad_line = grad_lines[j].split()
+            grad_time = float(grad_line[2])
+            table['gradient time(s)'].append(grad_time)
+            table['gradient speedup'].append(grad_seq/grad_time)
+            index.append(j+1)
+
+        data = pd.DataFrame(table,index=index)
+        
+        data=data.ix[:,['functinal time(s)','gradient time(s)','functional speedup','gradient speedup']]
+        print names1[i].split('/')[-1][:-4]
+        print data
+        
+        help_name = names1[i].split('/')[-1][:-4]
+        data.to_latex('latexTables/grad'+help_name+'.tex')
+        #print names1[i],names2[i]
+
 if __name__ == '__main__':
-    main()
+    #main()
+    read_func_and_grad()

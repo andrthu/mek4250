@@ -48,9 +48,9 @@ We evaluate $D_1(\epsilon)$ and $D_2(\epsilon)$ for decreasing $\epsilon$s, and 
 \\
 Table \ref{Taylor_tab1} clearly shows that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate. This means that the numerical gradient of our test problem passes the Taylor test. This again indicates that both the numerical gradient and the implementation of it are correct. Let us then check if this is also the case for the penalized problem.
 \begin{figure}[h]
-\caption{Gradient of non-penalized objective function, with focus on the two ends. Also included is a plot with a finite difference approximation to the gradient.}
 \centering
 \includegraphics[scale=0.5]{num_grad.png}
+\caption{Gradient of non-penalized objective function, with focus on the two ends. Also included is a plot with a finite difference approximation to the gradient.}
 \end{figure}
 \subsection{Verifying the penalized numerical gradient using the Taylor test}
 We will now use the Taylor test on the penalized numerical gradient (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) that we get when decomposing $I=[0,T]$ into $N=10$ subintervals while solving the same problem as in the test for the gradient of the non-penalized objective function (\ref{test_J}-\ref{test_E}). We then discretize in time using $\Delta t=\frac{1}{100}$. The control variable is now a vector $v\in\mathbb{R}^{N+m}$ and we set $v_k=0 \ \forall k=0,...,N+n-1$, while the $w_k$s are chosen randomly from numbers between 0 and 100. The results of applying the Taylor test to this problem are given in table \ref{Taylor_tab2}. Here $D_1$ and $D_2$ are again defined as in (\ref{D1}-\ref{D2}).
@@ -79,9 +79,9 @@ We will now use the Taylor test on the penalized numerical gradient (\ref{num_pe
 \\
 Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate, meaning that the penalized numerical gradient also passes the Taylor test.
 \begin{figure}[!h]
-\caption{Plots showing the $\Lambda$ and control part of the numerical gradient found using formula (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) and finite difference}
 \centering
 \includegraphics[scale=0.5]{pen_num_grad.png}
+\caption{Plots showing the $\Lambda$ and control part of the numerical gradient found using formula (\ref{num_pen_grad_lam}-\ref{num_pen_grad_v}) and finite difference}
 \end{figure}
 \section{Convergence rate of solver for the non-penalized problem}
 In section \ref{Taylor_sec} we demonstrated that our implementation of the gradients for different discretizations of the objective function introduced in theorem \ref{Theorem_num_grad} and \ref{Theorem_penalty_grad} satisfy the Taylor test. Since the discretized objective function $\hat J_{\Delta t}$ and its gradient pass the Taylor test, we expect that we can find the minimizer $\bar v$ of $\hat J_{\Delta t}$ by using an optimization algorithm. What we now want to find out, is if the minimizer of the discrete objective function converges towards the exact minimizer derived in section \ref{exact_sec}. We investigate this by solving optimal control problem (\ref{test_J}-\ref{test_E}) using both a Crank-Nicolson and an implicit Euler discretization. To measure the difference between exact optimal control $v_e$ and the numerical optimal control $v$ we look at the relative maximal difference between $v_e$ and $v$ for $t\in(0,T)$, meaning
@@ -138,84 +138,48 @@ A computer with 6 cores was used to verify the results of section \ref{analysis 
 \centering
 \caption{$\Delta t=10^{-2}$}
 \label{Speed_table1}
-\begin{tabular}{lrr}
+\begin{tabular}{lrrrr}
 \toprule
-{} $N$&   function speedup &      function time \\
+{} &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
-1 &  1.000000 &  0.000196 \\
-2 &  0.946860 &  0.000207 \\
-3 &  0.780876 &  0.000251 \\
-4 &  0.642623 &  0.000305 \\
-5 &  0.544444 &  0.000360 \\
-6 &  0.427948 &  0.000458 \\
-\bottomrule
-\end{tabular}
-\begin{tabular}{lrr}
-\toprule
-{} &  gradient speedup &     gradient time \\
-\midrule
-1 &  1.000000 &  0.000217 \\
-2 &  0.875000 &  0.000248 \\
-3 &  0.753472 &  0.000288 \\
-4 &  0.632653 &  0.000343 \\
-5 &  0.547980 &  0.000396 \\
-6 &  0.480088 &  0.000452 \\
+1 &           0.000196 &          0.000217 &            1.000000 &          1.000000 \\
+2 &           0.000207 &          0.000248 &            0.946860 &          0.875000 \\
+3 &           0.000251 &          0.000288 &            0.780876 &          0.753472 \\
+4 &           0.000305 &          0.000343 &            0.642623 &          0.632653 \\
+5 &           0.000360 &          0.000396 &            0.544444 &          0.547980 \\
+6 &           0.000458 &          0.000452 &            0.427948 &          0.480088 \\
 \bottomrule
 \end{tabular}
 \end{table}
 \begin{table}[!h]
 \centering
 \caption{$\Delta t=10^{-4}$}
-\begin{tabular}{lrr}
+\begin{tabular}{lrrrr}
 \toprule
-{} $N$&  function speedup &    function  time \\
+{} &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
-1 &  1.000000 &  0.008877 \\
-2 &  1.983687 &  0.004475 \\
-3 &  2.838823 &  0.003127 \\
-4 &  3.582324 &  0.002478 \\
-5 &  4.267788 &  0.002080 \\
-6 &  4.519857 &  0.001964 \\
-\bottomrule
-\end{tabular}
-\begin{tabular}{lrr}
-\toprule
-{} &  gradient speedup &     gradient time \\
-\midrule
-1 &  1.000000 &  0.015016 \\
-2 &  1.946843 &  0.007713 \\
-3 &  2.816204 &  0.005332 \\
-4 &  3.677688 &  0.004083 \\
-5 &  4.457109 &  0.003369 \\
-6 &  4.978780 &  0.003016 \\
+1 &           0.008877 &          0.015016 &            1.000000 &          1.000000 \\
+2 &           0.004475 &          0.007713 &            1.983687 &          1.946843 \\
+3 &           0.003127 &          0.005332 &            2.838823 &          2.816204 \\
+4 &           0.002478 &          0.004083 &            3.582324 &          3.677688 \\
+5 &           0.002080 &          0.003369 &            4.267788 &          4.457109 \\
+6 &           0.001964 &          0.003016 &            4.519857 &          4.978780 \\
 \bottomrule
 \end{tabular}
 \end{table}
 \begin{table}[!h]
 \centering
 \caption{$\Delta t=10^{-5}$}
-\begin{tabular}{lrr}
+\begin{tabular}{lrrrr}
 \toprule
-{}$N$ &  function speedup &    function  time \\
+{} &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
-1 &  1.000000 &  0.087484 \\
-2 &  2.006606 &  0.043598 \\
-3 &  2.888595 &  0.030286 \\
-4 &  3.913222 &  0.022356 \\
-5 &  4.848102 &  0.018045 \\
-6 &  5.425028 &  0.016126 \\
-\bottomrule
-\end{tabular}
-\begin{tabular}{lrr}
-\toprule
-{} &  gradient speedup &     gradient time \\
-\midrule
-1 &  1.000000 &  0.154841 \\
-2 &  2.046537 &  0.075660 \\
-3 &  2.971198 &  0.052114 \\
-4 &  4.003025 &  0.038681 \\
-5 &  4.921368 &  0.031463 \\
-6 &  5.755101 &  0.026905 \\
+1 &           0.087484 &          0.154841 &            1.000000 &          1.000000 \\
+2 &           0.043598 &          0.075660 &            2.006606 &          2.046537 \\
+3 &           0.030286 &          0.052114 &            2.888595 &          2.971198 \\
+4 &           0.022356 &          0.038681 &            3.913222 &          4.003025 \\
+5 &           0.018045 &          0.031463 &            4.848102 &          4.921368 \\
+6 &           0.016126 &          0.026905 &            5.425028 &          5.755101 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -223,28 +187,16 @@ A computer with 6 cores was used to verify the results of section \ref{analysis 
 \centering
 \caption{$\Delta t=10^{-7}$}
 \label{speed_table_end}
-\begin{tabular}{lrr}
+\begin{tabular}{lrrrr}
 \toprule
-{}$N$ &  function speedup &      time \\
+{} &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
-1 &  1.000000 &  8.350907 \\
-2 &  1.987960 &  4.200743 \\
-3 &  2.847662 &  2.932549 \\
-4 &  3.812545 &  2.190376 \\
-5 &  4.647839 &  1.796729 \\
-6 &  5.479447 &  1.524042 \\
-\bottomrule
-\end{tabular}
-\begin{tabular}{lrr}
-\toprule
-{} &  gradient speedup &     gradient  time \\
-\midrule
-1 &  1.000000 &  14.930247 \\
-2 &  2.064043 &   7.233497 \\
-3 &  2.966254 &   5.033368 \\
-4 &  3.866428 &   3.861509 \\
-5 &  4.833081 &   3.089178 \\
-6 &  5.744552 &   2.599027 \\
+1 &           8.350907 &         14.930247 &            1.000000 &          1.000000 \\
+2 &           4.200743 &          7.233497 &            1.987960 &          2.064043 \\
+3 &           2.932549 &          5.033368 &            2.847662 &          2.966254 \\
+4 &           2.190376 &          3.861509 &            3.812545 &          3.866428 \\
+5 &           1.796729 &          3.089178 &            4.647839 &          4.833081 \\
+6 &           1.524042 &          2.599027 &            5.479447 &          5.744552 \\
 \bottomrule
 \end{tabular}
 \end{table}
