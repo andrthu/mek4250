@@ -122,17 +122,7 @@ Notice that the convergence rate of the norm difference in table \ref{IE_converg
 \end{table}
 The results of table \ref{CN_convergence} show results similar to the ones in table \ref{IE_convergence}, however the convergence rates using a Crank-Nicolson scheme to discretize the ODEs are one order higher than the rates we got using implicit Euler. This is again expected since the Crank-Nicolson scheme is of order two. In both tables we observe that $\frac{\hat J(v_e)-\hat J(v)}{\hat J(v)}$ is always positive, which means that $\hat J(v_e)>\hat J(v)$. This makes sense, since $\hat J$ here means the discrete objective function, and $v$ is the minimum of this function, while $v_e$ is the minimum of the continuous objective function. One last remark concerns the choice of norm (\ref{inner_norm}). This norm excludes the values of $v$ and $v_e$ at $t=0$ and $t=T$. If these points are included, we do not see the convergence rates given in table \ref{IE_convergence} and \ref{CN_convergence}. 
 \section{Verifying function and gradient evaluation speedups} \label{ver S sec}
-In \ref{analysis sec} we derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if the implementation achieves the theoretical speedup for our example problem. The specific problem is:
-\begin{align*}
-&J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
-&\left\{
-     \begin{array}{lr}
-       	y'(t)+y(t) = v(t) \ t\in(0,1)\\
-       	y(0)=1
-     \end{array}
-   \right. 
-\end{align*}
-A computer with 6 cores was used to verify the results of section \ref{analysis sec}. Having 6 cores means that we can do gradient and function evaluation for $N=1,2,...,6$ decompositions with different time step sizes $\Delta t$. For each combination of $N$ and $\Delta t$, we will run the function and gradient evaluations ten times, and then choose the the smallest execution time produced by the ten runs. The speedup is then calculated by dividing the sequential execution time by the parallel execution time. Tables \ref{Speed_table1}-\ref{speed_table_end} below shows runtime and speedup for both gradient and function evaluation for different $\Delta t$s and $N$s. All evaluations are done with control input $v=1$ and $\lambda_i=1$.  
+In \ref{analysis sec} we derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if the implementation achieves the theoretical speedup for our example problem (\ref{test_J}-\ref{test_E}). Now let us explain the experimental setting. A computer with 6 cores was used to verify the results of section \ref{analysis sec}. Having 6 cores means that we can do gradient and function evaluation for $N=1,2,...,6$ decompositions with different time step sizes $\Delta t$. For each combination of $N$ and $\Delta t$, we will run the function and gradient evaluations ten times, and then choose the the smallest execution time produced by the ten runs. The speedup is then calculated by dividing the sequential execution time by the parallel execution time. Tables \ref{Speed_table1}-\ref{speed_table_end} below shows runtime and speedup for both gradient and function evaluation for different $\Delta t$s and $N$s. All evaluations are done with control input $v=1$ and $\lambda_i=1$.  
 \\
 \begin{table}[!h]
 \centering
@@ -140,7 +130,7 @@ A computer with 6 cores was used to verify the results of section \ref{analysis 
 \label{Speed_table1}
 \begin{tabular}{lrrrr}
 \toprule
-{} &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
+{}$N$ &  functional time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
 1 &           0.000196 &          0.000217 &            1.000000 &          1.000000 \\
 2 &           0.000207 &          0.000248 &            0.946860 &          0.875000 \\
@@ -156,7 +146,7 @@ A computer with 6 cores was used to verify the results of section \ref{analysis 
 \caption{$\Delta t=10^{-4}$}
 \begin{tabular}{lrrrr}
 \toprule
-{} &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
+{} $N$&  functional time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
 1 &           0.008877 &          0.015016 &            1.000000 &          1.000000 \\
 2 &           0.004475 &          0.007713 &            1.983687 &          1.946843 \\
@@ -172,7 +162,7 @@ A computer with 6 cores was used to verify the results of section \ref{analysis 
 \caption{$\Delta t=10^{-5}$}
 \begin{tabular}{lrrrr}
 \toprule
-{} &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
+{} $N$&  functional time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
 1 &           0.087484 &          0.154841 &            1.000000 &          1.000000 \\
 2 &           0.043598 &          0.075660 &            2.006606 &          2.046537 \\
@@ -189,7 +179,7 @@ A computer with 6 cores was used to verify the results of section \ref{analysis 
 \label{speed_table_end}
 \begin{tabular}{lrrrr}
 \toprule
-{} &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
+{}$N$ &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
 1 &           8.350907 &         14.930247 &            1.000000 &          1.000000 \\
 2 &           4.200743 &          7.233497 &            1.987960 &          2.064043 \\
