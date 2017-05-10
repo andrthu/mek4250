@@ -10,6 +10,7 @@ from mpi4py import MPI
 from optimalContolProblem import OptimalControlProblem, Problem1
 
 
+
 def partition_func(n,m):
 
     N=n/m

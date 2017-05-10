@@ -19,7 +19,7 @@ Decomposing the interval $I$ means dividing the interval into $N$ subintervals $
 	\end{array}
 	\right.	\label{broken}
 \end{align}
-Here $\lambda^0=u_0$. If $\Lambda=(\lambda_0,..,\lambda_{N-1})$ are known values, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the previous intervals, and need to be calculated by solving the equation. The Parareal scheme is a way of getting around this.
+Here $\lambda_0=u_0$, while $\{\lambda_i\}_{i=1}^{N-1}$ are virtual intermediate initial conditions. If $\Lambda=(\lambda_0,..,\lambda_{N-1})$ are known values, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the solution from previous intervals, and need to be calculated by solving the equation. The Parareal scheme is a way of getting around this.
 \section{Parareal}\label{Parareal_sec}
 We see that when we decompose the time domain, the original initial value problem (\ref{unbroken}) brakes down to a set of $N$ initial value problems on the form (\ref{broken}). The idea of \cite{baffico2002parallel} is then first to define a fine solution operator $\bold F_{\Delta T}$, which when given an initial condition $\lambda_{i-1}$ at time $T_{i-1}$, evolves $\lambda_i$, using a fine scheme applied to the $i$-th equation (\ref{broken}), from time $T_i$ to $T_{i+1}$. Meaning:
 \begin{align*}
