@@ -648,7 +648,63 @@ class OptimalControlProblem():
             return res
         else:
             return Result
+    
 
+    def alternate_direction_penalty_solve(self,N,m,my_list,tol_list=None,x0=None,Lbfgs_options=None,algorithm='my_lbfgs',ppc=None):
+        self.t,self.T_z = self.decompose_time(N,m)
+        dt=float(self.T)/N
+        if x0==None:
+            x0 = self.initial_control(N,m=m)#np.zeros(N+m)
+        x = None
+        #if algorithm=='my_lbfgs':
+            #x0 = self.Vec(x0)
+        Result = []
+
+        initial_counter = self.counter.copy()
+        import matplotlib.pyplot as plt
+        for i in range(len(my_list)):
+            def J(u):   
+                self.counter[0]+=1
+                return self.Penalty_Functional(u,N,m,my_list[i])
+
+            def grad_J(u):
+                self.counter[1]+=1
+                return self.Penalty_Gradient(u,N,m,my_list[i])
+                
+            
+            J_lam = lambda u2: J(np.hstack((x0[:N+1],u2)))
+            if ppc==None:
+                grad_lam = lambda u2: grad_J(np.hstack((x0[:N+1],u2)))[N+1:]
+            else:
+                grad_lam = lambda u2: ppc(grad_J(np.hstack((x0[:N+1],u2)))[N+1:])
+
+            self.update_SD_options(Lbfgs_options)
+            SDopt = self.SD_options
+            
+            Solver =SteepestDecent(J_lam,grad_lam,x0.copy()[N+1:],options=SDopt)
+            lam_res = Solver.solve()
+            
+            #x0[N+1:]=lam_res.x[:]
+
+            J_v = lambda u3 : J(np.hstack((u3,x0[N+1:])))
+            grad_v= lambda u3 : grad_J(np.hstack((u3,x0[N+1:])))[:N+1]
+            
+            Solver = SteepestDecent(J_v,grad_v,x0.copy()[:N+1],options=SDopt)
+
+            v_res = Solver.solve()
+            x0[N+1:]=lam_res.x[:]
+            x0[:N+1]= v_res.x[:]
+            
+            plt.plot(x0[N+1:])
+        plt.show()
+
+        v_res.add_FuncGradCounter(self.counter-initial_counter)
+        lam_res.add_FuncGradCounter(self.counter-initial_counter)
+        res = [lam_res,v_res,x0]
+        return res
+
+            
+        
     def lagrange_penalty_solve(self,N,m,my_list,x0=None,Lbfgs_options=None):
         """
         Solve the optimazation problem with augmented lagrange
