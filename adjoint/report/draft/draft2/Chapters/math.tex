@@ -211,7 +211,7 @@ v(t)=-p(t) &\iff C_0 e^{-at} = -\alpha e^{aT}(y_0e^{aT} +\frac{C_0}{2a}(e^{aT}-e
 \end{align*}
 Division by $(1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT}))$ is always allowed, since $\frac{1}{a}(e^{aT}-e^{-aT})>0, \forall a\neq0$ and $\forall T>0$. 
 \end{proof} 
-\section{Finite difference}
+\section{Numerical solution}
 To be able to solve optimal control problems numerically, we need to discretize the objective function and the state and adjoint equations. We are mainly interested in time dependent equations, and the standard way of discretizing ODEs or PDEs in temporal direction, is to use a finite difference method. Since the objective function includes an integral term, we also need methods for numerical integration. In this section we will only look at first order equations on the following form:
 \begin{align}
 \left\{
