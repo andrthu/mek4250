@@ -1,20 +1,49 @@
 \chapter{Optimal control with ODE constraints} \label{math_chap}
 In this chapter we present the basic mathematical background that the rest of the thesis will be based on. The chapter covers three different subjects. The first subject is on general theory of optimal control problems with DE constraints. The second subject is on finite difference discretization of differential equations and numerical integration, and the last subject deals with optimization algorithms. In addition to the general theory, we present an example optimal control problem with ODE constraints, that will be used throughout the rest of the thesis. 
 \section{General optimal control problem}
-In this thesis we are only looking at optimal control problems with time dependent differential equation (DE) constraints. This problem is only a part of the more general control problem, which can be formulated as:
+In this thesis we are only looking at optimization problems with time dependent differential equation (DE) constraints. This problem is only a part of the more general control problem, which we state in definition \ref{OCP_def}. Also included in definition \ref{OCP_def} is the reducibility condition, which is a condition on the differential equation constraints.
+\begin{definition}[Optimization with DE constraints] \label{OCP_def}
+Let $Y,V,Z$ be Banach spaces, where $Y,V$ also are reflexive. Given an objective function $J: Y\times V\rightarrow\mathbb{R}$ and an operator $E:Y\times V \rightarrow Z$, optimization with DE constraints then refers to the minimization problem on the following form:
 \begin{align}
-\underset{y\in Y,v\in V}{\text{min}} \ &J(y,v) \\
-\textrm{Subject to:} \ &E(y,v)=0.
+\underset{y\in Y,v\in V}{\text{min}} \ &J(y,v), \label{OCP_DEF_J}\\
+\textrm{Subject to:} \ &E(y,v)=0. \label{OCP_DEF_E}
 \end{align}
-Here $J: Y\times V\rightarrow\mathbb{R}$ is the objective function that we want to minimize, and the spaces $Y,V$ are reflexive Banach spaces. The operator $E:Y\times V \rightarrow Z$, where $Z$ is a Banach spaces, is called the state equation when we set it equal to zero. The state equation should have the property that $\forall v \in V$, $\exists! y(v)\in Y$ that satisfies:
+The differential equation $E(y,v)=0$ is called the state equation, while the variables $y$ and $v$ are respectively known as the state and the control. If the following condition holds:
+\begin{align}
+\forall v \in V, \ \exists! y \in Y \ s.t. \ E(y,v)=0, \label{Reduce_condition}
+\end{align}
+we say the the optimization problem is reducible.
+\end{definition}
+\noindent
+An alternative way of expressing the reducibility condition (\ref{Reduce_condition}), is that for all controls $v\in V$ the differential equation $E(y,v)=0$ is well posed. Optimization problems with ill posed state equations can both be solvable and interesting, but the methods introduced in this thesis does only work on reducible problems, and we will from this point always assume that the optimization problems we look at are reducible. 
+\\
+\\
+Before we explain how to solve optimization problems, we investigate under what conditions problem (\ref{OCP_DEF_J}-\ref{OCP_DEF_E}) even have a solution. To answer this question, we will write up a result from \cite{hinze2008optimization} concerning the existence and uniqueness of solution for linear quadratic optimization problems. This class of problems is less general than the problems from definition \ref{OCP_def}, and a more general existence results exist. To state this result however, would require the introduction of many complex concepts from functional analysis that go beyond the scope of this thesis. In addition the example problem that we will introduce in section \ref{example_sec} belongs to the linear quadratic class of optimization problems. 
+\begin{theorem} \label{existence}
+Assume that $H,V$ are Hilbert spaces and that $Y,Z$ are Banach spaces. Given vectors $q\in H$ and $g\in Z$, and bounded linear operators $A:Y\rightarrow Z$, $B:V\rightarrow Z$ and $Q:Y\rightarrow H$, we can define the linear quadratic optimization problems as follows:
 \begin{align*}
-E(y(v),v)=0.
+&\underset{y\in Y,v\in V}{\text{min}}J(y,v) = \frac{1}{2}||Qy-q||_H^2 + \frac{\alpha}{2}||v||_V^2, \\
+&\textrm{Subject to:} \ Ay + Bv = g.
 \end{align*}
-The first question we need to ask ourself, is under what conditions does the above problem even have a solution. This depends on the operators $J,E$ and the spaces $Y,V,Z$, and we will therefore come back to this question when we have defined our example problem. Instead let us assume for now that a solution exists, and try to derive a way to find it. If we replace $y$ with $y(v)$ we can define the reduced problem:
+If $\alpha>0$, the above linear quadratic optimization problem has a unique solution pair $(y,v)\in Y\times V$.
+\end{theorem}   
+\begin{proof}
+See \cite{hinze2008optimization}
+\end{proof}
+\noindent
+We now lay away the question of solvability, and continue with an explanation of how to solve problem (\ref{OCP_DEF_J}-\ref{OCP_DEF_E}). We start by revisiting the reducibility condition from definition \ref{OCP_def}. When the reducibility condition (\ref{Reduce_condition}) holds the state can written as a function $y(v)$ implicitly defined through the state equation. Using $y(v)$ we are able to define the reduced optimization problem:
+\begin{definition}[Reduced problem]
+Consider the optimization problem from definition \ref{OCP_def}, and assume that reducibility condition (\ref{Reduce_condition}) holds. We can then define the reduced objective function $\hat J:V\rightarrow\mathbb{R}$ as:
 \begin{align}
-\underset{v\in V}{\text{min}} \ \hat J(v)=\underset{v\in V}{\text{min}} \ J(y(v),v)  \label{reduced problem}
+\hat J(v) = J(y(v),v).
 \end{align}
-The problem (\ref{reduced problem}) is called the reduced problem because we have moved the differential equation constraints into the functional, and by doing so transformed the constrained problem into an unconstrained one. Since the aim is to find the minimum of a function, it is natural, that to solve (\ref{reduced problem}), we need to be able to differentiate the objective function $\hat{J}$ with respect to the control $v$. There are different ways of doing that, but we will focus on the so called adjoint approach, which is the most computational effective way of calculating the gradient of $\hat{J}$.
+The reduced optimization problem is then defined as the unconstrained minimization problem:
+\begin{align}
+\underset{v\in V}{\text{min}} \ \hat J(v). \label{reduced problem}
+\end{align}
+\end{definition} 
+\noindent
+The problem (\ref{reduced problem}) is called the reduced problem because we have moved the differential equation constraints into the functional. By doing this, we have transformed the constrained problem (\ref{OCP_DEF_J}-\ref{OCP_DEF_E}) into an unconstrained one (\ref{reduced problem}), and we can therefore solve the reduced problem using tools from unconstrained optimization. To be able to use these tools, we will need a way to evaluate the gradient of the reduced objective function $\hat J$. There are several ways of doing this, but we will focus on the so called adjoint approach, which turns out to be the most computationally effective way to evaluate $\hat J'(v)$.  
 \subsection{Example problem} \label{example_sec}
 To better understand the adjoint approach to gradient evaluation of the reduced objective function, we will define a simple optimal control problem with ODE constraints, so that we later can derive its adjoint equation and gradient. The problem will also be used to test and verify the implementation in chapter \ref{Verification chapter} and \ref{Experiments chapter}. In our example both the state $y$ and the control $v$ will be functions on an interval $[0,T]$. This allows us to define the objective function:
 \begin{align}
@@ -29,22 +58,13 @@ The state equation $E(y,v)=0$ is a linear, first order equation with the control
      \end{array}
    \right. \label{exs_E}
 \end{align}
-Now that we actually have an optimal control problem, we can return to the question of solvability. To achieve this, we will write up a general result from \cite{hinze2008optimization} about linear quadratic problems, which also includes problem (\ref{exs_J}-\ref{exs_E}). Linear quadratic problems are a quite simple class of problems, and more general theorems for problems with non-linear equations and non-quadratic objective functions do however exist, and can be found in \cite{hinze2008optimization}.
-\begin{theorem}
-The linear quadratic optimization problems, that can be written on the form:
+The state equation of our optimal control problem is uniquely solvable for all integrable controls $v$, and has solution:
 \begin{align*}
-&\underset{y\in Y,v\in V}{\text{min}}J(y,v) = \frac{1}{2}||Qy-q||_H^2 + \frac{\alpha}{2}||v||_V^2 \\
-&\textit{Subject to:} \ Ay + Bv = g
+y(t) = e^{a t}(C(y_0)+\int_0^te^{-a\tau}v(\tau)d\tau)
 \end{align*}
-Where H,V are Hilbert spaces, Y,Z are Banach spaces, $q\in H$, $g\in Z$ and $A:Y\rightarrow Z$, $B:V\rightarrow Z$ and $Q:Y\rightarrow H$ are bounded linear operators. If $\alpha>0$, the above written problem has a unique solution pair $(y,v)\in Y\times V$.
-\end{theorem}   
-\begin{proof}
-See \cite{hinze2008optimization}
-\end{proof}
-\noindent
-It is obvious, that the objective function (\ref{exs_J}) of our example problem is a quadratic function that fits into the setting of the above theorem, and since the equation (\ref{exs_E}) is linear, with solution $y(t) = e^{a t}(C(y_0)+\int_0^te^{-a\tau}v(\tau)d\tau)$, which is unique for every integrable $v$, it is clear that problem (\ref{exs_J}-\ref{exs_E}) is a linear quadratic optimization problem. 
+This means that our example problem (\ref{exs_J}-\ref{exs_E}) is reducible. Since the state equation is linear, and since all terms in the objective function are quadratic, (\ref{exs_J}-\ref{exs_E}) is also an example of a linear quadratic optimization problem. Theorem \ref{existence} therefore guaranties a unique minimizer of problem (\ref{exs_J}-\ref{exs_E}).
 \section{The adjoint equation and the gradient}
-The usual way of finding the minimum(or maximum) value of a function $J$, is to solve the equation $J'(x)=0$. Solving this equation usually requires us to be able to evaluate, or have an expression for the derivative of $J$. With this in mind let us try to find the gradient $\hat{J}'(v)$ of the reduced problem (\ref{reduced problem}).
+The usual way of finding the minimum (or maximum) value of a function $J$, is to solve the equation $J'(x)=0$. Solving this equation usually requires us to be able to evaluate, or have an expression for the derivative of $J$. With this in mind let us try to find the gradient $\hat{J}'(v)$ of the reduced problem (\ref{reduced problem}).
 \begin{align*}
 \hat{J}'(v) = DJ(y(v),v) = y'(v)^*J_y(y(v),v) + J_v(y(v),v)
 \end{align*}
