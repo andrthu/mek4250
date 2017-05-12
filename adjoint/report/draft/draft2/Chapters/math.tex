@@ -28,14 +28,14 @@ Assume that $H,V$ are Hilbert spaces and that $Y,Z$ are Banach spaces. Given vec
 If $\alpha>0$, the above linear quadratic optimization problem has a unique solution pair $(y,v)\in Y\times V$.
 \end{theorem}   
 \begin{proof}
-See \cite{hinze2008optimization}
+See \cite{hinze2008optimization}.
 \end{proof}
 \noindent
 We now lay away the question of solvability, and continue with an explanation of how to solve problem (\ref{OCP_DEF_J}-\ref{OCP_DEF_E}). We start by revisiting the reducibility condition from definition \ref{OCP_def}. When the reducibility condition (\ref{Reduce_condition}) holds the state can written as a function $y(v)$ implicitly defined through the state equation. Using $y(v)$ we are able to define the reduced optimization problem:
-\begin{definition}[Reduced problem]
+\begin{definition}[Reduced problem] \label{DEF_RED_OCP}
 Consider the optimization problem from definition \ref{OCP_def}, and assume that reducibility condition (\ref{Reduce_condition}) holds. We can then define the reduced objective function $\hat J:V\rightarrow\mathbb{R}$ as:
 \begin{align}
-\hat J(v) = J(y(v),v).
+\hat J(v) = J(y(v),v). \label{ROF}
 \end{align}
 The reduced optimization problem is then defined as the unconstrained minimization problem:
 \begin{align}
@@ -64,34 +64,50 @@ y(t) = e^{a t}(C(y_0)+\int_0^te^{-a\tau}v(\tau)d\tau)
 \end{align*}
 This means that our example problem (\ref{exs_J}-\ref{exs_E}) is reducible. Since the state equation is linear, and since all terms in the objective function are quadratic, (\ref{exs_J}-\ref{exs_E}) is also an example of a linear quadratic optimization problem. Theorem \ref{existence} therefore guaranties a unique minimizer of problem (\ref{exs_J}-\ref{exs_E}).
 \section{The adjoint equation and the gradient}
-The usual way of finding the minimum (or maximum) value of a function $J$, is to solve the equation $J'(x)=0$. Solving this equation usually requires us to be able to evaluate, or have an expression for the derivative of $J$. With this in mind let us try to find the gradient $\hat{J}'(v)$ of the reduced problem (\ref{reduced problem}).
-\begin{align*}
-\hat{J}'(v) = DJ(y(v),v) = y'(v)^*J_y(y(v),v) + J_v(y(v),v)
-\end{align*}
-The problematic term in the above expression, is $y'(v)^*$, since the function $y(v)$ is implicitly defined through $E$. We can however find an equation for $y'(v)^*$ if we differentiate the state equation with respect to $v$, and assume that the operator $E_y(y(v),v):Y\rightarrow Z$ is continuously invertible.
-\begin{align*}
-DE(y(v),v)=0 &\Rightarrow E_y(y(v),v)y'(v)=-E_v(y(v),v) \\ &\Rightarrow y'(v)=-E_y(y(v),v)^{-1}E_v(y(v),v) \\ &\Rightarrow y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}.
-\end{align*}
-Before inserting $y'(v)^* = -E_v(y(v),v)^*E_y(y(v),v)^{-*}$ into our gradient expression, we first define the adjoint equation as:
+The usual way of finding the minimum (or maximum) value of a function $\hat J$, is to solve the equation $\hat J'(v)=0$. Solving this equation usually requires us to be able to evaluate, or have an expression for the derivative of $\hat J$. There are different ways to evaluate the gradient of the reduced objective function $\hat J(v)$. We will here take the adjoint approach. This strategy leads to an expression for the gradient of the reduced objective function (\ref{ROF}), which we state in proposition \ref{redGrad_prop}. The reason it is called the adjoint approach, is that the gradient $\hat J'(v)$ depends on the so called adjoint equation. The definition of this equation is found in Proposition \ref{redGrad_prop}. Proposition \ref{redGrad_prop} also include conditions on the operators $J$ and $E$ from definition \ref{OCP_def}. These conditions involve the notion of Fr\'{e}chet differentiability, which is a generalization of directional derivatives for operators on Banach spaces. For a more precise definition of Fr\'{e}chet differentiability, we refer to \cite{hinze2008optimization}.
+\begin{proposition}[Gradient and adjoint of the reduced objective function] \label{redGrad_prop}
+Let $\hat J$ be the reduced objective function from definition \ref{DEF_RED_OCP}, and assume that the state equation operator $E$ and the objective function $J$ are Fr\'{e}chet differentiable. Assume also that the partial derivative $E_y(y,v):Y\rightarrow Z$ of $E$ with respect to $y$ is a linear and continuously invertible operator. Then the gradient of $\hat J$ with respect to the control $v$ is:
 \begin{align}
-E_y(y(v),v)^{*}p=J_y(v). \label{general adjoint}
+\hat J'(v) = -E_v(y,v)^*p + J_v(y,v),\label{gradient}
 \end{align}
+where $p$ is the solution of the adjoint equation:
+\begin{align}
+E_y(y,v)^{*}p=J_y(y,v). \label{general adjoint}
+\end{align}
+\end{proposition}
+\begin{proof}
+If $J$ and $E$ are  Fr\'{e}chet differentiable and if $E_y$ is continuously invertible, then the implicit function theorem ensures that $y(v)$ is continuously differentiable. For a more detailed discussion on the implicit function theorem, see \cite{hinze2008optimization}. To differentiate $\hat J(v) = J(y(v),v)$, we take the total derivative with respect to $v$ $D_v$ of the unreduced objective function:
+\begin{align*}
+\hat J'(v)=D_vJ(y(v),v) = y'(v)^*J_y(y,v) + J_v(y,v).
+\end{align*}
+The problematic term in the above expression, is $y'(v)^*$, since the function $y(v)$ is implicitly defined through $E$. We can however find an equation for $y'(v)^*$ if we the the total derivative of the state equation with respect to $v$.
+\begin{align*}
+D_vE(y(v),v)=0 &\Rightarrow E_y(y,v)y'(v)=-E_v(y,v) \\ 
+&\Rightarrow y'(v)=-E_y(y,v)^{-1}E_v(y,v) \\ 
+&\Rightarrow y'(v)^* = -E_v(y,v)^*E_y(y,v)^{-*}.
+\end{align*}
+Instead of inserting $y'(v)^* = -E_v(y,v)^*E_y(y,v)^{-*}$ into our gradient expression, we define the adjoint equation as:
+\begin{align*}
+E_y(y,v)^{*}p=J_y(y,v). 
+\end{align*}
 This now allows us to write up the gradient as follows:
-\begin{align}
-\hat{J}'(v)&= y'(v)^*J_y(y(v),v) + J_v(y(v),v)\\
-&=-E_v(y(v),v)^*E_y(y(v),v)^{-*}J_y(y(v),v) + J_v(y(v),v) \\
-&= -E_v(y(v),v)^*p +J_v(y(v),v). \label{gradient}
-\end{align}
-Evaluating the gradient for a control variable $v\in V$ typically requires solving both the state and adjoint equation, and then inserting the solutions into the expression for the gradient (\ref{gradient}). To better illustrate how gradient evaluation works let us derive the adjoint equation and the gradient of the problem introduced in section \ref{example_sec}.
+\begin{align*}
+\hat{J}'(v)&= y'(v)^*J_y(y,v) + J_v(y,v)\\
+&=-E_v(y,v)^*E_y(y,v)^{-*}J_y(y,v) + J_v(y,v) \\
+&= -E_v(y,v)^*p +J_v(y,v). 
+\end{align*}
+\end{proof}
+\noindent
+Expression (\ref{gradient}) gives us recipe for evaluating the reduced objective function for a control variable $v\in V$. Typically this evaluation requires us to solving both the state and adjoint equation, and then inserting the adjoint into expression (\ref{gradient}). To better illustrate how gradient evaluation works let us derive the adjoint equation and the gradient of the problem introduced in section \ref{example_sec}.
 \subsection{Adjoint of the example problem}
-We want to derive the gradient of problem (\ref{exs_J}-\ref{exs_E}), and in order to do so, we need the adjoint equation of the problem, which we now state in the theorem below, followed by its derivation.
-\begin{theorem}
+We want to derive the gradient of problem (\ref{exs_J}-\ref{exs_E}), and in order to do so, we need the adjoint equation of the problem, which we now state in the proposition below, followed by its derivation.
+\begin{proposition}
 The adjoint equation of the problem (\ref{exs_J}-\ref{exs_E}) is:
 \begin{align}     
 -p'(t) &= ap(t) \label{exs_adjoint_eq}\\
 p(T) &= \alpha(y(T)-y^T)   \label{exs_adjoint_ic}  
 \end{align}
-\end{theorem}
+\end{proposition}
 \begin{proof}
 Before we calculate the different terms used to derive the adjoint equation, we want to fit our ODE into an expression $E$. We do this by writing up the weak formulation of the equation:
 \begin{gather*}
@@ -148,12 +164,12 @@ Using this we get the strong formulation:
 \end{proof}
 \noindent
 With the adjoint we can find the gradient of $\hat{J}$. Lets state the result first.
-\begin{theorem}
+\begin{proposition}
 The gradient of the reduced objective function $\hat{J}$ with respect to v is
 \begin{align}
 \hat{J}'(v)=v+p. \label{exsample_grad}
 \end{align} 
-\end{theorem}
+\end{proposition}
 \begin{proof}
 Firstly we need $J_v$ and $E_v^*$:
 \begin{align*}
@@ -361,7 +377,7 @@ f(x^{k+1})-f(x^*) \leq (\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1})^2 (f(x^
 Here $\lambda_1\leq\cdots\leq \lambda_n$ denotes the eigenvalues of $\nabla^2 f(x^*)$.
 \end{theorem}   
 \begin{proof}
-\cite{nocedal2006numerical}
+See \cite{nocedal2006numerical}.
 \end{proof}
 \noindent
 The bound for $f(x^{k+1})-f(x^*)$ given in theorem \ref{SD_con} corresponds to a linear convergence with $\epsilon=(\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1})^2$. For badly conditioned Hessians $\nabla^2 f(x^*)$, meaning $\lambda_n>>\lambda_1$, $\epsilon$ will approach one, and the convergence rate becomes almost sublinear. In general the linear convergence rate of steepest descent is considered poor, and we need improved algorithms to get faster convergence.
@@ -396,7 +412,7 @@ Suppose $f:\mathbb{R}^n\rightarrow\mathbb{R}$ is twice continuously differentiab
 \end{align*}
 \end{theorem}
 \begin{proof}
-\cite{nocedal2006numerical}
+See \cite{nocedal2006numerical}.
 \end{proof}
 \noindent
 The quadratic convergence of the Newton iteration is a big improvement in comparison with steepest descent, however theorem \ref{Newton_con} also highlights one of the problems with the method. Since we need to invert $\nabla^2 f(x^k)$ to find the search direction at $x^k$, we need an initial $x^0$ sufficiently close to the actual solution for the iteration to even work. This problem does not arise in BFGS and L-BFGS, since the Hessian approximation is designed to be invertible. Unfortunately though, these quasi-Newton methods does not have the convergence properties of Newtons method, as the next result shows.
@@ -408,7 +424,7 @@ Assume $f:\mathbb{R}^n\rightarrow\mathbb{R}$ is three times differentiable. Cons
 If the sequence $\{x^k\}$ originating from the quasi-Newton iteration converges to a point $x^*$, where $\nabla f(x^*)=0$ and $\nabla^2 f(x^*)$ is positive definite, the convergence is superlinear. 
 \end{theorem} 
 \begin{proof}
-\cite{nocedal2006numerical}
+See \cite{nocedal2006numerical}.
 \end{proof}
 \noindent
 Even though quasi-Newton methods do not posses the quadratic convergence of the Newton method, superlinear convergence is still a lot better than the linear convergence of steepest descent.
