@@ -65,37 +65,24 @@ Assume $v^k$ is the exact global minimizer of $J_{\mu_k}$, then each limit point
 \noindent
 The above result shows that the penalty algorithmic framework actually produces a solution to the original problem. There are however parts of the above framework, that still needs special attention, namely how to find $(v^k,\Lambda^k)$ in each iteration, how to update $\mu_k$ and $\tau_k$ and how to choose an adequate stopping criteria. Finding the optimal control for each iteration is done by applying an optimization method for unconstrained problems, that is dependent on the gradient at $(v^k,\Lambda^k)$. Let us therefore differentiate the penalized objective function.
 \subsection{The gradient of the penalized objective function}
-To find the gradient of \ref{pen_obj_J} we start by differentiating $\hat J_{\mu}(v,\Lambda)$:
+We have introduced the penalized objective function (\ref{pen_obj_J}), that depends on both the real and virtual control, and we now want to evaluate its gradient. We again take the adjoint approach as we did in section \ref{adjointGrad_sec}, and the expression for $\hat J_{\mu}'(v,\Lambda)$ belonging to the general optimization problem (\ref{decomposed problem1}-\ref{decomposed problem}) is given in proposition \ref{penalty_grad_prop}.
+\begin{proposition}[Gradient of the penalized objective function] \label{penalty_grad_prop}
+Let $\hat J_{\mu}$ be the penalized objective function (\ref{pen_obj_J}). With similar assumptions as in proposition \ref{redGrad_prop}, the gradient of $\hat J_{\mu}$ is as follows: 
 \begin{align}
-\hat J_{\mu}'(v,\Lambda) &= DJ_{\mu}(y(v,\Lambda),v,\Lambda) \\
-&= y'(v,\Lambda)^*\frac{\partial}{\partial y} J_{\mu}(y(v,\Lambda),v,\Lambda) + (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu}(y(v,\Lambda),v,\Lambda)
-\end{align} 
-To find an expression for $y'(v,\Lambda)^*$ we differentiate the state equation $E$:
-\begin{align*}
-DE(y(v,\Lambda),v,\Lambda)=0 &\Rightarrow E_y(y(v,\Lambda),v,\Lambda)y'(v,\Lambda)=-E_v(y(v,\Lambda),v,\Lambda)- E_{\Lambda}(y(v,\Lambda),v,\Lambda)\\ &\Rightarrow y'(v)=-E_y(y(v,\Lambda),v,\Lambda)^{-1}((E_v(y(v,\Lambda),v,\Lambda)+E_{\Lambda}(y(v,\Lambda),v,\Lambda)) \\ &\Rightarrow y'(v,\Lambda)^* = -(E_v(y(v,\Lambda),v,\Lambda)^*+E_{\Lambda}(y(v,\Lambda),v,\Lambda)^*)E_y(y(v,\Lambda),v,\Lambda)^{-*}
-\end{align*}
-Inserting the above expression for $ y'(v,\Lambda)^*$ into the gradient yields:
-\begin{align}
-\hat J_{\mu}'(v,\Lambda) &=-(E_v^*+E_{\Lambda}^*)E_y^{-*}\frac{\partial}{\partial y} J_{\mu} + (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu} \\
-&=-(E_v^*+E_{\Lambda}^*)p+ (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu} \label{pen_abs_grad}
+\hat J_{\mu}'(v,\Lambda)=-(E_v(y,v,\Lambda)^*+E_{\Lambda}(y,v,\Lambda)^*)p+ (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu}(y,v,\Lambda) \label{pen_abs_grad}
 \end{align}
-Where $p$ is the solution of the adjoint equation:
-\begin{align*}
-E_y^*p=\frac{\partial}{\partial y}J_{\mu}
-\end{align*} 
+where $p$ is the solution of the adjoint equation:
+\begin{align}
+E_y(y,v,\Lambda)^{*}p=\frac{\partial}{\partial y}J_{\mu}(y,v,\Lambda). \label{penalty adjoint}
+\end{align}
+\end{proposition}
+\begin{proof}
+Same reasoning as in proposition \ref{redGrad_prop}.
+\end{proof}
+\noindent
 Notice that the state equation $E$ consists of several equations defined separately on each of the decomposed subintervals. The result is that the adjoint equation also consists of several equations defined on each interval. To see this clearly we will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
 \subsection{Deriving the adjoint for the example problem}
-Let us first recall the example optimal control problem with ODE constraints:
-\begin{align*}
-&J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \\
-&\left\{
-     \begin{array}{lr}
-       	\frac{\partial}{\partial t}y(t)=a y(t) + v(t) \ \quad t\in(0,T)\\
-       	y(0)=y_0
-     \end{array}
-   \right.
-\end{align*}
-We can now decompose the interval $[0,T]$ into $N$ subintervals $\{[T_{i-1},T_{i}]\}_{i=1}^{N}$, and then define the above state equation on each interval, which forces us to penalize the objective function. The decomposed state equations will look like:
+Before we derive the adjoint equation of the decomposed example problem (\ref{exs_J}-\ref{exs_E}) we need to write up the decomposed state equation and the penalized objective function. We start by decomposing the interval $[0,T]$ into $N$ subintervals $\{[T_{i-1},T_{i}]\}_{i=1}^{N}$. We can then define the decomposed state equation on each interval:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -104,11 +91,12 @@ We can now decompose the interval $[0,T]$ into $N$ subintervals $\{[T_{i-1},T_{i
      \end{array}
    \right. \label{decomp_E}
 \end{align}
-The reduced penalized objective function will be given as:
+We get the reduced penalized objective function by adding the the penalty terms to the unpenalized objective function (\ref{exs_J}):
 \begin{align}
 \hat J_{\mu}(v,\Lambda) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2 \label{penalty_func}
 \end{align}
-\begin{theorem}
+Having formulated the penalized objective function, we are no ready to write up its gradient. The gradient of (\ref{penalty_func}) is given in proposition \ref{penGrad_prop}, but since the gradient depends on the decomposed adjoint equations, we write up these first.
+\begin{proposition} \label{pen_adjoint_prop}
 The adjoint equation of problem (\ref{exs_J}-\ref{exs_E}) on interval $[T_{N-1},T_N]$ is:
 \begin{align}
 \left\{
@@ -127,7 +115,7 @@ On $[T_{i-1},T_i]$ the adjoint equation is:
 	\end{array}
    \right. \label{exs_adjoint}
 \end{align}
-\end{theorem} 
+\end{proposition} 
 \begin{proof}
 Lets begin as we did for the non-penalty approach, by writing up the weak formulation of the state equations:
 \begin{gather*}
@@ -188,12 +176,12 @@ This gives us the ODEs we wanted.
 \end{proof}
 \noindent
 With the adjont equations we can find the gradient.
-\begin{theorem}
+\begin{proposition}
 The gradient of (\ref{penalty_func}), $\hat J_{\mu}'$, with respect to the control $(v,\Lambda)$ is:
 \begin{align}
 \hat J_{\mu}'(v,\Lambda) = (v+p,p_{2}(T_1) -p_{1}(T_1),..., p_{N}(T_{N-1}) -p_{N}(T_{N-1})) \label{penalty grad}
 \end{align}
-\end{theorem}
+\end{proposition}
 \begin{proof}
 If we first find $E_v^*$, $E_{\lambda}^*$, $J_v$ and $J_{\lambda}$ we can derive the gradient by simply inserting these expression into (\ref{pen_abs_grad}). We begin with the $E$ terms:
 \begin{align*}

@@ -333,16 +333,17 @@ def generate_problem(y0,yT,T,a):
     
 
     def J(u,y,yT,T):
-        t = np.linspace(0,T,len(u))
-        I = trapz(u**2,t)
+        #t = np.linspace(0,T,len(u))
+        dt = T/float(len(u)-1)
+        I = dt*np.sum(u[1:]**2)
         return 0.5*(I + (y-yT)**2)
 
     def grad_J(u,p,dt):
         t = np.linspace(0,T,len(u))
         grad = np.zeros(len(u))
         grad[1:] = dt*(u[1:]+p[:-1])
-        grad[0] = 0.5*dt*(u[0]) 
-        grad[-1] = 0.5*dt*(u[-1]) + dt*p[-2]
+        #grad[0] = 0.5*dt*(u[0]) 
+        #grad[-1] = 0.5*dt*(u[-1]) + dt*p[-2]
         return grad
         
 
@@ -368,8 +369,8 @@ def generate_problem(y0,yT,T,a):
         if rank == m-1:
             s[0] = 0.5*((y[-1]-yT)**2) 
             
-            I = dt*np.sum(u[:-2]**2)
-            I+= dt*0.5*u[-2]**2
+            I = dt*np.sum(u[:-1]**2)
+            #I+= dt*0.5*u[-2]**2
             s[0] += 0.5*I 
         elif rank!=0:
             s[0] = 0.5*dt*np.sum(u[:-1]**2)
@@ -377,7 +378,7 @@ def generate_problem(y0,yT,T,a):
 
         else:
             s[0] = 0.5*dt*np.sum(u[1:]**2)            
-            s[0] += 0.5*0.5*dt*u[0]**2
+            #s[0] += 0.5*0.5*dt*u[0]**2
             s[0] += 0.5*mu*(y[-1]-lam)**2
         
         S =np.zeros(1)
@@ -395,7 +396,7 @@ def generate_problem(y0,yT,T,a):
 
             grad = np.zeros(len(u))
             grad[1:] = dt*(u[1:] + p[:-1])
-            grad[0] = 0.5*dt*u[0]
+            #grad[0] = 0.5*dt*u[0]
 
         elif rank!=m-1:
             grad = np.zeros(len(u))
@@ -404,8 +405,8 @@ def generate_problem(y0,yT,T,a):
         else:
 
             grad = np.zeros(len(u))
-            grad[:-2] = dt*(u[:-2]+p[:-2])
-            grad[-2] = dt*0.5*u[-2] + dt*p[-2]
+            grad[:-1] = dt*(u[:-1]+p[:-1])
+            #grad[-2] = dt*0.5*u[-2] + dt*p[-2]
         return grad
         
 

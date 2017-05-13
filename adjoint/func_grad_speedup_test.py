@@ -225,13 +225,19 @@ def read_vector(N,m,problem):
         Par_res[start:end]=par_res[i+1][:-1]
         start = end
     
-    l2_norm = np.sqrt(np.sum((Par_res-seq_res)**2)/len(seq_res))
-    print 'l-inf norm diff: ',max(abs(Par_res-seq_res))
+    l2_norm = np.sqrt(np.sum((Par_res[1:]-seq_res[1:])**2)/len(seq_res))
+    print 'l-inf norm diff: ',max(abs(Par_res[:]-seq_res[:]))/max(abs(seq_res[1:]))
     print 'l2 norm diff: ',l2_norm
     seq_val = J(seq_res)
     par_val= J(Par_res)
     print 'func diff: ',par_val-seq_val
     val = (par_val-seq_val)/seq_val
+
+    import matplotlib.pyplot as plt
+    plt.plot(Par_res)
+    plt.plot(seq_res,'r')
+    plt.show()
+
     return l2_norm,val
     
 def test_solve(N,problem,pproblem,name='solveSpeed'):
@@ -353,8 +359,8 @@ def main():
 def main2():
     y0 = 1
     yT = 1
-    T = 1
-    a = 1
+    T = 10
+    a = -1
     problem,pproblem=generate_problem(y0,yT,T,a)
     try:
         N = int(sys.argv[1])
