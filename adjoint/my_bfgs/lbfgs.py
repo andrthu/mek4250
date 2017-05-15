@@ -3,7 +3,7 @@ from linesearch.strong_wolfe import *
 from scaler import PenaltyScaler
 from diagonalMatrix import DiagonalMatrix
 
-from matplotlib.pyplot import *
+#from matplotlib.pyplot import *
 
 from my_vector import SimpleVector, MuVector,MuVectors
 from LmemoryHessian import LimMemoryHessian, MuLMIH

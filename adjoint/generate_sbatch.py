@@ -3,6 +3,10 @@ import sys
 val = sys.argv[1]
 name = sys.argv[2]
 
+task = sys.argv[3]
+node = sys.argv[4]
+
+seq_par = sys.argv[5]
 string = '''
 print %s
 
@@ -10,19 +14,96 @@ name = '%s'
 print name
 ''' %(val,name)
 
-string2 = """
-while [ $((10-$COUNTER2)) -gt 0 ]; do
-	mpiexec python func_grad_speedup_test.py %s 1 1 $val;
-	let COUNTER2=COUNTER2+1;
-done
-mpiexec python func_grad_speedup_test.py %s 1 0 $val;
-mpiexec python func_grad_speedup_test.py %s 1 2 $val;
+string2 = """#!/bin/bash
+# Job name:
+#SBATCH --job-name=testSpeed
+#
+# Project:
+#SBATCH --account=uio
+#
+# Wall Clock limit:
+#SBATCH --time=00:15:00
+#
+# Max memory usage (MB):
+#SBATCH --mem-per-cpu=1000M
+#
+# Number of tasks (cores):
+#SBATCH --ntasks-per-node=%s
+#SBATCH --nodes=%s
+
+## Set up job environment:
+source /cluster/bin/jobsetup
+
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+
+mpiexec python func_grad_speedup_test.py %s 1 0 0;
+rm temp_time.txt;
+
+"""%(task,node,val,val,val,val,val,val,val,val,val,val,val)
+
+string3 = """#!/bin/bash
+# Job name:
+#SBATCH --job-name=testSpeed
+#
+# Project:
+#SBATCH --account=uio
+#
+# Wall Clock limit:
+#SBATCH --time=00:09:00
+#
+# Max memory usage (MB):
+#SBATCH --mem-per-cpu=1000M
+#
+# Number of tasks (cores):
+#SBATCH --ntasks-per-node=%s
+#SBATCH --nodes=%s
+
+## Set up job environment:
+source /cluster/bin/jobsetup
+
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+mpiexec python func_grad_speedup_test.py %s 1 1 0;
+
+mpiexec python func_grad_speedup_test.py %s 1 0 0;
+mpiexec python func_grad_speedup_test.py %s 1 2 0;
+
 
 rm temp_time.txt;
-""" %(val,val,val)
-print string2
+
+"""%(task,node,val,val,val,val,val,val,val,val,val,val,val,val)
+
+
+lel="""
+mpiexec python func_grad_speedup_test.py %s 1 0 0;
+mpiexec python func_grad_speedup_test.py %s 1 2 0;
+
+rm temp_time.txt;
+""" #%(task,node,val,val,val)
+
 new_script = open(name,'w')
 
+if seq_par == '0':
+    print string2
+    new_script.write(string2)
 
-new_script.write(string)
+else:
+    print string3
+    new_script.write(string3)
 new_script.close()

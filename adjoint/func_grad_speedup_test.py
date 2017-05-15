@@ -180,14 +180,14 @@ def read_temp_time(name,m,seq,rank,solve=False):
                 if len(vals2)==4:
                     par_string = 'par %d: %f %d %d %d %d \n'%(m,min_val,int(vals2[0]),int(vals2[1]),int(vals2[2]),int(vals2[3]))
                 elif len(vals2)==5:
-                    par_string = 'par %d: %f %d %d %d %d %f\n'%(m,min_val,int(vals2[0]),int(vals2[1]),
+                    par_string = 'par %d: %f %d %d %d %d %e\n'%(m,min_val,int(vals2[0]),int(vals2[1]),
                                                                 int(vals2[2]),int(vals2[3]),float(vals2[4]))
                 elif len(vals2)==6:
-                    par_string = 'par %d: %f %d %d %d %d %f %e\n'%(m,min_val,int(vals2[0]),int(vals2[1]),
+                    par_string = 'par %d: %f %d %d %d %d %e %e\n'%(m,min_val,int(vals2[0]),int(vals2[1]),
                                                                    int(vals2[2]),int(vals2[3]),float(vals2[4]),float(vals2[5]))
                 elif len(vals2)==7:
                     print float(vals2[6])
-                    par_string = 'par %d: %f %d %d %d %d %f %e %e\n'%(m,min_val,int(vals2[0]),int(vals2[1]),int(vals2[2]),
+                    par_string = 'par %d: %f %d %d %d %d %e %e %e\n'%(m,min_val,int(vals2[0]),int(vals2[1]),int(vals2[2]),
                                                                       int(vals2[3]),float(vals2[4]),float(vals2[5]),float(vals2[6]))
         else:
             seq_string = 'seq: %f \n'%min_val
@@ -233,10 +233,10 @@ def read_vector(N,m,problem):
     print 'func diff: ',par_val-seq_val
     val = (par_val-seq_val)/seq_val
 
-    import matplotlib.pyplot as plt
-    plt.plot(Par_res)
-    plt.plot(seq_res,'r')
-    plt.show()
+    #import matplotlib.pyplot as plt
+    #plt.plot(Par_res)
+    #plt.plot(seq_res,'r')
+    #plt.show()
 
     return l2_norm,val
     
@@ -276,12 +276,12 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
             itr_list = pre_chosen_itr[N]
             opt = {'jtol':1e-7,'maxiter':itr_list[m-2]}
         except:
-            opt = {'jtol':1e-7}
-        mu_list = [N]
+            opt = {'jtol':1e-5}
+        mu_list = [0.01*N]
         if name=='solveSpeed':
             comm.Barrier()
             t0 = time.time()
-            res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-10,1e-10],options=opt)
+            res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-5,1e-10],options=opt)
             t1 = time.time()
             comm.Barrier()
             res=res[-1]
@@ -310,7 +310,7 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
             fu,gr=res.counter()
             norm,fu_val = read_vector(N,m,problem)
             info_file = open('temp_info.txt','w')
-            info_file.write('%d %d %d %d %f %e %e'%(int(fu),int(gr),res.niter,res.lsiter,norm,grad_norm,fu_val))
+            info_file.write('%d %d %d %d %e %e %e'%(int(fu),int(gr),res.niter,res.lsiter,norm,grad_norm,fu_val))
             info_file.close()
         
 
@@ -359,8 +359,8 @@ def main():
 def main2():
     y0 = 1
     yT = 1
-    T = 10
-    a = -1
+    T = 100
+    a = -0.1
     problem,pproblem=generate_problem(y0,yT,T,a)
     try:
         N = int(sys.argv[1])

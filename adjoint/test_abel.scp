@@ -1,0 +1,22 @@
+#!/bin/bash
+# Job name:
+#SBATCH --job-name=testSpeed
+#
+# Project:
+#SBATCH --account=uio
+#
+# Wall Clock limit:
+#SBATCH --time=00:02:00
+#
+# Max memory usage (MB):
+#SBATCH --mem-per-cpu=1000M
+#
+# Number of tasks (cores):
+#SBATCH --ntasks-per-node=2
+#SBATCH --nodes=8
+
+## Set up job environment:
+source /cluster/bin/jobsetup
+
+
+mpiexec python speedup_mpi.py 7000000 1

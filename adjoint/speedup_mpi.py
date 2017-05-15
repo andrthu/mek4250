@@ -233,7 +233,7 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
 
 def get_speedup(task='both',name='speedup'):
     
-    import matplotlib.pyplot as plt
+    #import matplotlib.pyplot as plt
 
     y0 = 3.2
     yT = 1.5
@@ -251,7 +251,7 @@ def get_speedup(task='both',name='speedup'):
         
     if PROBLEM_NUMBER==1:
         problem = non_lin_problem(y0,yT,T,a,p,c=c)#,func=lambda x:x**2)
-        mu_val = [1,10,100,N]
+        mu_val = [N,N**2]
     elif PROBLEM_NUMBER == 2:
         mu_val = [np.sqrt(N)]
         y0_2 = 24.6
@@ -286,10 +286,10 @@ def get_speedup(task='both',name='speedup'):
 
         x = par_res[-1].x.gather_control()
         if rank == 0:
-            plt.plot(x[:N+1])
-            plt.plot(seq_res.x,'r--')
+            #plt.plot(x[:N+1])
+            #plt.plot(seq_res.x,'r--')
             print max(abs(x[:N+1]-seq_res.x))/max(abs(seq_res.x))
-        plt.show()
+        #plt.show()
 
 
     elif task =='seq':
@@ -314,7 +314,7 @@ def get_speedup(task='both',name='speedup'):
             else:
                 outputname = 'outputDir/'+name+'_'+str(N)+'.txt'
             out = open(outputname,'a')
-            out.write("par %d: %f %d %d \n"%(m,t3-t2,par_res[-1].niter,par_res[-1].lsiter))
+            out.write("par %d: %f %d %d \n"%(m,t3-t2,par_res[-1].counter()[0],par_res[-1].counter()[1]))
             out.close()
 
         #print t3-t2,par_res[-1].niter,par_res[-1].lsiter
@@ -345,7 +345,7 @@ def main():
     """
 def compare_seq_to_seq():
     
-    import matplotlib.pyplot as plt
+    #import matplotlib.pyplot as plt
 
     y0 = 3.2
     yT = 1.5
@@ -370,16 +370,16 @@ def compare_seq_to_seq():
         Res.append(seq_res)
         if rank ==0:
             legend.append(i)
-            plt.plot(seq_res.x)
+            #plt.plot(seq_res.x)
             iter_res.append(seq_res.niter)
 
     
     if rank ==0:
         print iter_res
-        plt.legend(legend)
+        #plt.legend(legend)
         for i in range(len(Res)-1):
             print max(abs(Res[i].x-Res[-1].x))
-        plt.show()
+        #plt.show()
 
         
         
