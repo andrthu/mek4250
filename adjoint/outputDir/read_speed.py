@@ -1,5 +1,6 @@
 import sys
 import pandas as pd
+import numpy as np
 
 def read_file(filename):
 
@@ -20,7 +21,7 @@ def create_table(lines,with_iter=True,with_iter2=False,with_norm=False,ideal_S=F
         table = {'time':[],'iter':[],'ls iter':[],'speedup':[],'gr':[],'fu':[],'norm':[]}
         with_iter2 =True
     elif ideal_S:
-        table = {'time':[],'L':[],'speedup':[],'S2':[],'norm':[],'f':[]}
+        table = {'time':[],'L':[],'speedup':[],'S2':[],'norm':[],'f':[],'E':[]}
     else:
         table = {'time':[],'speedup':[]}
     index = []
@@ -46,13 +47,14 @@ def create_table(lines,with_iter=True,with_iter2=False,with_norm=False,ideal_S=F
         table['S2'].append(1)
         table['norm'].append('--')
         table['f'].append('--')
+        table['E'].append(1)
         seq_fugr = float(int(first_line[3])+int(first_line[2]))
     table['speedup'].append(1)
     
     for line in lines[1:]:
         line_list = line.split()
         #print line_list 
-        index.append(line_list[1])
+        index.append(int(line_list[1][:-1]))
         par_time = float(line_list[2])
         table['time'].append(par_time)
         if with_iter:
@@ -70,12 +72,18 @@ def create_table(lines,with_iter=True,with_iter2=False,with_norm=False,ideal_S=F
             table['S2'].append(int(line_list[1][:-1])*seq_fugr/(int(line_list[4])+int(line_list[3])))
             table['norm'].append(float(line_list[7]))
             table['f'].append(float(line_list[9]))
+            
         table['speedup'].append(seq_time/par_time)
+        if ideal_S:
+            table['E'].append(seq_time/(par_time*int(line_list[1][:-1])))
     #print table
     data = pd.DataFrame(table,index=index)
+    if ideal_S:
+        data = data.ix[:,['norm','f','L','S2','time','speedup','E']]
     return data
     
 def main():
+    ideal_S = False
     try:
         if sys.argv[1] == '0':
             names = sys.argv[2:]
@@ -110,15 +118,51 @@ def main():
     except:
         print 'Give file'
         return
+    datas = []
     for name in names:
         print name
         lines = read_file(name)
         data = create_table(lines,with_iter=with_iter,with_iter2=with_iter2,
                             with_norm=with_norm,ideal_S=ideal_S)
         print data
-        data.to_latex('latexTables/'+name[:-3]+'tex')
+        #data.to_latex('latexTables/'+name[:-3]+'tex')
+        datas.append(data)
 
+    if ideal_S:
+        make_a_plot(datas)
 
+def make_a_plot(datas):
+
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(12,6))
+    ax1 = plt.subplot(131)
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['speedup']
+        ax1.plot(N,datas[i]['speedup'],'o-')
+        
+    ax1.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,80])
+    ax2 = plt.subplot(132)
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['E']
+        ax2.plot(N,datas[i]['E'],'o-')
+    ax3 = plt.subplot(133)
+    ax2.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,80])
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['E']
+        ax3.plot(N,datas[i]['L'],'o-')
+    ax3.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,80])
+    plt.show()
+    
 def read_func_and_grad():
 
     names = sys.argv[1:]
@@ -171,9 +215,9 @@ def read_func_and_grad():
         print data
         
         help_name = names1[i].split('/')[-1][:-4]
-        data.to_latex('latexTables/grad'+help_name+'.tex')
+        #data.to_latex('latexTables/grad'+help_name+'.tex')
         #print names1[i],names2[i]
 
 if __name__ == '__main__':
-    #main()
-    read_func_and_grad()
+    main()
+    #read_func_and_grad()

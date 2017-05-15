@@ -51,7 +51,7 @@ def euler_con(y0,yT,T,a):
 
 def gen_con(problem,name='exact_convergence'):
 
-    N_val = [50,100,1000,10000,100000]#,1000000]
+    N_val = [50,100,1000,10000,600000]#,1000000]
 
     table = {'norm':[],'val':[],'norm r':['--'],'val r':['--']}
     for i in range(len(N_val)):
@@ -59,10 +59,11 @@ def gen_con(problem,name='exact_convergence'):
         res = problem.solve(N_val[i],Lbfgs_options={'jtol':1e-10})
         val1=problem.Functional(ue,N_val[i])
         val2 = problem.Functional(res.x,N_val[i])
-        exact_norm = max(abs(ue[1:-1]))
-        table['norm'].append(max(abs(res.x[1:-1]-ue[1:-1]))/exact_norm)
+        exact_norm = 1#max(abs(ue[1:-1]))
+        #table['norm'].append(max(abs(res.x[1:-1]-ue[1:-1]))/exact_norm)
+        table['norm'].append(np.sqrt(np.sum((res.x[1:-1]-ue[1:-1])**2)/len(ue))/exact_norm)
         table['val'].append((val1-val2)/val1)
-        plt.plot(t,res.x-ue)
+        plt.plot(t,res.x)
         #plt.show()
         if i>0:
             table['norm r'].append(np.log(table['norm'][i]/table['norm'][i-1])/np.log(N_val[i]/N_val[i-1]))
@@ -71,15 +72,22 @@ def gen_con(problem,name='exact_convergence'):
     dt_val = float(problem.T)/np.array(N_val)
     data = pd.DataFrame(table,index = dt_val)
     data =data.ix[:,['norm','val','norm r','val r']]
-
+    
     #data.to_latex('report/whyNotEqual/'+name+'.tex')
 
     print data
+    plt.show()
 if __name__ =='__main__':
     #check_exact()
+    """
     y0 = 3.2
     yT = 1.5
     T = 10
     a = -2
+    """
+    y0 = 1
+    yT = 1
+    T = 100
+    a = -0.01
     #crank_con(y0,yT,T,a)
     euler_con(y0,yT,T,a)

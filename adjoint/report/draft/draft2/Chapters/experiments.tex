@@ -63,7 +63,7 @@ In the previous section we measured the effectiveness of the parareal preconditi
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
 &\left\{
      \begin{array}{lr}
-       	y'(t)=(t) + v(t) \ t\in(0,1)\\
+       	y'(t)=y(t) + v(t) \ t\in(0,1)\\
        	y(0)=1
      \end{array}
    \right. 
@@ -133,3 +133,15 @@ When comparing the ideal speedup $\hat S$ with the actual achieved wall clock sp
 \\
 \\
 For $\Delta t = 0.5(10^{-5})$ and $\Delta t = 10^{-6}$, the results are a bit disappointing, however we do continue to see the a relation between ideal and actual speedup, which justifies the use of $\hat S$ as a measure of effectiveness for our algorithm. In the last table for $N=3$, we notice that the error is high, and that the number of gradient evaluations is low. The reason for this is that the last line search iteration for this specific case failed to satisfy the Wolfe conditions due to numerical errors. The next natural step would then be to do a second penalty iteration with increased penalty parameter and or decreased tolerances, for line search and L-BFGS iterations. This was however not done in this case, since the set-up for the experiment was only to do one penalty iteration.
+\section{Speedup results for high number of decompositions}
+To properly test the Parareal-based preconditioner, we have tested its use on the example problem on the Abel computer cluster. Using Abel, we are able to test our algorithm for a large number of CPUs. For all experiments the execution time of the sequential parallel algorithms is measured by timing the solvers ten times, and choosing the lowest execution time. All our tests are done using an implicit Euler discretization on example problem (\ref{exs_J}-\ref{exs_E}) with the following parameters:
+\begin{align*}
+&J(y,v) = \frac{1}{2}\int_0^{100}v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
+&\left\{
+     \begin{array}{lr}
+       	y'(t)=-0.1y(t) + v(t) \ t\in(0,1)\\
+       	y(0)=1
+     \end{array}
+   \right. 
+\end{align*}
+We have chosen $T=100$, so that the small time steps $\Delta t$ does not get to small, when $n$ is large. We test the algorithm for $n=600000,1200000$ number of time steps. For $n=600000$, the error between the sequential solution $v_{seq}$ and the exact solution $v_e$ in $L$-norm is $||v_{seq}-v_{e}||\approx10^{-5}$. We have used the  

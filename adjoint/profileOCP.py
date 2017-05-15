@@ -11,7 +11,7 @@ def main():
     p = 2
     c = 0
     problem = generate_problem(y0,yT,T,a)[1]
-    N = 1250000
+    N = 125000
     m = 1
     opt = {'jtol':0,'maxiter':5,'ignore xtol':True}
     u = np.zeros(N+m)+1
