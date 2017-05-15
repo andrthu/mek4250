@@ -146,9 +146,9 @@ def test_grad(N,K,problem,pproblem,name='gradSpeed'):
             #out = open('outputDir/gradientSpeed/'+name+'_'+str(N)+'.txt','a')
             #out.write('par %d: %f %f \n'%(m,min_time,max_time))
             #out.close()
-def read_temp_time(name,m,seq,rank,solve=False):
+def read_temp_time(name,m,seq,rank,N,solve=False):
     if rank==0:
-        temp_time_file = open('temp_time.txt','r')
+        temp_time_file = open('temp_time'+str(m)+'_'+str(N)+'.txt','r')
         time_vals = temp_time_file.readlines()
         vals = []
         for line in time_vals:
@@ -160,16 +160,17 @@ def read_temp_time(name,m,seq,rank,solve=False):
 
         if solve:
             if seq:
-                info = open('temp_info.txt','r')
+                info = open('temp_info'+str(m)+'_'+str(N)+'.txt','r')
                 info_vals = info.readlines()
                 vals2 = []
                 for line in info_vals:
                     line_list = line.split()
-                    for l in line_list:
+                    for l in line_list[:-1]:
                         vals2.append(int(l))
-                seq_string = 'seq: %f %d %d %d %d\n'%(min_val,vals2[0],vals2[1],vals2[2],vals2[3])
+                    vals2.append(float(line_list[-1]))
+                seq_string = 'seq: %f %d %d %d %d %e\n'%(min_val,vals2[0],vals2[1],vals2[2],vals2[3],vals2[4])
             else:
-                info = open('temp_info.txt','r')
+                info = open('temp_info'+str(m)+'_'+str(N)+'.txt','r')
                 info_vals = info.readlines()
                 vals2 = []
                 for line in info_vals:
@@ -208,12 +209,14 @@ def read_vector(N,m,problem):
 
     J = lambda x: problem.Functional(x,N)
     seq_res = np.load('outputDir/vectorOut/seq_sol.npy')
+    
+    ue,_,_ = problem.simple_problem_exact_solution(N)
 
     par_res = []
-    Par_res = np.zeros(len(seq_res))
+    Par_res = np.zeros(len(ue))
     
     for i in range(m):
-        temp_res = np.load('outputDir/vectorOut/par_sol_'+str(i)+'.npy')
+        temp_res = np.load('outputDir/vectorOut/par_sol_'+str(i)+'_'+str(m)+'.npy')
         par_res.append(temp_res.copy())
     
     end = len(par_res[0])
@@ -225,10 +228,10 @@ def read_vector(N,m,problem):
         Par_res[start:end]=par_res[i+1][:-1]
         start = end
     
-    l2_norm = np.sqrt(np.sum((Par_res[1:]-seq_res[1:])**2)/len(seq_res))
-    print 'l-inf norm diff: ',max(abs(Par_res[:]-seq_res[:]))/max(abs(seq_res[1:]))
+    l2_norm = np.sqrt(np.sum((Par_res[1:]-ue[1:])**2)/len(ue))/np.sqrt(np.sum(ue[1:]**2)/len(ue))
+    print 'l-inf norm diff: ',max(abs(Par_res[1:]-ue[1:]))/max(abs(ue[1:]))
     print 'l2 norm diff: ',l2_norm
-    seq_val = J(seq_res)
+    seq_val = J(ue)
     par_val= J(Par_res)
     print 'func diff: ',par_val-seq_val
     val = (par_val-seq_val)/seq_val
@@ -246,20 +249,22 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
     rank = comm.Get_rank()
     
     if m == 1:
-        opt = {'jtol':1e-10}
+        opt = {'jtol':1e-8}
         t0 = time.time()
         res = pproblem.solve(N,Lbfgs_options=opt)
         t1=time.time()
         val = t1-t0
         np.save('outputDir/vectorOut/seq_sol',res.x)
-        temp1 = open('temp_time.txt','a')
+        temp1 = open('temp_time'+str(m)+'_'+str(N)+'.txt','a')
         temp1.write('%f ' %val)
         temp1.close()
         
         fu,gr=res.counter()
-
-        temp2 = open('temp_info.txt','w')
-        temp2.write('%d %d %d %d'%(int(fu),int(gr),res.niter,res.lsiter))
+        
+        ue,_,_ = problem.simple_problem_exact_solution(N)
+        norm=np.sqrt(np.sum((res.x[1:]-ue[1:])**2)/len(ue))/np.sqrt(np.sum(ue[1:]**2)/len(ue))
+        temp2 = open('temp_info'+str(m)+'_'+str(N)+'.txt','w')
+        temp2.write('%d %d %d %d %e'%(int(fu),int(gr),res.niter,res.lsiter,norm))
         temp2.close()
 
     else:
@@ -274,14 +279,14 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         try:
             
             itr_list = pre_chosen_itr[N]
-            opt = {'jtol':1e-7,'maxiter':itr_list[m-2]}
+            opt = {'jtol':1e-8,'maxiter':itr_list[m-2]}
         except:
-            opt = {'jtol':1e-5}
-        mu_list = [0.01*N]
+            opt = {'jtol':1e-8}
+        mu_list = [N]
         if name=='solveSpeed':
             comm.Barrier()
             t0 = time.time()
-            res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-5,1e-10],options=opt)
+            res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-8,1e-8],options=opt)
             t1 = time.time()
             comm.Barrier()
             res=res[-1]
@@ -297,19 +302,19 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
         loc_size = tuple(np.zeros(m)+1)
         loc_start = tuple(np.linspace(0,m-1,m))
         comm.Gatherv(loc_time,[time_vec,loc_size,loc_start,MPI.DOUBLE])
-        np.save('outputDir/vectorOut/par_sol_'+str(rank),res.x.local_vec)
+        np.save('outputDir/vectorOut/par_sol_'+str(rank)+'_'+str(m),res.x.local_vec)
         comm.Barrier()
         if rank==0:
 
             min_time = min(time_vec)
             
-            time_saver = open('temp_time.txt','a')
+            time_saver = open('temp_time'+str(m)+'_'+str(N)+'.txt','a')
             time_saver.write('%f ' %min_time)
             time_saver.close()
 
             fu,gr=res.counter()
             norm,fu_val = read_vector(N,m,problem)
-            info_file = open('temp_info.txt','w')
+            info_file = open('temp_info'+str(m)+'_'+str(N)+'.txt','w')
             info_file.write('%d %d %d %d %e %e %e'%(int(fu),int(gr),res.niter,res.lsiter,norm,grad_norm,fu_val))
             info_file.close()
         
@@ -349,7 +354,7 @@ def main():
         else:
             seq=False
         name = 'outputDir/'+name+'_'+str(N)+'.txt'
-        read_temp_time(name,m,seq,rank)
+        read_temp_time(name,m,seq,rank,N)
         return
     if eval_type=='0':
         #test_func(N,K,problem,pproblem)
@@ -357,10 +362,10 @@ def main():
     else:
         test_func(N,K,problem,pproblem)
 def main2():
-    y0 = 1
-    yT = 1
-    T = 100
-    a = -0.1
+    y0 = 3.2
+    yT = 11.5
+    T = 500
+    a = -0.067
     problem,pproblem=generate_problem(y0,yT,T,a)
     try:
         N = int(sys.argv[1])
@@ -376,7 +381,7 @@ def main2():
             seq = True
         else:
             seq =False
-        read_temp_time('outputDir/solveSpeed/sSpeed_'+str(N)+'.txt',m,seq,rank,solve=True)
+        read_temp_time('outputDir/solveSpeed/sSpeed_'+str(N)+'.txt',m,seq,rank,N,solve=True)
         return
     elif sys.argv[3]== '2':
         if rank==0:

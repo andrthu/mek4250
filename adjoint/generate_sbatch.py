@@ -5,7 +5,7 @@ name = sys.argv[2]
 
 task = sys.argv[3]
 node = sys.argv[4]
-
+m = int(task)*int(node)
 seq_par = sys.argv[5]
 string = '''
 print %s
@@ -46,9 +46,9 @@ mpiexec python func_grad_speedup_test.py %s 1 1 0;
 mpiexec python func_grad_speedup_test.py %s 1 1 0;
 
 mpiexec python func_grad_speedup_test.py %s 1 0 0;
-rm temp_time.txt;
-
-"""%(task,node,val,val,val,val,val,val,val,val,val,val,val)
+rm temp_time%s_%s.txt;
+rm temp_info%s_%s.txt;
+"""%(task,node,val,val,val,val,val,val,val,val,val,val,val,m,val,m,val)
 
 string3 = """#!/bin/bash
 # Job name:
@@ -85,9 +85,9 @@ mpiexec python func_grad_speedup_test.py %s 1 0 0;
 mpiexec python func_grad_speedup_test.py %s 1 2 0;
 
 
-rm temp_time.txt;
-
-"""%(task,node,val,val,val,val,val,val,val,val,val,val,val,val)
+rm temp_time%s_%s.txt;
+rm temp_info%s_%s.txt;
+"""%(task,node,val,val,val,val,val,val,val,val,val,val,val,val,m,val,m,val)
 
 
 lel="""
