@@ -167,27 +167,30 @@ def test3():
 def compare_pc_and_nonpc_for_different_m():
     import sys
     y0 = 3.2
-    yT = 1.5
-    T  = 1
-    a  = -1.9
+    yT = 11.5
+    T  = 100
+    a  = -.097
     p = 2
 
 
     
     #problem = non_lin_problem(y0,yT,T,a,p,c=20)
-    problem = create_simple_CN_problem(y0,yT,T,a,c=20)
+    problem = create_simple_CN_problem(y0,yT,T,a,c=0)
+    
     try:
         N = int(sys.argv[1])
         mu = N
         tol = 1e-4
         tol1 = 1e-4
         tol2 = 1e-4
+        ue,_,_ = problem.simple_problem_exact_solution(N)
     except:
         N = 1000
         mu = N
-        tol1 = 1e-7
+        tol1 = 1e-5
         tol2 = 1e-4
-    M = [1,2,3,4,5,6,8,16,32,64,128]
+        ue,_,_ = problem.simple_problem_exact_solution(N)
+    M = [1,2,4,8,16,32,64,128]
     #M = [1,2,3]
     res1 = problem.solve(N,Lbfgs_options={'jtol':tol1})
     t = np.linspace(0,T,N+1)
@@ -218,8 +221,8 @@ def compare_pc_and_nonpc_for_different_m():
               #'non-pc fu'      : [res1.counter()[0]],
               'pc fugr'        : [res1.counter()[1]+res1.counter()[0]],
               'npc fugr'       : [res1.counter()[1]+res1.counter()[0]],
-              'pc err'         : ['--'],
-              'non-pc err'     : ['--'],
+              'pc err'         : [l2_diff_norm(ue[1:-1],res1.x[1:-1],t[1:-1])],
+              'non-pc err'     : [l2_diff_norm(ue[1:-1],res1.x[1:-1],t[1:-1])],
               'ideal pc-S'     : [1],
               'ideal non-pc-S' : [1],}
 
@@ -233,8 +236,8 @@ def compare_pc_and_nonpc_for_different_m():
 
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
-        pc_res = problem.PPCLBFGSsolve(N,m,[mu*100],tol_list=[tol2,tol2/10,(tol2**2)/100],options=opt)
-        nonpc_res = problem.penalty_solve(N,m,[mu*100],tol_list=[tol2,tol2/10,(tol2**2)/100],Lbfgs_options=opt)
+        pc_res = problem.PPCLBFGSsolve(N,m,[0.1*mu],tol_list=[tol2,tol2/10,(tol2**2)/100],options=opt)
+        nonpc_res = problem.penalty_solve(N,m,[0.1*mu],tol_list=[tol2,tol2/10,(tol2**2)/100],Lbfgs_options=opt)
         
         if type(pc_res)==list:
             pc_res=pc_res[-1]
@@ -248,8 +251,8 @@ def compare_pc_and_nonpc_for_different_m():
         
         S1 = float(fu_gr_sum)/((pc_fugr[0]+pc_fugr[1])/float(m))
         S2 = float(fu_gr_sum)/((npc_fugr[0]+npc_fugr[1])/float(m))
-        err1 = l2_diff_norm(res1['control'].array(),pc_res.x[:N+1],t)/res1_norm
-        err2 = l2_diff_norm(res1['control'].array(),nonpc_res['control'].array()[:N+1],t)/res1_norm
+        err1 = l2_diff_norm(ue[1:-1],pc_res.x[1:N],t[1:-1])/res1_norm
+        err2 = l2_diff_norm(ue[1:-1],nonpc_res['control'].array()[1:N],t[1:-1])/res1_norm
 
         table['pc fu'].append(pc_res.niter)
         table['non-pc fu'].append(nonpc_res['iteration'])
@@ -981,11 +984,11 @@ if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    #compare_pc_and_nonpc_for_different_m()
+    compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    jump_difference()
+    #jump_difference()
     #look_at_gradient()
     #count_grad_func_eval()
     #split_test()

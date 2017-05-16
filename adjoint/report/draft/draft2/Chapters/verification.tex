@@ -194,7 +194,7 @@ In \ref{analysis sec} we derived the theoretical speedup for numerical gradient 
 \\
 \\
 Since the parallel algorithm has some overhead, we do not expect any improvements for small problems. This is reflected in the above results, where we for $\Delta t = 10^{-2}$ see an increased execution time when running function and gradient evaluation in parallel. For $\Delta t = 10^{-4}$ we see only a modest speedup, that is significantly lower than the expected speedup from section \ref{analysis sec}. For $\Delta t \leq 10^{-5}$, however we see speedup results in line with what we expect from the theory.  
-\section{Consistency}
+\section{Consistency} \label{consistency_sec}
 When we introduced the penalty method in section \ref{penalty_sec}, we also presented a result showing that the iterates $\{v^k\}$ stemming from the penalty algorithmic framework converged towards the solution of the non-penalized problem $v$. We can write this up as:
 \begin{align*}
 \lim_{k\rightarrow\infty} v^k = v 

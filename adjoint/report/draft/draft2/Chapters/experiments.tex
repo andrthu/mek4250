@@ -136,12 +136,12 @@ For $\Delta t = 0.5(10^{-5})$ and $\Delta t = 10^{-6}$, the results are a bit di
 \section{Speedup results for high number of decompositions}
 To properly test the Parareal-based preconditioner, we have tested its use on the example problem on the Abel computer cluster. Using Abel, we are able to test our algorithm for a large number of CPUs. For all experiments the execution time of the sequential parallel algorithms is measured by timing the solvers ten times, and choosing the lowest execution time. All our tests are done using an implicit Euler discretization on example problem (\ref{exs_J}-\ref{exs_E}) with the following parameters:
 \begin{align*}
-&J(y,v) = \frac{1}{2}\int_0^{100}v(t)^2dt + \frac{1}{2}(y(T)-1)^2 \\
+&J(y,v) = \frac{1}{2}\int_0^{100}v(t)^2dt + \frac{1}{2}(y(T)-11.5)^2 \\
 &\left\{
      \begin{array}{lr}
-       	y'(t)=-0.1y(t) + v(t) \ t\in(0,1)\\
-       	y(0)=1
+       	y'(t)=-0.097y(t) + v(t) \ t\in(0,1)\\
+       	y(0)=3.2
      \end{array}
    \right. 
 \end{align*}
-We have chosen $T=100$, so that the small time steps $\Delta t$ does not get to small, when $n$ is large. We test the algorithm for $n=600000,1200000$ number of time steps. For $n=600000$, the error between the sequential solution $v_{seq}$ and the exact solution $v_e$ in $L$-norm is $||v_{seq}-v_{e}||\approx10^{-5}$. We have used the  
+We have chosen $T=100$, so that the small time steps $\Delta t$ does not get to small, when $n$ is large. We test the algorithm for $n=600000,1200000$ number of time steps. 

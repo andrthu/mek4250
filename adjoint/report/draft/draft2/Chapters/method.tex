@@ -9,26 +9,26 @@ In the last section a Parareal based preconditioner to be used in the optimizati
 \section{Optimal control problem with time-dependent DE constraints on a decomposed time interval} \label{decomp_sec}
 Before we start to decompose the time interval, let us again state the general problem that we want to solve:
 \begin{align}
-\underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v) \label{initial problem1}\\
-\textrm{Subject to:} \ &E(y(t),v)=0  \quad t\in [0,T] \label{initial problem}
+\underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v), \label{initial problem1}\\
+\textrm{subject to:} \ &E(y(t),v)=0, \quad t\in [0,T]. \label{initial problem}
 \end{align}
 To introduce parallelism, we decompose $I=[0,T]$ into $N$ subintervals $I_i=[T_{i-1},T_i]$, with $T_0=0$ and $T_N=T$. To be able to solve the differential equation $E$ on each interval $I_i$, we introduce intermediate initial conditions $y(T_i)=\lambda_i$ for $i=1,...,N-1$. This means that instead of finding $y$ by solving $E$ on the entire time domain $I$, we can now find $y$ by solving $E$ separately on on each subinterval $I_i$. The problem (\ref{initial problem}) now reads:
 \begin{align}
-\underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v)  \label{decomposed problem1}\\
-\textrm{Subject to:} \ &E^i(y^i(t),v)=0 \quad t\in [T_{i-1},T_i] \quad \forall i \label{decomposed problem}
+\underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v),  \label{decomposed problem1}\\
+\textrm{Subject to:} \ &E^i(y^i(t),v)=0, \quad t\in [T_{i-1},T_i] \quad \forall i. \label{decomposed problem}
 \end{align} 
 Since we want the state $y$ to be continuous, we also need the following conditions:
 \begin{align}
-y^{i}(T_i)=y^{i+1}(T_i)=\lambda_i \quad \ i=1,..,N-1 \label{Extra constraints}
+y^{i}(T_i)=y^{i+1}(T_i)=\lambda_i \quad \ i=1,..,N-1. \label{Extra constraints}
 \end{align} 
 Both the problems (\ref{initial problem1}-\ref{initial problem}) and (\ref{decomposed problem1}-\ref{Extra constraints}) are constrained problems, which we solve by reducing them to unconstrained problems. In the original setting this can easily be done if we assume that each control variable $v$ corresponds to a unique solution $y$ of the state equation $E$. We can then define a reduced objective function $\hat{J}(v)$, and minimize it with respect to $v$, i.e solve the unconstrained problem:
 \begin{align*}
-\underset{v\in V}{\text{min}} \ \hat J(v)
+\underset{v\in V}{\text{min}} \ \hat J(v).
 \end{align*} 
 Assuming that the decomposed state equations also can be uniquely resolved $\forall v$, we can again define a reduced objective function  $\hat{J}$. However because of the extra conditions (\ref{Extra constraints}) the reduction of (\ref{decomposed problem}) still produces a constrained problem:
 \begin{align}
-&\underset{v\in V}{\text{min}} \ \hat J(v) \label{constrained reduced j}\\
-&y^{i-1}(T_i)=\lambda_i \ \quad \forall i \label{constrained reduced}
+&\underset{v\in V}{\text{min}} \ \hat J(v), \label{constrained reduced j}\\
+&y^{i-1}(T_i)=\lambda_i, \ \quad \forall i. \label{constrained reduced}
 \end{align} 
 \section{The penalty method} \label{penalty_sec}
 To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained reduced}), we will use the penalty method\cite{nocedal2006numerical}, which transforms constrained problems into a series of unconstrained problems by incorporating the constraints into the functional. Incorporating the constraints means penalizing not satisfying the constraints. To use the penalty method on (\ref{constrained reduced j}-\ref{constrained reduced}) we first introduce the initial conditions to the decomposed state equations as variables $\Lambda = (\lambda_1,..,\lambda_{N-1})^T$, and then define the penalized objective function $\hat J_{\mu}$:

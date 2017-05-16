@@ -45,9 +45,10 @@ def create_table(lines,with_iter=True,with_iter2=False,with_norm=False,ideal_S=F
     elif ideal_S:
         table['L'].append(int(first_line[3])+int(first_line[2]))
         table['S2'].append(1)
-        table['norm'].append('--')
+        
         table['f'].append('--')
         table['E'].append(1)
+        table['norm'].append(float(first_line[-1]))
         seq_fugr = float(int(first_line[3])+int(first_line[2]))
     table['speedup'].append(1)
     
@@ -134,9 +135,10 @@ def main():
 def make_a_plot(datas):
 
     import matplotlib.pyplot as plt
-
+    legg = [r'$N=6\cdot 10^{5}$',r'$N=12\cdot 10^{5}$',r'$N=24\cdot 10^{5}$']
     plt.figure(figsize=(12,6))
-    ax1 = plt.subplot(131)
+    ax1 = plt.subplot(221)
+    ax1.set_title('speedup')
     for i in range(len(datas)):
         
         N= datas[i].index
@@ -144,25 +146,44 @@ def make_a_plot(datas):
         #print datas[i]['speedup']
         ax1.plot(N,datas[i]['speedup'],'o-')
         
-    ax1.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,80])
-    ax2 = plt.subplot(132)
+    ax1.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,72,80])
+    ax1.legend(legg,loc='best',fontsize='medium')
+    
+    ax2 = plt.subplot(222)
+    ax2.set_title('Efficiency')
     for i in range(len(datas)):
         
         N= datas[i].index
         #print N
         #print datas[i]['E']
         ax2.plot(N,datas[i]['E'],'o-')
-    ax3 = plt.subplot(133)
-    ax2.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,80])
+    ax3 = plt.subplot(223)
+    ax3.set_title(r'$L_{p_N}$')
+    ax2.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,72,80])
+    ax2.legend(legg,loc='best',fontsize='medium')
     for i in range(len(datas)):
         
         N= datas[i].index
         #print N
         #print datas[i]['E']
         ax3.plot(N,datas[i]['L'],'o-')
-    ax3.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,80])
-    plt.show()
+    ax3.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,72,80])
+    ax4 = plt.subplot(224)
+    ax4.set_title(r'$||v-v_e||_{L^2}$')
+    ax3.legend(legg,loc='best',fontsize='medium')
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['norm']
+        ax4.plot(N,datas[i]['norm'],'o-')
+    ax4.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,72,80])
+    ax4.legend(legg,loc='best',fontsize='medium')
     
+
+    print datas[-1].iloc[[0,1,3,5,7,10,11]]
+    #datas[-1].iloc[[0,1,3,5,7,10,11]].to_latex('latexTables/speedupManyCore.tex')
+    plt.show()
 def read_func_and_grad():
 
     names = sys.argv[1:]

@@ -51,7 +51,7 @@ def euler_con(y0,yT,T,a):
 
 def gen_con(problem,name='exact_convergence'):
 
-    N_val = [50,100,1000,10000,600000]#,1000000]
+    N_val = [50,100,1000,10000]#,600000]#,1000000]
 
     table = {'norm':[],'val':[],'norm r':['--'],'val r':['--']}
     for i in range(len(N_val)):
@@ -62,7 +62,8 @@ def gen_con(problem,name='exact_convergence'):
         exact_norm = 1#max(abs(ue[1:-1]))
         #table['norm'].append(max(abs(res.x[1:-1]-ue[1:-1]))/exact_norm)
         table['norm'].append(np.sqrt(np.sum((res.x[1:-1]-ue[1:-1])**2)/len(ue))/exact_norm)
-        table['val'].append((val1-val2)/val1)
+        print val1,val2
+        table['val'].append((val1-val2)/val2)
         plt.plot(t,res.x)
         #plt.show()
         if i>0:
@@ -76,6 +77,7 @@ def gen_con(problem,name='exact_convergence'):
     #data.to_latex('report/whyNotEqual/'+name+'.tex')
 
     print data
+    plt.plot(t,ue)
     plt.show()
 if __name__ =='__main__':
     #check_exact()
@@ -85,9 +87,9 @@ if __name__ =='__main__':
     T = 10
     a = -2
     """
-    y0 = 1
-    yT = 1
+    y0 = 3.2
+    yT = 11.5
     T = 100
-    a = -0.01
+    a = -0.097
     #crank_con(y0,yT,T,a)
     euler_con(y0,yT,T,a)
