@@ -22,7 +22,7 @@ string2 = """#!/bin/bash
 #SBATCH --account=uio
 #
 # Wall Clock limit:
-#SBATCH --time=00:15:00
+#SBATCH --time=00:20:00
 #
 # Max memory usage (MB):
 #SBATCH --mem-per-cpu=1000M

@@ -281,12 +281,12 @@ def test_solve(N,problem,pproblem,name='solveSpeed'):
             itr_list = pre_chosen_itr[N]
             opt = {'jtol':1e-8,'maxiter':itr_list[m-2]}
         except:
-            opt = {'jtol':1e-8}
-        mu_list = [N]
+            opt = {'jtol':1e-6}
+        mu_list = [0.1*N]
         if name=='solveSpeed':
             comm.Barrier()
             t0 = time.time()
-            res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-8,1e-8],options=opt)
+            res = pproblem.parallel_PPCLBFGSsolve(N,m,mu_list,tol_list=[1e-6,1e-8],options=opt)
             t1 = time.time()
             comm.Barrier()
             res=res[-1]
@@ -363,9 +363,9 @@ def main():
         test_func(N,K,problem,pproblem)
 def main2():
     y0 = 3.2
-    yT = 11.5
-    T = 500
-    a = -0.067
+    yT = 110.5
+    T = 100
+    a = -0.097
     problem,pproblem=generate_problem(y0,yT,T,a)
     try:
         N = int(sys.argv[1])
