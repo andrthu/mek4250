@@ -13,7 +13,7 @@ from optimalContolProblem import OptimalControlProblem, Problem1
 from my_bfgs.mpiVector import MPIVector
 from parallelOCP import interval_partition,v_comm_numbers
 from ODE_pararealOCP import PararealOCP
-from mpiVectorOCP import MpiVectorOCP,simpleMpiVectorOCP,generate_problem,local_u_size
+from mpiVectorOCP import MpiVectorOCP,simpleMpiVectorOCP,generate_problem,generate_problem_c,local_u_size
 """
 seq: 2.430924 20 21 4 20
 par 2: 2.188750 29 29 5 23 0.000011
@@ -388,9 +388,41 @@ def main2():
             read_vector(N,m,problem)
         return
     test_solve(N,problem,pproblem,name='solveSpeed')
+
+def main3():
+    y0 = 3.2
+    yT = 110.5
+    T = 100
+    a = -0.097
+    c = 20
+    problem,pproblem=generate_problem_c(y0,yT,T,a,c)
+    problem.c = c
+    pproblem.c = c
+    try:
+        N = int(sys.argv[1])
+    except:
+        N = 1000
+    
+    
+    comm=pproblem.comm
+    m = comm.Get_size()
+    rank = comm.Get_rank()
+    if sys.argv[3] == '0':
+        if m ==1:
+            seq = True
+        else:
+            seq =False
+        read_temp_time('outputDir/solveSpeed/cSpeed_'+str(N)+'.txt',m,seq,rank,N,solve=True)
+        return
+    elif sys.argv[3]== '2':
+        if rank==0:
+            read_vector(N,m,problem)
+        return
+    test_solve(N,problem,pproblem,name='solveSpeed')
     
 
 
 if __name__ == '__main__':
     #main()
-    main2()
+    #main2()
+    main3()

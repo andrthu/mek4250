@@ -56,7 +56,7 @@ class OptimalControlProblem():
         self.counter=np.zeros(2)
 
         self.jump_diff = 0
-
+        self.c = 0
 
         self.end_end_adjoint = None
         self.end_start_adjoint = None
@@ -1078,8 +1078,9 @@ class OptimalControlProblem():
         y0 = self.y0
         
         D = 1. + (np.exp(a*T)**2-1)/(2.*a)
-
-        C = (yT*np.exp(a*T)-y0*np.exp(a*T)**2)/D
+        
+        CC = np.exp(a*T)*self.c*(np.exp(a*T)-1)/a
+        C = (yT*np.exp(a*T)-y0*np.exp(a*T)**2 -CC)/D
 
         u_f = lambda x : C*np.exp(a*(-t))
         
