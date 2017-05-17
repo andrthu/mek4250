@@ -135,18 +135,20 @@ def main():
 def make_a_plot(datas):
 
     import matplotlib.pyplot as plt
-    legg = [r'$N=6\cdot 10^{5}$',r'$N=12\cdot 10^{5}$',r'$N=24\cdot 10^{5}$']
+    legg = [r'$n=6\cdot 10^{5}$',r'$n=12\cdot 10^{5}$',r'$n=24\cdot 10^{5}$']
     plt.figure(figsize=(12,6))
     ax1 = plt.subplot(221)
     ax1.set_title('speedup')
+
+    N_vals = [1,4,8,16,24,32,40,48,56,64,72,80,88,96,104,120]
     for i in range(len(datas)):
         
         N= datas[i].index
         #print N
         #print datas[i]['speedup']
-        ax1.plot(N,datas[i]['speedup'],'o-')
+        ax1.plot(N[:-2],datas[i]['speedup'][:-2],'o-')
         
-    ax1.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,72,80])
+    ax1.xaxis.set_ticks(N_vals)
     ax1.legend(legg,loc='best',fontsize='medium')
     
     ax2 = plt.subplot(222)
@@ -156,18 +158,18 @@ def make_a_plot(datas):
         N= datas[i].index
         #print N
         #print datas[i]['E']
-        ax2.plot(N,datas[i]['E'],'o-')
+        ax2.plot(N[:-2],datas[i]['E'][:-2],'o-')
     ax3 = plt.subplot(223)
     ax3.set_title(r'$L_{p_N}$')
-    ax2.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,72,80])
+    ax2.xaxis.set_ticks(N_vals)
     ax2.legend(legg,loc='best',fontsize='medium')
     for i in range(len(datas)):
         
         N= datas[i].index
         #print N
         #print datas[i]['E']
-        ax3.plot(N,datas[i]['L'],'o-')
-    ax3.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,72,80])
+        ax3.plot(N[:-2],datas[i]['L'][:-2],'o-')
+    ax3.xaxis.set_ticks(N_vals)
     ax4 = plt.subplot(224)
     ax4.set_title(r'$||v-v_e||_{L^2}$')
     ax3.legend(legg,loc='best',fontsize='medium')
@@ -176,13 +178,14 @@ def make_a_plot(datas):
         N= datas[i].index
         #print N
         #print datas[i]['norm']
-        ax4.plot(N,datas[i]['norm'],'o-')
-    ax4.xaxis.set_ticks([1,4,8,16,24,32,40,48,56,64,72,80])
+        ax4.plot(N[:-2],datas[i]['norm'][:-2],'o-')
+    ax4.xaxis.set_ticks(N_vals)
     ax4.legend(legg,loc='best',fontsize='medium')
     
 
-    print datas[-1].iloc[[0,1,3,5,7,10,11]]
-    #datas[-1].iloc[[0,1,3,5,7,10,11]].to_latex('latexTables/speedupManyCore.tex')
+    print datas[-1].iloc[[0,1,3,5,7,10,13,16]]
+    #datas[-1].iloc[[0,1,3,5,7,10,13,16]].to_latex('latexTables/speedupManyCore.tex')
+    plt.savefig('report/draft/draft2/fspeed_fig.png')
     plt.show()
 def read_func_and_grad():
 

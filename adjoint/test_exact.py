@@ -12,10 +12,11 @@ def check_exact():
     T = 10
     a = -2
 
-    problem = create_simple_CN_problem(y0,yT,T,a,c=0)
+    problem = create_simple_CN_problem(y0,yT,T,a,c=20)
+    problem.c =20
     #problem = non_lin_problem(y0,yT,T,a,2,func=lambda x : 0*x)
 
-    N = 1000*T
+    N = 100*T
 
     ue,t,_ = problem.simple_problem_exact_solution(N)
 
@@ -29,7 +30,7 @@ def check_exact():
     y = problem.ODE_solver(res.x,N)
     u_test = lambda x : u0*np.exp(a*(T-t))
     print max(abs(res.x[1:-1]-ue[1:-1])),np.sqrt(trapz((res.x[1:-1]-ue[1:-1])**2,t[1:-1])),max(abs(res2.x[1:N]-ue[1:-1]))
-    plt.plot(t,ue,'--')
+    plt.plot(t,ue+20,'--')
     plt.plot(t,res.x)
     plt.plot(t,res2.x[:N+1])
     #plt.plot(t,u_test(t),'.')
@@ -80,7 +81,7 @@ def gen_con(problem,name='exact_convergence'):
     plt.plot(t,ue)
     plt.show()
 if __name__ =='__main__':
-    #check_exact()
+    check_exact()
     """
     y0 = 3.2
     yT = 1.5
@@ -92,4 +93,4 @@ if __name__ =='__main__':
     T = 100
     a = -0.097
     #crank_con(y0,yT,T,a)
-    euler_con(y0,yT,T,a)
+    #euler_con(y0,yT,T,a)

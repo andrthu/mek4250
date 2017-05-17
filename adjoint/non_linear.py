@@ -340,9 +340,9 @@ def test_quad():
     
 if __name__ == "__main__":
 
-    #test_quad()
+    test_quad()
     #test_sine()
-    test_nonLinear()
+    #test_nonLinear()
     
 """
 terminal> python non_linear (test_quad())

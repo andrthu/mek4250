@@ -79,7 +79,7 @@ def quadratic_state(y0,yT,T,a):
     def J(u,y,yT,T):
         t = np.linspace(0,T,len(u))
 
-        I = trapz((u)**2,t)
+        I = exp_int((u)**2,t)
 
         return 0.5*I + 0.5*(y-yT)**2
 
@@ -87,8 +87,7 @@ def quadratic_state(y0,yT,T,a):
         t = np.linspace(0,T,len(u))
         grad = np.zeros(len(u))
         grad[:-1] = dt*(u[:-1]+p[1:])
-        grad[0] = 0.5*dt*(u[0])+dt*p[1] 
-        grad[-1] = 0.5*dt*(u[-1]) 
+        
         return grad
         
 
@@ -850,11 +849,11 @@ def general_taylor_test(problem,N=100,m=10):
 
 if __name__ == '__main__':
     #taylor_test_non_penalty()
-    taylor_penalty_test()
+    #taylor_penalty_test()
     #quad_end()
     #runge_kutta_test()
     #taylor_test_mpi()
-    #taylor_quadratic_state()
+    taylor_quadratic_state()
     #general_non_linear_test()
 """
 J(u+eh) = J(u) + O(e)
