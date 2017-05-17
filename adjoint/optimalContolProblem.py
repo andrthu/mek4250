@@ -1082,7 +1082,7 @@ class OptimalControlProblem():
         CC = np.exp(a*T)*self.c*(np.exp(a*T)-1)/a
         C = (yT*np.exp(a*T)-y0*np.exp(a*T)**2 -CC)/D
 
-        u_f = lambda x : C*np.exp(a*(-t))
+        u_f = lambda x : C*np.exp(a*(-t)) +self.c
         
 
         t = np.linspace(0,T,N+1)
