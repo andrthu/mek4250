@@ -300,21 +300,70 @@ def test_noise():
     a = -0.097
     T=100
 
-    f = lambda x : np.sin(0.5*x)
+    f = lambda x : 0.3*np.sin(x)
     
-
+    
     problem = create_noise_CN_problem(y0,yT,T,a,f)
 
-    N = 1000
+    N = 10000
+    m = [1,2,4,8,16,32,64,128]
+    mu =[10*N,N,N,10*N,10*N,N,10*N]
+    tol=[1e-6,1e-6,1e-6,1e-6,1e-6,1e-5,1e-6]
+    t = np.linspace(0,T,N+1)
+    res = problem.solve(N,Lbfgs_options={'jtol':1e-8})
+    
 
-    res = problem.solve(N)
+    L = res.counter()[0]+res.counter()[1]
+    table ={'D':[],'L':[],'S':[]}
+
+    table['D'].append(0)
+    table['L'].append(L)
+    table['S'].append(1)
+    
+    for i in range(1,len(m)):
+        
+        res2 = problem.PPCLBFGSsolve(N,m[i],[mu[i-1]],options={'jtol':tol[i-1]})
+        
+
+        err = np.sqrt(trapz((res2.x[:N+1]-res.x)**2,t))/np.sqrt(trapz(res.x**2,t))
+        count = res2.counter()
+        L2 = count[0]+count[1]
+        table['D'].append(err)
+        table['L'].append(L2)
+        table['S'].append(m[i]*(L/float(L2)))
+
+    import pandas as pd
+
+    data = pd.DataFrame(table,index=m)
+    print data
+
+    data.to_latex('report/whyNotEqual/unsmooth.tex')
+    """
+
+    ue,t,_ = problem.simple_problem_exact_solution(N)
+    
 
     import matplotlib.pyplot as plt
-    print res.counter()
-    plt.plot(res.x)
-
+    plt.figure()
+    plt.plot(t,ue)
+    plt.ylabel('v',fontsize=20)
+    plt.xlabel('t',fontsize=20)
+    plt.savefig('report/draft/draft2/smooth.png')
+    plt.figure()
+    plt.plot(t,res.x)
+    plt.xlabel('t',fontsize=20)
+    plt.ylabel('v',fontsize=20)
+    plt.savefig('report/draft/draft2/unsmooth.png')
     plt.show()
+    
+    
+    print res.counter(),res2.counter()
+    print max(abs(res.x[1:-1]-res2.x[1:N]))
+    plt.plot(t,res.x)
 
+    plt.plot(t,res2.x[:N+1],'r--')
+    plt.show()
+    """
 if __name__=='__main__':
 
     #test_CN()

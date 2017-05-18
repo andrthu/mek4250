@@ -57,7 +57,7 @@ There are several things of note about the results in table \ref{compare_table}.
 \\
 \\
 When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=1,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned solver get speedup for all decompositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is considerably less then optimal for all $N$. Another thing that we notice when looking at the sum of gradient and function evaluations for the preconditioned solver, is that it increases steadily up to $N=8$, and then starts to decline again for higher $N$s. The reason for this is that when we increase the number of decomposed subintervals, we also make the coarse solver in the parareal preconditioner finer. This means that the preconditioner becomes a better approximation of the Hessian, which makes the L-BFGS iteration converge faster.
-\subsection{Speedup results for a high number of decompositions}
+\subsection{Speedup results for a high number of decompositions} \label{Aspeed_sec}
 To properly test the Parareal-based preconditioner, we have tested its use on the example problem on the Abel computer cluster. Using Abel, we are able to test our algorithm for a large number of CPUs. For all experiments the execution time of the sequential parallel algorithms is measured by timing the solvers ten times, and choosing the lowest execution time. All our tests are done using an implicit Euler discretization. We run the test for three different problem sizes $n=6\cdot 10^5,12\cdot 10^5,24\cdot 10^5$ using an increasing number of processes $N$. Each process gets its own decomposed subinterval. The results for selected values of $N$ and $n= 24\cdot 10^5$ is found in table \ref{speed1}, while the remaining results are presented in figure \ref{speed_fig1}.
 \\
 \\
@@ -82,7 +82,10 @@ To properly test the Parareal-based preconditioner, we have tested its use on th
 \end{table}
 \noindent
 \\
-The results of table \ref{speed1} shows that our parallel method can achieve actual speedup. The achieved speedup is however quite modest, since we for 120 cores only get a speedup of $23.5$. We also notice that the speedup is smaller then the ideal speedup $\hat S$. This is as expected, since $\hat S$ assumes zero parallel overhead. Another observation, is that the solution seems to improve when we increase $N$, which we see by looking at how the numerical control solution compares to the exact solution when we increase $N$. We compare exact and numerical solution by looking at normed difference in control and difference in unction value. For $N\leq16$ these measures increase, but for $N>16$ they start to decrease again. We see the same type of pattern for $L_{p_N}$, which represents the total number of objective function and gradient evaluations done in each optimization. One interpretation of this, is that the Parareal-based preconditioner improves when the coarse decompositions become finer. The results of figure \ref{speed_fig1} paints a similar picture.
+The results of table \ref{speed1} shows that our parallel method can achieve actual speedup. The achieved speedup is however quite modest, since we for 120 cores only get a speedup of $23.5$. We also notice that the speedup is smaller then the ideal speedup $\hat S$. This is as expected, since $\hat S$ assumes zero parallel overhead. There are three factors that cause the parallel overhead. The first is the overhead caused by communication and hardware. It is difficult to diminish these effects, but when the problem size increase the impact of the built in overhead should diminish. The second factor is our implementation. 
+\\
+\\
+Another observation, is that the solution seems to improve when we increase $N$, which we see by looking at how the numerical control solution compares to the exact solution when we increase $N$. We compare exact and numerical solution by looking at normed difference in control and difference in unction value. For $N\leq16$ these measures increase, but for $N>16$ they start to decrease again. We see the same type of pattern for $L_{p_N}$, which represents the total number of objective function and gradient evaluations done in each optimization. One interpretation of this, is that the Parareal-based preconditioner improves when the coarse decompositions become finer. The results of figure \ref{speed_fig1} paints a similar picture.
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.5]{fspeed_fig.png}
@@ -92,4 +95,46 @@ The results of table \ref{speed1} shows that our parallel method can achieve act
 \end{figure}
 \\
 \\
-By looking at figure \ref{speed_fig1}, we see that our algorithm preformed the best, at least in the sense of speedup, for $n=24\cdot 10^5$. We do however also observe the same type of behaviour for all values of $n$. We see that the error between exact and numerical control solution for all $n$ first increases up till around $N=16$, and then decreases and flattens out. The total number of gradient and function evaluations $L_{p_N}$ becomes larger for higher $N$s when $N\leq 16$, but for $N>16$ $L_{p_N}$ starts to decrease slightly.  
+By looking at figure \ref{speed_fig1}, we see that our algorithm preformed the best, at least in the sense of speedup, for $n=24\cdot 10^5$. We do however also observe the same type of behaviour for all values of $n$. We see that the error between exact and numerical control solution for all $n$ first increases up till around $N=16$, and then decreases and flattens out. The total number of gradient and function evaluations $L_{p_N}$ becomes larger for higher $N$s when $N\leq 16$, but for $N>16$ $L_{p_N}$ starts to decrease slightly. 
+\subsection{Tests on a less smooth problem}
+As we see by looking at figure \ref{smootha}, the control solution of our example problem (\ref{speed_j}-\ref{speed_e}), is very smooth. It is therefore interesting to see if our algorithm is produce good results for problems with more uneven solutions. A simple way of slightly complicating our example problem is to add a sine function to the integral in the objective function. To produce the control solution pictured in \ref{smoothb}, we alter $J$ in the following way:
+\begin{align}
+J(y,v) = \frac{1}{2}\int_0^{T}(v(t)-0.3\sin(t))^2dt + \frac{1}{2}(y(T)-11.5)^2 \label{sinJ}
+\end{align}
+We will now try to minimize the altered objective function (\ref{sinJ}) with same state equation constraints as before, using our algorithm. Since we in section \ref{Aspeed_sec} showed that our algorithm is capable of producing actual speedup, we are now only looking at ideal speedup and not wall clock speedup. In table \ref{unsmoothTab} we present results gained by applying our algorithmic framework to a Crank-Nicholson discretized minimization of the altered objective function (\ref{sinJ}) using $\Delta t = 10^{-2}$.
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{smooth.png}
+  \caption{Minimizer of objective function (\ref{speed_j})}
+  \label{smootha}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{unsmooth.png}
+  \caption{Minimizer of objective function (\ref{sinJ})}
+  \label{smoothb}
+\end{subfigure}
+\caption{Optimal control for the unaltered and altered example problem (\ref{speed_j}-\ref{speed_e}). Notice the smoothness and simplicity of figure \ref{smootha}.}
+\label{smooth}
+\end{figure}
+\begin{table}
+\caption{Results of applying our algorithmic framework to optimization of (\ref{sinJ}) for different decomposition sizes $N$. The columns display error ($\frac{||v-v_{\mu}||}{||v||}$), total number of gradient and function evaluations ($L_{p_N}$) and ideal speedup ($\hat S$).}
+\centering
+\label{unsmoothTab}
+\begin{tabular}{lrrr}
+\toprule
+{} $N$&   $\frac{||v-v_{\mu}||}{||v||}$ &  $L_{p_N}$ &     $\hat S$ \\
+\midrule
+1   &  0.000000 &   67 &   1.000 \\
+2   &  0.000060 &  101 &   1.326 \\
+4   &  0.000029 &  143 &   1.874 \\
+8   &  0.000002 &  127 &   4.220 \\
+16  &  0.000028 &  139 &   7.712 \\
+32  &  0.000008 &  193 &  11.108 \\
+64  &  0.000042 &  193 &  22.217 \\
+128 &  0.000009 &  201 &  42.666 \\
+\bottomrule
+\end{tabular}
+\end{table}
