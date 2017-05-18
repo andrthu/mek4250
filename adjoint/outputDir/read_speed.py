@@ -138,7 +138,7 @@ def make_a_plot(datas):
     legg = [r'$n=6\cdot 10^{5}$',r'$n=12\cdot 10^{5}$',r'$n=24\cdot 10^{5}$']
     plt.figure(figsize=(12,6))
     ax1 = plt.subplot(221)
-    ax1.set_title('speedup')
+    ax1.set_ylabel('speedup')
 
     N_vals = [1,4,8,16,24,32,40,48,56,64,72,80,88,96,104,120]
     for i in range(len(datas)):
@@ -150,19 +150,21 @@ def make_a_plot(datas):
         
     ax1.xaxis.set_ticks(N_vals)
     ax1.legend(legg,loc='best',fontsize='medium')
-    
+    ax1.set_xlabel(r'$N$')
+
     ax2 = plt.subplot(222)
-    ax2.set_title('Efficiency')
+    ax2.set_ylabel('Efficiency')
     for i in range(len(datas)):
         
         N= datas[i].index
         #print N
         #print datas[i]['E']
         ax2.plot(N[:-2],datas[i]['E'][:-2],'o-')
-    ax3 = plt.subplot(223)
-    ax3.set_title(r'$L_{p_N}$')
+    ax3 = plt.subplot(224)
+    ax3.set_ylabel(r'$L_{p_N}$',fontsize=15)
     ax2.xaxis.set_ticks(N_vals)
     ax2.legend(legg,loc='best',fontsize='medium')
+    ax2.set_xlabel(r'$N$',ha='left',va='top')
     for i in range(len(datas)):
         
         N= datas[i].index
@@ -170,9 +172,10 @@ def make_a_plot(datas):
         #print datas[i]['E']
         ax3.plot(N[:-2],datas[i]['L'][:-2],'o-')
     ax3.xaxis.set_ticks(N_vals)
-    ax4 = plt.subplot(224)
-    ax4.set_title(r'$||v-v_e||_{L^2}$')
+    ax4 = plt.subplot(223)
+    ax4.set_ylabel(r'$||v-v_e||_{L^2}$',fontsize=15)
     ax3.legend(legg,loc='best',fontsize='medium')
+    ax3.set_xlabel(r'$N$')
     for i in range(len(datas)):
         
         N= datas[i].index
@@ -181,6 +184,7 @@ def make_a_plot(datas):
         ax4.plot(N[:-2],datas[i]['norm'][:-2],'o-')
     ax4.xaxis.set_ticks(N_vals)
     ax4.legend(legg,loc='best',fontsize='medium')
+    ax4.set_xlabel(r'$N$')
     
 
     print datas[-1].iloc[[0,1,3,5,7,10,13,16]]

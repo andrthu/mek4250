@@ -12,7 +12,7 @@ Using these definitions we define the ideal speedup $\hat{S}$, as the speedup on
 \hat S = \frac{NL_s}{L_{p_N}} \label{ideal S}
 \end{align}
 With $\hat S$, it is possible to say something about the performance of the parallel algorithm without having to time it, or actually run it in parallel. It will also be useful to compare the ideal speedup with the measured speedup, as a way to check if the parallel implementation is implemented efficiently.
-\section{Testing Parareal-based preconditioner for example problem}
+\section{Testing Parareal-based preconditioner on example problem}
 In this section we will test the parallel framework introduced in chapter \ref{method_chap} on our example problem (\ref{exs_J}-\ref{exs_E}). To be able to do this, we need to define a specific objective function and state equation. The problem we will look at in this section is the following:
 \begin{align}
 &J(y,v) = \frac{1}{2}\int_0^{100}v(t)^2dt + \frac{1}{2}(y(100)-11.5)^2, \label{speed_j}\\
@@ -34,20 +34,20 @@ Since the point of this test is to compare the effectiveness of the Parareal-bas
 \\
 \begin{table}[h]
 \centering
-\caption{Comparing unpreconditioned and preconditioned solver for test problem (\ref{speed_j}-\ref{speed_e}) using $N$ decompositions in time. Here $v_e$ denotes the exact control solution, $v_{pc}$ the preconditioned solver control solution and $v$ the unpreconditioned solver solution.}
+\caption{Comparing unpreconditioned and preconditioned solver for test problem (\ref{speed_j}-\ref{speed_e}) using $N$ decompositions in time. Here $v_e$ denotes the exact control solution, $v_{pc}$ the preconditioned solver control solution and $v$ the unpreconditioned solver solution. $L_{p_N}$ represents total number of gradient and function evaluations used in each optimization. The ideal speedup $\hat S$ is based on this $L_{p_N}$. Notice that the preconditioned ideal speedup is significantly larger than the unpreconditioned ideal speedup for large $N$.}
 \label{compare_table}
 \begin{tabular}{lrrllrr}
 \toprule
 {}$N$ &  pc $L_{p_N}$ &  non-pc $L_{p_N}$ &       $||v_e-v_{pc}||$ &  $||v_e-v||$  &  pc $\hat{S}$ &  non-pc $\hat{S}$ \\
 \midrule
-1   &     19.0 &      19.0 &  0.000174 &    0.000174 &    1.000000 &        1.000000 \\
-2   &     21.0 &      21.0 &  0.001093 &    0.001093 &    1.809524 &        1.809524 \\
-4   &     45.0 &      45.0 &  0.000640 &    0.000361 &    1.688889 &        1.688889 \\
-8   &     61.0 &      69.0 &  0.000667 &    0.001590 &    2.491803 &        2.202899 \\
-16  &     61.0 &     241.0 &  0.001608 &    0.000784 &    4.983607 &        1.261411 \\
-32  &     73.0 &     343.0 &  0.001909 &    0.002528 &    8.328767 &        1.772595 \\
-64  &     67.0 &     737.0 &  0.005273 &    0.004816 &   18.149254 &        1.649932 \\
-128 &     67.0 &     907.0 &  0.010892 &    0.018467 &   36.298507 &        2.681367 \\
+1   &     19 &      19 &  0.000174 &    0.000174 &    1.000 &        1.000 \\
+2   &     21 &      21 &  0.001093 &    0.001093 &    1.809 &        1.809 \\
+4   &     45 &      45 &  0.000640 &    0.000361 &    1.688 &        1.688 \\
+8   &     61 &      69 &  0.000667 &    0.001590 &    2.491 &        2.202 \\
+16  &     61 &     241 &  0.001608 &    0.000784 &    4.983 &        1.261 \\
+32  &     73 &     343 &  0.001909 &    0.002528 &    8.328 &        1.772 \\
+64  &     67 &     737 &  0.005273 &    0.004816 &   18.149 &        1.649 \\
+128 &     67 &     907 &  0.010892 &    0.018467 &   36.298 &        2.681 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -63,20 +63,20 @@ To properly test the Parareal-based preconditioner, we have tested its use on th
 \\
 \begin{table}[h]
 \centering
-\caption{Results gained form solving problem (\ref{speed_j}-\ref{speed_e}) for $n=24\cdot 10^5$ on $N$ processes.}
+\caption{Results gained form solving problem (\ref{speed_j}-\ref{speed_e}) for $n=24\cdot 10^5$ on $N$ processes. The first two columns shows the error in control and objective function value. $L_{p_N}$ is the total number of gradient and function evaluations, while $\hat S$ is the ideal speedup. The execution time for each $N$, and the corresponding speedup and efficiency are given in the last three columns.}
 \label{speed1}
 \begin{tabular}{lrlrrrrr}
 \toprule
 {}$N$ &   $\frac{||v-v_e||_{L^2}}{||v_e||_{L^2}}$ &     $\frac{\hat J(v)-\hat J(v_e)}{\hat{J}(v_e)}$ &   $L_{p_N}$ &     $\hat S$ &       time (s) &    speedup &        efficiency \\
 \midrule
-1   &  0.000002 &           -- &  19 &   1.000000 &  63.370306 &   1.000000 &  1.000000 \\
-4   &  0.000018 &  2.76181e-10 &  37 &   2.054054 &  40.124940 &   1.579325 &  0.394831 \\
-16  &  0.000061 &  3.16943e-09 &  97 &   3.134021 &  28.409363 &   2.230613 &  0.139413 \\
-32  &  0.000044 &   1.6506e-09 &  85 &   7.152941 &  12.681172 &   4.997196 &  0.156162 \\
-48  &  0.000031 &  8.28513e-10 &  73 &  12.493151 &   7.056120 &   8.980900 &  0.187102 \\
-72  &  0.000021 &  3.70371e-10 &  88 &  15.545455 &   6.243981 &  10.149023 &  0.140959 \\
-96  &  0.000015 &  2.19686e-10 &  61 &  29.901639 &   3.630998 &  17.452586 &  0.181798 \\
-120 &  0.000012 &  1.72798e-10 &  61 &  37.377049 &   2.690165 &  23.556290 &  0.196302 \\
+1   &  0.000002 &           -- &  19 &   1.000 &  63.370 &   1.000 &  1.0000 \\
+4   &  0.000018 &  2.761e-10 &  37 &   2.054 &  40.124 &   1.579 &  0.3948 \\
+16  &  0.000061 &  3.169e-09 &  97 &   3.134 &  28.409 &   2.230 &  0.1394 \\
+32  &  0.000044 &   1.65e-09 &  85 &   7.152 &  12.681 &   4.997 &  0.1561 \\
+48  &  0.000031 &  8.285e-10 &  73 &  12.493 &   7.056 &   8.980 &  0.1871 \\
+72  &  0.000021 &  3.703e-10 &  88 &  15.545 &   6.243 &  10.149 &  0.1409 \\
+96  &  0.000015 &  2.196e-10 &  61 &  29.901 &   3.630 &  17.452 &  0.1817 \\
+120 &  0.000012 &  1.727e-10 &  61 &  37.377 &   2.690 &  23.556 &  0.1963 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -87,7 +87,7 @@ The results of table \ref{speed1} shows that our parallel method can achieve act
 \centering
 \includegraphics[scale=0.5]{fspeed_fig.png}
 \centering
-\caption{Speedup, efficiency, total number of objective function and gradient evaluations  ($L_{p_N}$) and relative norm error for problem (\ref{speed_j}-\ref{speed_e}) solved using $n=6\cdot 10^5,12\cdot 10^5,24\cdot 10^5$ time steps on $N$ cores.}
+\caption{Speedup, efficiency, relative norm error and total number of objective function and gradient evaluations  ($L_{p_N}$) for problem (\ref{speed_j}-\ref{speed_e}) solved using $n=6\cdot 10^5,12\cdot 10^5,24\cdot 10^5$ time steps on $N$ cores.}
 \label{speed_fig1}
 \end{figure}
 \\

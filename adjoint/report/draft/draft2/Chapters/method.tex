@@ -15,7 +15,7 @@ Before we start to decompose the time interval, let us again state the general p
 To introduce parallelism, we decompose $I=[0,T]$ into $N$ subintervals $I_i=[T_{i-1},T_i]$, with $T_0=0$ and $T_N=T$. To be able to solve the differential equation $E$ on each interval $I_i$, we introduce intermediate initial conditions $y(T_i)=\lambda_i$ for $i=1,...,N-1$. This means that instead of finding $y$ by solving $E$ on the entire time domain $I$, we can now find $y$ by solving $E$ separately on on each subinterval $I_i$. The problem (\ref{initial problem}) now reads:
 \begin{align}
 \underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v),  \label{decomposed problem1}\\
-\textrm{Subject to:} \ &E^i(y^i(t),v)=0, \quad t\in [T_{i-1},T_i] \quad \forall i. \label{decomposed problem}
+\textrm{subject to:} \ &E^i(y^i(t),v)=0, \quad t\in [T_{i-1},T_i] \quad \forall i. \label{decomposed problem}
 \end{align} 
 Since we want the state $y$ to be continuous, we also need the following conditions:
 \begin{align}
@@ -176,7 +176,7 @@ This gives us the ODEs we wanted.
 \end{proof}
 \noindent
 With the adjont equations we can find the gradient.
-\begin{proposition}
+\begin{proposition} \label{penGrad_prop}
 The gradient of (\ref{penalty_func}), $\hat J_{\mu}'$, with respect to the control $(v,\Lambda)$ is:
 \begin{align}
 \hat J_{\mu}'(v,\Lambda) = (v+p,p_{2}(T_1) -p_{1}(T_1),..., p_{N}(T_{N-1}) -p_{N}(T_{N-1})) \label{penalty grad}

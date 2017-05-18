@@ -177,6 +177,45 @@ def create_simple_CN_problem(y0,yT,T,a,c=0):
     problem = CrankNicolsonOCP(y0,yT,T,a,J,grad_J)
     return problem
 
+def create_noise_CN_problem(y0,yT,T,a,f):
+
+    def J(u,y,yT,T):
+        t = np.linspace(0,T,len(u))
+
+        I = trapz((u-f(t))**2,t)
+
+        return 0.5*I + 0.5*(y-yT)**2
+
+    def grad_J(u,p,dt):
+        
+
+        B = 1-a*dt*0.5
+        A = 1+0.5*a*dt
+
+        t = np.linspace(0,T,len(u))
+        grad1 = np.zeros(len(u))
+        grad1[:-1] = dt*(u[:-1]-f(t[:-1])+p[1:]/B)
+        grad1[0] = 0.5*dt*(u[0]-f(t[0]))+dt*p[1]/B
+        grad1[-1] = 0.5*dt*(u[-1] -f(t[-1]))
+
+        grad2 = np.zeros(len(u))
+        grad2[1:] = dt*(u[1:]-f(t[1:])+p[1:]/B)
+        grad2[0] = 0.5*dt*(u[0]-f(t[0]))
+        grad2[-1] = 0.5*dt*(u[-1]-f(t[-1]))+dt*p[-1]/B
+
+        return 0.5*(grad1+grad2)
+        
+
+        
+
+
+
+    problem = CrankNicolsonOCP(y0,yT,T,a,J,grad_J)
+    return problem
+
+
+
+
 
 def create_state_CN_problem(y0,yT,T,a,z):
 
@@ -253,7 +292,31 @@ def taylorTestCN():
     
     general_taylor_test(problem)
 
+
+def test_noise():
+
+    y0 = 3.2
+    yT=11.5
+    a = -0.097
+    T=100
+
+    f = lambda x : np.sin(0.5*x)
+    
+
+    problem = create_noise_CN_problem(y0,yT,T,a,f)
+
+    N = 1000
+
+    res = problem.solve(N)
+
+    import matplotlib.pyplot as plt
+    print res.counter()
+    plt.plot(res.x)
+
+    plt.show()
+
 if __name__=='__main__':
 
     #test_CN()
-    taylorTestCN()
+    #taylorTestCN()
+    test_noise()

@@ -613,7 +613,7 @@ def jump_difference(problem=None):
            "line_search_options":ls}
     res = problem.solve(N,Lbfgs_options=seq_opt)
     u_exact,t,_ = problem.simple_problem_exact_solution(N)
-    
+    u_exact2,t2,_ = problem.simple_problem_exact_solution(10*N)
     
     
     table  = {'J(vmu)-J(v)/J(v)':[],'||v_mu-v||':[],'jumps':[],'Jmu(v_mu)-Jmu(v)/Jmu(v)':[],'A rate':['--'],
@@ -641,6 +641,7 @@ def jump_difference(problem=None):
     MORE = True
     seq_norm = l2_norm(res['control'].array(),t)
     exact_error = l2_diff_norm(u_exact[1:-1],res.x[1:-1],t[1:-1])/seq_norm
+    
     y_end=problem.ODE_solver(res['control'].array(),N)
     val1=problem.J(res['control'].array(),y_end[-1],yT,T)
     if MORE:
@@ -655,6 +656,8 @@ def jump_difference(problem=None):
 
         
         val21=problem.J(res21['control'].array(),y_seq2[-1],yT,T)
+
+        exact_error2 = l2_diff_norm(u_exact2[1:-1],res21.x[1:-1],t2[1:-1])/seq_norm2
 
         Y_SEQ = [y_seq,y_seq2,y_seq2]
         SEQN = [seq_norm,seq_norm2,seq_norm2]
@@ -795,7 +798,7 @@ def jump_difference(problem=None):
     Legg = ['A','B','C','D']
     if MORE:
         #plt.locator_params(axis='x', nticks=8)
-        Legg = ['A','B','C','D']
+        Legg = [r'$\Delta \hat J$',r'$\Delta \hat J_{\mu}$',r'$\Delta v$',r'$\Delta y$',r'$||v-v_e||$']
         plt.figure(figsize=(12,6))
         ax1 = plt.subplot(121)
         ax1.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
@@ -804,23 +807,23 @@ def jump_difference(problem=None):
         ax1.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
         help_var11 = np.zeros(len(mu_list)) + exact_error
         ax1.loglog(np.array(mu_list),help_var11)
-        ax1.set_xlabel(r"$\mu$")
+        ax1.set_xlabel(r"$\mu$",fontsize=15)
         
         ax1.xaxis.set_ticks(10**np.arange(2,17,2))
-        ax1.set_title('N=2')
+        ax1.set_title(r'$N=2$')
         table = TAB[0]
         ax2 = plt.subplot(122)
         ax2.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
         ax2.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         ax2.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         ax2.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
-        ax2.set_xlabel(r"$\mu$")
-
+        ax2.set_xlabel(r"$\mu$",fontsize=15)
+        ax2.loglog(np.array(mu_list),help_var11)
         ax2.xaxis.set_ticks(10**np.arange(2,17,2))
         ax2.legend(Legg)
-        ax2.set_title('N=10')
+        ax2.set_title(r'$N=10$')
         table = TAB[1]
-        #plt.savefig('report/draft/draft2/consistency1.png')
+        plt.savefig('report/draft/draft2/consistency1.png')
 
         
         plt.figure(figsize=(12,6))
@@ -829,9 +832,12 @@ def jump_difference(problem=None):
         ax3.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         ax3.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         ax3.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
-        ax3.set_xlabel(r"$\mu$")
+        ax3.set_xlabel(r"$\mu$",fontsize=15)
 
-        ax3.set_title('N=2')
+        help_var21 = np.zeros(len(mu_list)) + exact_error2
+        ax3.loglog(np.array(mu_list),help_var21)
+
+        ax3.set_title(r'$N=2$')
         ax3.xaxis.set_ticks(10**np.arange(2,17,2))
         table = TAB[2]
         ax4 = plt.subplot(122)
@@ -839,12 +845,12 @@ def jump_difference(problem=None):
         ax4.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         ax4.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         ax4.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
-        ax4.set_xlabel(r"$\mu$")
-
+        ax4.set_xlabel(r"$\mu$",fontsize=15)
+        ax4.loglog(np.array(mu_list),help_var21)
         ax4.xaxis.set_ticks(10**np.arange(2,17,2))
         ax4.legend(Legg)
-        ax4.set_title('N=7')
-        #plt.savefig('report/draft/draft2/consistency2.png')
+        ax4.set_title(r'$N=7$')
+        plt.savefig('report/draft/draft2/consistency2.png')
         plt.show()
     else:
         plt.figure(figsize=(6,8))
@@ -984,11 +990,11 @@ if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    compare_pc_and_nonpc_for_different_m()
+    #compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    #jump_difference()
+    jump_difference()
     #look_at_gradient()
     #count_grad_func_eval()
     #split_test()
