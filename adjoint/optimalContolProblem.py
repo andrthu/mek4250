@@ -1090,6 +1090,27 @@ class OptimalControlProblem():
 
         return u,t,u_f
 
+    def sin_prop_exact_solution(self,N,b):
+
+        T = self.T
+        yT = self.yT
+        a = self.a
+        y0 = self.y0
+        t = np.linspace(0,T,N+1)
+
+        
+        D = 1. + (np.exp(a*T)**2-1)/(2.*a)
+        
+        CC = np.exp(a*T)*b/(a**2+b) +b*(np.sin(T)+np.cos(T)/a)/(a+b/(a))
+
+        C = (yT*np.exp(a*T)-y0*np.exp(a*T)**2 +np.exp(a*T)*CC)/D
+
+        u_f = lambda x : C*np.exp(a*(-x)) +b*np.sin(x)
+        
+
+        
+        u = u_f(t)
+        return u,t,u_f
         
 class Problem1(OptimalControlProblem):
     """

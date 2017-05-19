@@ -33,6 +33,7 @@ class CrankNicolsonOCP(PararealOCP):
             start = start + len(l[i])-1
         L[-1]=l[-1][-1]
         return L
+
 class CrankNicolsonStateIntOCP(PararealOCP):
     def __init__(self,y0,yT,T,a,J,grad_J,z=None,options=None):
  
@@ -305,7 +306,7 @@ def test_noise():
     
     problem = create_noise_CN_problem(y0,yT,T,a,f)
 
-    N = 10000
+    N = 1000
     m = [1,2,4,8,16,32,64,128]
     mu =[10*N,N,N,10*N,10*N,N,10*N]
     tol=[1e-6,1e-6,1e-6,1e-6,1e-6,1e-5,1e-6]
@@ -319,7 +320,7 @@ def test_noise():
     table['D'].append(0)
     table['L'].append(L)
     table['S'].append(1)
-    
+    """
     for i in range(1,len(m)):
         
         res2 = problem.PPCLBFGSsolve(N,m[i],[mu[i-1]],options={'jtol':tol[i-1]})
@@ -338,12 +339,15 @@ def test_noise():
     print data
 
     data.to_latex('report/whyNotEqual/unsmooth.tex')
-    """
-
-    ue,t,_ = problem.simple_problem_exact_solution(N)
     
 
+    ue,t,_ = problem.simple_problem_exact_solution(N)
+    """
+    
     import matplotlib.pyplot as plt
+
+
+    """
     plt.figure()
     plt.plot(t,ue)
     plt.ylabel('v',fontsize=20)
@@ -364,6 +368,13 @@ def test_noise():
     plt.plot(t,res2.x[:N+1],'r--')
     plt.show()
     """
+
+    ue,t,_ = problem.sin_prop_exact_solution(N,0.3)
+
+    plt.plot(t,ue,'r--')
+    plt.plot(t,res.x)
+    plt.show()
+
 if __name__=='__main__':
 
     #test_CN()

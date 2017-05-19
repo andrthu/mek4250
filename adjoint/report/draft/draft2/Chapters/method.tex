@@ -117,62 +117,33 @@ On $[T_{i-1},T_i]$ the adjoint equation is:
 \end{align}
 \end{proposition} 
 \begin{proof}
-Lets begin as we did for the non-penalty approach, by writing up the weak formulation of the state equations:
-\begin{gather*}
-\textrm{Find $y_i \in L^2(T_{i-1},T_i)$ such that }\\
-L^i[y_i,\phi] = \int_{T_{i-1}}^{T_{i}}-y_i(t)(\phi'(t) +a \phi(t))+v(t)\phi(t)dt -\lambda_{i-1}\phi(T_{i-1})+ y_i(T_i)\phi(T_i) =0\\ \forall \ \phi \in C^{\infty}((T_{i-1},T_{i}))
-\end{gather*} 
-To find the adjoint equations we differentiate the $E^i$s and the functional $\hat J_{\mu}$ with respect to $y$. To simplify notation, let $(\cdot,\cdot)_i$ be the $L^2$ inner product of the interval $[T_{i-1},T_i]$. 
+The decomposed adjoint equation on interval $I_i= [T_{i-1},T_{i}]$ is defined by the equation $E^i_{y_i}(y_i,v,\Lambda)^*p_i=\frac{\partial}{\partial y_i}J_{\mu}(y_i,v,\Lambda)$. This means that to derive it, we need expressions for $E^i_{y_i}(y_i,v,\Lambda)^*$ and $\frac{\partial}{\partial y_i}J_{\mu}(y_i,v,\Lambda)$. We will use the same approach as in the proof of proposition \ref{adjoint_eq_prop}, meaning that we will use the weak formulation of the decomposed state equations to derive the adjoint. If we let $(\cdot,\cdot)_i$ denote the $L^2$ inner product on $(T_{i-1},T_i)$, we can define a bilinear form $\mathcal{E}^i$ as:
 \begin{align*}
-E_y^i=L_y^i[\cdot,\phi]=(\cdot,-(\frac{\partial}{\partial t} + a - \delta_{T_i})\phi)_i 
+\mathcal{E}^i[y_i,\phi]=(y_i,(-\frac{\partial}{\partial t}-a+\delta_{T_i})\phi)_i - (v+\delta_{T_{i-1}}\lambda_{i-1},\phi)_i
 \end{align*}
-Lets differentiate $\hat J_{\mu}$:
+The weak formulation of the $i$-th state equation then reads:
 \begin{align*}
-\frac{\partial}{\partial y} \hat J_{\mu}= \alpha\delta_{T_{N}}(y_n(T_{N})-y_T) + \mu \sum_{i=1}^{N-1} \delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) 
+\textrm{Find $y_i$ s.t.}\quad \mathcal{E}^i[y_i,\phi]=0 \quad \forall \phi\in C^{\infty}((T_{i-1},T_i)).
 \end{align*}
-Since $y$ really is a collection of functions, we can differentiate $\hat J_{\mu}$ with respect to $y_i$. This gives us:
+Arguing similarly as we did in the proof of proposition \ref{adjoint_eq_prop}, we find the linearised adjoint of $\mathcal{E}^i$ to be:
 \begin{align*}
-\frac{\partial}{\partial y_N}\hat J_{\mu}&= \alpha\delta_{T_{N}}(y_n(T_{N})-y_T) \\
-\frac{\partial}{\partial y_i}\hat J_{\mu} &= \mu\delta_{T_{i}}(y_{i}(T_i)-\lambda_i ) \ i\neq N
+\mathcal{E}_{y_i}^i[\cdot,\psi]^* = (\cdot,(\frac{\partial}{\partial t}-a+\delta_{T_{i-1}})\psi)_i
 \end{align*}
-We will now find the adjoint equations, by finding the adjoint of the $E_y^i$s. This is done as above, by inserting two functions $v$, $w$ into $L_y^i[v,w]$, and then moving the derivative form $w$ to $v$.
+The weak formulation of the $i$-th adjoint equation is then: Find $p_i$ such that $\mathcal{E}_{y_i}^i[p_i,\psi]^*=(\frac{\partial}{\partial y_i}J_{\mu}(y_i,v,\Lambda),\psi)_i$, $\forall\psi \in C^{\infty}$. If we can find an expression for $\frac{\partial}{\partial y_i}J_{\mu}$, we will have the weak adjoint equation. It turns out that we are able to decompose the penalized objective function into $N$ functions $J_{\mu}^i$ defined as:
 \begin{align*}
-E_y^i&=L_y^i[v,w]=\int_{T_{i-1}}^{T_i}-v(t)(w'(t)+a w(t))dt + v(T_i)w(T_i) \\
-&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-av(t))dt + v(T_i)w(T_i)-v(T_i)w(T_i) +v(T_{i-1})w(T_{i-1}) \\
-&=\int_{T_{i-1}}^{T_i}w(t)(v'(t)-a v(t))dt + v(T_{i-1})w(T_{i-1}) \\
-&=(L_y^i)^*[w,v]
+J_{\mu}^i(y_i,v,\Lambda)& = \int_{T_{i-1}}^{T_i} v(t)^2 dt + \frac{\mu }{2}(y_i(T_i)-\lambda_i)^2, \quad \textrm{for }i=1,...,N-1,\ \textrm{and}\\
+J_{\mu}^N(y_N,v,\Lambda) &= \int_{T_{N-1}}^{T_N} v(t)^2 dt + \frac{\alpha }{2}(y_N(T_N)-y^T)^2.
 \end{align*}
-this means that $(E_y^i)^*=(L_y^i)^*[\cdot,\psi]$. The weak form of the adjoint equations is then found, by setting setting $(L_y^i)^*[p,\psi]=(J_{y_i},\psi)_i$. This gives two cases:
-\\
-\\
-$i=N$ case:
+We notice that the the sum of these decomposed objective functions equals the penalized objective function (\ref{penalty_func}). What we also see is that $J_{\mu}^i$ only depends on the $i$-th state equation. This means that $\frac{\partial}{\partial y_i}J_{\mu}=\frac{\partial}{\partial y_i}J_{\mu}^i$.
 \begin{align*}
-&\textrm{Find $p_N \in L^2(T_{N-1},T_N)$ such that }\forall \ \psi \in C^{\infty}((T_{N-1},T_N)) \\
-&\int_{T_N-1}^{T_N}p_N(t)\psi'(t)-a p_N(t)\psi(t)dt +p_N(T_{N-1})\psi(T_{N-1})
-= \alpha(y(T_N)-y^T)\psi(T_N)\ 
+\frac{\partial}{\partial y}J_{\mu}^i(y_i,v,\Lambda) &= \mu\delta_{T_i}(y_i(T_i)-\lambda_i),\quad i=1,..,N-1, and \\
+\frac{\partial}{\partial y}J_{\mu}^N(y_N,v,\Lambda) &= \delta_{T_N}\alpha(y_N(T_N)-y^T)
 \end{align*}
-$i\neq N$ cases:
+For $i=1,...,N-1$, the weak formulation of the decomposed adjoint equations will look like:
 \begin{align*}
-&\textrm{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
-&\int_{T_i-1}^{T_i}p_i(t)\psi'(t)-a p_i(t)\psi(t)dt +p_i(T_{i-1})\psi(T_{i-1})
-= \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
+\textrm{Find $p_i$ s.t.}\quad (p_i,(\frac{\partial}{\partial t}-a+\delta_{T_{i-1}})\psi)_i =(\mu\delta_{T_i}(y_i(T_i)-\lambda_i),\psi)_i \quad \forall \psi\in C^{\infty}((T_{i-1},T_i)).
 \end{align*}
-The strong formulation, is obtained by partial integration:
-\\
-\\
- $i=N$ case:
-\begin{align*}
-&\textrm{Find $p_N \in L^2(T_{N-1},T_N)$ such that }\forall \ \psi \in C^{\infty}((T_{N-1},T_N)) \\
-&\int_{T_N-1}^{T_N}-p_N'(t)\psi(t)-a p_N(t)\psi(t)dt +p_N(T_{N})\psi(T_{N})
-= \alpha(y(T_N)-y^T)\psi(T_N)\ 
-\end{align*}
-$i\neq N$ cases:
-\begin{align*}
-&\textrm{Find $p_i \in L^2(T_{i-1},T_i)$ such that }\forall \ \psi \in C^{\infty}((T_{i-1},T_i))\\
-&\int_{T_i-1}^{T_i}-p_i'(t)\psi(t)-a p_i(t)\psi(t)dt +p_i(T_{i})\psi(T_{i})
-= \mu(y_{i}(T_i)-\lambda_i )\psi(T_i) \ 
-\end{align*}
-This gives us the ODEs we wanted.
+For $i=N$ the adjoint equation is almost identical to the above expression, with exception of the $(\mu\delta_{T_i}(y_i(T_i)-\lambda_i),\psi)_i$ term, which instead is replaced by $(\delta_{T_N}\alpha(y_N(T_N)-y^T),\psi)_i$. Using partial integration we can reformulate the weak formulations of the decomposed adjoint equations into the strong formulations stated in proposition \ref{pen_adjoint_prop}.
 \end{proof}
 \noindent
 With the adjont equations we can find the gradient.
