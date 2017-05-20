@@ -1101,7 +1101,7 @@ class OptimalControlProblem():
         
         D = 1. + (np.exp(a*T)**2-1)/(2.*a)
         
-        CC = np.exp(a*T)*b/(a**2+b) +b*(np.sin(T)+np.cos(T)/a)/(a+b/(a))
+        CC = np.exp(a*T)*b/(a**2+1.) +b*(np.sin(T)+np.cos(T)/a)/(a+1./(a))
 
         C = (yT*np.exp(a*T)-y0*np.exp(a*T)**2 +np.exp(a*T)*CC)/D
 

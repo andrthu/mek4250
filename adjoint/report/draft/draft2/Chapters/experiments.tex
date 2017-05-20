@@ -25,7 +25,7 @@ In this section we will test the parallel framework introduced in chapter \ref{m
 \end{align}
 We motivate the choice of a large end time $T=100$ with the findings of section \ref{consistency_sec}. There we observed that the penalty method ran into trouble when the time steps became too small, because the error in objective function value then hit machine precision. To be able to test the problem for a large number of time steps, we therefore need a large $T$. 
 \subsection{Comparing unpreconditioned and preconditioned penalty framework}
-In section \ref{pc sec} we introduced the parareal preconditioner, as an approximation to the Hessian. Using this preconditioner in our L-BFGS solver we hope that the number of gradient and function evaluations needed in our algorithm will be smaller than if we do not use it. The experiment is conducted by first solving this problem without decomposing the time interval, and then solving the decomposed problem using $N=2,4,8,16,32,64,128$ decompositions. For all minimizations of the penalized objective function, we used penalty parameter $\mu=10^4$. This means that we will only use one penalty iteration, as we have found this to be the most effective way to solve the decomposed problem for this specific problem. To discretize the equations we have used the Crank-Nicolson scheme with $\Delta t= \frac{T}{1000}=0.1$. For both the penalized and non-penalized problems we use L-BFGS with stop criteria:
+In section \ref{pc sec} we introduced the Parareal preconditioner, as an approximation to the Hessian. Using this preconditioner in our L-BFGS solver we hope that the number of gradient and function evaluations needed in our algorithm will be smaller than if we do not use it. The experiment is conducted by first solving this problem without decomposing the time interval, and then solving the decomposed problem using $N=2,4,8,16,32,64,128$ decompositions. For all minimizations of the penalized objective function, we used penalty parameter $\mu=10^4$. This means that we will only use one penalty iteration, as we have found this to be the most effective way to solve the decomposed problem for this specific problem. To discretize the equations we have used the Crank-Nicolson scheme with $\Delta t= \frac{T}{1000}=0.1$. For both the penalized and non-penalized problems we use L-BFGS with stop criteria:
 \begin{align*}
 ||\nabla J||_{L^2} <10^{-5}
 \end{align*}  
@@ -81,7 +81,7 @@ To properly test the Parareal-based preconditioner, we have tested its use on th
 \end{table}
 \noindent
 \\
-The results of table \ref{speed1} shows that our parallel method can achieve actual speedup. The achieved speedup is however quite modest, since we for 120 cores only get a speedup of $23.5$. We also notice that the speedup is smaller then the ideal speedup $\hat S$. This is as expected, since $\hat S$ assumes zero parallel overhead. There are three factors that cause the parallel overhead. The first is the overhead caused by communication and hardware. It is difficult to diminish these effects, but when the problem size increase the impact of the built in overhead should decrease. The second factor is our implementation. Our code is not optimized, and has a bigger effect on the more complicated parallel algorithm than the sequential one. The effects of a suboptimal implementation does not necessarily diminish when we increase the problem size, but we might be able to remove these effects by improving our code. The last factor that impacts the parallel overhead, is our sequential Parareal-based preconditioner. The Parareal-based preconditioner is applied to the gradient through a backward and a forward solve on a coarse mesh of size $N$. This means that the effect of preconditioner on the parallel overhead increases when we increase the numbers of processes. If $N<<n$ these effects will however be very small. The results of table \ref{speed1} are by found solving a problem of size $n=24\cdot 10^5$, while the largest $N$ value is $120$, which means that N is $20000$ times smaller than $n$. It is therefore unlikely that it is the sequential Parareal-based preconditioner that is the main cause of the gap between ideal and measured speedup in table \ref{speed1}. Instead the disparity in ideal and measured speedup is probably caused by a combination built in overhead and a suboptimal implementation.
+The results of table \ref{speed1} shows that our parallel method can achieve actual speedup. The achieved speedup is however quite modest, since we for 120 cores only get a speedup of $23.5$. We also notice that the speedup is smaller then the ideal speedup $\hat S$. This is as expected, since $\hat S$ assumes zero parallel overhead. There are three factors that cause the parallel overhead. The first is the overhead caused by communication and hardware. It is difficult to diminish these effects, but when the problem size increase the impact of the built in overhead should decrease. The second factor is our implementation. Our code is not optimized, and this has a bigger effect on the more complicated parallel algorithm than the sequential one. The effects of a suboptimal implementation does not necessarily diminish when we increase the problem size, but we might be able to remove these effects by improving our code. The last factor that impacts the parallel overhead, is our sequential Parareal-based preconditioner. The Parareal-based preconditioner is applied to the gradient through a backward and a forward solve on a coarse mesh of size $N$. This means that the effect of the preconditioner on the parallel overhead increases when we increase the numbers of processes. If $N<<n$ these effects will however be very small. The results of table \ref{speed1} are by found solving a problem of size $n=24\cdot 10^5$, while the largest $N$ value is $120$, which means that N is $20000$ times smaller than $n$. It is therefore unlikely that it is the sequential Parareal-based preconditioner that is the main cause of the gap between ideal and measured speedup in table \ref{speed1}. Instead the disparity in ideal and measured speedup is probably caused by a combination of built in overhead and a suboptimal implementation.
 \\
 \\
 Another interesting observation about table \ref{speed1}, is that the solution seems to improve when we increase $N$, which we see by looking at how the numerical control solution compares to the exact solution when we increase $N$. We compare exact and numerical solution by looking at normed difference in control and difference in function value. For $N\leq16$ these measures increase, but for $N>16$ they start to decrease again. We see the same type of pattern for $L_{p_N}$, which represents the total number of objective function and gradient evaluations done in each optimization. One interpretation of this, is that the Parareal-based preconditioner improves when the coarse decompositions become finer. The results of figure \ref{speed_fig1} paints a similar picture.
@@ -100,7 +100,8 @@ As we see by looking at figure \ref{smootha}, the control solution of our exampl
 \begin{align}
 J(y,v) = \frac{1}{2}\int_0^{T}(v(t)-0.3\sin(t))^2dt + \frac{1}{2}(y(T)-11.5)^2, \quad T=100. \label{sinJ}
 \end{align}
-We will now try to minimize the altered objective function (\ref{sinJ}) with same state equation constraints as before, using our algorithm. Since we in section \ref{Aspeed_sec} showed that our algorithm is capable of producing actual speedup, we are now only looking at ideal speedup and not wall clock speedup. In table \ref{unsmoothTab} we present results gained by applying our algorithmic framework to a Crank-Nicholson discretized minimization of the altered objective function (\ref{sinJ}) using $\Delta t = 10^{-2}$.
+We will now try to minimize the altered objective function (\ref{sinJ}) coupled with same state equation constraints as before, using our algorithm. Since we in section \ref{Aspeed_sec} showed that our algorithm is capable of producing actual speedup, we are now only looking at ideal speedup and not wall clock speedup. In table \ref{unsmoothTab} we present results gained by applying our algorithmic framework to a Crank-Nicholson discretized minimization of the altered objective function (\ref{sinJ}) using $\Delta t = 10^{-2}$. For all decomposition sizes, the problem was solved using one penalty iteration. In an attempt to produce good results, we let the penalty parameter $\mu$ tolerance $\tau$ vary between $10^4-10^5$ and $10^{-6}-10^{-5}$.
+\\
 \begin{figure}[h]
 \centering
 \begin{subfigure}{.5\textwidth}
@@ -119,22 +120,23 @@ We will now try to minimize the altered objective function (\ref{sinJ}) with sam
 \label{smooth}
 \end{figure}
 \begin{table}
-\caption{Results of applying our algorithmic framework to optimization of (\ref{sinJ}) for different decomposition sizes $N$. The columns display error ($\frac{||v-v_{\mu}||}{||v||}$), total number of gradient and function evaluations ($L_{p_N}$) and ideal speedup ($\hat S$).}
+\caption{Results of applying our algorithmic framework to optimization of (\ref{sinJ}) for different decomposition sizes $N$. The columns display error ($\frac{||v_e-v||}{||v||}$), total number of gradient and function evaluations ($L_{p_N}$) and ideal speedup ($\hat S$). The error is measured between the exact solution and the numerical solution for each $N$.}
 \centering
 \label{unsmoothTab}
 \begin{tabular}{lrrr}
 \toprule
-{} $N$&   $\frac{||v-v_{\mu}||}{||v||}$ &  $L_{p_N}$ &     $\hat S$ \\
+{} $N$&   $\frac{||v_e-v||}{||v||}$ &  $L_{p_N}$ &     $\hat S$ \\
 \midrule
-1   &  0.000000 &   67 &   1.000 \\
-2   &  0.000060 &  101 &   1.326 \\
-4   &  0.000029 &  143 &   1.874 \\
-8   &  0.000002 &  127 &   4.220 \\
-16  &  0.000028 &  139 &   7.712 \\
-32  &  0.000008 &  193 &  11.108 \\
-64  &  0.000042 &  193 &  22.217 \\
-128 &  0.000009 &  201 &  42.666 \\
+1   &  0.000015 &   53 &   1.000 \\
+2   &  0.000021 &   75 &   1.413 \\
+4   &  0.000070 &  103 &   2.058 \\
+8   &  0.000012 &  129 &   3.286 \\
+16  &  0.000010 &  159 &   5.333 \\
+32  &  0.000010 &  131 &  12.946 \\
+64  &  0.000010 &  157 &  21.605 \\
+128 &  0.000036 &  161 &  42.136 \\
 \bottomrule
 \end{tabular}
 \end{table}
-It is interesting to contrast the findings of table \ref{unsmoothTab} with the results from table \ref{compare_table}. We notice that the total number of gradient and function evaluations ($L_{p_N}$) is consistently higher in table \ref{unsmoothTab}, but since this is also the case for the sequential solver, we actually observe better ideal speedup in table \ref{unsmoothTab} than in table \ref{compare_table}. This might indicate that our method has a higher potential for success on more complicated problems, where the serial solver requires a higher number function and gradient evaluations.
+\\
+It is interesting to contrast the findings of table \ref{unsmoothTab} with the results from table \ref{compare_table}. We notice that the total number of gradient and function evaluations ($L_{p_N}$) is consistently higher in table \ref{unsmoothTab}, but since this is also the case for the sequential solver, we actually observe better ideal speedup in table \ref{unsmoothTab} than in table \ref{compare_table}. This might indicate that our method has a higher potential for success on more complicated problems, where the serial solver requires a higher number of function and gradient evaluations.

@@ -5,31 +5,55 @@ In the previous chapter we saw that the parareal scheme allows us to parallelize
 This chapter consists of three sections. In the first section we decompose the time domain as we did in section \ref{Para_dcomp_sec}, only now in the context of control problems with time dependent DE constraints. Decomposing the time interval leads to a reformulation of the control problem that includes extra constraints on the state equation. How to handle these new constraints are dealt with in section \ref{penalty_sec}. We use the same approach as \cite{maday2002parareal} namely the penalty method. This is a simplified version of the augmented Lagrangian approach used in \cite{rao2016time} for parallel in time 4d variational data assimilation. We demonstrate the use of the penalty method by revisiting the example problem from section \ref{example_sec}.
 \\
 \\
-In the last section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ides from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. 
+In the last section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ideas from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. 
 \section{Optimal control problem with time-dependent DE constraints on a decomposed time interval} \label{decomp_sec}
-Before we start to decompose the time interval, let us again state the general problem that we want to solve:
+We want to solve reducible optimization problems of type (\ref{OCP_DEF_J}-\ref{OCP_DEF_E}), where the state equation constraint $E(y(t),v,y_0)=0$ is time dependent and solved on the interval $I=[0,T]$, with initial condition $y_0$. To introduce parallelism to our optimal control problem, we need to decompose the time domain and the state equation. 
+\begin{definition}[Decomposed state equation] \label{DecompEDef}
+Let $0=T_0<T_1<\cdots<T_{N-1}<T_N=T$ and define the $i$-th decomposed subinterval to be $I_i=[T_{i-1},T_i]$. We then introduce $N-1$ intermediate initial conditions $\Lambda=(\lambda_1,...,\lambda_{N-1})$, and set $\lambda_0=y_0$. Using the these intermediate initial conditions we are able to define $N$ decomposed state equations:
 \begin{align}
-\underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v), \label{initial problem1}\\
-\textrm{subject to:} \ &E(y(t),v)=0, \quad t\in [0,T]. \label{initial problem}
+E^i(y_i(t),v,\lambda_{i-1})= 0 \quad t\in I_i. \label{DecompState}
+\end{align} 
+The state $y(t)$ that lives on the entire time interval is defined as:
+\begin{align}
+ y(t)=\left\{
+     \begin{array}{lr}
+		y_1(t)\quad t\in [T_0,T_1] \\
+		y_2(t)\quad t\in(T_1,T_2] \\
+		\cdots \quad\quad\cdots\\
+		y_N(t)\quad t\in(T_{N-1},T_N]
+	\end{array}
+   \right.	\label{GatherState}
 \end{align}
-To introduce parallelism, we decompose $I=[0,T]$ into $N$ subintervals $I_i=[T_{i-1},T_i]$, with $T_0=0$ and $T_N=T$. To be able to solve the differential equation $E$ on each interval $I_i$, we introduce intermediate initial conditions $y(T_i)=\lambda_i$ for $i=1,...,N-1$. This means that instead of finding $y$ by solving $E$ on the entire time domain $I$, we can now find $y$ by solving $E$ separately on on each subinterval $I_i$. The problem (\ref{initial problem}) now reads:
+We will continue to let $E(y(t),v)=0$ denote the undecomposed state equation for the entire interval. $E(y(t),v,\Lambda)=0$ represents the decomposed state equation defined by solving the $N$ decomposed equations (\ref{DecompState}) for the $y_i$s that make up $y(t)$ in (\ref{GatherState}).  
+\end{definition}
+\noindent
+Using the decomposed time interval, state and state equation of definition \ref{DecompEDef}, we can define the decomposed optimal control problem. Because we want the state to be continuous, we need to introduce new constraints on the problem that enforces the continuity of $y(t)$. These new constraints are written up along with the decomposed reformulation of the optimal control problem in definition \ref{DecompOCPDef}.
+\begin{definition}[Decomposed optimal control problem] \label{DecompOCPDef}
+Let $Y,V,Z$ be defined as in definition \ref{OCP_def}. The decomposed optimal control problem with time dependent DE constraint is the following minimization problem:
 \begin{align}
 \underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v),  \label{decomposed problem1}\\
-\textrm{subject to:} \ &E^i(y^i(t),v)=0, \quad t\in [T_{i-1},T_i] \quad \forall i. \label{decomposed problem}
-\end{align} 
-Since we want the state $y$ to be continuous, we also need the following conditions:
-\begin{align}
-y^{i}(T_i)=y^{i+1}(T_i)=\lambda_i \quad \ i=1,..,N-1. \label{Extra constraints}
-\end{align} 
-Both the problems (\ref{initial problem1}-\ref{initial problem}) and (\ref{decomposed problem1}-\ref{Extra constraints}) are constrained problems, which we solve by reducing them to unconstrained problems. In the original setting this can easily be done if we assume that each control variable $v$ corresponds to a unique solution $y$ of the state equation $E$. We can then define a reduced objective function $\hat{J}(v)$, and minimize it with respect to $v$, i.e solve the unconstrained problem:
+\textrm{subject to:} \ &E^i(y_i(t),v,\lambda_{i-1})=0, \quad t\in [T_{i-1},T_i], \quad i=1,...,N. \label{decomposed problem}
+\end{align}
+To enforce the continuity of $y(t)$ between subintervals, we introduce extra constraints:
+ \begin{align}
+y_{i}(T_i)=y_{i+1}(T_i)=\lambda_i \quad \ i=1,..,N-1. \label{Extra constraints}
+\end{align}
+\end{definition}
+\noindent
+If all the decomposed state equations $E^i(y_i,v,\lambda_{i-1})=0$ are uniquely solvable for all control variables $v\in V$, we can reduce the decomposed optimization problem from definition \ref{DecompOCPDef}. We write up the reduced version of problem (\ref{decomposed problem1}-\ref{Extra constraints}) in the next definition.
+\begin{definition}[Decomposed and reduced optimal control problem] \label{DecompRedOCPDef}
+Consider problem (\ref{decomposed problem1}-\ref{Extra constraints}). We assume that this problem is reducible, and can therefore define $\hat J:V\rightarrow\mathbb{R}$ as:
 \begin{align*}
-\underset{v\in V}{\text{min}} \ \hat J(v).
-\end{align*} 
-Assuming that the decomposed state equations also can be uniquely resolved $\forall v$, we can again define a reduced objective function  $\hat{J}$. However because of the extra conditions (\ref{Extra constraints}) the reduction of (\ref{decomposed problem}) still produces a constrained problem:
+\hat J(v) = J(y(v)(t),v)
+\end{align*}
+The decomposed and reduced optimal control problem with time dependent differential constraints is then the following constrained minimization problem:
 \begin{align}
 &\underset{v\in V}{\text{min}} \ \hat J(v), \label{constrained reduced j}\\
-&y^{i-1}(T_i)=\lambda_i, \ \quad \forall i. \label{constrained reduced}
-\end{align} 
+&y_{i}(T_i)=\lambda_i, \ \quad  i=1,...,N-1. \label{constrained reduced}
+\end{align}
+\end{definition}
+\noindent
+Unlike the undecomposed case, the reduced and decomposed optimal control problem is not unconstrained. A strategy for handling these the extra constraints (\ref{constrained reduced}) is discussed in the next subsection.
 \section{The penalty method} \label{penalty_sec}
 To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained reduced}), we will use the penalty method\cite{nocedal2006numerical}, which transforms constrained problems into a series of unconstrained problems by incorporating the constraints into the functional. Incorporating the constraints means penalizing not satisfying the constraints. To use the penalty method on (\ref{constrained reduced j}-\ref{constrained reduced}) we first introduce the initial conditions to the decomposed state equations as variables $\Lambda = (\lambda_1,..,\lambda_{N-1})^T$, and then define the penalized objective function $\hat J_{\mu}$:
 \begin{align}
@@ -154,33 +178,28 @@ The gradient of (\ref{penalty_func}), $\hat J_{\mu}'$, with respect to the contr
 \end{align}
 \end{proposition}
 \begin{proof}
-If we first find $E_v^*$, $E_{\lambda}^*$, $J_v$ and $J_{\lambda}$ we can derive the gradient by simply inserting these expression into (\ref{pen_abs_grad}). We begin with the $E$ terms:
+Proposition \ref{penalty_grad_prop} states the gradient of the penalized objective function for a general decomposed problem in (\ref{pen_abs_grad}). To derive an expression for the gradient of our example problem, we need to differntiate the decomposed state equations and the penalized objective function with respect to the real and virtual control. We will again use the weak formulation of the state equation given in the proof of proposition \ref{pen_adjoint_prop} to find the different terms. The weak formulation of the $i$-th state equation is based on the bilinear form $\mathcal{E}^i[v,\phi]=(y_i,(-\frac{\partial}{\partial t}-a+\delta_{T_i})\phi)_i - (v+\delta_{T_{i-1}}\lambda_{i-1},\phi)_i$. Differentiating $\mathcal{E}^i$ with respect to the real and virtual control yields:
 \begin{align*}
-E_v &= L_v[\cdot,\phi] = -(\cdot,\phi) \\
-E_{\lambda_{i-1}}^i &= L_{y_{i-1}}^i[\cdot,\phi] = -(\cdot,\delta_{T_{i-1}}\phi)_i
+\mathcal{E}_v^i[\cdot,\phi] &= -(\cdot,\phi)_i, \quad i=1,...,N,\\
+\mathcal{E}_{\lambda_{i-1}}^i[\cdot,\phi] &= -(\cdot,\delta_{T_{i-1}}\phi)_i,\quad i=2,...,N.
 \end{align*}
-Notice that both of these forms are symmetric, and we therefore do not need to do more work to find their adjoints, they are however derived from the weak formulation, and it might therefore be easier to translate these forms to their strong counterpart:
+Notice that both of these forms are symmetric, and we therefore do not need to do more work to find their adjoints. The strong interpretation of $\mathcal{E}_v^i$ and $\mathcal{E}_{\lambda_{i-1}}^i$, is that $\mathcal{E}_v^i$ is multiplication by minus one, while $\mathcal{E}_{\lambda_{i-1}}^i$ is multiplication by minus one and evaluation at $t=T_{i-1}$. Next we want to differentiate the decomposed objective functions $J_{\mu}^i$ also defined in the proof of proposition \ref{pen_adjoint_prop}.
 \begin{align*}
-E_v &=-1 \\
-E_{\lambda_{i-1}}^i &= -\delta_{T_{i-1}}
+\frac{\partial}{\partial v} J_{\mu}^i(y,v,\Lambda) &= v,\quad i=1,...,N, \\
+\frac{\partial}{\partial \lambda_i}J_{\mu}^i(y,v,\Lambda) &= - \mu (y_{i}(T_i)-\lambda_i),\quad i=1,...,N-1.
 \end{align*}
-Then lets differentiate $ J_{\mu}$:
+The last step of the proof is to insert the above derived expressions into formula (\ref{pen_abs_grad}). We separate the gradient into two parts, where the first part is the gradient with respect to the real control, while the second part are the components that depends on the virtual control. We start by stating $\frac{\partial}{\partial v} \hat J_{\mu}$:
 \begin{align*}
-\frac{\partial}{\partial v} J_{\mu} &= v \\
-\frac{\partial}{\partial \lambda_i}J_{\mu} &= - \mu (y_{i}(T_i)-\lambda_i)
-\end{align*}
-We can insert the above derived expressions into formula (\ref{pen_abs_grad}) to find the gradient. To make it simple we separate the $v$ and $\Lambda$ terms. First we look at the gradient associated with the source term $v$:
-\begin{align*}
-\frac{\partial}{\partial v} \hat J_{\mu}(v,\Lambda) &= -E_vp +  \frac{\partial}{\partial v} J_{\mu} \\
+\frac{\partial}{\partial v} \hat J_{\mu}(v,\Lambda) &= -E_v^*p +  \sum_{i=1}^N\frac{\partial}{\partial v} J_{\mu}^i(y_i,v,\Lambda) \\
 &=p+v
 \end{align*}
-We then find the components of the gradient related to $\lambda_i$.
+We then find the component of the gradient related to $\lambda_i$. Only the $i+1$-th state equation and the $i$-th decomposed objective function depends on $\lambda_i$. This yields:
 \begin{align*}
-\frac{\partial}{\partial \lambda_i} \hat J_{\mu}(v,\Lambda) &= -E_{\lambda_i} p +  \frac{\partial}{\partial \lambda_i} J_{\mu} \\
+\frac{\partial}{\partial \lambda_i} \hat J_{\mu}(v,\Lambda) &= -E_{\lambda_i}^{i+1}(y_{i+1},v,\Lambda)^* p_{i+1} +  \frac{\partial}{\partial \lambda_i} J_{\mu}^i(y_i,v,\Lambda) \\
 &= p_{i+1}(T_i)-\mu (y_{i}(T_i)-\lambda_i)\\
  &= p_{i+1}(T_i)-p_i(T_i)
 \end{align*}
-Combining $\frac{\partial}{\partial v} \hat J_{\mu}$ and $ \frac{\partial}{\partial \lambda_i}$ for $i=1,..,N-1$ gives us the gradient \ref{penalty grad}.
+Combining $\frac{\partial}{\partial v} \hat J_{\mu}$ and $ \frac{\partial}{\partial \lambda_i}$ for $i=1,..,N-1$ gives us the gradient (\ref{penalty grad}).
 \end{proof} 
 \section{Parareal preconditioner} \label{pc sec}
 Parallelizing the solution process of optimal control problems with time dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. We can for example use the steepest descent method (\ref{SD_itr}), which would create the following iteration for each penalized control problem:
@@ -198,7 +217,7 @@ Q = \left[ \begin{array}{cc}
 	0 & Q_{\Lambda} \\
 	\end{array} \right]\in \mathbb{R}^{n+N\times n+N},\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1} \label{PC_form}
 \end{align} 
-We see that $Q$ only affects the $N-1$ last components of the gradient, which is the part connected with the $\Lambda$ part of the control. The original control $v$ is therefore not directly affected by $Q$. For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the following way:
+We see that $Q$ only affects the $N-1$ last components of the gradient, which is the part connected with the virtual control $\Lambda$. The real control $v$ is therefore not directly affected by $Q$. For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the following way:
 \begin{align}
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kQ\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method2}
 \end{align}
@@ -452,7 +471,7 @@ A way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constr
    \end{array}  \right] \label{ppc_linearized}
 \end{align}
 The term $\bar{M}(\Lambda)^{-1}\bar{M}(\Lambda)^{-*}$ can then be used in an approximation of the inverse Hessian, as detailed in section \ref{vir_sec}.
-\subsection{Parareal-based precoditioner for example problem}
+\subsection{Parareal-based precoditioner for the example problem}
 To illustrate what $Q$ actually will look like we write up $\bar M^*\bar M$ for our example problem (\ref{exs_J}-\ref{exs_E}). The state and adjoint equation of this problem is:
 \begin{align}
 y'(t) &= ay(t) + v(t), \label{ppc_state} \\

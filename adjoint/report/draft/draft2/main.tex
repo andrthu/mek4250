@@ -14,6 +14,7 @@
 \usepackage{tikz}
 \renewcommand{\arraystretch}{1.2}
 \usepackage[english]{babel}
+\usepackage[english]{duomasterforside}
 \usepackage{booktabs,caption}
 \usepackage{hyperref}
 
@@ -49,9 +50,9 @@
 
 %\usepackage[CS, 60]{masterfrontpage}
 
-%\title{Overskrift}
-%\subtitle{Valgfri underoverskrift}
-%\author{Andreas Thune}
+\title{Overskrift}
+\subtitle{Valgfri underoverskrift}
+\author{Andreas Thune}
 
 \begin{document}
 
@@ -61,7 +62,7 @@
 
 %\include{front}
 %\newpage \void            % manually set even page
-
+%\duoforside
 \tableofcontents
 
 \include{Chapters/intro}
@@ -72,7 +73,6 @@
 \include{Chapters/implementation}
 \include{Chapters/verification}
 \include{Chapters/experiments}
-%\include{Chapters/parareal_section}
 %\include{references}
 
 \bibliography{references} 

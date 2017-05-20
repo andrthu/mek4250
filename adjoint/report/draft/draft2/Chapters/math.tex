@@ -175,8 +175,8 @@ Here $\mathcal{E}$ is the bilinear form defined in the proof of priposition \ref
 \noindent
 Evaluating the gradient of our example problem can now be boiled down to the following three steps:
 \begin{align*}
-1.\quad & \textrm{Solve the state equation for $y$.}\\
-2.\quad & \textrm{Use $y$ to solve the adjoint equation for $p$.}\\
+1.\quad & \textrm{Solve the state equation for $y$. (\ref{exs_E})}\\
+2.\quad & \textrm{Use $y$ to solve the adjoint equation for $p$. (\ref{exs_adjoint_eq}}\\
 3.\quad & \textrm{Insert $p$ and control $v$ into gradient formula (\ref{exsample_grad}).}
 \end{align*}
 To see why the above procedure is computationally effective, let us compare it with the finite difference approach to evaluating the gradient. Using finite difference we can find an approximation of the directional derivative $(\hat J'(v),h)_V$ in direction $h\in V$, by choosing a small $\epsilon>0$ and setting:
@@ -242,7 +242,7 @@ To be able to solve optimal control problems numerically, we need to discretize 
 \begin{align}
 \left\{
      \begin{array}{lr}
-	\frac{\partial}{\partial t} y(t) = F(y(t),t),\quad t\in I \\
+	\frac{\partial}{\partial t} y(t) = F(y(t),t),\quad t\in I=[0,T] \\
 	y(0)=y_0 
 	\end{array}
 \right.\label{general_1st_ODE}
@@ -325,9 +325,9 @@ Line search methods are algorithms used to solve problems of the type:
 \end{align*}
 All line search methods are iterative methods that starts at an initial guess $x^0$ and generate a sequence $\{x^k\}$ that hopefully will converge to a solution. The k-th iteration in the algorithm can be described in the following way:
 \begin{align*}
-1. &\textit{Choose direction $p_k\in\mathbb{R}^n$} \\
-2. &\textit{Choose step length $\alpha_k\in\mathbb{R}$} \\
-3. &\textit{Set $x^{k+1}=x^k + \alpha_kp_k$} 
+1.\quad&\textit{Choose downhill direction $p_k\in\mathbb{R}^n$} \\
+2.\quad&\textit{Choose step length $\alpha_k\in\mathbb{R}$} \\
+3.\quad&\textit{Set $x^{k+1}=x^k + \alpha_kp_k$} 
 \end{align*}
 If $f$ is differentiable, a necessary condition for a point $x^*\in\mathbb{R}^n$ to be a minimizer of $f$, is that $\nabla f(x^*)=0$. This optimality condition is used to create a stopping criteria for line search methods in the following way: Given a tolerance $\tau>0$ and a norm $||\cdot||$ stop the line search iteration when
 \begin{align}
@@ -338,7 +338,7 @@ What separates different line search methods, is how one chooses descent directi
 f(x^k + \alpha_kp_k)&\leq f(x^k) + c_1\alpha_k\nabla f(x^k)\cdot p_k \\
 \nabla f(x^k + \alpha_kp_k) \cdot p_k &\geq c_2 \nabla f(x^k)\cdot p_k
 \end{align*}
-Here we use constants $0<c_1<c_2<1$. The first Wolfe condition ensures that the decrease in function value is proportional to both step length and direction. The second condition is that the gradient of $f$ at $x^k + \alpha_kp_k$, should be less steep than at $x^k$, and therefore closer to fulfilling the optimality condition (\ref{opti_con}). If we can find a step length that satisfies these conditions we will use it. How to actually find a step length that satisfies the Wolfe conditions is quite involved, and we will therefore not go into this topic any further. Instead let us look into a couple of line search methods that will be used later in the thesis, starting with steepest descent.
+Here we use constants $0<c_1<c_2<1$. The first Wolfe condition ensures that the decrease in function value of one steepest descent iteration is proportional to both step length and direction. The second condition is that the gradient of $f$ at $x^k + \alpha_kp_k$, should be less steep than at $x^k$, and therefore closer to fulfilling the optimality condition (\ref{opti_con}). If we can find a step length that satisfies these conditions we will use it. How to actually find a step length that satisfies the Wolfe conditions is quite involved, and we will therefore not go into this topic any further. For more information on the Wolfe conditions, see: \cite{wolfe1969convergence, wolfe1971convergence}. We now look into a couple of line search methods that will be used later in the thesis, starting with steepest descent.
 \\
 \\
 The steepest descent method is a very simple line search method, where the step length $p_k$ is set to the negative gradient direction at point $x^k$, i.e $p_k = -\nabla f(x^k)$. This gives us the following update for each iteration:
