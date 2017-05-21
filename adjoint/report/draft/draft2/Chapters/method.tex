@@ -7,13 +7,13 @@ This chapter consists of three sections. In the first section we decompose the t
 \\
 In the last section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ideas from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. 
 \section{Optimal control problem with time-dependent DE constraints on a decomposed time interval} \label{decomp_sec}
-We want to solve reducible optimization problems of type (\ref{OCP_DEF_J}-\ref{OCP_DEF_E}), where the state equation constraint $E(y(t),v,y_0)=0$ is time dependent and solved on the interval $I=[0,T]$, with initial condition $y_0$. To introduce parallelism to our optimal control problem, we need to decompose the time domain and the state equation. 
+We want to solve reducible optimization problems of type (\ref{OCP_DEF_J}-\ref{OCP_DEF_E}), where the state equation constraint $E(y(t),v,y_0)=0$ is time dependent and solved on the interval $I=[0,T]$, with initial condition $y_0$. To introduce parallelism to our optimal control problem, we need to decompose the time domain and the state equation as we did in chapter \ref{parareal_chap}. 
 \begin{definition}[Decomposed state equation] \label{DecompEDef}
-Let $0=T_0<T_1<\cdots<T_{N-1}<T_N=T$ and define the $i$-th decomposed subinterval to be $I_i=[T_{i-1},T_i]$. We then introduce $N-1$ intermediate initial conditions $\Lambda=(\lambda_1,...,\lambda_{N-1})$, and set $\lambda_0=y_0$. Using the these intermediate initial conditions we are able to define $N$ decomposed state equations:
+Let $0=T_0<T_1<\cdots<T_{N-1}<T_N=T$ and define the $i$-th decomposed subinterval to be $I_i=[T_{i-1},T_i]$. We then introduce $N-1$ intermediate initial conditions $\Lambda=(\lambda_1,...,\lambda_{N-1})$, and set $\lambda_0=y_0$. Using these intermediate initial conditions we are able to define $N$ decomposed state equations:
 \begin{align}
 E^i(y_i(t),v,\lambda_{i-1})= 0 \quad t\in I_i. \label{DecompState}
 \end{align} 
-The state $y(t)$ that lives on the entire time interval is defined as:
+Solving the state equation $E(y(t),v,\Lambda)=0$ on the entire time domain, then means solving the $N$ decomposed equations (\ref{DecompState}) for $y_i$, and setting the state $y(t)$ to be:
 \begin{align}
  y(t)=\left\{
      \begin{array}{lr}
@@ -24,15 +24,14 @@ The state $y(t)$ that lives on the entire time interval is defined as:
 	\end{array}
    \right.	\label{GatherState}
 \end{align}
-We will continue to let $E(y(t),v)=0$ denote the undecomposed state equation for the entire interval. $E(y(t),v,\Lambda)=0$ represents the decomposed state equation defined by solving the $N$ decomposed equations (\ref{DecompState}) for the $y_i$s that make up $y(t)$ in (\ref{GatherState}).  
 \end{definition}
 \noindent
-Using the decomposed time interval, state and state equation of definition \ref{DecompEDef}, we can define the decomposed optimal control problem. Because we want the state to be continuous, we need to introduce new constraints on the problem that enforces the continuity of $y(t)$. These new constraints are written up along with the decomposed reformulation of the optimal control problem in definition \ref{DecompOCPDef}.
+Using the decomposed time interval, state and state equation of definition \ref{DecompEDef}, we can define the decomposed optimal control problem. Since we want to solve the decomposed state equations simultaneously, the intermediate initial conditions $\Lambda$ will be added to the optimization problem as additional control variables. Because these variables are artificially introduced by us, we refer to $\Lambda$ as the virtual control, while we call the original control $v$ the real control. We also want the state to be continuous, so we need to introduce new constraints on the problem that enforces the continuity of $y(t)$. These new constraints are written up along with the decomposed reformulation of the optimal control problem in definition \ref{DecompOCPDef}.
 \begin{definition}[Decomposed optimal control problem] \label{DecompOCPDef}
 Let $Y,V,Z$ be defined as in definition \ref{OCP_def}. The decomposed optimal control problem with time dependent DE constraint is the following minimization problem:
 \begin{align}
-\underset{y\in Y,v\in V}{\text{min}} \ &J(y(t),v),  \label{decomposed problem1}\\
-\textrm{subject to:} \ &E^i(y_i(t),v,\lambda_{i-1})=0, \quad t\in [T_{i-1},T_i], \quad i=1,...,N. \label{decomposed problem}
+\underset{y\in Y,v\in V,\Lambda}{\text{min}} \ &J(y(t),v,\Lambda),  \label{decomposed problem1}\\
+\textrm{subject to:} \ &E(y(t),v,\Lambda)=0, \quad t\in [0,T]. \label{decomposed problem}
 \end{align}
 To enforce the continuity of $y(t)$ between subintervals, we introduce extra constraints:
  \begin{align}
@@ -44,25 +43,37 @@ If all the decomposed state equations $E^i(y_i,v,\lambda_{i-1})=0$ are uniquely 
 \begin{definition}[Decomposed and reduced optimal control problem] \label{DecompRedOCPDef}
 Consider problem (\ref{decomposed problem1}-\ref{Extra constraints}). We assume that this problem is reducible, and can therefore define $\hat J:V\rightarrow\mathbb{R}$ as:
 \begin{align*}
-\hat J(v) = J(y(v)(t),v)
+\hat J(v,\Lambda) = J(y(v,\Lambda)(t),v,\Lambda)
 \end{align*}
-The decomposed and reduced optimal control problem with time dependent differential constraints is then the following constrained minimization problem:
+The decomposed and reduced optimal control problem with time dependent differential equation constraints is then the following constrained minimization problem:
 \begin{align}
-&\underset{v\in V}{\text{min}} \ \hat J(v), \label{constrained reduced j}\\
+&\underset{v\in V,\Lambda}{\text{min}} \ \hat J(v,\Lambda), \label{constrained reduced j}\\
 &y_{i}(T_i)=\lambda_i, \ \quad  i=1,...,N-1. \label{constrained reduced}
 \end{align}
 \end{definition}
 \noindent
 Unlike the undecomposed case, the reduced and decomposed optimal control problem is not unconstrained. A strategy for handling these the extra constraints (\ref{constrained reduced}) is discussed in the next subsection.
 \section{The penalty method} \label{penalty_sec}
-To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained reduced}), we will use the penalty method\cite{nocedal2006numerical}, which transforms constrained problems into a series of unconstrained problems by incorporating the constraints into the functional. Incorporating the constraints means penalizing not satisfying the constraints. To use the penalty method on (\ref{constrained reduced j}-\ref{constrained reduced}) we first introduce the initial conditions to the decomposed state equations as variables $\Lambda = (\lambda_1,..,\lambda_{N-1})^T$, and then define the penalized objective function $\hat J_{\mu}$:
+To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained reduced}), we will use the penalty method\cite{nocedal2006numerical}, which transforms constrained problems into a series of unconstrained problems. This is done by moving the constraints into the objective function $J(v)$. For each constraint a term is added to $J$, which is positive for variables that does not satisfy the constraint, but zero if it does. The penalization of the constraints can be done in different ways, but we will restrict ourself to the quadratic penalty method, where the the terms penalizing the constraints are quadratic. 
+\begin{definition}[Quadratic penalty method]\label{QuadPenMethDef}
+Consider the constrained optimization problem:
 \begin{align}
-\hat J_{\mu}(v,\Lambda) = \hat J(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y^{i-1}(T_i)-\lambda_i)^2 \label{pen_obj_J}
+\min_x f(x)\quad\textrm{subject to: } c_i(x)=0,\quad i=1,...,N, \label{general_opti}
 \end{align}
-With $\mu>0$. Since the new control variables are created by us, and do not exist in the original control problem, we call $\Lambda$ the virtual control. The control $v$ of the original problem will form now on be referred to as the real control. If we now minimize $\hat{J}_{\mu}$ with respect to $(v,\Lambda)$, while letting $\mu$ tend to infinity, we hope that the solution satisfies the conditions (\ref{Extra constraints}), while also minimizing the actual problem (\ref{constrained reduced j}-\ref{constrained reduced}). The algorithmic framework of this reads:
+Given a penalty parameter $\mu>0$, the quadratic penalty method defines an altered functional $f_{\mu}:X\rightarrow\mathbb{R}$ related to the functional of problem (\ref{general_opti}).
+\begin{align}
+f_{\mu}(x) = f(x) +\frac{\mu }{2}\sum_{i=1}^Nc_i(x)^2 \label{general_opti_pen}
+\end{align}
+Minimizing $f_{\mu}$ is an unconstrained optimization problem. If we now instead consider our decomposed optimization problem (\ref{constrained reduced j}-\ref{constrained reduced}), we can write up its penalized objective function $\hat J_{\mu}$ as:
+\begin{align}
+\hat J_{\mu}(v,\Lambda) = \hat J(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)^2. \label{pen_obj_J}
+\end{align}
+\end{definition}
+\noindent
+The idea of the penalty method is that the minimizer of (\ref{general_opti_pen}) should approach a feasible minimizer of (\ref{general_opti}) when we increase the penalty parameter $\mu$. Since the penalized problem can be difficult to solve for large $\mu$ values, the usual approach for solving constrained problems with the penalty method, is to minimized the penalized objective function for an increasing sequence of penalty parameters $\mu$. We write up the general algorithmic framework of the penalty method applied to problem (\ref{constrained reduced j}-\ref{constrained reduced}) in algorithm \ref{PEN_ALG}. 
 \\
 \\
-\begin{algorithm}[H]
+\begin{algorithm}[H] 
 \KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
 \For{$k=1,2,...$}{
 Find $(v^k,\Lambda^k)$ s.t. $\parallel\nabla \hat J_{\mu_{k-1}}(v^k,\Lambda^k)\parallel<\tau_{k-1}$\;
@@ -75,13 +86,14 @@ Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
 \caption{Penalty framework\label{PEN_ALG}}
 \end{algorithm}
 \noindent
-Assuming that we have a solution $v$ minimizing $\hat J$, one would hope that the iterates $\{v^k\}$ from the penalty method converges to the solution of the non-penalized problem, that is:
+\\
+If we want to use the penalty method, we need to know if the framework presented in algorithm \ref{PEN_ALG} is consistent. The penalty method is consistent, if for any given minimizer $(v,\Lambda)$ of $\hat J$, the iterates $(v^k,\Lambda^k)$ produced by framework \ref{PEN_ALG} converges to $(v,\Lambda)$, meaning:
 \begin{align*}
-\lim_{k\rightarrow \infty} v^k =v
+\lim_{k\rightarrow \infty} (v^k,\Lambda^k) =(v,\Lambda).
 \end{align*}
 From \cite{nocedal2006numerical} we get a result that deals with this:
 \begin{theorem}
-Assume $v^k$ is the exact global minimizer of $J_{\mu_k}$, then each limit point of the sequence $\{v^k\}$ is a solution of the problem (\ref{initial problem}).
+Assume that $\forall k$, $(v^k,\Lambda^k)$ is the exact global minimizer of $J_{\mu_k}$ in context of the framework in algorithm \ref{PEN_ALG}. Then each limit point of the sequence $\{(v^k,\Lambda^k)\}$ is a solution of the problem (\ref{constrained reduced j}-\ref{constrained reduced}).
 \end{theorem}
 \begin{proof}
 \cite{nocedal2006numerical}
@@ -93,18 +105,29 @@ We have introduced the penalized objective function (\ref{pen_obj_J}), that depe
 \begin{proposition}[Gradient of the penalized objective function] \label{penalty_grad_prop}
 Let $\hat J_{\mu}$ be the penalized objective function (\ref{pen_obj_J}). With similar assumptions as in proposition \ref{redGrad_prop}, the gradient of $\hat J_{\mu}$ is as follows: 
 \begin{align}
-\hat J_{\mu}'(v,\Lambda)=-(E_v(y,v,\Lambda)^*+E_{\Lambda}(y,v,\Lambda)^*)p+ (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu}(y,v,\Lambda) \label{pen_abs_grad}
+\hat J_{\mu}'(v,\Lambda)=-(E_v(y(t),v,\Lambda)^*+E_{\Lambda}(y(t),v,\Lambda)^*)p(t)+ (\frac{\partial}{\partial v}+\frac{\partial}{\partial\Lambda})J_{\mu}(y,v,\Lambda). \label{pen_abs_grad}
 \end{align}
-where $p$ is the solution of the adjoint equation:
+The decomposed adjoint $p(t)$ is defined on $I=[0,T]$ as:
 \begin{align}
-E_y(y,v,\Lambda)^{*}p=\frac{\partial}{\partial y}J_{\mu}(y,v,\Lambda). \label{penalty adjoint}
+ p(t)=\left\{
+     \begin{array}{lr}
+		p_1(t)\quad t\in [T_0,T_1] \\
+		p_2(t)\quad t\in(T_1,T_2] \\
+		\cdots \quad\quad\cdots\\
+		p_N(t)\quad t\in(T_{N-1},T_N]
+	\end{array}
+   \right.	\label{GatherAdjoint}
+\end{align}
+where the $p_i$s are the solutions of the decomposed adjoint equations:
+\begin{align}
+E_{y_i}^i(y_i(t),v,\Lambda)^{*}p_i(t)=\frac{\partial}{\partial y_i}J_{\mu}(y_i,v,\Lambda), \quad t\in [T_{i-1},T_i]. \label{penalty adjoint}
 \end{align}
 \end{proposition}
 \begin{proof}
 Same reasoning as in proposition \ref{redGrad_prop}.
 \end{proof}
 \noindent
-Notice that the state equation $E$ consists of several equations defined separately on each of the decomposed subintervals. The result is that the adjoint equation also consists of several equations defined on each interval. To see this clearly we will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
+Notice that the state equation $E(y(t),v,\Lambda)=0$ consists of several equations defined separately on each of the decomposed subintervals. The result is that the adjoint equation also consists of several equations defined on each interval. To see this clearly we will derive the adjoint and the gradient for the example problem (\ref{exs_J}-\ref{exs_E}).
 \subsection{Deriving the adjoint for the example problem}
 Before we derive the adjoint equation of the decomposed example problem (\ref{exs_J}-\ref{exs_E}) we need to write up the decomposed state equation and the penalized objective function. We start by decomposing the interval $[0,T]$ into $N$ subintervals $\{[T_{i-1},T_{i}]\}_{i=1}^{N}$. We can then define the decomposed state equation on each interval:
 \begin{align}
@@ -121,7 +144,7 @@ We get the reduced penalized objective function by adding the the penalty terms 
 \end{align}
 Having formulated the penalized objective function, we are no ready to write up its gradient. The gradient of (\ref{penalty_func}) is given in proposition \ref{penGrad_prop}, but since the gradient depends on the decomposed adjoint equations, we write up these first.
 \begin{proposition} \label{pen_adjoint_prop}
-The adjoint equation of problem (\ref{exs_J}-\ref{exs_E}) on interval $[T_{N-1},T_N]$ is:
+The decomposed adjoint equation of problem (\ref{exs_J}-\ref{exs_E}) on interval $[T_{N-1},T_N]$ is:
 \begin{align}
 \left\{
      \begin{array}{lr}
@@ -130,7 +153,7 @@ The adjoint equation of problem (\ref{exs_J}-\ref{exs_E}) on interval $[T_{N-1},
 	\end{array}
    \right. \label{end adjoint}
 \end{align}
-On $[T_{i-1},T_i]$ the adjoint equation is:
+On $[T_{i-1},T_i]$ the decomposed adjoint equations are:
 \begin{align}
 \left\{
      \begin{array}{lr}

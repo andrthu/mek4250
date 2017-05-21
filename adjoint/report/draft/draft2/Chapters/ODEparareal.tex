@@ -1,21 +1,21 @@
 \chapter{Parallel in time ODE solver methods} \label{parareal_chap}
-The process of resolving time dependent differential equation in temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the simple fact that the solution of such equations at every time $T$ depends on the solution at times $t<T$, and it is therefore very difficult to partition the solution process into independent tasks that can be run in parallel. However the so called Parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution} makes it possible to parallelize the numerical solution of differential equations in time. We will however not introduce Parareal as it is described in \cite{lions2001resolution}, but rather present an alternative formulation of the algorithm given in \cite{baffico2002parallel}. Before we state the Parareal algorithm, let us first explain how we decompose the time domain, and an example equation defined on it.
+The process of resolving time dependent differential equations in the temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the fact that the solution of such equations at every time $T$ depends on the solution at times $t<T$, and it is therefore difficult to partition the solution process into independent tasks that can be solved in parallel. However the Parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution}is an approach to overcome this limitation. We will however not introduce Parareal as it is described in \cite{lions2001resolution}, but rather present an alternative formulation of the algorithm given in \cite{baffico2002parallel}. Before we state the Parareal algorithm, let us first explain how we decompose the time domain, and an example equation defined on it.
 \section{Decomposing the time interval} \label{Para_dcomp_sec}
 The Parareal scheme is used to parallelize differential equations in temporal direction, by decomposing the time interval $I=[0,T]$. An example of a time dependent differential equation that on this interval is:
 \begin{align}
 \left\{
    	\begin{array}{lr}
-		\frac{\partial u}{\partial t} + Au = f \ \quad \textrm{For $t \in I$} \\
+		\frac{\partial u}{\partial t} + Au = f \ \quad \textrm{for $t \in I$} \\
 		u(0)=u_0
 	\end{array}
    \right. \label{unbroken}
 \end{align} 
-Decomposing the interval $I$ means dividing the interval into $N$ subintervals $\{I_i = [T^{i-1},T^{i}]\}_{i=1}^{N}$, with length $\Delta T = T/N$. We define new equations for each interval:
+Decomposing the interval $I$ means dividing the interval into $N$ subintervals $\{I_i = [T_{i-1},T_{i}]\}_{i=1}^{N}$, with length $\Delta T = T/N$. We define new equations for each interval:
 \begin{align}
 \left\{
      \begin{array}{lr}
-		\frac{\partial u^i}{\partial t} + Au^i = f \ \quad \textrm{For $t \in I^n$} \\
-		u^n(T^n)=\lambda_{i-1}
+		\frac{\partial u^i}{\partial t} + Au^i = f \ \quad \textrm{for $t \in I^i$} \\
+		u^i(T_i)=\lambda_{i-1}
 	\end{array}
 	\right.	\label{broken}
 \end{align}
@@ -129,23 +129,27 @@ To demonstrate the Parareal algorithm, we will try to verify proposition \ref{P_
 \begin{align}
 \frac{\partial}{\partial t} y(t) =\cos(2\pi t)y(t), \quad t\in[0,4],y(0)=3.52 \label{Parareal_ODE_exs}
 \end{align}
-This is a simple separable equation with solution $y_e(t)=y_0e^{-\frac{\sin(2\pi t)}{2\pi}}$. To test the Parareal algorithm we choose a fine solver that discretizes (\ref{Parareal_ODE_exs}) using the second order Crank-Nicolson finite difference scheme\cite{crank1947practical}, while we base the coarse solver on a first order implicit Euler scheme. The experimental setup, is to do "zero", one, two and three iterations of Parareal on different time decompositions, and then check if we get the convergence rate proposed in proposition \ref{Parareal_ODE_exs}. The error between the exact solution $y_e$ and the solution $y_k$ we get from $k$ Parareal iterations is measured in the max-norm, and we use $\Delta t=10^{-6}$ as small time step for the fine discretization. The results can be found in tables \ref{par_con1} to \ref{par_con4}. Plots of the results of one Parareal iteration applied to large $\Delta T$ values are also added in Figure \ref{P_fig_1_itr}.
+This is a simple separable equation with solution $y_e(t)=y_0e^{-\frac{\sin(2\pi t)}{2\pi}}$. To test the Parareal algorithm we choose a fine solver that discretizes (\ref{Parareal_ODE_exs}) using the second order Crank-Nicolson finite difference scheme\cite{crank1947practical}, while we base the coarse solver on a first order implicit Euler scheme. The experimental setup, is to do "zero", one, two and three iterations of Parareal on different time decompositions, and then check if we get the convergence rate proposed in proposition \ref{Parareal_ODE_exs}. The error between the exact solution $y_e$ and the solution $y$ we get from $k$ Parareal iterations is measured in the max-norm, and we use $\Delta t=10^{-6}$ as small time step for the fine discretization. We calculate the convergence rate by comparing the error at different coarse time step sizes $\Delta T_1>\Delta T_2$ using formula:
+\begin{align}
+\textrm{rate}=\frac{\log(\frac{||y_{\Delta T_2} -y_e(t)||_{l_{\infty}}}{||y_{\Delta T_1}-y_e(t)||_{l_{\infty}}})}{\log(\frac{\Delta T_2}{ \Delta T_2})}. \label{RateDef}
+\end{align} 
+The results can be found in tables \ref{par_con1} to \ref{par_con4}. Plots of the results of one Parareal iteration applied to large $\Delta T$ values are also added in Figure \ref{P_fig_1_itr}. In table \ref{par_con1} we observe a convergence rate of one, which is in line with proposition \ref{P_con_prop}. For table \ref{par_con2} and \ref{par_con3}, we see that when the coarse time step $\Delta T$ approaches zero, the convergence rate goes to two and three. This is again what we expect in light of proposition \ref{P_con_prop}. In the last table, where the results come from applying three iterations of Parareal. Proposition \ref{P_con_prop} then suggests a convergence rate of $\mathcal{O}(\Delta T^4)$. We do however not observe this in table \ref{par_con4}, since the error decreases only at a rate of $2.9911$, between $N=1000$ and $N=2000$. 
 \\
 \begin{table}[h]
 \centering
-\caption{Results for initial coarse and fine solver applied to equation \ref{Parareal_ODE_exs}. We observe a convergence rate of 1, which is as expected for an implicit Euler scheme.}
+\caption{Results for initial coarse and fine solver applied to equation \ref{Parareal_ODE_exs}. The first column ($N$) represents the number of decomposed subintervals, and the second column is the corresponding coarse time step size $\Delta T=\frac{T}{N}$. The third column measures the maximal absolute difference between the exact solution $y_e$ and the numerical solution $y$ from "zero" steps of Parareal. Using these errors we can find the convergence rate with formula (\ref{RateDef}). We observe a convergence rate of 1, which is as expected for an implicit Euler scheme.}
 \label{par_con1}
 \begin{tabular}{lrrl}
 \toprule
-{}$N$ &      $\Delta T$ &       err &     rate \\
+{}$N$ &      $\Delta T$ &       $||y-y_e||_{l_{\infty}}$ &  rate \\
 \midrule
-40   &  0.0250 &  0.802648 &       -- \\
-50   &  0.0200 &  0.628177 &  1.09837 \\
-100  &  0.0100 &  0.298689 &  1.07253 \\
-200  &  0.0050 &  0.145239 &  1.04021 \\
-500  &  0.0020 &  0.057075 &  1.01934 \\
-1000 &  0.0010 &  0.028365 &  1.00875 \\
-2000 &  0.0005 &  0.014139 &  1.00441 \\
+40   &  0.100 &  0.802648 &       -- \\
+50   &  0.090 &  0.628177 &  1.09837 \\
+100  &  0.040 &  0.298689 &  1.07253 \\
+200  &  0.020 &  0.145239 &  1.04021 \\
+500  &  0.008 &  0.057075 &  1.01934 \\
+1000 &  0.004 &  0.028365 &  1.00875 \\
+2000 &  0.002 &  0.014139 &  1.00441 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -155,15 +159,15 @@ This is a simple separable equation with solution $y_e(t)=y_0e^{-\frac{\sin(2\pi
 \label{par_con2}
 \begin{tabular}{lrrl}
 \toprule
-{}$N$ &      $\Delta T$ &       err &     rate \\
+{}$N$ &      $\Delta T$ &       $||y-y_e||_{l_{\infty}}$ &     rate \\
 \midrule
-40   &  0.0250 &  0.036593 &       -- \\
-50   &  0.0200 &  0.027970 &  1.20431 \\
-100  &  0.0100 &  0.008871 &  1.65668 \\
-200  &  0.0050 &  0.002426 &  1.87042 \\
-500  &  0.0020 &  0.000406 &  1.95102 \\
-1000 &  0.0010 &  0.000103 &  1.97996 \\
-2000 &  0.0005 &  0.000026 &  1.99027 \\
+40   &  0.100 &  0.036593 &       -- \\
+50   &  0.080 &  0.027970 &  1.20431 \\
+100  &  0.040 &  0.008871 &  1.65668 \\
+200  &  0.020 &  0.002426 &  1.87042 \\
+500  &  0.008 &  0.000406 &  1.95102 \\
+1000 &  0.004 &  0.000103 &  1.97996 \\
+2000 &  0.002 &  0.000026 &  1.99027 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -173,15 +177,15 @@ This is a simple separable equation with solution $y_e(t)=y_0e^{-\frac{\sin(2\pi
 \label{par_con3}
 \begin{tabular}{lrrl}
 \toprule
-{}$N$ &      $\Delta T$ &       err &     rate \\
+{}$N$ &      $\Delta T$ &       $||y-y_e||_{l_{\infty}}$ &     rate \\
 \midrule
-40   &  0.0250 &  3.759869e-03 &       -- \\
-50   &  0.0200 &  1.384116e-03 &  4.47838 \\
-100  &  0.0100 &  1.090653e-04 &   3.6657 \\
-200  &  0.0050 &  2.345744e-05 &  2.21707 \\
-500  &  0.0020 &  1.852693e-06 &  2.77046 \\
-1000 &  0.0010 &  2.448745e-07 &  2.91951 \\
-2000 &  0.0005 &  3.072620e-08 &   2.9945 \\
+40   &  0.100 &  3.759869e-03 &       -- \\
+50   &  0.080 &  1.384116e-03 &  4.47838 \\
+100  &  0.040 &  1.090653e-04 &   3.6657 \\
+200  &  0.020 &  2.345744e-05 &  2.21707 \\
+500  &  0.008 &  1.852693e-06 &  2.77046 \\
+1000 &  0.004 &  2.448745e-07 &  2.91951 \\
+2000 &  0.002 &  3.072620e-08 &   2.9945 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -191,15 +195,15 @@ This is a simple separable equation with solution $y_e(t)=y_0e^{-\frac{\sin(2\pi
 \label{par_con4}
 \begin{tabular}{lrrl}
 \toprule
-{}$N$ &      $\Delta T$ &       err &     rate \\
+{}$N$ &      $\Delta T$ &      $||y-y_e||_{l_{\infty}}$  &     rate \\
 \midrule
-40   &  0.0250 &  2.574574e-04 &       -- \\
-50   &  0.0200 &  7.818525e-05 &  5.34084 \\
-100  &  0.0100 &  1.487138e-06 &  5.71629 \\
-200  &  0.0050 &  1.345036e-07 &  3.46682 \\
-500  &  0.0020 &  6.044837e-09 &  3.38581 \\
-1000 &  0.0010 &  4.431655e-10 &  3.76979 \\
-2000 &  0.0005 &  5.573852e-11 &   2.9911 \\
+40   &  0.100 &  2.574574e-04 &       -- \\
+50   &  0.080 &  7.818525e-05 &  5.34084 \\
+100  &  0.040 &  1.487138e-06 &  5.71629 \\
+200  &  0.020 &  1.345036e-07 &  3.46682 \\
+500  &  0.008 &  6.044837e-09 &  3.38581 \\
+1000 &  0.004 &  4.431655e-10 &  3.76979 \\
+2000 &  0.002 &  5.573852e-11 &   2.9911 \\
 \bottomrule
 \end{tabular}
 \end{table}

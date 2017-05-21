@@ -309,7 +309,7 @@ def constant_iteration(k=3,M=[3,6,12,24,80,100,200,500,1000,2000],N=10000,plot_=
         error = max(abs(Y-ye))
         #print error
         error_list.append(error)
-        coarse_dts.append(1./m)
+        coarse_dts.append(float(T)/m)
 
         #plt.plot(t,Y,'.')
     #plt.show()
