@@ -347,6 +347,7 @@ def constant_iteration(k=3,M=[3,6,12,24,80,100,200,500,1000,2000],N=10000,plot_=
         ax3.plot(t,ye,'--')
         ax3.plot(t,Y_list[3],'o',markersize=1)
         ax3.legend(['exact','Parareal,N='+str(M[3])],loc=2)
+        ax3.yaxis.set_ticks(np.linspace(3,5,6))
         #plt.savefig('report/draft/draft2/parareal_img.png')
         #ax3.set_title('dT='+str(coarse_dts[5]))
         """
@@ -374,7 +375,26 @@ def create_con_table():
         Data[k-1].to_latex('report/draft/draft2/tables/parareal_convergence'+str(k)+'.tex')
 
     return 0
+
+
+def check_stab():
+
+    a = 1.3
+    T = 4
+    y0 = 3.52
+
+    A = lambda x: -np.cos(2*np.pi*x)
     
+    N = 6
+
+    t = np.linspace(0,T,N+1)
+    dt = T/float(N)
+    y = implicit_solver(y0,A(t),dt,N)
+    ye = y0*np.exp(-np.sin(2*np.pi*t)/(2*np.pi))
+
+    plt.plot(t,y)
+    plt.plot(t,ye)
+    plt.show()
 
 if __name__ == "__main__":
     a  = 1
@@ -386,5 +406,6 @@ if __name__ == "__main__":
     #test_order()
     #test_convergence()
     #parareal_solver(y0,a,T,M,N,order=1,show_plot=True)
-    #constant_iteration(k=1)
-    create_con_table()
+    print constant_iteration(k=1)
+    #create_con_table()
+    #check_stab()

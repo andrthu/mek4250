@@ -1,8 +1,8 @@
 \chapter{Parareal BFGS preconditioner} \label{method_chap}
-In the previous chapter we saw that the parareal scheme allows us to parallelize time dependent differential equations in their temporal direction. In this chapter we will look at how to parallelize optimal control problems with time dependent differential equation constraints in temporal direction. 
+In the previous chapter we saw that the Parareal scheme allows us to parallelize time dependent differential equations in their temporal direction. In this chapter we will present an approach on how to parallelize optimal control problems with time dependent differential equation constraints in the temporal direction. 
 \\
 \\
-This chapter consists of three sections. In the first section we decompose the time domain as we did in section \ref{Para_dcomp_sec}, only now in the context of control problems with time dependent DE constraints. Decomposing the time interval leads to a reformulation of the control problem that includes extra constraints on the state equation. How to handle these new constraints are dealt with in section \ref{penalty_sec}. We use the same approach as \cite{maday2002parareal} namely the penalty method. This is a simplified version of the augmented Lagrangian approach used in \cite{rao2016time} for parallel in time 4d variational data assimilation. We demonstrate the use of the penalty method by revisiting the example problem from section \ref{example_sec}.
+This chapter consists of three sections. In the first section we decompose the time domain as we did in section \ref{Para_dcomp_sec}, only now in the context of control problems with time dependent DE constraints. Decomposing the time interval leads to a reformulation of the control problem that includes extra constraints on the state equation. How to handle these new constraints are dealt with in section \ref{penalty_sec}. To solve this constrained problem, we use the same approach as \cite{maday2002parareal} namely the penalty method. The penalty approach is a simplified version of the augmented Lagrangian approach used in \cite{rao2016time} for parallel in time 4d variational data assimilation. We demonstrate the use of the penalty method by revisiting the example problem from section \ref{example_sec}.
 \\
 \\
 In the last section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ideas from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. 
@@ -233,18 +233,18 @@ Alternatively we could use a BFGS iteration (\ref{BFGS_itr}), which would result
 \begin{align}
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kH^{k}\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{bfgs_method}
 \end{align}
-Where $H^k$ is the inverse Hessian approximation defined in (\ref{inv_H_apr}). To improve convergence of the unconstrained optimization solvers, we include the Parareal-based preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. The preconditioner $Q$ will be on the form:
+Where $H^k$ is the inverse Hessian approximation defined in (\ref{inv_H_apr}). To improve convergence of the unconstrained optimization solvers, we include the Parareal-based preconditioner, proposed in \cite{maday2002parareal}, in our optimization algorithms. Assuming that $v\in\mathbb{R}^{n_v}$, the preconditioner $Q$ will be on the form:
 \begin{align}
 Q = \left[ \begin{array}{cc}
 	\mathbbold{1} & 0 \\
 	0 & Q_{\Lambda} \\
-	\end{array} \right]\in \mathbb{R}^{n+N\times n+N},\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1} \label{PC_form}
+	\end{array} \right]\in \mathbb{R}^{n_v+N\times n_v+N},\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1} \label{PC_form}
 \end{align} 
 We see that $Q$ only affects the $N-1$ last components of the gradient, which is the part connected with the virtual control $\Lambda$. The real control $v$ is therefore not directly affected by $Q$. For steepest descent, we apply $Q$, by modifying (\ref{gradient_method}) in the following way:
 \begin{align}
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kQ\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method2}
 \end{align}
-For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. 
+For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. We also need $Q$ to be cheaply computable. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. 
 \\
 \\
 We derive $Q$ by looking at a constructed optimal control problem that we call the virtual problem. The virtual problem is a control problem decomposed as detailed in section \ref{decomp_sec}, but its objective function $\bold J$ is set to be the penalty term, which only depends on the virtual control $\Lambda$. We already stated this problem in section \ref{algebraic_sec}, and by utilizing the algebraic Parareal formulation, we will try to find a good candidate for $Q_{\Lambda}$.
@@ -255,7 +255,7 @@ Let $f(y(t),t)=0$ be a time dependent differential equation without a source ter
 \begin{align}
  \left\{
      \begin{array}{lr}
-		f(y(t),t)=0 \ \quad \textrm{For $t \in (0,\Delta T)$} \\
+		f(y(t),t)=0 \ \quad \textrm{for $t \in (0,\Delta T)$} \\
 		y(0)=\omega
 	\end{array}
 	\right.	
@@ -279,14 +279,14 @@ M= \left[ \begin{array}{cccc}
 \noindent
 We then use the fine propagator $\bold F_{\Delta T}(\omega)$ to define the virtual problem.
 \begin{definition}[Virtual problem]
-Given a fine propagator $\bold F_{\Delta T}$, that solves a time dependent differential equation $f(y(t),t)=0$, an initial condition $\lambda_0=y_0$ and the control variable $\Lambda=(\lambda_1,...,\lambda_ {N-1})$, the virtual control problem is defined as follows:
+Given a fine propagator $\bold F_{\Delta T}$, that solves a time dependent differential equation $f(y(t),t)=0$, an initial condition $\lambda_0=y_0$ and the control variable $\Lambda=(\lambda_1,...,\lambda_ {N-1})$, the virtual control problem is:
 \begin{align}
-&\min_{\Lambda}\bold{J}(\Lambda,y) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2 \label{virtual_func} \\
-&\textrm{Subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1}) \ i=1,...,N-1 \label{virtual}
+&\min_{\Lambda}\bold{J}(\Lambda,y) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2, \label{virtual_func} \\
+&\textrm{subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1})\quad \textrm{for} \ i=1,...,N-1 \label{virtual}
 \end{align}
 \end{definition}
 \noindent
-In chapter \ref{parareal_chap} we explained how the virtual problem could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\bold J(\Lambda,y)=0$. This equation could be written up on matrix form as:
+In chapter \ref{parareal_chap} we explained how the virtual problem could be solved by setting $\lambda_i= \bold F_{\Delta T}(\lambda_{i-1})$, which is the same as solving $\bold J(\Lambda,y)=0$. This equation can be written up on matrix form as:
 \begin{align}
 M \ \Lambda = H. \label{Parareal_equation}
 \end{align}
@@ -299,17 +299,17 @@ H = \left[ \begin{array}{c}
    0 \\
    \end{array}  \right].
 \end{align*}
-In section \ref{algebraic_sec} we explained how the Parareal algorithm could be reformulated as a preconditioned fix point iteration solving equation (\ref{Parareal_equation}), expressed as follows:
+In section \ref{algebraic_sec} we explained how the Parareal algorithm could be reformulated as a preconditioned fix point iteration solving equation (\ref{Parareal_equation}). This can be expressed in matrix form as follows:
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)\label{par_mat_sys}
 \end{align}
 Where $\bar{M}$ is the coarse version of the matrix $M$ stated in definition \ref{prop_def}. When we are solving the original optimal control problem we do not try to find a triple $(v,\Lambda,y)$ that solves $J_{\mu}(v,\Lambda,y)=0$. Instead we try to solve $\hat J_{\mu}'(v,\Lambda)=0$. To find the Parareal-based preconditioner, we therefore try to find a similar expression to (\ref{Parareal_equation}) for $\bold{\hat{J}}'(\Lambda)=0$. To be able to find this expression, we first need to define the coarse and fine adjoint propagators.
 \begin{definition}[Fine and coarse adjoint propagator] \label{adjoint_prop_def}
-Let $f(y(t),t)=0$ be a time dependent differential equation. Given $\Delta T$ a state $y(t)$ and an initial condition $\omega$, let $p_f$ and $p_c$ be a fine and a coarse numerical solution of the initial value problem:
+Let $f(y(t),t)=0$ be a time dependent differential equation. Given $\Delta T$, a state $y(t)$ and an initial condition $\omega$, let $p_f$ and $p_c$ be a fine and a coarse numerical solution of the initial value problem:
 \begin{align}
  \left\{
      \begin{array}{lr}
-		f'(y(t),t)^*p(t)=0 \ \quad \textrm{For $t \in (0,\Delta T)$} \\
+		f'(y(t),t)^*p(t)=0 \ \quad \textrm{for $t \in (0,\Delta T)$} \\
 		p(\Delta T)=\omega
 	\end{array}
 	\right.	
@@ -347,7 +347,7 @@ A preconditioned fix point iteration for equation (\ref{vir_grad_sys}) inspired 
 \end{align}
 \end{proposition}
 \begin{proof}
-Luckily for us we have already derived the gradient of $\bold{\hat J}$ in (\ref{penalty grad}). There we stated the gradient for the penalized version of the example problem (\ref{exs_J}-\ref{exs_E}). If we ignore the part of this gradient related to the real control $v$, we get the following expression for $\bold{\hat J}'$:
+We have already derived the gradient of $\bold{\hat J}$ in (\ref{penalty grad}). There we stated the gradient for the penalized version of the example problem (\ref{exs_J}-\ref{exs_E}). If we ignore the part of this gradient related to the real control $v$, we get the following expression for $\bold{\hat J}'$:
 \begin{align*}
 \hat{\bold J}'(\Lambda) = \{p_{i+1}(T_i)-p_{i}(T_i)\}_{i=1}^{N-1}.
 \end{align*}
@@ -378,7 +378,7 @@ M^* (M \ \Lambda-H)&=
 	-p_{N-1}(T_{N-1})
 	\end{array} \right).
 \end{align}
-The last step is done by using $p_i(T_{i-1})=-F_{\Delta T}^*(-p_i(T_i))$, and this is possible since the adjoint equation is always linear. We see that the $i$-th component of $M^* (M \Lambda-H)$ is equal to $p_{i+1}(T_i)-p_{i}(T_i)$ for $i\neq N-1$. The last component of $M^* (M \Lambda-H)$ is $-p_{N-1}(T_{N-1})$, and we are therefore missing $p_N(T_{N-1})$. This is however unproblematic since in context of the the virtual problem $p_N(T_{N-1})=0$. This shows us that $\hat{\bold J}'(\Lambda)= M^* (M \Lambda-H)$, which means that $\hat{\bold J}'(\Lambda)=0 \iff M^*M\Lambda =M^*H$. Since $\bar M$ and $\bar M^*$ approximates $M$ and $M^*$, $\bar{M}^{-1}\bar M^{-*}$ would be a natural preconditioner for a fix point iteration solving $M^*M\Lambda =M^*H$. 
+The last step is done by using $p_i(T_{i-1})=-F_{\Delta T}^*(-p_i(T_i))$, and this is possible since the adjoint equation is linear. We see that the $i$-th component of $M^* (M \Lambda-H)$ is equal to $p_{i+1}(T_i)-p_{i}(T_i)$ for $i\neq N-1$. The last component of $M^* (M \Lambda-H)$ is $-p_{N-1}(T_{N-1})$, and we are therefore missing $p_N(T_{N-1})$. This is however unproblematic since in context of the the virtual problem $p_N(T_{N-1})=0$. This shows us that $\hat{\bold J}'(\Lambda)= M^* (M \Lambda-H)$, which means that $\hat{\bold J}'(\Lambda)=0 \iff M^*M\Lambda =M^*H$. Since $\bar M$ and $\bar M^*$ approximates $M$ and $M^*$, $\bar{M}^{-1}\bar M^{-*}$ would be a natural preconditioner for a fix point iteration solving $M^*M\Lambda =M^*H$. 
 \end{proof}
 \noindent
 Proposition \ref{vir_grad_prop} motivates $Q_{\Lambda}=\bar{M}^{-1}\bar M^{-*}$ as a preconditioner for solvers of decomposed and penalized optimal control problems, and this is actually the Parareal-based preconditioner proposed in \cite{maday2002parareal}. Inserting $Q_{\Lambda}$ into $Q$ yields the following:
@@ -457,17 +457,17 @@ We can similarly find $\nabla^2 x_i$ by differentiating $x$ twice:
 	\end{array}
    \right.	
 \end{align*}
-Now summing up the terms $\nabla^2 x_i(\Lambda)x_i(\Lambda)$ would yield the diagonal matrix $D(\Lambda)$ described in proposition \ref{NonLin_prop}.
+Summing up the terms $\nabla^2 x_i(\Lambda)x_i(\Lambda)$ yields the diagonal matrix $D(\Lambda)$.
 \end{proof}
 \noindent
-The first term of $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda) + 2D(\Lambda)$ resembles $M^*M$ from the previous section, while the second term $2D(\Lambda)$ is new. $D(\Lambda)$ is a diagonal matrix where the diagonal entries consists of products between the second derivative of $\bold F_ {\Delta T}$ and the residuals $\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i)$. If the governing equation of the propagator $\bold F_ {\Delta T}$ is linear, $\bold F_{\Delta T}''(\lambda_i)=0$. This would again mean that $D(\Lambda)=0$ and that $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda)$. We will therefore split our discussion of the Hessian of $\hat{\bold J}$ into two cases. In the first we assume the sate equation is linear, while in the second case we discuss problems with non-linear state equations.
+The first term of $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda) + 2D(\Lambda)$ resembles $M^*M$ from the previous section, while the second term $2D(\Lambda)$ is new. $D(\Lambda)$ is a diagonal matrix where the diagonal entries consists of products between the second derivative of $\bold F_ {\Delta T}$ and the residuals $\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i)$. If the governing equation of the propagator $\bold F_ {\Delta T}$ is linear, $\bold F_{\Delta T}''(\lambda_i)=0$. This would again mean that $D(\Lambda)=0$ and that $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda)$. We will therefore split our discussion of the Hessian of $\hat{\bold J}$ into two cases. In the first we assume the state equation is linear, while in the second case we discuss problems with non-linear state equations.
 \subsubsection{Linear state equations}
-Assuming that the state equation is linear means that $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda)$. Differentiating the propagator $\bold F_{\Delta T}$ is the same as linearising its governing equation. When the governing equation is it self linear, linearising it does not change the equation. Therefore $\bold F_{\Delta T}'(\lambda_i)\lambda_i = \bold F_{\Delta T}(\lambda_i)$. This means that the $M$ matrix from section \ref{vir_sec} is equal to $M(\Lambda)$. The same is true for $M^*$ and $M(\Lambda)^T$. Since  $\nabla^2 \hat{\bold J}(\Lambda)=2M^*M$ we see that the Parareal-based preconditioner proposed in \cite{maday2002parareal} is in fact related to the inverse Hessian of the reduced penalized objective function. If we can show that $\bar M^*\bar M$ is a positive definite matrix, we can use $Q$ as an initial approximation of the inverse Hessian in the BFGS optimization algorithm. This is however quite simple to do, as we will see in the proof of the following proposition.
+Assuming that the state equation is linear means that $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda)$. Differentiating the propagator $\bold F_{\Delta T}$ is the same as linearising its governing equation. When the governing equation is itself linear, linearising it does not change the equation. Therefore $\bold F_{\Delta T}'(\lambda_i)\lambda_i = \bold F_{\Delta T}(\lambda_i)$. This means that the $M$ matrix from section \ref{vir_sec} is equal to $M(\Lambda)$. The same is true for $M^*$ and $M(\Lambda)^T$. Since  $\nabla^2 \hat{\bold J}(\Lambda)=2M^*M$ we see that the Parareal-based preconditioner proposed in \cite{maday2002parareal} is in fact related to the inverse Hessian of the reduced penalized objective function. Furthermore if we can show that $\bar M^*\bar M$ is a positive definite matrix, we can use $Q$ as an initial approximation of the inverse Hessian in the BFGS optimization algorithm. This is as we will see the following proposition indeed the case.
 \begin{proposition} \label{pos_def_prop}
- If $\bold G_{\Delta T}$ and $\bold G_{\Delta T}^*$ are based on consistent numerical methods, $\bar M^*=\bar M^T$, and the matrix $\bar M^*\bar M$ is positive definite.
+If $\bold G_{\Delta T}$ and $\bold G_{\Delta T}^*$ are based on consistent numerical methods, that is $\bar M^*=\bar M^T$, then the matrix $\bar M^*\bar M$ is positive definite.
 \end{proposition}
 \begin{proof}
-If $\bold G_{\Delta T}$ and $\bold G_{\Delta T}^*$ are based on consistent numerical methods, $\bold G_{\Delta T}(\omega)=\bold G_{\Delta T}^*(\omega)$. When inserting this into the matrices $\bar M$ and $\bar M^*$ from definition \ref{prop_def} and \ref{adjoint_prop_def}, we clearly see that $\bar M^*=\bar M^T$. For $M^*M$ to be positive definite, the following two conditions must hold:
+If $\bold G_{\Delta T}$ and $\bold G_{\Delta T}^*$ are based on consistent numerical methods, that is if $\bold G_{\Delta T}(\omega)=\bold G_{\Delta T}^*(\omega)$. When inserting this into the matrices $\bar M$ and $\bar M^*$ from definition \ref{prop_def} and \ref{adjoint_prop_def}, we clearly see that $\bar M^*=\bar M^T$. For $M^*M$ to be positive definite, the following two conditions must hold:
 \begin{align*}
 &1.\quad x^T\bar M^*\bar Mx \geq 0 \quad \forall x\in\mathbb{R}^{N-1} \\
 &2.\quad x^T\bar M^*\bar Mx =0 \iff x=0
@@ -476,7 +476,7 @@ The first conditions hold due to $\bar M^*=\bar M^T$:
 \begin{align*}
 x^T\bar M^*\bar Mx = (\bar Mx)^T\bar Mx = ||Mx||^2 \geq 0.
 \end{align*}
-The second condition hold if $\bar M$ is invertible. This is true because $\bar M$ is a triangular matrix, with identity on its diagonal, and therefore has a determinant equal to 1. The determinant of a matrix being unequal to zero is equivalent with it being invertible, which means that our matrix $\bar M$ is invertible. This also means that $M^*M$ is positive definite, since both requirements for positive definiteness are satisfied. 
+The second condition hold if $\bar M$ is invertible. This is true because $\bar M$ is a triangular matrix, with identity on its diagonal, and therefore has a determinant equal to 1. The determinant of a matrix being unequal to zero is equivalent with it being invertible, which means that $\bar M$ is invertible. This also means that $M^*M$ is positive definite, since both requirements for positive definiteness are satisfied. 
 \end{proof}
 \noindent
 Proposition \ref{pos_def_prop} shows that the $\bar M^*\bar M$ matrix stemming from the virtual problem is positive definite. We can therefore use it as an initial Hessian approximation in the BFGS algorithm, at least as long as $\bold G_ {\Delta T}$ and $\bold G_ {\Delta T}^*$ are consistent. Now let us take a look at the case where the governing equation of $\bold F_{\Delta T}$ is non-linear.
@@ -484,7 +484,7 @@ Proposition \ref{pos_def_prop} shows that the $\bar M^*\bar M$ matrix stemming f
 Unlike the Hessian of the linear problem the Hessian of the non-linear problem consists of two parts. One is the linearised forward model multiplied with its adjoint, while the second part is a diagonal matrix related to the second derivative of the propagator $\bold F_{\Delta T}$, and the residuals $\lambda_i-\bold F_{\Delta T}$. The first part of $\nabla^2 \bold{\hat{J}}$ is analogue to the Hessian of the linear problem. It is symmetric positive definite, and taking its inverse corresponds to first applying the backwards model, and then the forward model. What makes the Hessian of the non-linear problematic is therefore its second term. The first issue with the diagonal matrix $D(\Lambda)$, is how to calculate $\bold F_{\Delta T}''$. Another issue is that we can not guarantee that the sum of $M(\Lambda)^TM(\Lambda)$ and $D(\Lambda)$ is a positive matrix, and the same problem would arise in a coarse approximation of $\nabla^2 \bold{\hat{J}}$. The lack of positivity is a problem since we want to use the coarse approximation as an initial inverted Hessian approximation in the BFGS-algorithm.
 \\
 \\
-A way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constrained problem, is simply to ignore it. This leaves us with the $M(\Lambda)^TM(\Lambda)$ term, which we know how to deal with. Ignoring the term depending on the second derivative and the residual is actually a known strategy for for solving non-linear least square problems. Details can be found in \cite{nocedal2006numerical}. A justification for this approach, is that at least in instances where we are close to a solution, the $\lambda_i-\bold F_{\Delta T}$ terms will be close to zero, and the $M(\Lambda)^TM(\Lambda)$ term will therefore dominate the Hessian. Ignoring the $D(\Lambda)$ term means that we can define an inverse Hessian approximation based on a coarse propagator $\bold G_{\Delta T}$ in the same way as we did for the problem with linear state equation constraints. This means that we define a matrix $\bar M(\Lambda)$:
+One way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constrained problem, is simply to ignore it. This leaves us with the $M(\Lambda)^TM(\Lambda)$ term, which we know how to deal with. Ignoring the term depending on the second derivative and the residual is actually a known strategy for for solving non-linear least square problems. Details can be found in \cite{nocedal2006numerical}. A justification for this approach, is that at least in instances where we are close to a solution, the $\lambda_i-\bold F_{\Delta T}$ terms will be close to zero, and the $M(\Lambda)^TM(\Lambda)$ term will therefore dominate the Hessian. Ignoring the $D(\Lambda)$ term means that we can define an inverse Hessian approximation based on a coarse propagator $\bold G_{\Delta T}$ in the same way as we did for the problem with linear state equation constraints. This means that we define a matrix $\bar M(\Lambda)$:
 \begin{align}
 \bar M(\Lambda) &= \left[ \begin{array}{cccc}
    \mathbbold{1} & 0 & \cdots & 0 \\  
