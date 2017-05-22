@@ -1,5 +1,5 @@
 \chapter{Verification}\label{Verification chapter}
-In this chapter we will verify implementations of the algorithm presented in chapter \ref{method_chap} using the discritization detailed in chapter \ref{disc_chap}. All implementations are done in the python programming language, and the numerics is done using the NumPy\cite{walt2011numpy} library. Plots are created using the matplotlib\cite{Hunter:2007} package, tables are auto generated using Pandas\cite{mckinney2010data} and the parallel parts are implemented using the mpi4py\cite{dalcin2007mpi4py} library. We test our algorithm using the example problem (\ref{exs_J}-\ref{exs_E}), with the following parameters:
+In this chapter we will verify implementations of the algorithm presented in chapter \ref{method_chap} using the discretization detailed in chapter \ref{disc_chap}. All implementations are done in the Python programming language, and the numerics is done using the NumPy\cite{walt2011numpy} library. Plots are created using the matplotlib\cite{Hunter:2007} package, tables are auto generated using Pandas\cite{mckinney2010data} and the parallel parts are implemented using the mpi4py\cite{dalcin2007mpi4py} library. We test our algorithm using the example problem (\ref{exs_J}-\ref{exs_E}), with the following parameters:
 \begin{align}
 &J(y,v) = \frac{1}{2}\int_0^1v(t)^2dt + \frac{1}{2}(y(1)-11.5)^2 \label{test_J}\\
 &\left\{
@@ -64,15 +64,15 @@ We will now use the Taylor test on the penalized numerical gradient (\ref{num_pe
 \toprule
 {}$\epsilon$&  $D_1$ &  $D_2$ &        $||\epsilon w||_{l_{\infty}}$ &    $ \log(\frac{D_1(10\epsilon)}{D_1(\epsilon)})$ &    $ \log(\frac{D_2(10\epsilon)}{D_2(\epsilon)})$  \\
 \midrule
-1.00e+00 &  1.080e+04 &        1.076e+04 &  9.771e+01 &       -- &       -- \\
-1.00e-01 &  1.112e+02 &        1.076e+02 &  9.771e+00 &  1.98 &  2 \\
-1.00e-02 &  1.437e+00 &        1.076e+00 &  9.771e-01 &  1.88 &  2 \\
-1.00e-03 &  4.683e-02 &        1.076e-02 &  9.771e-02 &  1.48 &  2 \\
-1.00e-04 &  3.714e-03 &        1.076e-04 &  9.771e-03 &   1.10 &  2 \\
-1.00e-05 &  3.617e-04 &        1.076e-06 &  9.771e-04 &  1.01 &  2 \\
-1.00e-06 &  3.607e-05 &        1.076e-08 &  9.771e-05 &  1.00 &  2 \\
-1.00e-07 &  3.606e-06 &        1.076e-10 &  9.771e-06 &  1.00 &  2 \\
-1.00e-08 &  3.606e-07 &        1.086e-12 &  9.771e-07 &  1.00 &  2 \\
+1.0e+00 &  1.080e+04 &        1.076e+04 &  9.771e+01 &       -- &       -- \\
+1.0e-01 &  1.112e+02 &        1.076e+02 &  9.771e+00 &  1.98 &  2 \\
+1.0e-02 &  1.437e+00 &        1.076e+00 &  9.771e-01 &  1.88 &  2 \\
+1.0e-03 &  4.683e-02 &        1.076e-02 &  9.771e-02 &  1.48 &  2 \\
+1.0e-04 &  3.714e-03 &        1.076e-04 &  9.771e-03 &   1.10 &  2 \\
+1.0e-05 &  3.617e-04 &        1.076e-06 &  9.771e-04 &  1.01 &  2 \\
+1.0e-06 &  3.607e-05 &        1.076e-08 &  9.771e-05 &  1.00 &  2 \\
+1.0e-07 &  3.606e-06 &        1.076e-10 &  9.771e-06 &  1.00 &  2 \\
+1.0e-08 &  3.606e-07 &        1.086e-12 &  9.771e-07 &  1.00 &  2 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -97,11 +97,11 @@ We also look at the relative difference in objective function value between the 
 \toprule
 {} $\Delta t$&    $\frac{||v_e-v||}{||v||}$ &  $\frac{\hat J(v_e)-\hat J(v)}{\hat J(v_e)}$ &   norm rate &    functional rate \\
 \midrule
-0.02000 &  0.212619 &  1.709e-02 &        -- &       -- \\
-0.01000 &  0.136096 &  4.506e-03 & -0.643 & -1.92 \\
-0.00100 &  0.017469 &  4.703e-05 & -0.891 & -1.98 \\
-0.00010 &  0.001795 &  4.722e-07 &   -0.988 & -1.99 \\
-0.00001 &  0.000180 &  4.724e-09 &  -0.998 & -1.99 \\
+0.02000 &  0.2126 &  1.70e-02 &        -- &       -- \\
+0.01000 &  0.1360 &  4.50e-03 & -0.64 & -1.92 \\
+0.00100 &  0.0174 &  4.70e-05 & -0.89 & -1.98 \\
+0.00010 &  0.0018 &  4.72e-07 &   -0.99 & -1.99 \\
+0.00001 &  0.0002 &  4.72e-09 &  -1.00 & -1.99 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -113,11 +113,11 @@ Notice that the convergence rate of the norm difference in table \ref{IE_converg
 \toprule
 {} $\Delta t$&    $\frac{||v_e-v||}{||v||}$ &  $\frac{\hat J(v_e)-\hat J(v)}{\hat J(v_e)}$ &   norm rate &    functional rate \\
 \midrule
-0.02000 &  4.177702e-02 &  2.309886e-03 &       -- &       -- \\
-0.01000 &  1.109500e-02 &  3.383020e-04 &  -1.9128 & -2.77144 \\
-0.00100 &  1.189515e-04 &  3.931451e-07 & -1.96976 & -2.93475 \\
-0.00010 &  1.421834e-06 &  3.992950e-10 & -1.92252 & -2.99326 \\
-0.00001 &  1.480190e-08 &  3.978299e-13 & -1.98253 &  -3.0016 \\
+0.02000 &  4.17e-02 &  2.30e-03 &       -- &       -- \\
+0.01000 &  1.10e-02 &  3.38e-04 &  -1.91 & -2.77 \\
+0.00100 &  1.18e-04 &  3.93e-07 & -1.96 & -2.93 \\
+0.00010 &  1.42e-06 &  3.99e-10 & -1.92 & -2.99 \\
+0.00001 &  1.48e-08 &  3.97e-13 & -1.98 &  -3.00 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -208,13 +208,12 @@ The interpretation of the above limit, is that solving the penalized problem wit
 \\
 We discretize (\ref{test_J}-\ref{test_E}) using Crank-Nicolson and the trapezoid rule for two different time steps. First we let $\Delta t = 10^{-2}$ and apply the penalty method for $N=2$ and $N=10$ decompositions, we then let $\Delta t = 10^{-3}$ and test the penalty method on $N=2$ and $N=7$ decompositions. We use different metrics to compare the non-penalized and penalized solutions, so that we better see how the solution of the penalized problem behaves when we solve it for an increasing sequence of $\mu$ values. We define the metrics as follows:
 \begin{align}
-\textrm{Realtive objective function differnce:}\quad \Delta \hat J &= \frac{\hat{J}(v_{\mu})-\hat{J}(v)}{\hat{J}(v)}.\label{mes1}\\
-\textrm{Realtive penalized objective function differnce:}\quad \Delta \hat J_{\mu} &= \frac{\hat{J}_{\mu}(v)-\hat{J}_{\mu}(v_{\mu})}{\hat{J}_{\mu}(v)}.\\
+\textrm{Realtive objective function difference:}\quad \Delta \hat J &= \frac{\hat{J}(v_{\mu})-\hat{J}(v)}{\hat{J}(v)}.\label{mes1}\\
+\textrm{Realtive penalized objective function difference:}\quad \Delta \hat J_{\mu} &= \frac{\hat{J}_{\mu}(v)-\hat{J}_{\mu}(v_{\mu})}{\hat{J}_{\mu}(v)}.\\
 \textrm{Relative control $L^2$-norm difference:}\quad \Delta v&=\frac{||v_{\mu}-v||_ {L^2}}{||v||_{L^2}}. \\
 \textrm{Maximal jump in decomposed state equation:}\quad \Delta y&= \sup_i\{y_{k_i}^i-y_{k_i}^{i+1}\}.\label{mes4}
 \end{align}
 Notice that both $\Delta\hat J$ and $\Delta \hat J_{\mu}$ should be grater than $0$, since $v$ and $v_{\mu}$ are the minimizers of $\hat J$ and $\hat J_ {\mu}$. The measure of jumps in the state equation $\Delta y$ is added to check that the penalty solution approaches a feasible solution in context of the continuity constraints (\ref{Extra constraints}). The results of the above detailed experiment are presented through logarithmic plots in figure \ref{Cons1_fig} and \ref{Cons2_fig}. In addition to the already mentioned measures, these plots include the error between the exact solution $v_e$ and the sequential error $v$ as a reference.
-\\
 \\
 \begin{figure}[!h]
 \centering
@@ -222,13 +221,16 @@ Notice that both $\Delta\hat J$ and $\Delta \hat J_{\mu}$ should be grater than 
 \caption{Logarithmic plot showing how the minimizer of $\hat J_{\mu}$ develops in comparison to the minimizer of $\hat J$ for increasing penalty parameter $\mu$, when solving problem (\ref{test_J}-\ref{test_E}) with $\Delta t = 10^{-2}$. The measures plotted are defined in (\ref{mes1}-\ref{mes4}). The horizontal line $||v-v_e||$ is the accuracy of the unpenalized sequential solution. The left plot shows results of using $N=2$ decompositions of the time interval, while on the right we have used $N=10$ decompositions.}
 \label{Cons1_fig}
 \end{figure}
+\noindent
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.5]{consistency2.png}
 \caption{Same as figure \ref{Cons1_fig}, only now $\Delta t = 10^{-3}$.}
 \label{Cons2_fig}
 \end{figure}
-The plots in figure \ref{Cons1_fig} and \ref{Cons2_fig} all show a similar picture, and we observe that all measures decrease when the penalty parameter is increased. Still there are several parts of the plots worthy of note. The measure $\Delta\hat J$ related to the unpenalised objective function is the value that converges to zero the fastest. If we look at the values of $\Delta\hat J$ before the machine precision is reached we see that $\Delta \hat J$ is proportional to $\frac{1}{\mu^2}$. The convergence rate of $\Delta\hat J$ for $\Delta t=10^{-2}$ and $N=2$ is shown in table \ref{Cosn_rate_table} together with the convergence rate of $\Delta v$. $\Delta v$ and the other measures converge to zero at a rate of one, however we see that the relative error between the controls $v$ and $v_{\mu}$ $\Delta v$ stops to decrease long before the machine precision is reached. It seems that this barrier is hit around the same time as $\Delta\hat J$ approaches machine precision. The reason for this probably is that small changes in the control $v_{\mu}$ no longer registers in $\hat J_{\mu}$, and it is therefore difficult to find an appropriate step length in the line search method.
+\noindent
+\\
+The plots in figure \ref{Cons1_fig} and \ref{Cons2_fig} all show a similar picture, and we observe that all measures decrease when the penalty parameter is increased. Still there are several parts of the plots worthy of note. The measure $\Delta\hat J$ related to the unpenalised objective function is the value that converges to zero the fastest. If we look at the values of $\Delta\hat J$ before the machine precision is reached we see that $\Delta \hat J$ is proportional to $\frac{1}{\mu^2}$. The convergence rate of $\Delta\hat J$ for $\Delta t=10^{-2}$ and $N=2$ is shown in table \ref{Cosn_rate_table} together with the convergence rate of $\Delta v$. $\Delta v$ and the other measures converge to zero at a rate of one, however we see that the relative error $\Delta v$ between the controls $v$ and $v_{\mu}$ stops to decrease long before the machine precision is reached. It seems that this barrier is hit around the same time as $\Delta\hat J$ approaches machine precision. The reason for this probably is that small changes in the control $v_{\mu}$ no longer registers in $\hat J_{\mu}$, and it is therefore difficult to find an appropriate step length in the line search method.
 \\
 \\
 $\Delta\hat J_{\mu}$ and $\Delta y$ on the other hand continue to decrease steadily towards zero, even after $\Delta \hat J$ has hit machine precision. The $\Delta\hat J_{\mu}$ and $\Delta y$ metrics are both related to the $\frac{\mu }{2}\sum_{i=1}^{N-1}(y^i(T_{i})-\lambda_i)^2$ term, which is the part that enforces the continuity constraints (\ref{Extra constraints}). This means that after a certain point, the penalty method only improves the $\Lambda$ part of the control, while $v$ remains the same. 
@@ -240,18 +242,18 @@ $\Delta\hat J_{\mu}$ and $\Delta y$ on the other hand continue to decrease stead
 \toprule
 {} $\mu$&  $\frac{J(v_{\mu})-J(v)}{J(v)}$ &   $||v_{\mu}-v||$ &        $\Delta \hat J$ rate &        $\Delta v$ rate \\
 \midrule
-1.00e+01 &      4.10e-07 & 1.79e-03 &            -- &            -- \\
-1.00e+02 &      4.11e-09 & 1.79e-04 & -1.998 & -0.9992 \\
-1.00e+03 &      4.12e-11 & 1.79e-05 & -1.999 & -0.9999 \\
-1.00e+04 &      4.13e-13 & 1.79e-06 & -1.998 & -0.9991 \\
-2.00e+04 &      1.05e-13 & 9.07e-07 & -1.967 & -0.9851 \\
-5.00e+04 &      1.78e-14 & 3.73e-07 & -1.939 & -0.9694 \\
-7.00e+04 &      7.96e-15 & 2.44e-07 & -2.405 & -1.259 \\
-1.00e+05 &      4.04e-15 & 1.73e-07 & -1.900 & -0.9690 \\
-2.00e+05 &      4.04e-15 & 1.72e-07 &  0.000 & -0.0069 \\
-3.00e+05 &      3.92e-15 & 1.71e-07 & -0.007 & -0.0030 \\
-4.00e+05 &      3.80e-15 & 1.71e-07 & -0.110 & -0.0019 \\
-5.00e+05 &      3.67e-16 & 4.54e-08 & -10.46 & -5.960 \\
+1.0e+01 &      4.10e-07 & 1.79e-03 &            -- &            -- \\
+1.0e+02 &      4.11e-09 & 1.79e-04 & -1.99 & -0.999 \\
+1.0e+03 &      4.12e-11 & 1.79e-05 & -1.99 & -1.000 \\
+1.0e+04 &      4.13e-13 & 1.79e-06 & -1.99 & -0.999 \\
+2.0e+04 &      1.05e-13 & 9.07e-07 & -1.96 & -0.985 \\
+5.0e+04 &      1.78e-14 & 3.73e-07 & -1.93 & -0.969 \\
+7.0e+04 &      7.96e-15 & 2.44e-07 & -2.40 & -1.259 \\
+1.0e+05 &      4.04e-15 & 1.73e-07 & -1.90 & -0.969 \\
+2.0e+05 &      4.04e-15 & 1.72e-07 &  0.00 & -0.007 \\
+3.0e+05 &      3.92e-15 & 1.71e-07 & -0.01 & -0.003 \\
+4.0e+05 &      3.80e-15 & 1.71e-07 & -0.11 & -0.002 \\
+5.0e+05 &      3.67e-16 & 4.54e-08 & -10.4 & -5.96 \\
 \bottomrule
 \end{tabular}
 \end{table}
