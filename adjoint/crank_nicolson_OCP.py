@@ -281,10 +281,10 @@ def test_CN():
 
 def taylorTestCN():
     from taylorTest import general_taylor_test,lin_problem
-    a = 2
-    y0=1
+    a = -3.9
+    y0=3.2
     T=1
-    yT=1
+    yT=11.5
 
     z = lambda x : 0*x
     
@@ -379,5 +379,5 @@ def test_noise():
 if __name__=='__main__':
 
     #test_CN()
-    #taylorTestCN()
-    test_noise()
+    taylorTestCN()
+    #test_noise()

@@ -820,6 +820,7 @@ def general_taylor_test(problem,N=100,m=10):
     plt.figure(figsize=(12,6))
     ax1 = plt.subplot(211)
     ax1.plot(t,grad[:N+1])
+    plt.plot(t,grad_J(u))
     ax1.set_xlabel('t')
     ax1.set_ylabel(r'$\nabla\hat J_{v}(v,\Lambda)$',fontsize=20)
     ax2 = plt.subplot(212)
