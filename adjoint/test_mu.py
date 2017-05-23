@@ -21,7 +21,7 @@ def main():
 
     Ls = seq_res.counter()[0]+seq_res.counter()[1]
     
-    m = 64
+    m = 16
     table = {'err':[],'L':[],'S':[],'err2':[],'L2':[],'S2':[]}
 
     for i in range(len(MU)):
@@ -45,7 +45,7 @@ def main():
     print Ls, np.sqrt(trapz((seq_res.x[1:-1]-ue[1:-1])**2,t[1:-1]))/np.sqrt(trapz(ue**2,t))
     data = pd.DataFrame(table,index=MU)
 
-    data.to_latex('report/draft/parareal/mu_test.tex')
+    data.to_latex('report/draft/parareal/mu_test2.tex')
     print data
 
 if __name__=='__main__':

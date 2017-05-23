@@ -1,5 +1,5 @@
 \chapter{Discretization and MPI communication} \label{disc_chap}
-In the previous chapters we derived the adjoint equation and the gradient for our example optimal control problem with ODE constraints. We also explained how we can parallelize the solving of the state and adjoint equations using the penalty method, and we introduced a prconditioner for our optimization algorithm based on the parareal scheme. Before we can start to test our parallel algorithm, we need to discretize the time domain, the equations, the objective function and its gradient. 
+In the previous chapters we derived the adjoint equation and the gradient for our example optimal control problem with ODE constraints. We also explained how we can parallelize the solving of the state and adjoint equations using the penalty method, and we introduced a preconditioner for our optimization algorithm based on the parareal scheme. Before we can start to test our Parallel algorithm, we need to discretize the time domain, the equations, the objective function and its gradient. 
 \\
 \\
 We discretize the time interval $I=[0,T]$ by dividing it into $n$ parts of length $\Delta t=\frac{T}{n}$, and set $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Using $I_{\Delta t}$ we can start to discretize our example problem.

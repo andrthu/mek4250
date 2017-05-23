@@ -536,4 +536,48 @@ The result of multiplying $Q$ with the discrete penalized gradient is that the t
 \\
 We end the section on the Parareal-based preconditioner with an important note about what happens when $N=2$. If we decompose the time domain into $N=2$ subdomains, both $\bar M$ and $\bar M^*$ becomes the identity matrix. This means that for $N=2$, $Q=\mathbbold{1}$, and therefore have no effect. Since $Q$ has no effect for $N=2$, we might also expect that for "small" $N$ the impact of applying $Q$ to the penalized gradient is only modest, and that the usefulness of $Q$ only materializes for higher values of decomposed subintervals $N$.
 \subsubsection{Computational cost of Parareal-based preconditioner}
-
+\section{Summary and presentation of algorithm} \label{Algorithm_sec}
+In the previous section we presented and derived properties of the Parareal-based preconditioner $Q_{\Lambda}$ introduced in \cite{maday2002parareal}. We showed that $Q_{\Lambda}$ is symmetric positive definite, and that it approximates the inverse Hessian of $\hat J_{\mu}$, at least for the part connected to the virtual control. We can therefore use $Q_{\Lambda}$ as an initial inverted Hessian approximation in the BFGS or L-BFGS optimization algorithms for minimization of the penalized objective function $\hat J_{\mu}(v,\Lambda)$ (\ref{constrained reduced j}). Combining the preconditioned BFGS solver with the quadratic penalty method of algorithm \ref{PEN_ALG} makes us able to propose algorithm \ref{PPC_PEN_ALG} as a parallel in time method for solving optimization problems with time-dependent DE constraints.
+\\
+\\
+\begin{algorithm}[H] 
+\KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
+\For{$k=1,2,...$}{
+$(v_0^k,\Lambda_0^k) \leftarrow (v^{k-1},\Lambda^{k-1})$\;
+$H^0 \leftarrow Q_{\Lambda^{k-1}}$\;
+$j\leftarrow0$\;
+\While{$||\hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)||\geq \tau_{k-1}$ }{
+$(v_{j+1}^k,\Lambda_{j+1}^k) \leftarrow (v_j^k,\Lambda_j^k) - \rho^j H^j \hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k) $\tcp*[h]{In parallel}\;
+Update $H^{j+1}$\;
+$j\leftarrow j+1$\;
+}
+$(v^{k},\Lambda^{k})\leftarrow(v_{j}^k,\Lambda_{j}^k)$\;
+\eIf{STOP CRITERION on $(v^{k},\Lambda^{k})$ satisfied}{
+$\bold{Stop}$ algorithm\;
+}{
+Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
+}
+}
+\caption{Quadratic penalty method with preconditioned BFGS optimization\label{PPC_PEN_ALG}}
+\end{algorithm}
+\noindent
+\\
+What separates algorithm \ref{PPC_PEN_ALG} from the general quadratic penalty method in algorithm \ref{PEN_ALG} is that optimization step is done using BFGS (or L-BFGS) with $H^0=Q_{\Lambda}$. The most computationally costly part of algorithm \ref{PPC_PEN_ALG}, is the optimization step of the BFGS algorithm:
+\begin{align}
+(v_{j+1},\Lambda_{j+1}) = (v_j,\Lambda_j) - \rho^j H^j \hat J'_{\mu}(v_j,\Lambda_j) \label{BFGSupdate}
+\end{align}
+In section \ref{optiSec} we explained how general line search methods are applied, and also how one updates the inverse Hessian approximation in the BFGS and L-BFGS algorithms. Let us however briefly discuss how the update (\ref{BFGSupdate}) is done in context of minimization of our decomposed and penalized objective function (\ref{general_opti_pen}). Executing update (\ref{BFGSupdate}) is done in four steps:
+\begin{align*}
+1.\quad&\textit{Evaluate $\hat J'_{\mu}(v_j,\Lambda_j)$.} \\
+2.\quad&\textit{Apply $H^j$ to $\hat J'_{\mu}(v_j,\Lambda_j)$.}\\
+3.\quad&\textit{Find step length $\rho^j$} \\
+4.\quad&\textit{Set $(v_{j+1},\Lambda_{j+1}) = (v_j,\Lambda_j) - \rho^j H^j \hat J'_{\mu}(v_j,\Lambda_j)$} 
+\end{align*}
+The first step of the above procedure, is to evaluate the gradient of the $\hat J_{\mu}$. We know from proposition \ref{penalty_grad_prop}, that this requires us to first solve the decomposed state equations, and then the decomposed adjoint equations. We can solve the decomposed state equations and then the decomposed adjoint equations in parallel, since they are defined independently of each other on the decomposed subintervals. Applying $H^j$ to $\hat J'_{\mu}(v_j,\Lambda_j)$ is done using the recursive formula defining the $H^j$ update:
+\begin{align}
+H^j \hat J_{\mu} = (\mathbbold{1}-\rho_{j-1}S_{j-1}\cdot Y_{j-1})H^{j-1}(\mathbbold{1} -\rho_{j-1}Y_{j-1}\cdot S_{j-1})\hat J_{\mu} + S_{j-1}\cdot S_{j-1}\hat J_{\mu} \label{RecH}
+\end{align}
+The $Y,S\in\mathbb{R}^{n+N}$ are vectors based on previous iterates, that we defined in section \ref{optiSec}. The point of evaluating $H^j \hat J_{\mu}$ recursively as in (\ref{RecH}), is that we do not need to build the full matrix $H^j$. An important thing about formula (\ref{RecH}), is that it is solely made up of dot products, vector subtraction, vector addition and scalar products, all of which are perfectly parallelizable operations \cite{grama2003introduction}. With the exception of the initial inverted Hessian approximation $H^0=Q_{\Lambda}$, which we assume is computationally cheap relative to a state equation solve, applying $H^j$ to the gradient of $\hat J_{\mu}$ can be done completely in parallel. 
+\\
+\\
+The third step of the BFGS update is to find a step length $\rho^j$, that satisfies the Wolfe conditions (\ref{wolf1}-\ref{wolf2}). We will not explain how to find $\rho^j$ here, however, what we can say, is that calculating the step length requires at least one evaluation of $\hat J_{\mu}$ and one of $\hat J_{\mu}'$. This means that finding $\rho^j$ is a computationally costly procedure, but since evaluating $\hat J_{\mu}$ and $\hat J_{\mu}'$ boils down to solving the state and adjoint equations, finding $\rho^j$ is also a perfectly parallelizable process. The fourth and last step of the BFGS update , is to update $(v_{j+1},\Lambda_{j+1})$ using formula (\ref{BFGSupdate}). This is a very simple step involving only scalar multiplication and vector subtraction, and can of course be executed in parallel.
