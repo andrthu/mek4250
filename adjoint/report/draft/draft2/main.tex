@@ -59,16 +59,33 @@
 \subtitle{Parareal-based preconditioner for L-BFGS solver }
 \author{Andreas Thune}
 
+\newcommand{\customTitlePage}{
+    \pagenumbering{alph}
+    \masterfrontpage
+}
+\newcommand{\customFrontMatter}{
+    \pagenumbering{roman}
+    %\input{prefaceAbstractFile}
+
+    %\addcontentsline{toc}{section}{Preface}
+    
+    \tableofcontents
+    \pagenumbering{roman}
+}
+
 \begin{document}
 
-\masterfrontpage
+
 
 %\setcounter{page}{3}
 
 %\include{front}
 %\newpage \void            % manually set even page
-%\duoforside
-\tableofcontents
+%\customTitlePage
+\masterfrontpage
+\customFrontMatter
+\pagenumbering{arabic}
+%\tableofcontents
 
 \include{Chapters/intro}
 \include{Chapters/literature}
@@ -78,6 +95,7 @@
 \include{Chapters/implementation}
 \include{Chapters/verification}
 \include{Chapters/experiments}
+\include{Chapters/summary}
 %\include{references}
 
 \bibliography{references} 

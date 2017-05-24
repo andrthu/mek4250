@@ -1,0 +1,15 @@
+\chapter{Summary and conclusions} \label{summary chap}
+The topic of this thesis is the parallelization of optimization problems with time-dependent differential equation constraints in temporal direction. The method we have proposed is developed around reducible problem, where the state equation constraint is well posed. Our method has been explained through a simple ODE constrained example problem, and we have also used this example for verification and testing. Even though we only considered an ODE example, we believe that our method also is applicable to time-dependent PDE constrained problems. We are then specifically thinking of problems where the constraints are on the following form:
+\begin{align}
+\left\{
+     \begin{array}{lr}
+       	u_t(x,t) + Au(x,t)=f \quad \textrm{for } \ (x,t)\in U\times(0,T),\\
+       	u(x,0)=u_0(x).
+     \end{array}
+   \right. \label{PDE_exs}
+\end{align}
+The reason for making this claim, is that after the spatial discretization is taken care of, evolving equations of type (\ref{PDE_exs}) through time is done in the same way as solving an ODE. 
+\\
+\\
+The main contribution of this thesis is the analysis of the Parareal-based preconditioner proposed in \cite{maday2002parareal} and the introduction of algorithm \ref{PPC_PEN_ALG}, based on the quadratic penalty method from section \ref{penalty_sec} and a preconditioned BFGS algorithm. 
+\section{Future directions}
