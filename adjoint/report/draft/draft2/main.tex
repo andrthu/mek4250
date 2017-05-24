@@ -55,8 +55,8 @@
 
 
 \usepackage[CS, 60]{masterfrontpage}
-\title{Parallel in time algorithm for optimal control with DE constraints}
-\subtitle{Parareal-based preconditioner for L-BFGS solver }
+\title{A parallel in time method for optimal control}
+\subtitle{Parareal-based preconditioner for the BFGS algorithm }
 \author{Andreas Thune}
 
 \newcommand{\customTitlePage}{
@@ -64,13 +64,13 @@
     \masterfrontpage
 }
 \newcommand{\customFrontMatter}{
-    \pagenumbering{roman}
+    %\pagenumbering{roman}
     %\input{prefaceAbstractFile}
 
     %\addcontentsline{toc}{section}{Preface}
     
     \tableofcontents
-    \pagenumbering{roman}
+    
 }
 
 \begin{document}
@@ -83,11 +83,17 @@
 %\newpage \void            % manually set even page
 %\customTitlePage
 \masterfrontpage
-\customFrontMatter
-\pagenumbering{arabic}
-%\tableofcontents
+\pagenumbering{roman}
 
+\include{Chapters/abstract}
+\include{Chapters/takk}
+\customFrontMatter
+
+%\tableofcontents
+\pagenumbering{roman}
+\pagenumbering{arabic}
 \include{Chapters/intro}
+
 \include{Chapters/literature}
 \include{Chapters/math}
 \include{Chapters/ODEparareal}

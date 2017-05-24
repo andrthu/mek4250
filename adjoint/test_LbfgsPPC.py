@@ -186,9 +186,9 @@ def compare_pc_and_nonpc_for_different_m():
         ue,_,_ = problem.simple_problem_exact_solution(N)
     except:
         N = 1000
-        mu = N
-        tol1 = 1e-5
-        tol2 = 1e-4
+        mu = 10*N
+        tol1 = 1e-8
+        tol2 = 1e-5
         ue,_,_ = problem.simple_problem_exact_solution(N)
     M = [1,2,4,8,16,32,64,128]
     #M = [1,2,3]
@@ -221,8 +221,8 @@ def compare_pc_and_nonpc_for_different_m():
               #'non-pc fu'      : [res1.counter()[0]],
               'pc fugr'        : [res1.counter()[1]+res1.counter()[0]],
               'npc fugr'       : [res1.counter()[1]+res1.counter()[0]],
-              'pc err'         : [l2_diff_norm(ue[1:-1],res1.x[1:-1],t[1:-1])],
-              'non-pc err'     : [l2_diff_norm(ue[1:-1],res1.x[1:-1],t[1:-1])],
+              'pc err'         : [l2_diff_norm(ue[1:-1],res1.x[1:-1],t[1:-1])/res1_norm],
+              'non-pc err'     : [l2_diff_norm(ue[1:-1],res1.x[1:-1],t[1:-1])/res1_norm],
               'ideal pc-S'     : [1],
               'ideal non-pc-S' : [1],}
 
@@ -236,6 +236,10 @@ def compare_pc_and_nonpc_for_different_m():
 
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
+
+        if m>16:
+            tol2 = tol2
+            mu =10*mu
         pc_res = problem.PPCLBFGSsolve(N,m,[0.1*mu],tol_list=[tol2,tol2/10,(tol2**2)/100],options=opt)
         nonpc_res = problem.penalty_solve(N,m,[0.1*mu],tol_list=[tol2,tol2/10,(tol2**2)/100],Lbfgs_options=opt)
         
@@ -990,11 +994,11 @@ if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    #compare_pc_and_nonpc_for_different_m()
+    compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    jump_difference()
+    #jump_difference()
     #look_at_gradient()
     #count_grad_func_eval()
     #split_test()

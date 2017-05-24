@@ -57,8 +57,8 @@ There are several things of note about the results in table \ref{compare_table}.
 \\
 \\
 When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=1,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned solver get speedup for all decompositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is considerably less then optimal for all $N$. Another thing that we notice when looking at the sum of gradient and function evaluations for the preconditioned solver, is that it increases steadily up to $N=8$, and then starts to decline again for higher $N$s. The reason for this is that when we increase the number of decomposed subintervals, we also make the coarse solver in the parareal preconditioner finer. This means that the preconditioner becomes a better approximation of the Hessian, which makes the L-BFGS iteration converge faster.
-\subsection{$\mu$-independence of Parareal-based preconditioner}
-In the previous subsection we observed that the performance of our Parareal preconditioned algorithm was independent of the number decompositions $N$. In this subsection we will investigate how our method performs, when we let $N$ and $n$ be constant, but vary the penalty parameter $\mu$. The experiment will again be conducted by solving problem (\ref{speed_j}-\ref{speed_e}) using a Crank-Nicolson finite difference scheme. We use $n=10^4$ and $\Delta t=10^{-2}$. The test will be executed sequentially, and potential speedup is measured using the ideal speedup $\hat S$ defined in (\ref{ideal S}). To be able to calculate $\hat S$, we first need to solve (\ref{speed_j}-\ref{speed_e}) using the serial algorithm.
+\subsection{The impact of $\mu$ on our Parareal-based preconditioner}
+In the previous subsection we observed that the performance of our Parareal preconditioned algorithm was independent of the number decompositions $N$. In this subsection we will investigate how our method performs, when we let $N$ and $n$ be constant, but vary the penalty parameter $\mu$. The experiment will again be conducted by solving problem (\ref{speed_j}-\ref{speed_e}) using a Crank-Nicolson finite difference scheme. We use $n=10^3$ and $\Delta t=0.1$. The test will be executed sequentially, and potential speedup is measured using the ideal speedup $\hat S$ defined in (\ref{ideal S}). To be able to calculate $\hat S$, we first need to solve (\ref{speed_j}-\ref{speed_e}) using the serial algorithm.
 \\ 
 \begin{table}[h]
 \centering
@@ -72,43 +72,47 @@ serial result  &     3.88e-05 &   23    \\
 \end{tabular}
 \end{table}
 \\
-We then test our method on problem (\ref{speed_j}-\ref{speed_e}) for $N=16$ and $N=64$ decompositions of the time interval. The penalty parameter will vary between $10$ and $10^5$. We again want to see how the preconditioned solver performs in comparison with the unpreconditioned solver, and we therefore solve our example problem using both solvers. We compare the solutions $v_{pc}$ and $v$ we get using these solvers with exact solution $v_e$. We measure the performance of the solvers by counting the total number of function and gradient evaluations $L_{p_n}$ done for each solve, and compare this number with $L_S$ from table \ref{mu1}. Using $L_{p_n}$ and $L_S$, we can calculate the ideal speedup $\hat S$. The results of the above detailed experiment is presented in table \ref{mu2} and \ref{mu3}.
+We then test our method on problem (\ref{speed_j}-\ref{speed_e}) for $N=16$ and $N=64$ decompositions of the time interval. The penalty parameter will vary between $10$ and $10^10$. We again want to see how the preconditioned solver performs in comparison with the unpreconditioned solver, and we therefore solve our example problem using both solvers. We compare the solutions $v_{pc}$ and $v$ we get using these solvers with exact solution $v_e$. We measure the performance of the solvers by counting the total number of function and gradient evaluations $L_{p_n}$ done for each solve, and compare this number with $L_S$ from table \ref{mu1}. Using $L_{p_n}$ and $L_S$, we can calculate the ideal speedup $\hat S$. The results of the above detailed experiment is presented in table \ref{mu2} and \ref{mu3}.
 \\
 \begin{table}[h]
 \centering
-\caption{Results from solving the decomposed problem (\ref{speed_j}-\ref{speed_e}) with $N=16$. Both a preconditioned and unpreconditioned version of our method were used. The penalized objective function is minimized for increasing penalty parameters $\mu$. The columns show total function and gradient evaluations ($L_{p_{16}}$), ideal speedup $\hat S$ and relative $L^2$ error ($||v_e-v_{pc}||$). These three values are presented for both the preconditioned and unpreconditioned solver. The preconditioned parallel solver obtains an error roughly the same as the sequential solver when $\mu\geq 1000$. It also achieves a modest ideal speedup between 2 and 3. We also see that the preconditioned solver performs better than the unpreconditioned solver, which does not achieve an ideal speedup or an error at the same level of the serial solver.}
+\caption{Results from solving the decomposed problem (\ref{speed_j}-\ref{speed_e}) with $N=16$. Both a preconditioned and unpreconditioned version of our method were used. The penalized objective function is minimized for increasing penalty parameters $\mu$. The columns show total function and gradient evaluations ($L_{p_{16}}$), ideal speedup $\hat S$ and relative $L^2$ error ($||v_e-v_{pc}||$). These three values are presented for both the preconditioned and unpreconditioned solver. The preconditioned parallel solver obtains an error roughly the same as the sequential solver when $\mu\geq 1000$. It also achieves a modest ideal speedup between 2 and 3, when $\mu< 10^8$. For $\mu\geq10^8$ we no longer observe a speedup for even our preconditioned algorithm.  We also see that the preconditioned solver performs better than the unpreconditioned solver, which does not achieve an ideal speedup or an error at the same level of the serial solver.}
 \label{mu2}
 \begin{tabular}{lrrrrrr}
 \toprule
 {} $\mu$&    pc $L_{p_{16}}$ & non-pc $L_{p_{16}}$  &  pc $\hat S$ & non-pc $\hat S$ &  $||v_e-v_{pc}||$ &      $||v_e-v||$\\
 \midrule
-10     &  173 &  211 &  2.12&  1.74 &  6.8e-3 &  6.8e-3 \\
-100    &   99 &  357 &  3.71 &  1.03 &  6.5e-4 &   6.5e-4\\
-1000  &  153 &  885 &  2.40 &  0.41 &  3.1e-5 &  1.1e-4 \\
-10000 &  123 &  433&  2.99 &  0.84 &  3.2e-5 &  7.8e-5 \\
-100000 &  155 &  379 &  2.37 &  0.97 &  3.9e-5 &  9.2e-5 \\
+1e+1     &  173 &  211 &  2.12&  1.74 &  6.8e-3 &  6.8e-3 \\
+1e+2   &   99 &  357 &  3.71 &  1.03 &  6.5e-4 &   6.5e-4\\
+1e+3  &  153 &  885 &  2.40 &  0.41 &  3.1e-5 &  1.1e-4 \\
+1e+4 &  123 &  433&  2.99 &  0.84 &  3.2e-5 &  7.8e-5 \\
+1e+5 &  155 &  379 &  2.37 &  0.97 &  3.9e-5 &  9.2e-5 \\
+1e+08 &  410 &  3007 &  0.89 &  0.12 &  3.9e-5 &  4.3-2 \\
+1e+10 &  388 &  3007 &  0.94 &  0.12 &  3.9e-5 &  4.8-2 \\
 \bottomrule
 \end{tabular}
 \\
 \end{table}
 \begin{table}[h]
 \centering
-\caption{Same as table \ref{mu2}, but now with $N=64$. We observe better ideal speedup than in table \ref{mu2} for the preconditioned solver, and the error is still roughly the same as the one measured for the sequential solver. The results achieved when solving the decomposed problem (\ref{speed_j}-\ref{speed_e}) without the Parareal-based preconditioner is worse when we use $N=64$ instead of $N=16$.}
+\caption{Same as table \ref{mu2}, but now with $N=64$. We observe better ideal speedup than in table \ref{mu2} for the preconditioned solver, and the error is still roughly the same as the one measured for the sequential solver. The results achieved when solving the decomposed problem (\ref{speed_j}-\ref{speed_e}) without the Parareal-based preconditioner is worse when we use $N=64$ instead of $N=16$. We again observe significant drop in speedup when $\mu>10^5$.}
 \label{mu3}
 \begin{tabular}{lrrrrrr}
 \toprule
 {} $\mu$&    pc $L_{p_{64}}$ & non-pc $L_{p_{64}}$    &  $\hat S$ & $\hat S$ &  $||v_e-v_{pc}||$ &      $||v_e-v||$\\
 \midrule
-10    &  101 &  1141 &  14.5 &  1.2 &  4.5e-2 &  4.5e-2 \\
-100    &  141 &  1583 &  10.4 &  0.9 &  4.7e-3 &  4.7e-3 \\
-1000   &  169 &  1693 &   8.7 &  0.8 &  4.3-4 &  4.4e-4 \\
-10000  &  125 &  2437 &  11.7 &  0.6 &  1.0e-5 &  1.8e-4 \\
-100000 &  121 &  1807 &  12.1 &  0.8 &  3.4e-5 &  1.8e-4 \\
+1e+1  &  101 &  1141 &  14.5 &  1.2 &  4.5e-2 &  4.5e-2 \\
+1e+2   &  141 &  1583 &  10.4 &  0.9 &  4.7e-3 &  4.7e-3 \\
+1e+3   &  169 &  1693 &   8.7 &  0.8 &  4.3-4 &  4.4e-4 \\
+1e+4  &  125 &  2437 &  11.7 &  0.6 &  1.0e-5 &  1.8e-4 \\
+1e+5 &  121 &  1807 &  12.1 &  0.8 &  3.4e-5 &  1.8e-4 \\
+1e+08 &  439 &  3007 &   3.3 &  0.4 &  3.9e-5 &  6.7e-4 \\
+1e+10 &  582 &  3007 &   2.5 &  0.4 &  3.9e-5 &  2.3e-1 \\
 \bottomrule
 \end{tabular}
 \end{table}
 \\
-The results of table \ref{mu2} and \ref{mu3} again show that the preconditioned method performs better than the unpreconditioned method. This is observed in all three measures $L_{p_N}$, $\hat S$ and $||v_e-v||$ presented in the tables. For both $N=64$ and $N=16$, the total number of function and gradient evaluations $L_{p_N}$ does not differ too much when we change the penalty parameter $\mu$, especially when $\mu$ is large. This again leads to stable ideal speedup values. We also notice that the measured difference between the exact and numerical control solutions is proportional to $\frac{1}{\mu}$ until it reaches the error of the sequential solution. This is in line with what we observed in section \ref{consistency_sec} about the consistency of our method. When we do not use the preconditioner, we see that we for most of $\mu$ values fail to get a speedup larger than one, and we do not get an error of the same order as the error from the sequential algorithm. Though the speedup results of table \ref{mu3} are better than the ones shown in table \ref{mu2}, the results of both tables demonstrate that our preconditioned method can achieve speedup even for large penalty parameters.
+The results of table \ref{mu2} and \ref{mu3} again show that the preconditioned method performs better than the unpreconditioned method. This is observed in all three measures $L_{p_N}$, $\hat S$ and $||v_e-v||$ presented in the tables. For both $N=64$ and $N=16$, the total number of function and gradient evaluations $L_{p_N}$ does not differ too much when we change the penalty parameter $\mu<10^8$. This again leads to stable ideal speedup values. We also notice that the measured difference between the exact and numerical control solutions is proportional to $\frac{1}{\mu}$ until it reaches the error of the sequential solution. This is in line with what we observed in section \ref{consistency_sec} about the consistency of our method. When we do not use the preconditioner, we see that we for most of $\mu$ values fail to get a speedup larger than one, and we do not get an error of the same order as the error from the sequential algorithm. Though the speedup results of table \ref{mu3} are better than the ones shown in table \ref{mu2}, the results of both tables demonstrate that our preconditioned method can achieve speedup even for penalty parameters $\mu<10^8$. When we increase $\mu$ further, we see for both $N=16$ and $N=64$, that $L_{p_N}$ increases. For $N=16$ we even observe speedup values less than one for the preconditioned algorithm. 
 \subsection{Speedup results for a high number of decompositions} \label{Aspeed_sec}
 To properly test the Parareal-based preconditioner, we have tested its use on the example problem on the Abel computer cluster. Using Abel, we are able to test our algorithm for a large number of CPUs. For all experiments the execution time of the sequential parallel algorithms is measured by timing the solvers ten times, and choosing the lowest execution time. All our tests are done using an implicit Euler discretization. We run the test for three different problem sizes $n=6\cdot 10^5,12\cdot 10^5,24\cdot 10^5$ using an increasing number of processes $N$. Each process gets its own decomposed subinterval. The results for selected values of $N$ and $n= 24\cdot 10^5$ is found in table \ref{speed1}, while the remaining results are presented in figure \ref{speed_fig1}.
 \\

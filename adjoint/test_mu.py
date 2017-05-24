@@ -17,18 +17,18 @@ def main():
     N = 1000
     ue,t,_ = problem.simple_problem_exact_solution(N)
     seq_res = problem.solve(N,Lbfgs_options={'jtol':1e-7})
-    MU = [0.01*N,0.1*N,N,10*N,100*N]
+    MU = [0.01*N,0.1*N,N,10*N,100*N,100000*N,10000000*N]
 
     Ls = seq_res.counter()[0]+seq_res.counter()[1]
     
-    m = 16
+    m = 64
     table = {'err':[],'L':[],'S':[],'err2':[],'L2':[],'S2':[]}
 
     for i in range(len(MU)):
 
-        res1 = problem.PPCLBFGSsolve(N,m,[MU[i]],options = {'jtol':1e-5})
-        res2 = problem.penalty_solve(N,m,[MU[i]],Lbfgs_options={'jtol':1e-5})
-        #res2=res1
+        res1 = problem.PPCLBFGSsolve(N,m,[MU[i]],tol_list=[1e-5,1e-5],options = {'jtol':1e-5})
+        #res2 = problem.penalty_solve(N,m,[MU[i]],Lbfgs_options={'jtol':1e-5})
+        res2=res1
         err1=np.sqrt(trapz((res1.x[1:N]-ue[1:-1])**2,t[1:-1]))/np.sqrt(trapz(ue**2,t))
         err2=np.sqrt(trapz((res2.x[1:N]-ue[1:-1])**2,t[1:-1]))/np.sqrt(trapz(ue**2,t))
 
@@ -44,8 +44,11 @@ def main():
 
     print Ls, np.sqrt(trapz((seq_res.x[1:-1]-ue[1:-1])**2,t[1:-1]))/np.sqrt(trapz(ue**2,t))
     data = pd.DataFrame(table,index=MU)
+    res3 = problem.PPCLBFGSsolve(N,m,[100*N,1000000*N,10000000*N],tol_list=[1e-5,1e-5])
+    print res3[-1].counter(),res3[0].counter(),np.sqrt(trapz((res3[-1].x[1:N]-ue[1:-1])**2,t[1:-1]))/np.sqrt(trapz(ue**2,t))
 
-    data.to_latex('report/draft/parareal/mu_test2.tex')
+
+    #data.to_latex('report/draft/parareal/mu_test2.tex')
     print data
 
 if __name__=='__main__':
