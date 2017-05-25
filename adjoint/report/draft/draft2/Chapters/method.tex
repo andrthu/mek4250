@@ -1,4 +1,4 @@
-\chapter{Parareal BFGS preconditioner} \label{method_chap}
+\chapter{Parareal-based BFGS preconditioner} \label{method_chap}
 In the previous chapter we saw that the Parareal scheme allows us to parallelize time-dependent differential equations in their temporal direction. In this chapter we will present an approach on how to parallelize optimal control problems with time-dependent differential equation constraints in the temporal direction. 
 \\
 \\
@@ -52,7 +52,7 @@ The decomposed and reduced optimal control problem with time-dependent different
 \end{align}
 \end{definition}
 \noindent
-Unlike the undecomposed case, the reduced and decomposed optimal control problem is not unconstrained. A strategy for handling these the extra constraints (\ref{constrained reduced}) is discussed in the next subsection.
+Unlike the undecomposed case, the reduced and decomposed optimal control problem is not unconstrained. A strategy for handling the extra constraints (\ref{constrained reduced}) is discussed in the next subsection.
 \section{The penalty method} \label{penalty_sec}
 To solve the constrained problem (\ref{constrained reduced j}-\ref{constrained reduced}), we will use the penalty method\cite{nocedal2006numerical}, which transforms constrained problems into a series of unconstrained problems. This is done by moving the constraints into the objective function $J(v)$. For each constraint a term is added to $J$, which is positive for variables that does not satisfy the constraint, but zero if it does. The penalization of the constraints can be done in different ways, but we will restrict ourself to the quadratic penalty method, where the the terms penalizing the constraints are quadratic. 
 \begin{definition}[Quadratic penalty method]\label{QuadPenMethDef}
@@ -70,7 +70,7 @@ Minimizing $f_{\mu}$ is an unconstrained optimization problem. If we now instead
 \end{align}
 \end{definition}
 \noindent
-The idea of the penalty method is that the minimizer of (\ref{general_opti_pen}) should approach a feasible minimizer of (\ref{general_opti}) when we increase the penalty parameter $\mu$. Since the penalized problem can be difficult to solve for large $\mu$ values, the usual approach for solving constrained problems with the penalty method, is to minimized the penalized objective function for an increasing sequence of penalty parameters $\mu$. We write up the general algorithmic framework of the penalty method applied to problem (\ref{constrained reduced j}-\ref{constrained reduced}) in algorithm \ref{PEN_ALG}. 
+The idea of the penalty method is that the minimizer of (\ref{general_opti_pen}) should approach a feasible minimizer of (\ref{general_opti}) when we increase the penalty parameter $\mu$. Since the penalized problem can be difficult to solve for large $\mu$ values, the usual approach for solving constrained problems with the penalty method, is to minimize the penalized objective function for an increasing sequence of penalty parameters $\mu$. We write up the general algorithmic framework of the penalty method applied to problem (\ref{constrained reduced j}-\ref{constrained reduced}) in algorithm \ref{PEN_ALG}. 
 \\
 \\
 \begin{algorithm}[H] 
@@ -92,14 +92,32 @@ If we want to use the penalty method, we need to know if the framework presented
 \lim_{k\rightarrow \infty} (v^k,\Lambda^k) =(v,\Lambda).
 \end{align*}
 From \cite{nocedal2006numerical} we get a result that deals with this:
-\begin{theorem}
+\begin{theorem} \label{consistency theorem}
 Assume that $\forall k$, $(v^k,\Lambda^k)$ is the exact global minimizer of $J_{\mu_k}$ in context of the framework in algorithm \ref{PEN_ALG}. Then each limit point of the sequence $\{(v^k,\Lambda^k)\}$ is a solution of the problem (\ref{constrained reduced j}-\ref{constrained reduced}).
 \end{theorem}
 \begin{proof}
 \cite{nocedal2006numerical}
 \end{proof}
 \noindent
-The above result shows that the penalty algorithmic framework actually produces a solution to the original problem. There are however parts of the above framework, that still needs special attention, namely how to find $(v^k,\Lambda^k)$ in each iteration, how to update $\mu_k$ and $\tau_k$ and how to choose an adequate stopping criteria. Finding the optimal control for each iteration is done by applying an optimization method for unconstrained problems, that is dependent on the gradient at $(v^k,\Lambda^k)$. Let us therefore differentiate the penalized objective function.
+Theorem \ref{consistency theorem} tells us that the penalty method of algorithm \ref{PEN_ALG} is consistent, if we for all $k$ can find an exact global minimizer of $J_{\mu_k}$. In practice, finding an exact minimizer of the penalized objective function is not always achievable. Another theorem from \cite{nocedal2006numerical} indicates what to expect if we are unable to find a global minimizer of $J_{\mu_k}$ for all $k$'s.
+\begin{theorem} \label{feasible theorem}
+If the tolerance $\tau_k$ and the penalty parameter $\mu_k$ of the method in algorithm \ref{PEN_ALG} satisfy
+\begin{align*}
+\lim_{k\rightarrow\infty} \tau_k =0,\quad \textrm{and} \quad \lim_{k\rightarrow\infty} \mu_k = \infty.
+\end{align*}
+the limit point of the the sequence $\{(v^k,\Lambda^k)\}$ will be a feasible point. In context of problem (\ref{constrained reduced j}-\ref{constrained reduced}), this means that:
+\begin{align*}
+\forall i=1,...,N-1\quad\lim_{k\rightarrow\infty}(y_{i}^k(T_i)-\lambda_i^k)=0 
+\end{align*}
+\end{theorem}
+\begin{proof}
+\cite{nocedal2006numerical}
+\end{proof}
+\noindent
+Theorem \ref{consistency theorem} provides the theoretical consistency of the method in algorithm \ref{PEN_ALG}, this consistency is based on the assumption that we are able to minimize the penalized objective function for ever increasing penalty parameters $\mu$. Theorem \ref{feasible theorem} shows that the quadratic penalty method at least will produce a feasible control solution. In section \ref{consistency_sec} we will try to verify the consistency of algorithm \ref{PEN_ALG} for the example problem, and we will see that theorem \ref{consistency theorem} and \ref{feasible theorem} are crucial for understanding the results we get. 
+\\
+\\
+We will now look at the most important part of the framework in algorithm \ref{PEN_ALG}, namely the optimization of the penalized objective function $\hat J_{\mu}$. To be able to optimize $\hat J_{\mu}$, we need its gradient, and we will therefore in the next section derive the gradient of the general penalized objective function (\ref{pen_obj_J}) using the adjoint approach. We will also find an expression for $\hat J_{\mu}'(v,\Lambda)$ for the example problem (\ref{exs_J}-\ref{exs_E}). In section \ref{pc sec} we will present a Parareal-based preconditioner, that we will use to improve the optimization of $\hat J_{\mu}$.
 \subsection{The gradient of the penalized objective function}
 We have introduced the penalized objective function (\ref{pen_obj_J}), that depends on both the real and virtual control, and we now want to evaluate its gradient. We again take the adjoint approach as we did in section \ref{adjointGrad_sec}, and the expression for $\hat J_{\mu}'(v,\Lambda)$ belonging to the general optimization problem (\ref{decomposed problem1}-\ref{decomposed problem}) is given in proposition \ref{penalty_grad_prop}.
 \begin{proposition}[Gradient of the penalized objective function] \label{penalty_grad_prop}
@@ -222,7 +240,7 @@ We then find the component of the gradient related to $\lambda_i$. Only the $i+1
 &= p_{i+1}(T_i)-\mu (y_{i}(T_i)-\lambda_i)\\
  &= p_{i+1}(T_i)-p_i(T_i)
 \end{align*}
-Combining $\frac{\partial}{\partial v} \hat J_{\mu}$ and $ \frac{\partial}{\partial \lambda_i}$ for $i=1,..,N-1$ gives us the gradient (\ref{penalty grad}).
+Here we made use of $E_{\lambda_i}^{i+1}(y_{i+1},v,\Lambda)^*=-1$ and $p_i(T_i)=\mu (y_{i}(T_i)-\lambda_i)$ from (\ref{exs_adjoint}). Combining $\frac{\partial}{\partial v} \hat J_{\mu}$ and $ \frac{\partial}{\partial \lambda_i}$ for $i=1,..,N-1$ gives us the gradient (\ref{penalty grad}).
 \end{proof} 
 \section{Parareal preconditioner} \label{pc sec}
 Parallelizing the solution process of optimal control problems with time-dependent differential equation constraints comes down to solving a series of penalized control problems. Since we have derived the gradient of these penalized problems for a specific example, we can now solve the control problem numerically using an optimization algorithm. We can for example use the steepest descent method (\ref{SD_itr}), which would create the following iteration for each penalized control problem:
@@ -244,10 +262,10 @@ We see that $Q$ only affects the $N-1$ last components of the gradient, which is
 \begin{align}
 (v^{k+1},\Lambda^{k+1}) = (v^{k},\Lambda^{k}) -\rho_kQ\nabla\hat{J}_{\mu}(v^{k},\Lambda^{k}) \label{gradient_method2}
 \end{align}
-For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the $\Lambda$ part of the control. We also need $Q$ to be cheaply computable. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. 
+For us to expect any improvement in convergence for the preconditioned steepest descent, $Q$ would have to resemble the Hessian of $\hat{J}_{\mu}$, at least for the virtual part of the control. We also need $Q$ to be cheaply computable. Applying $Q$ to the BFGS iteration, is done by setting the initial Hessian approximation $H^0=Q$. To be able to do this, we need $Q$ to be symmetric positive definite, since that is a requirement on $H^0$. 
 \\
 \\
-We derive $Q$ by looking at a constructed optimal control problem that we call the virtual problem. The virtual problem is a control problem decomposed as detailed in section \ref{decomp_sec}, but its objective function $\bold J$ is set to be the penalty term, which only depends on the virtual control $\Lambda$. We already stated this problem in section \ref{algebraic_sec}, and by utilizing the algebraic Parareal formulation, we will try to find a good candidate for $Q_{\Lambda}$.
+We derive $Q$ by looking at a constructed optimal control problem that we call the virtual problem. The virtual problem is a control problem decomposed as detailed in section \ref{decomp_sec}, but its objective function $\bold J$ is set to be the penalty terms, which only depends on the virtual control $\Lambda$. We already stated this problem in section \ref{algebraic_sec}, and by utilizing the algebraic Parareal formulation, we will try to find a good candidate for $Q_{\Lambda}$.
 \subsection{Virtual problem} \label{vir_sec}
 The Parareal-based preconditioner only affects the part of the gradient connected to the virtual control $\Lambda$. To motivate and derive $Q$, we therefore consider an optimal control problem where the real control $v$ is removed, and the objective function only depends on $\Lambda$. We have already presented this problem in section \ref{algebraic_sec}, but we restate it here for future reference. However, before we do this let us first properly define the fine and coarse propagators.
 \begin{definition}[Fine and coarse propagator] \label{prop_def}
