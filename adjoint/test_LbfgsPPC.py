@@ -26,8 +26,8 @@ class GeneralPowerEndTermPCP(SimplePpcProblem):
             return J(u,y,yT,T,self.power)
         
         self.J = J_func
-
-    def initial_adjoint(self,y):
+    
+    def initial_adjoint2(self,y):
         
         p = self.power
         return (y - self.yT)**(p-1)
@@ -112,16 +112,16 @@ def non_lin_problem(y0,yT,T,a,p,c=0,func=None):
     if func==None:
         def J(u,y,yT,T,power):
             t = np.linspace(0,T,len(u))
-
-            I = trapz((u-c)**2,t)
+            dt = t[1]-t[0]
+            I = dt*np.sum((u-c)**2)
 
             return 0.5*I + (1./power)*(y-yT)**power
 
         def grad_J(u,p,dt):
             grad = np.zeros(len(u))
             grad[1:] = dt*(u[1:]-c+p[:-1])
-            grad[0] = 0.5*dt*(u[0]-c)
-            grad[-1] = 0.5*dt*(u[-1]-c) + dt*p[-2]
+            #grad[0] = 0.5*dt*(u[0]-c)
+            #grad[-1] = 0.5*dt*(u[-1]-c) + dt*p[-2]
             return grad
     else:
         def J(u,y,yT,T,power):
@@ -174,8 +174,8 @@ def compare_pc_and_nonpc_for_different_m():
 
 
     
-    #problem = non_lin_problem(y0,yT,T,a,p,c=20)
-    problem = create_simple_CN_problem(y0,yT,T,a,c=0)
+    problem = non_lin_problem(y0,yT,T,a,p,c=0)
+    #problem = create_simple_CN_problem(y0,yT,T,a,c=0)
     
     try:
         N = int(sys.argv[1])
@@ -185,10 +185,10 @@ def compare_pc_and_nonpc_for_different_m():
         tol2 = 1e-4
         ue,_,_ = problem.simple_problem_exact_solution(N)
     except:
-        N = 1000
-        mu = 10*N
-        tol1 = 1e-8
-        tol2 = 1e-5
+        N = 100000
+        mu = 4*0.01*N
+        tol1 = 1e-10
+        tol2 = 1e-4
         ue,_,_ = problem.simple_problem_exact_solution(N)
     M = [1,2,4,8,16,32,64,128]
     #M = [1,2,3]
@@ -237,12 +237,12 @@ def compare_pc_and_nonpc_for_different_m():
         #scaled_pc_res = problem.PPCLBFGSsolve(N,m,[m*mu],options=opt,scale=True)
         #scaled_nonpc_res = problem.penalty_solve(N,m,[m*mu],Lbfgs_options=opt,scale=True)
 
-        if m>16:
-            tol2 = tol2
-            mu =10*mu
+        #if m>16:
+            #tol2 = tol2
+            #mu =10*mu
         pc_res = problem.PPCLBFGSsolve(N,m,[0.1*mu],tol_list=[tol2,tol2/10,(tol2**2)/100],options=opt)
         nonpc_res = problem.penalty_solve(N,m,[0.1*mu],tol_list=[tol2,tol2/10,(tol2**2)/100],Lbfgs_options=opt)
-        
+        #nonpc_res = pc_res 
         if type(pc_res)==list:
             pc_res=pc_res[-1]
             nonpc_res=nonpc_res[-1]
@@ -280,7 +280,7 @@ def compare_pc_and_nonpc_for_different_m():
     Order1 = ['non-penalty itr','non-pc fu','non-pc err','pc fu','pc err']
     data11 = data.reindex_axis(Order1, axis=1)
     print data11
-    #data11.to_latex('report/draft/parareal/pc_itr_err.tex')
+    data11.to_latex('report/draft/parareal/pc_itr_err.tex')
     
     data2 = pd.DataFrame(table2,index=M)
     #Order = ['non-penalty itr','non-pc fu','scaled non-pc fu','pc fu','scaled pc itr','pc fugr','scaled pc lsitr']

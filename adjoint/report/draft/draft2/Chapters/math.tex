@@ -1,6 +1,6 @@
-\chapter{Optimal control with ODE constraints} \label{math_chap}
+\chapter{Optimal Control with ODE Constraints} \label{math_chap}
 In this chapter we present the basic mathematical background that the rest of the thesis will be based on. The chapter covers three different subjects. The first subject is on general theory of optimal control problems with DE constraints. The second subject is on finite difference discretization of differential equations and numerical integration, and the last subject deals with optimization algorithms. In addition to the general theory, we present an example optimal control problem with ODE constraints, that will be used throughout the rest of the thesis. 
- \section{General optimal control problem}
+ \section{General Optimal Control Problem}
 In this thesis we consider reducible optimization problems with time-dependent differential equation constraints. This problem is a special case of the more general optimization problem, which we will state in definition \ref{OCP_def}. Here we also define what it means for an optimization problem to be reducible, by introducing the reducibility condition (\ref{Reduce_condition}).
 \begin{definition}[Optimization with DE constraints] \label{OCP_def}
 Let $Y,V,Z$ be Banach spaces, where $Y,V$ also are reflexive. Given an objective function $J: Y\times V\rightarrow\mathbb{R}$ and an operator $E:Y\times V \rightarrow Z$, optimization with DE constraints then refers to the minimization problem on the following form:
@@ -64,7 +64,7 @@ If $\alpha>0$, the above linear-quadratic optimization problem has a unique solu
 See \cite{hinze2008optimization}.
 \end{proof}
 \noindent 
-\subsection{Example problem} \label{example_sec}
+\subsection{Example Problem} \label{example_sec}
 To better understand the adjoint approach to gradient evaluation of the reduced objective function, we define a simple optimal control problem with ODE constraints, so that we later can derive its adjoint equation and gradient. The problem will also be used to test and verify the implementation in chapter \ref{Verification chapter} and \ref{Experiments chapter}. In our example both the state $y$ and the control $v$ will be functions on an interval $[0,T]$. The specific objective function we consider is:
 \begin{align}
 J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 \label{exs_J}
@@ -83,7 +83,7 @@ The state equation of our optimal control problem is uniquely solvable for all i
 y(t) = e^{a t}(C(y_0)+\int_0^te^{-a\tau}v(\tau)d\tau)
 \end{align*}
 This means that our example problem (\ref{exs_J}-\ref{exs_E}) is reducible. Since the state equation is linear, and since all terms in the objective function are quadratic, (\ref{exs_J}-\ref{exs_E}) is also an example of a linear quadratic optimization problem. Theorem \ref{existence} therefore guaranties a unique minimizer of problem (\ref{exs_J}-\ref{exs_E}).
-\section{The adjoint equation and the gradient} \label{adjointGrad_sec}
+\section{The Adjoint Equation and the Gradient} \label{adjointGrad_sec}
 The usual way of finding the minimum (or maximum) value of a function $\hat J$, is to solve the equation $\hat J'(v)=0$. Solving this equation usually requires us to be able to evaluate, or have an expression for the derivative of $\hat J$. There are different ways to evaluate the gradient of the reduced objective function $\hat J(v)$. We will here take the adjoint approach. This strategy leads to an expression for the gradient of the reduced objective function (\ref{ROF}), which we state in proposition \ref{redGrad_prop}. The reason it is called the adjoint approach, is that the gradient $\hat J'(v)$ depends on the so called adjoint equation. The definition of this equation is found in Proposition \ref{redGrad_prop}. Proposition \ref{redGrad_prop} also include conditions on the operators $J$ and $E$ from definition \ref{OCP_def}, which are necessary for the existence of the gradient of $\hat J$. These conditions involve the notion of Fr\'{e}chet differentiability, which is a generalization of directional derivatives for operators on Banach spaces. For a more precise definition of Fr\'{e}chet differentiability, we refer to \cite{hinze2008optimization}.
 \begin{proposition}[Gradient and adjoint of the reduced objective function] \label{redGrad_prop}
 Let $\hat J$ be the reduced objective function from definition \ref{DEF_RED_OCP}, and assume that the state equation operator $E$ and the objective function $J$ are Fr\'{e}chet differentiable. Assume also that the partial derivative $E_y(y,v):Y\rightarrow Z$ of $E$ with respect to $y$ is a linear and continuously invertible operator. Then the gradient of $\hat J$ with respect to the control $v$ is:
@@ -119,7 +119,7 @@ This now allows us to write up the gradient as follows:
 \end{proof}
 \noindent
 Expression (\ref{gradient}) gives us a recipe for evaluating the reduced objective function for a control variable $v\in V$. Typically this evaluation requires us to solve both the state and adjoint equation, and then inserting the adjoint into expression (\ref{gradient}). To better illustrate how gradient evaluation works let us derive the adjoint equation and the gradient of the problem introduced in section \ref{example_sec}.
-\subsection{Adjoint of the example problem}
+\subsection{Adjoint of the Example Problem}
 We want to derive the gradient of problem (\ref{exs_J}-\ref{exs_E}). However, before we state the gradient, we write up and derive the adjoint equation.
 \begin{proposition} \label{adjoint_eq_prop}
 The adjoint equation of the problem (\ref{exs_J}-\ref{exs_E}) is:
@@ -210,7 +210,7 @@ To calculate the above expression, we need to evaluate the objective function at
 3.\quad & \textrm{Set the i-th component of $\hat J'(v)$ to be $\frac{\hat J(v+\epsilon e_i)-\hat J(v)}{\epsilon}$.}
 \end{align*}
 To execute the above steps, we need to solve the state equation for $n+1$ different control variables. In comparison finding $\hat J'(v)$ using the adjoint approach only requires us to solve the state and adjoint equations once, independently of the dimension of $V$. For finite difference the computational cost of one gradient evaluation therefore depends linearly on the number of components in the control variable $v$, while the computational cost of the adjoint approach is independent of the size of $v$. In addition, since the the adjoint of the linearised state equation is linear, the adjoint equation is linear. This means that the adjoint equation often is computationally cheaper to solve than the state equation, especially if the state equation is non-linear. 
-\subsection{Exact solution of the example problem} \label{exact_sec}
+\subsection{Exact Solution of the Example Problem} \label{exact_sec}
 It turns out that we can find the exact solution of problem (\ref{exs_J}-\ref{exs_J}) by utilizing the adjoint equation (\ref{exs_adjoint_eq}-\ref{exs_adjoint_ic}) and the gradient of the reduced objective function (\ref{exs_grad}). Finding an exact solution to our example problem will be useful in chapter \ref{Verification chapter} and \ref{Experiments chapter}, where we will be testing and verifying different aspects of our algorithm. The derivation of the solution is based on two key observations. The first observation is a relation between the optimal control $\bar v$ and the adjoint $p$, which is a result from the fact that $\hat J'(\bar v)=0$ is a necessary condition for $\bar v$ being a minimizer of $\hat J$. Inserting expression (\ref{exs_grad}) into $\hat J'(\bar v)=0$ yields:
 \begin{align}
 \bar v(t)=-p(t). \label{obs1}
@@ -257,7 +257,7 @@ v(t)=-p(t) &\iff C_0 e^{-at} = -\alpha e^{aT}(y_0e^{aT} +\frac{C_0}{2a}(e^{aT}-e
 \end{align*}
 Division by $(1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-aT}))$ is always allowed, since $\frac{1}{a}(e^{aT}-e^{-aT})>0, \forall a\neq0$ and $\forall T>0$. 
 \end{proof} 
-\section{Numerical solution}
+\section{Numerical Solution}
 To be able to solve optimal control problems numerically, we need to discretize the objective function and the state and adjoint equations. We are mainly interested in time-dependent equations, and one way of discretizing ODEs or PDEs in temporal direction, is to use a finite difference method. Since the objective function includes an integral term, we also need methods for numerical integration. In this section we will only look at first order equations on the following form:
 \begin{align}
 \left\{
@@ -268,7 +268,7 @@ To be able to solve optimal control problems numerically, we need to discretize 
 \right.\label{general_1st_ODE}
 \end{align}
 Both the state and adjoint equation of our example problem can be formulated as an equation on form (\ref{general_1st_ODE}), and understanding the numerics of (\ref{general_1st_ODE}) is therefore sufficient for the purposes of this thesis. Before we introduce numerical methods for solving ODEs and evaluating integrals, we need to explain how we discritize the time domain $I=[0,T]$. We do this by dividing $I$ into $n$ parts of length $\Delta t=\frac{T}{n}$, and then setting $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Numerically solving a differential equation for $y$ on $I_{\Delta t}$ means that we try to find $y(t_k)$ for $k=0,...,n+1$. For the rest of this section we let the notation $y_k$ denote evaluating the function $y$ at time $t_k$.
-\subsection{Discretizing ODEs using finite difference} \label{FD_sub_sec}
+\subsection{Discretizing ODEs Using Finite Difference} \label{FD_sub_sec}
 Finite difference is a tool for approximating derivatives of functions. When we have a discretized domain $I_{\Delta t}$ with time step $\Delta t$, the derivative of a function $y$ at point $t_k$ is approximated by:
 \begin{align}
 \frac{\partial}{\partial t} y(t_k) \approx \frac{y_k-y_{k-1}}{\Delta t}. \label{FD_diff_approx}
@@ -318,7 +318,7 @@ When comparing (\ref{CN_formula}) with (\ref{EE_formula}) and (\ref{IE_formula})
 \max_{k=0,...,n}|y_k-\hat y(t_k)|\leq C\Delta t^2 \label{CN_error_bound}
 \end{align}
 Other more accurate finite difference schemes exist, in particular Runge-Kutta methods, but in this thesis we restrict the usage of finite difference methods to the ones presented in this section. 
-\subsection{Numerical integration} \label{num_int_sub_sec}
+\subsection{Numerical Integration} \label{num_int_sub_sec}
 In this subsection we present three simple methods for numerical integration. We need such methods since the objective function in our example problem (\ref{exs_J}) includes an integral. The methods that we present in definition \ref{num_int_def} are called the left-hand rectangle rule, the right-hand rectangle rule and the trapezoid rule. Their names stem from the geometrical objects used to estimate the area under the function we want to integrate.
 \begin{definition} \label{num_int_def}
 We want to estimate the integral $S=\int_0^T v(t) dt$ numerically with a discretized time domain $I_{\Delta t}=\{t_k\}_{k=0}^{n}$. The left-hand rectangle rule approximates $S$ using the following formula:
@@ -336,9 +336,9 @@ S_{trap} = \Delta t\frac{v_0+v_n}{2}+\Delta t\sum_{k=1}^{n-1} v_k \label{TRAP_IN
 \end{definition}
 \noindent
 The rectangle methods in definition \ref{num_int_def} are of accuracy order one, while the trapezoid rule is of second order. It turns out that the above presented numerical methods are analogue to the three finite difference schemes stated in section \ref{FD_sub_sec}. The left- and right-hand rectangle methods are related to the explicit and implicit Euler schemes, while the trapezoid rule is connected with Crank-Nicolson. When making numerical solvers for optimal control problems it therefore makes sense to discretize the differential equation and integral evaluation using methods of the same convergence order. 
-\section{Optimization algorithms} \label{optiSec}
+\section{Optimization Algorithms} \label{optiSec}
 Deriving and solving the adjoint equation gives us a way of evaluating the gradient of optimal control problems with ODE constraints. With the gradient we can solve optimal control problems numerically by using an optimization algorithm. There exists many different optimization algorithms, but here we will only look at line search methods that are useful to us in this thesis. The methods we present are the steepest descent method and the related BFGS and L-BFGS methods.  
-\subsection{Line search methods and steepest descent}
+\subsection{Line Search Methods and Steepest Descent}
 Line search methods are algorithms used to solve problems of the type: 
 \begin{align*}
 \min_x f(x), \ f:\mathbb{R}^n\longrightarrow\mathbb{R}

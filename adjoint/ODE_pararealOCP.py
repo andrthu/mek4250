@@ -432,12 +432,12 @@ class SimplePpcProblem(PararealOCP):
     def adjoint_update(self,l,y,i,dt):
         a = self.a
         return l[-(i+1)]/(1.-dt*a)
-
+    """
     def adjoint_propogator_update(self,l,rhs,i,dt):
         a = self.a
         return (l[-(i+1)]+rhs[-(i+1)])/(1-dt*a)
 
-
+    """
 class SimpleExplicitPpcProblem(PararealOCP):
     """
     optimal control with ODE y'=ay+u

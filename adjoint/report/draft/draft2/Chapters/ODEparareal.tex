@@ -1,6 +1,6 @@
-\chapter{Parallel in time ODE solver methods} \label{parareal_chap}
+\chapter{Parallel in Time ODE Solver Methods} \label{parareal_chap}
 The process of resolving time-dependent differential equations in the temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the fact that the solution of such equations at every time $T$ depends on the solution at times $t<T$, and it is therefore difficult to partition the solution process into independent tasks that can be solved in parallel. However the Parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution}is an approach to overcome this limitation. We will however not introduce Parareal as it is described in \cite{lions2001resolution}, but rather present an alternative formulation of the algorithm given in \cite{baffico2002parallel}. Before we state the Parareal algorithm, let us first explain how we decompose the time domain, and an example equation defined on it.
-\section{Decomposing the time interval} \label{Para_dcomp_sec}
+\section{Decomposing the Time Interval} \label{Para_dcomp_sec}
 The Parareal scheme is used to parallelize differential equations in temporal direction, by decomposing the time interval $I=[0,T]$. An example of a time-dependent differential equation that on this interval is:
 \begin{align}
 \left\{
@@ -61,7 +61,7 @@ Another important component of Parareal, that affects its performance, the coars
 \frac{\bold{G}_{\Delta T}(\lambda_i) -\lambda_i }{\Delta T } + A \bold{G}_{\Delta T}(\lambda_i) = f(T_{i}) \label{G_Backward}
 \end{align}
 In the above example we just used a coarse discretization of our problem (\ref{unbroken}) to define the coarse propagator. There are however a lot of other ways to construct $\bold{G}_{\Delta T}$. In \cite{baffico2002parallel} for example, they create the coarse propagator by simplifying the physics of the problem the authors are trying to model. The underlying numerical method of the coarse propagator should in any case be chosen so that the computational cost of $\bold{G}_{\Delta T}$ is negligible in comparison to the cost of  $\bold{F}_{\Delta T}$.
-\section{Algebraic formulation}\label{algebraic_sec}
+\section{Algebraic Formulation}\label{algebraic_sec}
 In \cite{maday2002parareal} an algebraic reformulation of (\ref{pred_corr_PR}) is presented. The setting in \cite{maday2002parareal} is slightly different than the one we had in section \ref{Parareal_sec}, since they are trying to solve an optimal control problem with differential equation constraints, rather than to just solve a differential equation. Luckily for us the problem they are looking at is very much connected to that of solving the time decomposed differential equation system. The problem they solve follows below:
 \begin{align*}
 &\min_{\Lambda}\hat{J}(\Lambda) = \sum_{i=1}^{N-1} ||u^{i}(T_{i})-\lambda_{i}||^2 \\
