@@ -21,7 +21,7 @@ def main():
 
     Ls = seq_res.counter()[0]+seq_res.counter()[1]
     
-    m = 64
+    m = 16
     table = {'err':[],'L':[],'S':[],'err2':[],'L2':[],'S2':[]}
 
     for i in range(len(MU)):
@@ -50,6 +50,18 @@ def main():
 
     #data.to_latex('report/draft/parareal/mu_test2.tex')
     print data
+
+
+    m = 16 
+
+    res2mu = problem.PPCLBFGSsolve(N,m,[100*N,100000*N],tol_list=[1e-5,1e-5],options = {'jtol':1e-5})
+
+    mu2err1 = table['err'][4]
+    mu2err2 = np.sqrt(trapz((res2mu[-1].x[1:N]-ue[1:-1])**2,t[1:-1]))/np.sqrt(trapz(ue**2,t))
+
+    Lmu2 = res2mu[-1].counter()[0]+res2mu[-1].counter()[1]
+
+    print mu2err1,mu2err2,Lmu2,table['L'][4],m*Ls/float(Lmu2)
 
 if __name__=='__main__':
 
