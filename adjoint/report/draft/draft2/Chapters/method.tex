@@ -83,7 +83,7 @@ $\bold{Stop}$ algorithm\;
 Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
 }
 }
-\caption{Penalty framework\label{PEN_ALG}}
+\caption{Penalty method \label{PEN_ALG}}
 \end{algorithm}
 \noindent
 \\
@@ -299,8 +299,21 @@ We then use the fine propagator $\bold F_{\Delta T}(\omega)$ to define the virtu
 \begin{definition}[Virtual problem]
 Given a fine propagator $\bold F_{\Delta T}$, that solves a time-dependent differential equation $f(y(t),t)=0$, an initial condition $\lambda_0=y_0$ and the control variable $\Lambda=(\lambda_1,...,\lambda_ {N-1})$, the virtual control problem is:
 \begin{align}
-&\min_{\Lambda}\bold{J}(\Lambda,y) = \sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2, \label{virtual_func} \\
+&\min_{\Lambda}\bold{J}(\Lambda,y) = \frac{1}{2}\sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2, \label{virtual_func} \\
 &\textrm{subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1})\quad \textrm{for} \ i=1,...,N-1 \label{virtual}
+\end{align}
+We also recognize function (\ref{virtual_func}) as a least squares function, which we can write on vector notation as:
+ \begin{align}
+\bold J(y,\Lambda) = \frac{1}{2} x(\Lambda)^Tx(\Lambda), \label{non_lin_LS}
+\end{align}
+where the vector function $x:\mathbb{R}^{N-1}\rightarrow \mathbb{R}^{N-1}$ is:
+\begin{align}
+x(\Lambda)= M\Lambda=\left( \begin{array}{c}  
+   \lambda_1 - \bold F_{\Delta T}(\lambda_0) \\ 
+   \lambda_2 - \bold F_{\Delta T}(\lambda_1) \\
+   \cdots  \\
+   \lambda_{N-1} -\bold F_{\Delta T}(\lambda_{N-1}) \\
+   \end{array}  \right).
 \end{align}
 \end{definition}
 \noindent
@@ -308,7 +321,7 @@ In chapter \ref{parareal_chap} we explained how the virtual problem could be sol
 \begin{align}
 M \ \Lambda = H. \label{Parareal_equation}
 \end{align}
-The $H$ on right hand side of the above equation is the propagator applied to the initial condition:
+The $H$ on the right hand side of the above equation is the propagator applied to the initial condition:
 \begin{align*}
 H = \left[ \begin{array}{c}
    \bold F_{\Delta T}( y_0) \\
@@ -317,7 +330,7 @@ H = \left[ \begin{array}{c}
    0 \\
    \end{array}  \right].
 \end{align*}
-In section \ref{algebraic_sec} we explained how the Parareal algorithm could be reformulated as a preconditioned fix point iteration solving equation (\ref{Parareal_equation}). This can be expressed in matrix form as follows:
+In section \ref{algebraic_sec} we mentioned that the Parareal algorithm could be reformulated as a preconditioned fix point iteration solving equation (\ref{Parareal_equation}). This can be expressed in matrix form as follows:
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k)\label{par_mat_sys}
 \end{align}
@@ -353,7 +366,7 @@ Using the matrices from definition \ref{adjoint_prop_def} we can write up the fo
 \begin{proposition} \label{vir_grad_prop}
 The reduced objective function of the virtual problem (\ref{virtual_func}-\ref{virtual}) is:
 \begin{align}
-\bold{\hat J}(\Lambda) = \sum_{i=1}^{N-1} (\bold F_{\Delta T}(\lambda_{i-1})-\lambda_{i})^2.\label{reduced_viritual}
+\bold{\hat J}(\Lambda) = \frac{1}{2}\sum_{i=1}^{N-1} (\bold F_{\Delta T}(\lambda_{i-1})-\lambda_{i})^2.\label{reduced_viritual}
 \end{align}
 Solving $\bold{\hat J}'(\Lambda)=0$ is equivalent to resolving the system:
 \begin{align}
@@ -406,31 +419,14 @@ Q = \left[ \begin{array}{cc}
 	0 &  \bar{M}^{-1}\bar{M}^{-*}\\
 	\end{array} \right]. \label{Q_PC}
 \end{align}  
-In \cite{maday2002parareal} $Q$ is proposed as a preconditioner for a steepest descent method. We do however not know if $Q$ is positive definite, or if it is in any shape or form related to the Hessian of the objective function. We will investigate these questions further by reformulating the reduced objective function (\ref{reduced_viritual}) for the virtual problem to a least squares problem.
-\subsection{Virtual Least Squares Problem}
-Looking at the equation $M^*M\Lambda =M^*H$ we recognize the normal equation, which is connected to linear least squares problems. We therefore suspect that the virtual problem can be reformulated as a least squares problem. It turns out that this is indeed the case. We write up the new formulation in definition \ref{VLSPD}.
-\begin{definition}[Virtual least squares problem] \label{VLSPD}
-Given a propagator $\bold F_{\Delta T}$ as defined in definition \ref{prop_def} and an initial condition $\lambda_0=y_0$ for the state equation, the least squares formulation of the virtual optimal control problem (\ref{virtual_func}-\ref{virtual}) reads as follows:
-\begin{align}
-\min_{\Lambda\in\mathbb{R}^{N-1}}\hat{\bold J}(\Lambda) = x(\Lambda)^Tx(\Lambda), \label{non_lin_LS}
-\end{align}
-where the vector function $x:\mathbb{R}^{N-1}\rightarrow \mathbb{R}^{N-1}$ is:
-\begin{align}
-x(\Lambda)= \left( \begin{array}{c}  
-   \lambda_1 - \bold F_{\Delta T}(\lambda_0) \\ 
-   \lambda_2 - \bold F_{\Delta T}(\lambda_1) \\
-   \cdots  \\
-   \lambda_{N-1} -\bold F_{\Delta T}(\lambda_{N-1}) \\
-   \end{array}  \right).
-\end{align}
-\end{definition}
-\noindent
-We are now interested in finding the Hessian of $\hat{\bold J}(\Lambda)$, which we hope to relate to the Parareal-based preconditioner. 
-\begin{proposition}\label{NonLin_prop}
+In \cite{maday2002parareal} $Q$ is proposed as a preconditioner for a steepest descent method. Other than to motivate $Q$ the authors of \cite{maday2002parareal} do not explore or derive any properties of the Parareal-based preconditioner. We are however interested in using $Q$ in combination with the BFGS algorithm, and to be able to do this we need to know that $Q$ is positive definite and that it is related to the Hessian of the objective function. We are also interested in the computational cost of $Q$. We will investigate the properties of the preconditioner by looking at the least squares formulation (\ref{non_lin_LS}) of problem (\ref{reduced_viritual}).
+\subsection{Properties of the Parareal-Based Preconditioner}
+We want to investigate the properties of $Q_{\Lambda}=\bar{M}^{-1}\bar{M}^{-*}$, and to do this we will show that $\bar{M}^{1}\bar{M}^{*}$ is an approximation to the Hessian of $\hat{\bold J}(\Lambda)$. To calculate the Hessian we use the least squares formulation (\ref{non_lin_LS}) of the virtual objective function. 
+\begin{proposition}[Virtual Hessian]\label{NonLin_prop}
 The Hessian of function (\ref{non_lin_LS}) is
 \begin{align*}
-\nabla^2 \hat{\bold J}(\Lambda) &= 2\nabla x^T\nabla x + 2\sum_{i=1}^{N-1} \nabla^2 x_i(\Lambda) x_i(\Lambda)\\
-&=2M(\Lambda)^TM(\Lambda) + 2D(\Lambda)
+\nabla^2 \hat{\bold J}(\Lambda) &= \nabla x^T\nabla x + \sum_{i=1}^{N-1} \nabla^2 x_i(\Lambda) x_i(\Lambda)\\
+&=M(\Lambda)^TM(\Lambda) + D(\Lambda)
 \end{align*}
 Here $D(\Lambda)$ is a diagonal matrix with diagonal entries 
 \begin{align*}
@@ -449,12 +445,12 @@ M(\Lambda) &= \left[ \begin{array}{cccc}
 \begin{proof}
 We start by differentiating $\hat{\bold J}$:
 \begin{align*}
-\nabla \hat{\bold J}(\Lambda) &= 2 \nabla x(\Lambda)^T x(\Lambda)\\
-&=2\sum_{i=1}^{N-1} \nabla x_i(\Lambda) x_i(\Lambda)
+\nabla \hat{\bold J}(\Lambda) &=  \nabla x(\Lambda)^T x(\Lambda)\\
+&=\sum_{i=1}^{N-1} \nabla x_i(\Lambda) x_i(\Lambda)
 \end{align*}
 If we now differentiate $\nabla \hat{\bold J}$, we get:
 \begin{align*}
-\nabla^2 \hat{\bold J}(\Lambda) &= 2\nabla x^T\nabla x + 2\sum_{i=1}^{N-1} \nabla^2 x_i(\Lambda) x_i(\Lambda)
+\nabla^2 \hat{\bold J}(\Lambda) &= \nabla x^T\nabla x + \sum_{i=1}^{N-1} \nabla^2 x_i(\Lambda) x_i(\Lambda)
 \end{align*}
 We see that $\nabla x(\Lambda)=M(\Lambda)$, by looking at $\frac{\partial x_i}{\partial \lambda_j}$
 \begin{align*}
@@ -478,9 +474,9 @@ We can similarly find $\nabla^2 x_i$ by differentiating $x$ twice:
 Summing up the terms $\nabla^2 x_i(\Lambda)x_i(\Lambda)$ yields the diagonal matrix $D(\Lambda)$.
 \end{proof}
 \noindent
-The first term of $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda) + 2D(\Lambda)$ resembles $M^*M$ from the previous section, while the second term $2D(\Lambda)$ is new. $D(\Lambda)$ is a diagonal matrix where the diagonal entries consists of products between the second derivative of $\bold F_ {\Delta T}$ and the residuals $\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i)$. If the governing equation of the propagator $\bold F_ {\Delta T}$ is linear, $\bold F_{\Delta T}''(\lambda_i)=0$. This would again mean that $D(\Lambda)=0$ and that $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda)$. We will therefore split our discussion of the Hessian of $\hat{\bold J}$ into two cases. In the first we assume the state equation is linear, while in the second case we discuss problems with non-linear state equations.
+The first term of $\nabla^2 \hat{\bold J}(\Lambda)=M(\Lambda)^TM(\Lambda) + D(\Lambda)$ resembles $M^*M$ from the previous section, while the second term $D(\Lambda)$ is new. $D(\Lambda)$ is a diagonal matrix where the diagonal entries consists of products between the second derivative of $\bold F_ {\Delta T}$ and the residuals $\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i)$. If the governing equation of the propagator $\bold F_ {\Delta T}$ is linear, $\bold F_{\Delta T}''(\lambda_i)=0$. This would again mean that $D(\Lambda)=0$ and that $\nabla^2 \hat{\bold J}(\Lambda)=M(\Lambda)^TM(\Lambda)$. We will therefore split our discussion of the Hessian of $\hat{\bold J}$ into two cases. In the first we assume the state equation is linear, while in the second case we discuss problems with non-linear state equations.
 \subsubsection{Linear State Equations}
-Assuming that the state equation is linear means that $\nabla^2 \hat{\bold J}(\Lambda)=2M(\Lambda)^TM(\Lambda)$. Differentiating the propagator $\bold F_{\Delta T}$ is the same as linearising its governing equation. When the governing equation is itself linear, linearising it does not change the equation. Therefore $\bold F_{\Delta T}'(\lambda_i)\lambda_i = \bold F_{\Delta T}(\lambda_i)$. This means that the $M$ matrix from section \ref{vir_sec} is equal to $M(\Lambda)$. The same is true for $M^*$ and $M(\Lambda)^T$. Since  $\nabla^2 \hat{\bold J}(\Lambda)=2M^*M$ we see that the Parareal-based preconditioner proposed in \cite{maday2002parareal} is in fact related to the inverse Hessian of the reduced penalized objective function. Furthermore if we can show that $\bar M^*\bar M$ is a positive definite matrix, we can use $Q$ as an initial approximation of the inverse Hessian in the BFGS optimization algorithm. This is as we will see in the following proposition indeed the case.
+Assuming that the state equation is linear means that $\nabla^2 \hat{\bold J}(\Lambda)=M(\Lambda)^TM(\Lambda)$. Differentiating the propagator $\bold F_{\Delta T}$ is the same as linearising its governing equation. When the governing equation is itself linear, linearising it does not change the equation. Therefore $\bold F_{\Delta T}'(\lambda_i)\lambda_i = \bold F_{\Delta T}(\lambda_i)$. This means that the $M$ matrix from section \ref{vir_sec} is equal to $M(\Lambda)$. The same is true for $M^*$ and $M(\Lambda)^T$. Since  $\nabla^2 \hat{\bold J}(\Lambda)=M^*M$ we see that the Parareal-based preconditioner proposed in \cite{maday2002parareal} is in fact related to the inverse Hessian of the reduced penalized objective function. Furthermore if we can show that $\bar M^*\bar M$ is a positive definite matrix, we can use $Q$ as an initial approximation of the inverse Hessian in the BFGS optimization algorithm. This is as we will see in the following proposition indeed the case.
 \begin{proposition} \label{pos_def_prop}
 If $\bold G_{\Delta T}$ and $\bold G_{\Delta T}^*$ are based on consistent numerical methods, that is $\bar M^*=\bar M^T$, then the matrix $\bar M^*\bar M$ is positive definite.
 \end{proposition}
@@ -502,7 +498,7 @@ Proposition \ref{pos_def_prop} shows that the $\bar M^*\bar M$ matrix stemming f
 Unlike the Hessian of the linear problem the Hessian of the non-linear problem consists of two parts. One is the linearised forward model multiplied with its adjoint, while the second part is a diagonal matrix related to the second derivative of the propagator $\bold F_{\Delta T}$, and the residuals $\lambda_i-\bold F_{\Delta T}$. The first part of $\nabla^2 \bold{\hat{J}}$ is analogue to the Hessian of the linear problem. It is symmetric positive definite, and taking its inverse corresponds to first applying the backwards model, and then the forward model. What makes the Hessian of the non-linear problematic is therefore its second term. The first issue with the diagonal matrix $D(\Lambda)$, is how to calculate $\bold F_{\Delta T}''$. Another issue is that we can not guarantee that the sum of $M(\Lambda)^TM(\Lambda)$ and $D(\Lambda)$ is a positive matrix, and the same problem would arise in a coarse approximation of $\nabla^2 \bold{\hat{J}}$. The lack of positivity is a problem since we want to use the coarse approximation as an initial inverted Hessian approximation in the BFGS-algorithm.
 \\
 \\
-One way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constrained problem, is simply to ignore it. This leaves us with the $M(\Lambda)^TM(\Lambda)$ term, which we know how to deal with. Ignoring the term depending on the second derivative and the residual is actually a known strategy for for solving non-linear least square problems. Details can be found in \cite{nocedal2006numerical}. A justification for this approach, is that at least in instances where we are close to a solution, the $\lambda_i-\bold F_{\Delta T}$ terms will be close to zero, and the $M(\Lambda)^TM(\Lambda)$ term will therefore dominate the Hessian. Ignoring the $D(\Lambda)$ term means that we can define an inverse Hessian approximation based on a coarse propagator $\bold G_{\Delta T}$ in the same way as we did for the problem with linear state equation constraints. This means that we define a matrix $\bar M(\Lambda)$:
+One way to get around the $D(\Lambda)$ term in the Hessian for non-linearly constrained problem, is simply to ignore it. This leaves us with the $M(\Lambda)^TM(\Lambda)$ term, which we know how to deal with. Ignoring the term depending on the second derivative and the residual is actually a known strategy, called the Gauss-Newton method, for solving non-linear least square problems. Details on this method can be found in \cite{nocedal2006numerical}. A justification for this approach, is that at least in instances where we are close to a solution, the $\lambda_i-\bold F_{\Delta T}$ terms will be close to zero, and the $M(\Lambda)^TM(\Lambda)$ term will therefore dominate the Hessian. Ignoring the $D(\Lambda)$ term means that we can define an inverse Hessian approximation based on a coarse propagator $\bold G_{\Delta T}$ in the same way as we did for the problem with linear state equation constraints. This means that we define a matrix $\bar M(\Lambda)$:
 \begin{align}
 \bar M(\Lambda) &= \left[ \begin{array}{cccc}
    \mathbbold{1} & 0 & \cdots & 0 \\  

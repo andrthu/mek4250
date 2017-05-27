@@ -437,4 +437,18 @@ If the sequence $\{x^k\}$ originating from the quasi-Newton iteration converges 
 See \cite{nocedal2006numerical}.
 \end{proof}
 \noindent
-Even though quasi-Newton methods do not posses the quadratic convergence of the Newton method, superlinear convergence is still better than the linear convergence of steepest descent.
+Even though quasi-Newton methods do not posses the quadratic convergence of the Newton method, superlinear convergence is still better than the linear convergence of steepest descent. 
+\subsection{BFGS Based Algorithm for Solving the Reduced Optimization Problem}
+We end this chapter by formally writing up an algorithm that numerically solves the reduced optimization problem (\ref{reduced problem}) with the BFGS method. We will use this algorithm to measure the performance of the parallel method that we will propose in chapter \ref{method_chap}, and when we refer to the sequential or serial algorithm we will mean algorithm \ref{SEQ_ALG}.
+\\
+\begin{algorithm}[H] 
+\KwData{Choose initial control $v^0$ and tolerance $\tau$}
+\While{$||\hat J'(v^k)||\geq \tau$ }{
+$v^{k+1} \leftarrow v^k - \alpha^k H^k \hat J'(v^k) $\;
+Update $H^{k+1}$\;
+}
+\caption{BFGS method\label{SEQ_ALG}}
+\end{algorithm}
+\noindent
+\\
+Notice that to apply algorithm \ref{SEQ_ALG}, we need a discretized expression for $\hat J(v^k)$ and $\hat J'(v^k)$. We will derive such expressions for the example problem in chapter \ref{disc_chap}.

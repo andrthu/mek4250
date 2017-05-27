@@ -50,7 +50,7 @@ $\hat{\lambda_{i}^{k}}\leftarrow \bold F_{\Delta T}(\lambda_{i-1}^{k-1})$\tcp*[h
 $\lambda_i^k\leftarrow \bold G_{\Delta T}(\lambda_{i-1}^k)+\hat{\lambda_{i}^{k}}-\lambda_{i}^{k-1}$\;
 }
 }
-\caption{K steps of Parareal algorithm\label{P_ALG}}
+\caption{K steps of the Parareal algorithm\label{P_ALG}}
 \end{algorithm}
 \noindent
 In algorithm \ref{P_ALG} we do $K$ iterations of the Parareal algorithm, where $K$ is a pre-chosen number. If one wanted to construct an actual Parareal algorithm, the iteration should instead terminate, when a certain stopping criteria is met. In general we want the iteration to stop when the Parareal solution is sufficiently close to the sequential solution, but we also want to avoid finding the sequential solution. A discussion on suitable stopping criteria for the Parareal algorithm can be found in \cite{lepsa2010efficient}.
