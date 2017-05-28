@@ -1,5 +1,5 @@
 \chapter{Parallel in Time ODE Solver Methods} \label{parareal_chap}
-The process of resolving time-dependent differential equations in the temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the fact that the solution of such equations at every time $T$ depends on the solution at times $t<T$, and it is therefore difficult to partition the solution process into independent tasks that can be solved in parallel. However the Parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution}is an approach to overcome this limitation. We will however not introduce Parareal as it is described in \cite{lions2001resolution}, but rather present an alternative formulation of the algorithm given in \cite{baffico2002parallel}. Before we state the Parareal algorithm, let us first explain how we decompose the time domain, and an example equation defined on it.
+The process of solving time-dependent differential equations in the temporal direction, is an exercise which one would intuitively think is unsuited for parallelization. This is due to the fact that the solution of such equations at every time $T$ depends on the solution at times $t<T$, and it is therefore difficult to partition the solution process into independent tasks that can be solved in parallel. However the Parareal scheme introduced by Lions, Maday and Turinici in \cite{lions2001resolution}is an approach to overcome this limitation. We will however not introduce Parareal as it is described in \cite{lions2001resolution}, but rather present an alternative formulation of the algorithm given in \cite{baffico2002parallel}. Before we state the Parareal algorithm, let us first explain how we decompose the time domain, and an example equation defined on it.
 \section{Decomposing the Time Interval} \label{Para_dcomp_sec}
 The Parareal scheme is used to parallelize differential equations in temporal direction, by decomposing the time interval $I=[0,T]$. An example of a time-dependent differential equation that on this interval is:
 \begin{align}
@@ -19,7 +19,7 @@ Decomposing the interval $I$ means dividing the interval into $N$ subintervals $
 	\end{array}
 	\right.	\label{broken}
 \end{align}
-Here $\lambda_0=u_0$, while $\{\lambda_i\}_{i=1}^{N-1}$ are virtual intermediate initial conditions. If $\Lambda=(\lambda_0,..,\lambda_{N-1})$ are known values, we can solve the equations independently on each interval. The problem is that the $\lambda$s depend on the solution from previous intervals, and need to be calculated by solving the equation. The Parareal scheme is a way of getting around this.
+Here $\lambda_0=u_0$, while $\{\lambda_i\}_{i=1}^{N-1}$ are virtual intermediate initial conditions. If $\Lambda=(\lambda_0,..,\lambda_{N-1})$ are known values, we can solve the equations independently on each interval. The problem is that the $\lambda$'s depend on the solution from previous intervals, and need to be calculated by solving the equation. The Parareal scheme is a way of getting around this.
 \section{Parareal}\label{Parareal_sec}
 We see that when we decompose the time domain, the original initial value problem (\ref{unbroken}) brakes down to a set of $N$ initial value problems on the form (\ref{broken}). The idea of \cite{baffico2002parallel} is then first to define a fine solution operator $\bold F_{\Delta T}$, which when given an initial condition $\lambda_{i-1}$ at time $T_{i-1}$, evolves $\lambda_i$, using a fine scheme applied to the $i$-th equation (\ref{broken}), from time $T_i$ to $T_{i+1}$. Meaning:
 \begin{align*}
@@ -133,7 +133,7 @@ This is a simple separable equation with solution $y_e(t)=y_0e^{-\frac{\sin(2\pi
 \begin{align}
 \textrm{rate}=\frac{\log(\frac{||y_{\Delta T_2} -y_e||_{l_{\infty}}}{||y_{\Delta T_1}-y_e||_{l_{\infty}}})}{\log(\frac{\Delta T_2}{ \Delta T_2})}. \label{RateDef}
 \end{align} 
-The results can be found in tables \ref{par_con1} to \ref{par_con4}. Plots of the results of one Parareal iteration applied to large $\Delta T$ values are also added in Figure \ref{P_fig_1_itr}. In table \ref{par_con1} we observe a convergence rate of one, which is in line with proposition \ref{P_con_prop}. For table \ref{par_con2} and \ref{par_con3}, we see that when the coarse time step $\Delta T$ approaches zero, the convergence rate goes to two and three. This is again what we expect in light of proposition \ref{P_con_prop}. In the last table, where the results come from applying three iterations of Parareal. Proposition \ref{P_con_prop} then suggests a convergence rate of $\mathcal{O}(\Delta T^4)$. We do however not observe this in table \ref{par_con4}, since the error decreases only at a rate of $2.9911$, between $N=1000$ and $N=2000$. The likely cause of this, is that we when doing three iterations of Parareal using $N=1000$ and $N=2000$ approach the underlying error of the fine propagator, and the Parareal algorithm con not outperform the error of the fine scheme.
+The results can be found in tables \ref{par_con1} to \ref{par_con4}. Plots of the results of one Parareal iteration applied to large $\Delta T$ values are also added in Figure \ref{P_fig_1_itr}. In table \ref{par_con1} we observe a convergence rate of one, which is in line with proposition \ref{P_con_prop}. For table \ref{par_con2} and \ref{par_con3}, we see that when the coarse time step $\Delta T$ approaches zero, the convergence rate goes to two and three. This is again what we expect in light of proposition \ref{P_con_prop}. In the last table the results are obtained by applying three iterations of Parareal. Proposition \ref{P_con_prop} then suggests a convergence rate of $\mathcal{O}(\Delta T^4)$. We do however not observe this in table \ref{par_con4}, since the error decreases only at a rate of $2.9911$, between $N=1000$ and $N=2000$. The likely cause of this, is that we when doing three iterations of Parareal using $N=1000$ and $N=2000$ approach the underlying error of the fine propagator, and the Parareal algorithm can not outperform the error of the fine scheme.
 \\
 \\
 To illustrate how the Parareal algorithm works, we did a second experiment on equation \ref{Parareal_ODE_exs}. The results of this experiment is presented in figure \ref{P_fig_1_itr}. This figure shows the result of applying one iteration of Parareal to our example problem, using $N=6,12,24$ decompositions of the time interval. We observe that the solution improves when $N$ is increased and consequentially $\Delta T$ is decreased. However, for all decompositions the results are not good, evident by the noticeable jumps between subintervals, and more iterations of Parareal are required to get a satisfactory solution. Another observation about the plots in figure \ref{P_fig_1_itr}, is that the numerical solution is exact (in the sense of the fine scheme) for the two first decomposed intervals. This aspect is especially noticeable for $N=6$. The solution being exact for the $k+1$ first subintervals after $k$ iterations of Parareal is a known property of the algorithm. This property also complicates the implementation of Parareal, since the $k+1$ first processes will become idle after $k$ iterations. Algorithm \ref{P_ALG}, though simple and usable, is not an optimal implementation of Parareal, in part due to the above discussed property.
@@ -146,13 +146,13 @@ To illustrate how the Parareal algorithm works, we did a second experiment on eq
 \toprule
 {}$N$ &      $\Delta T$ &       $||y-y_e||_{l_{\infty}}$ &  rate \\
 \midrule
-40   &  0.100 &  0.802648 &       -- \\
-50   &  0.090 &  0.628177 &  1.09837 \\
-100  &  0.040 &  0.298689 &  1.07253 \\
-200  &  0.020 &  0.145239 &  1.04021 \\
-500  &  0.008 &  0.057075 &  1.01934 \\
-1000 &  0.004 &  0.028365 &  1.00875 \\
-2000 &  0.002 &  0.014139 &  1.00441 \\
+40   &  0.100 &  0.802 &       -- \\
+50   &  0.090 &  0.628 &  1.09 \\
+100  &  0.040 &  0.298 &  1.07 \\
+200  &  0.020 &  0.145 &  1.04 \\
+500  &  0.008 &  0.057 &  1.01 \\
+1000 &  0.004 &  0.028 &  1.00 \\
+2000 &  0.002 &  0.014 &  1.00 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -164,13 +164,13 @@ To illustrate how the Parareal algorithm works, we did a second experiment on eq
 \toprule
 {}$N$ &      $\Delta T$ &       $||y-y_e||_{l_{\infty}}$ &     rate \\
 \midrule
-40   &  0.100 &  0.036593 &       -- \\
-50   &  0.080 &  0.027970 &  1.20431 \\
-100  &  0.040 &  0.008871 &  1.65668 \\
-200  &  0.020 &  0.002426 &  1.87042 \\
-500  &  0.008 &  0.000406 &  1.95102 \\
-1000 &  0.004 &  0.000103 &  1.97996 \\
-2000 &  0.002 &  0.000026 &  1.99027 \\
+40   &  0.100 &  3.65e-2 &       -- \\
+50   &  0.080 &  2.79e-2 &  1.20 \\
+100  &  0.040 &  8.87e-3 &  1.65 \\
+200  &  0.020 &  2.42e-3 &  1.87 \\
+500  &  0.008 &  4.06e-4 &  1.95 \\
+1000 &  0.004 &  1.03e-4 &  1.97 \\
+2000 &  0.002 &  2.6e-5 &  1.99 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -182,13 +182,13 @@ To illustrate how the Parareal algorithm works, we did a second experiment on eq
 \toprule
 {}$N$ &      $\Delta T$ &       $||y-y_e||_{l_{\infty}}$ &     rate \\
 \midrule
-40   &  0.100 &  3.759869e-03 &       -- \\
-50   &  0.080 &  1.384116e-03 &  4.47838 \\
-100  &  0.040 &  1.090653e-04 &   3.6657 \\
-200  &  0.020 &  2.345744e-05 &  2.21707 \\
-500  &  0.008 &  1.852693e-06 &  2.77046 \\
-1000 &  0.004 &  2.448745e-07 &  2.91951 \\
-2000 &  0.002 &  3.072620e-08 &   2.9945 \\
+40   &  0.100 &  3.75e-03 &       -- \\
+50   &  0.080 &  1.38e-03 &  4.478 \\
+100  &  0.040 &  1.09e-04 &   3.66 \\
+200  &  0.020 &  2.34e-05 &  2.21 \\
+500  &  0.008 &  1.85e-06 &  2.77 \\
+1000 &  0.004 &  2.44e-07 &  2.91 \\
+2000 &  0.002 &  3.07e-08 &   2.99 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -200,13 +200,13 @@ To illustrate how the Parareal algorithm works, we did a second experiment on eq
 \toprule
 {}$N$ &      $\Delta T$ &      $||y-y_e||_{l_{\infty}}$  &     rate \\
 \midrule
-40   &  0.100 &  2.574574e-04 &       -- \\
-50   &  0.080 &  7.818525e-05 &  5.34084 \\
-100  &  0.040 &  1.487138e-06 &  5.71629 \\
-200  &  0.020 &  1.345036e-07 &  3.46682 \\
-500  &  0.008 &  6.044837e-09 &  3.38581 \\
-1000 &  0.004 &  4.431655e-10 &  3.76979 \\
-2000 &  0.002 &  5.573852e-11 &   2.9911 \\
+40   &  0.100 &  2.57e-04 &       -- \\
+50   &  0.080 &  7.81e-05 &  5.34 \\
+100  &  0.040 &  1.48e-06 &  5.71 \\
+200  &  0.020 &  1.34e-07 &  3.46 \\
+500  &  0.008 &  6.04e-09 &  3.38 \\
+1000 &  0.004 &  4.43e-10 &  3.76 \\
+2000 &  0.002 &  5.57e-11 &   2.99 \\
 \bottomrule
 \end{tabular}
 \end{table}
