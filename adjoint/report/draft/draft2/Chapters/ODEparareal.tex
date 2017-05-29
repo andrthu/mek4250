@@ -53,10 +53,10 @@ $\lambda_i^k\leftarrow \bold G_{\Delta T}(\lambda_{i-1}^k)+\hat{\lambda_{i}^{k}}
 \caption{K steps of the Parareal algorithm\label{P_ALG}}
 \end{algorithm}
 \noindent
-In algorithm \ref{P_ALG} we do $K$ iterations of the Parareal algorithm, where $K$ is a pre-chosen number. If one wanted to construct an actual Parareal algorithm, the iteration should instead terminate, when a certain stopping criteria is met. In general we want the iteration to stop when the Parareal solution is sufficiently close to the sequential solution, but we also want to avoid finding the sequential solution. A discussion on suitable stopping criteria for the Parareal algorithm can be found in \cite{lepsa2010efficient}.
+In algorithm \ref{P_ALG} we do $K$ iterations of the Parareal algorithm, where $K$ is a pre-chosen number. If one wanted to construct an actual Parareal algorithm, the iteration should instead terminate, when a certain stopping criteria is met. After $N$ iterations the Parareal algorithm produces the same solution as the fine sequential solver. We therefore need a stopping criteria that ensures that the Parareal solution is sufficiently accurate, while also terminating before $N$ iterations are done. A discussion on suitable stopping criteria for the Parareal algorithm can be found in \cite{lepsa2010efficient}.
 \\
 \\
-Another important component of Parareal, that affects its performance, the coarse propagator $\bold G_{\Delta T}$. If $\bold F_{\Delta T}$ is based on a finite difference scheme method with time step $\Delta t$, one natural choice for $\bold G_{\Delta T}$, would be to use the same scheme as the fine propagator with bigger time step. One must be careful though, since such schemes might be unstable for big time steps. One simple and safe way of choosing $\bold G_{\Delta T}$, is to use implicit Euler with time step $\Delta T$. Using this scheme for our coarse propagator in the context of problem (\ref{unbroken}), would mean that we find $\bold{G}_{\Delta T}(\lambda_i)$ by solving:
+Another important component of Parareal, that affects its performance, is the coarse propagator $\bold G_{\Delta T}$. If $\bold F_{\Delta T}$ is based on a finite difference scheme with time step $\Delta t$, one natural choice for $\bold G_{\Delta T}$, would be to use the same scheme as the fine propagator with bigger time step. One must be careful though, since such schemes might be unstable for big time steps. To give an example of a coarse propagator, let us consider a $\bold G_{\Delta T}$ that is based on the implicit Euler scheme with time step $\Delta T$. Using this scheme for our coarse propagator in the context of problem (\ref{unbroken}), would mean that we find $\bold{G}_{\Delta T}(\lambda_i)$ by solving (\ref{G_Backward}) for $\bold{G}_{\Delta T}(\lambda_i)$.
 \begin{align}
 \frac{\bold{G}_{\Delta T}(\lambda_i) -\lambda_i }{\Delta T } + A \bold{G}_{\Delta T}(\lambda_i) = f(T_{i}) \label{G_Backward}
 \end{align}
@@ -105,7 +105,7 @@ Using $\bar{M}$, we can write up what turns out to be the Parareal iteration (\r
 \begin{align}
 \Lambda^{k+1} = \Lambda^k + \bar{M}^{-1}(H-M\Lambda^k) \label{matrix_iter1}
 \end{align}
-Looking at the (\ref{matrix_iter1}), we recognise the Parareal iteration as a preconditioned fix point iteration, where $\bar{M}^{-1}$ is the prconditioner.
+Looking at the (\ref{matrix_iter1}), we recognise the Parareal iteration as a preconditioned fix point iteration, where $\bar{M}^{-1}$ is the preconditioner.
 \section{Convergence of Parareal}
 In this section we look at some of the convergence properties of the Parareal algorithm given in the literature. The first publication on Parareal \cite{lions2001resolution} studied the convergence in context of the following equation: 
 \begin{align}

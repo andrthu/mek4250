@@ -79,7 +79,7 @@ We will now use the Taylor test on the penalized numerical gradient (\ref{num_pe
 \end{table}
 \\
 \\
-Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate, meaning that the penalized numerical gradient also passes the Taylor test. In figure \ref{JGrad2} we see how the penalized and decomposed gradient tested with the Taylor test looks like. Notice that there are jumps between the decomposed subintervals, which is expected, since the intermediate initial conditions were set equal to one.
+Again we see that $|J(v+\epsilon w)-J(v)-\epsilon \nabla J(v)\cdot w|$ converges to zero at a second order rate, meaning that the penalized numerical gradient also passes the Taylor test. In figure \ref{JGrad2} we see how the penalized and decomposed gradient tested with the Taylor test looks like. Notice that there are jumps between the decomposed subintervals, which is expected, since the intermediate initial conditions were set equal to one. We observe that the real part of the gradient in figure \ref{JGrad2} looks nothing like the gradient in figure \ref{JGrad1}. This is because the adjoint equation of the decomposed problem is defined separately on each interval.
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.5]{pen_num_grad.png}
@@ -91,7 +91,7 @@ In section \ref{Taylor_sec} we demonstrated that our implementation of the gradi
 \begin{align}
 ||v|| = \max_{k=1,...,n-1}|v_k| \label{inner_norm}
 \end{align} 
-We also look at the relative difference in objective function value between the controls. For both these measures, we calculate at what rate they converge to zero for decreasing $\Delta t$ values. The results for the implicit Euler discirization is found in table \ref{IE_convergence}, while Crank-Nicolson results are given in table \ref{CN_convergence}.
+We also look at the relative difference in objective function value between the controls. For both these measures, we calculate at what rate they converge to zero for decreasing $\Delta t$ values. The results for the implicit Euler discretization is found in table \ref{IE_convergence}, while Crank-Nicolson results are given in table \ref{CN_convergence}.
 \\
 \begin{table}[!h]
 \caption{Convergence of algorithm \ref{SEQ_ALG} using an implicit Euler discretization. For each $\Delta t$ we find a numerical solution $v$ to problem (\ref{test_J}-\ref{test_E}) using the L-BFGS optimization algorithm. We measure the difference between $v$ and the exact solution $v_e$ by using the norm (\ref{inner_norm}). We also look at the difference in objective function value between $v$ and $v_e$. In the columns (norm rate) and (functional rate), we report at which rate these error measures approach zero. We observe that the norm approaches zero at a rate of one, while the difference in functional value converge towards zero at a second order rate.} \label{IE_convergence}
@@ -131,9 +131,12 @@ Table \ref{CN_convergence} present results similar to the ones in table \ref{IE_
 \section{Verifying Function and Gradient Evaluation Speedups} \label{ver S sec}
 In \ref{analysis sec} we derived the theoretical speedup for numerical gradient and objective function evaluation when decomposing the time-interval. It would now be interesting to check if the implementation achieves the theoretical speedup for our example problem (\ref{test_J}-\ref{test_E}). Now let us explain the experimental setting. A computer with 6 cores was used to verify the results of section \ref{analysis sec}. Having 6 cores means that we can do gradient and function evaluation for $N=1,2,...,6$ decompositions with different time step sizes $\Delta t$. For each combination of $N$ and $\Delta t$, we will run the function and gradient evaluations ten times, and then choose the the smallest execution time produced by the ten runs. The speedup is then calculated by dividing the sequential execution time by the parallel execution time. Tables \ref{Speed_table1}-\ref{speed_table_end} below present runtime and speedup for both gradient and function evaluation for different $\Delta t$s and $N$s. All evaluations are done with control input $v=1$ and $\lambda_i=1$.  
 \\
+\\
+Since the parallel algorithm has some overhead, we do not expect any improvements for small problems. This is reflected in table \ref{Speed_table1} and \ref{Speed_table2}, where we for in table \ref{Speed_table1} observe an increased execution time when running function and gradient evaluation in parallel. In table \ref{Speed_table2} we see only a modest speedup, that is significantly lower than the expected speedup from section \ref{analysis sec}. In table \ref{Speed_table3} and \ref{speed_table_end} however, where $\Delta t \leq 10^{-5}$, we observe speedup results in line with what we expect from the theory. In these tables the speedups for function and gradient evaluation are close to $N$. We do however observe, that the speedups in particular for function evaluation is slightly lower than expected. This can be caused by parallel overhead or a suboptimal implementation. 
+\\
 \begin{table}[!h]
 \centering
-\caption{$\Delta t=10^{-2}$}
+\caption{Measuring the performance of algorithm \ref{OFEVAL} and \ref{GEVAL}, for $N=2,...,6$ and $\Delta t=10^{-2}$.}
 \label{Speed_table1}
 \begin{tabular}{lrrrr}
 \toprule
@@ -150,7 +153,7 @@ In \ref{analysis sec} we derived the theoretical speedup for numerical gradient 
 \end{table}
 \begin{table}[!h]
 \centering
-\caption{$\Delta t=10^{-4}$}
+\caption{Same as table \ref{Speed_table1}, but now $\Delta t=10^{-4}$.}
 \label{Speed_table2}
 \begin{tabular}{lrrrr}
 \toprule
@@ -167,7 +170,7 @@ In \ref{analysis sec} we derived the theoretical speedup for numerical gradient 
 \end{table}
 \begin{table}[!h]
 \centering
-\caption{$\Delta t=10^{-5}$\label{Speed_table3}}
+\caption{Same as table \ref{Speed_table1}, but now$\Delta t=10^{-5}$.\label{Speed_table3}}
 \begin{tabular}{lrrrr}
 \toprule
 {} $N$&  functional time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
@@ -183,11 +186,11 @@ In \ref{analysis sec} we derived the theoretical speedup for numerical gradient 
 \end{table}
 \begin{table}[!h]
 \centering
-\caption{$\Delta t=10^{-7}$}
+\caption{Same as table \ref{Speed_table1}, but now$\Delta t=10^{-7}$.}
 \label{speed_table_end}
 \begin{tabular}{lrrrr}
 \toprule
-{}$N$ &  functinal time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
+{}$N$ &  functional time(s) &  gradient time(s) &  functional speedup &  gradient speedup \\
 \midrule
 1 &           8.350 &         14.930 &            1.000 &          1.000 \\
 2 &           4.200 &          7.233 &            1.987 &          2.064 \\
@@ -198,9 +201,6 @@ In \ref{analysis sec} we derived the theoretical speedup for numerical gradient 
 \bottomrule
 \end{tabular}
 \end{table}
-\\
-\\
-Since the parallel algorithm has some overhead, we do not expect any improvements for small problems. This is reflected in table \ref{Speed_table1} and \ref{Speed_table2}, where we for in table \ref{Speed_table1} observe an increased execution time when running function and gradient evaluation in parallel. In table \ref{Speed_table2} we see only a modest speedup, that is significantly lower than the expected speedup from section \ref{analysis sec}. In table \ref{Speed_table3} and \ref{speed_table_end} however, where $\Delta t \leq 10^{-5}$, we observe speedup results in line with what we expect from the theory. In these tables the speedups for function and gradient evaluation are close to $N$. We do however observe, that the speedups in particular for function evaluation is slightly lower than expected. This can be caused by parallel overhead or a suboptimal implementation. 
 \\
 \\
 Anther interesting observation about tables \ref{Speed_table1}-\ref{speed_table_end}, is that the gradient evaluation time is consistently less than two times greater than a function evaluation. Since evaluating the gradient requires us to solve both the state and adjoint equation, while function evaluation only requires a state equation solve, one might expect that the execution time of a gradient evaluation would be exactly two times greater then the execution time of a function evaluation. This is however not the case, and the reason is that even though both the state and adjoint equations are linear, the state equation is still more computationally costly since it unlike the adjoint equation is non-homogeneous.
@@ -240,7 +240,7 @@ Notice that both $\Delta\hat J$ and $\Delta \hat J_{\mu}$ should be grater than 
 \end{figure}
 \noindent
 \\
-The plots in figure \ref{Cons1_fig} and \ref{Cons2_fig} all show a similar picture, and we observe that all measures decrease when the penalty parameter is increased. Still there are several parts of the plots worthy of note. The measure $\Delta\hat J$ related to the unpenalised objective function is the value that converges to zero the fastest. If we look at the values of $\Delta\hat J$ before the machine precision is reached we see that $\Delta \hat J$ is proportional to $\frac{1}{\mu^2}$. The convergence rate of $\Delta\hat J$ for $\Delta t=10^{-2}$ and $N=2$ is shown in table \ref{Cosn_rate_table} together with the convergence rate of $\Delta v$. $\Delta v$ and the other measures converge to zero at a rate of one, however we see that the relative error $\Delta v$ between the controls $v$ and $v_{\mu}$ stops to decrease long before the machine precision is reached. It seems that this barrier is hit around the same time as $\Delta\hat J$ approaches machine precision. The reason for this probably is that small changes in the control $v_{\mu}$ no longer registers in $\hat J_{\mu}$. It is therefore difficult to find an appropriate step length in the line search method, and this again means that we no longer are capable of finding the exact global minimizer of $\hat J_{\mu}$. If we remember theorem \ref{consistency theorem} from section \ref{penalty_sec} the sequence $\{v^{k}\}$ only converge toward $v$ if for all $k$ $(v^{k},\Lambda^k)$ is the global minimizer of $\hat J_{\mu}$. The results of figure \ref{Cons1_fig} and \ref{Cons2_fig} is therefore in line with the claim of theorem \ref{consistency theorem}.
+The plots in figure \ref{Cons1_fig} and \ref{Cons2_fig} all show a similar picture, and we observe that all measures decrease when the penalty parameter is increased. Still there are several parts of the plots worthy of note. The measure $\Delta\hat J$ related to the unpenalized objective function is the value that converges to zero the fastest. If we look at the values of $\Delta\hat J$ before the machine precision is reached we see that $\Delta \hat J$ is proportional to $\frac{1}{\mu^2}$. The convergence rate of $\Delta\hat J$ for $\Delta t=10^{-2}$ and $N=2$ is shown in table \ref{Cosn_rate_table} together with the convergence rate of $\Delta v$. $\Delta v$ and the other measures converge to zero at a rate of one, however we see that the relative error $\Delta v$ between the controls $v$ and $v_{\mu}$ stops to decrease long before the machine precision is reached. It seems that this barrier is hit around the same time as $\Delta\hat J$ approaches machine precision. The reason for this probably is that small changes in the control $v_{\mu}$ no longer registers in $\hat J_{\mu}$. It is therefore difficult to find an appropriate step length in the line search method, and this again means that we no longer are capable of finding the exact global minimizer of $\hat J_{\mu}$. If we remember theorem \ref{consistency theorem} from section \ref{penalty_sec} the sequence $\{v^{k}\}$ only converge toward $v$ if for all $k$ $(v^{k},\Lambda^k)$ is the global minimizer of $\hat J_{\mu}$. The results of figure \ref{Cons1_fig} and \ref{Cons2_fig} is therefore in line with the claim of theorem \ref{consistency theorem}.
 \\
 \\
 Unlike $\Delta v$, $\Delta\hat J_{\mu}$ and $\Delta y$ continue to decrease steadily towards zero, even after $\Delta \hat J$ has hit machine precision. The $\Delta\hat J_{\mu}$ and $\Delta y$ metrics are both related to the $\frac{\mu }{2}\sum_{i=1}^{N-1}(y^i(T_{i})-\lambda_i)^2$ term, which is the part that enforces the continuity constraints (\ref{Extra constraints}). This result is again in line with the theory presented in section \ref{penalty_sec}. There we stated theorem \ref{feasible theorem}, which guaranteed that the iterates $\{(v^{k},\Lambda^k)\}$ of the penalty method would converge to a feasible point when $\mu_k$ tended to infinity. In context of the reduced and decomposed problem (\ref{constrained reduced j}-\ref{constrained reduced}), $(v,\Lambda)$ being feasible means that the continuity constraints in (\ref{Extra constraints}): $y_{j_i}^i -\lambda_i =0$ are satisfied for all $i=1,...,N-1$. In all the plots of figure \ref{Cons1_fig} and \ref{Cons2_fig} $\Delta y= \sup_i\{y_{j_i}^i-y_{j_i}^{i+1}\}$ approach machine precision for large $\mu$'s. The iterates $\{(v^{k},\Lambda^k)\}$ obtained by our method applied to problem (\ref{test_J}-\ref{test_E}) therefore clearly converge towards a feasible point.

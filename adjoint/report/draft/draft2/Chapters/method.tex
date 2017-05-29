@@ -6,7 +6,7 @@ This chapter consists of four sections. In the first section we decompose the ti
 \\
 \\
 In the third section a Parareal based preconditioner to be used in the optimization algorithms solving the optimal control problems is presented. This preconditioner originally proposed in \cite{maday2002parareal} is derived using ideas from subsection \ref{algebraic_sec} and we will in chapter \ref{Experiments chapter} see that it is crucial for the parallel in time algorithm to obtain any meaningful speedup. In the fourth and last section we propose a parallel in time method based on the penalty framework of section \ref{penalty_sec} and the BFGS optimization algorithm. The Parareal-based preconditioner from section \ref{pc sec} is used as an initial inverted Hessian approximation in the BFGS algorithm.
-\section{Optimal Control with Time-dependent DE Constraints on a Decomposed Time Interval} \label{decomp_sec}
+\section{Optimal Control with Time-Dependent ODE Constraints on a Decomposed Time Interval} \label{decomp_sec}
 We want to solve reducible optimization problems of type (\ref{OCP_DEF_J}-\ref{OCP_DEF_E}), where the state equation constraint $E(y(t),v,y_0)=0$ is time-dependent and solved on the interval $I=[0,T]$, with initial condition $y_0$. To introduce parallelism to our optimal control problem, we need to decompose the time domain and the state equation as we did in chapter \ref{parareal_chap}. 
 \begin{definition}[Decomposed state equation] \label{DecompEDef}
 Let $0=T_0<T_1<\cdots<T_{N-1}<T_N=T$ and define the $i$-th decomposed subinterval to be $I_i=[T_{i-1},T_i]$. We then introduce $N-1$ intermediate initial conditions $\Lambda=(\lambda_1,...,\lambda_{N-1})$, and set $\lambda_0=y_0$. Using these intermediate initial conditions we are able to define $N$ decomposed state equations:
@@ -208,10 +208,14 @@ For $i=1,...,N-1$, the weak formulation of the decomposed adjoint equations will
 \begin{align*}
 \textrm{Find $p_i$ s.t.}\quad (p_i,(\frac{\partial}{\partial t}-a+\delta_{T_{i-1}})\psi)_i =(\mu\delta_{T_i}(y_i(T_i)-\lambda_i),\psi)_i \quad \forall \psi\in C^{\infty}((T_{i-1},T_i)).
 \end{align*}
-For $i=N$ the adjoint equation is almost identical to the above expression, with exception of the $(\mu\delta_{T_i}(y_i(T_i)-\lambda_i),\psi)_i$ term, which instead is replaced by $(\delta_{T_N}\alpha(y_N(T_N)-y^T),\psi)_i$. Using partial integration we can reformulate the weak formulations of the decomposed adjoint equations into the strong formulations stated in proposition \ref{pen_adjoint_prop}.
+For $i=N$ the adjoint equation is almost identical to the above expression, with exception of the $(\mu\delta_{T_i}(y_i(T_i)-\lambda_i),\psi)_i$ term, which instead is replaced by $(\delta_{T_N}\alpha(y_N(T_N)-y^T),\psi)_i$. Using partial integration we can move the differentiation from $\psi$ to $p_i$. The adjoint equation on for $i=1,...,N-1$, is then: Find $p_i$ such that 
+\begin{align*}
+\int_{T_{i-1}}^{T_{i}} (-p_i'(t)-ap_i(t))\psi(t) dt +p_i(T_{i})\psi(T_{i}) = \mu( y_i(T_i)-\lambda_i)\psi(T_i) \quad \forall \psi\in C^{\infty}.
+\end{align*}
+Since we can vary $\psi$ arbitrarily, we recover the strong formulation stated in (\ref{exs_adjoint}).
 \end{proof}
 \noindent
-With the adjont equations we can find the gradient.
+With the adjoint equations we can derive the gradient.
 \begin{proposition} \label{penGrad_prop}
 The gradient of (\ref{penalty_func}), $\hat J_{\mu}'$, with respect to the control $(v,\Lambda)$ is:
 \begin{align}
@@ -302,7 +306,7 @@ Given a fine propagator $\bold F_{\Delta T}$, that solves a time-dependent diffe
 &\min_{\Lambda}\bold{J}(\Lambda,y) = \frac{1}{2}\sum_{i=1}^{N-1} (y_{i-1}(T_{i})-\lambda_{i})^2, \label{virtual_func} \\
 &\textrm{subject to } \ y_{i-1}(T_{i}) = \bold F_{\Delta T}(\lambda_{i-1})\quad \textrm{for} \ i=1,...,N-1 \label{virtual}
 \end{align}
-We also recognize function (\ref{virtual_func}) as a least squares function, which we can write on vector notation as:
+We also recognize function (\ref{virtual_func}) as a least squares function, which we can express more compactly as:
  \begin{align}
 \bold J(y,\Lambda) = \frac{1}{2} x(\Lambda)^Tx(\Lambda), \label{non_lin_LS}
 \end{align}
@@ -557,6 +561,9 @@ The last aspect of the preconditioner $Q$ (\ref{Q_PC}), that we have yet not dis
 For $\mathcal{O}(N)$ to be considered a cheap operation, we require $N<<n$, where $n$ is the number of fine time steps. Since $N$ is the number of decomposed subintervals, $N$ does also equal the maximal number of processes that can be used to parallelize in time. If we want to increase the number of processes, we also need to increase $N$. This creates an upper limit for the scalability of our algorithm, when we use the Parareal-based preconditioner. For a fixed problem size $n$, the absolute upper limit of processes that can be used is $N=n$, but since we need a cheap to compute $Q$, this limit is in practice lower.  
 \section{Summary and Presentation of Algorithm} \label{Algorithm_sec}
 In the previous section we presented and derived properties of the Parareal-based preconditioner $Q$ introduced in \cite{maday2002parareal}. We showed that $Q$ is symmetric positive definite, and that it approximates the inverse Hessian of $\hat J_{\mu}$, at least for the part connected to the virtual control. We can therefore use $Q$ as an initial inverted Hessian approximation in the BFGS or L-BFGS optimization algorithms for minimization of the penalized objective function $\hat J_{\mu}(v,\Lambda)$ (\ref{constrained reduced j}). Combining the preconditioned BFGS solver with the quadratic penalty method of algorithm \ref{PEN_ALG} makes us able to propose algorithm \ref{PPC_PEN_ALG} as a parallel in time method for solving optimization problems with time-dependent DE constraints.
+\\
+\\
+In algorithm \ref{PPC_PEN_ALG} we use the Parareal-based preconditioner $Q$, but an unpreconditioned version of algorithm \ref{PPC_PEN_ALG} would also be able to solve problem (\ref{constrained reduced j}). When we investigate the performance of our Parareal-preconditioned method we will compare it with the unpreconditioned algorithm.
 \\
 \\
 \begin{algorithm}[H] 

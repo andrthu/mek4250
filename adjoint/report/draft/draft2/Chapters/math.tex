@@ -129,7 +129,7 @@ p(T) &= \alpha(y(T)-y^T)   \label{exs_adjoint_ic}
 \end{align}
 \end{proposition}
 \begin{proof}
-From proposition \ref{redGrad_prop} we know that the adjoint equation is $E_y(y,v)^{*}p=J_y(y,v)$. To find the adjoint equation we therefore need expressions for $E_y(y,v)^{*}$ and $J_y(y,v)$. In the derivation of these terms we will use the weak formulation of the sate equation (\ref{exs_E}). Let $(\cdot,\cdot)$ be the $L^2$ inner product over $(0,T)$, and then define the operator $\delta_{\tau}$ to represent function evaluation at time $t=\tau$ in a $L^2$-inner product setting. We can then write up the weak formulation of the state equation (\ref{exs_E}) by multiplying it with a test function $\phi(t)$, integrating the result over $(0,T)$ and then moving the derivative from $y$ to $\phi$ by doing partial integration. The weak formulation of the state equation is then:
+From proposition \ref{redGrad_prop} we know that the adjoint equation is $E_y(y,v)^{*}p=J_y(y,v)$. To find the adjoint equation we therefore need expressions for $E_y(y,v)^{*}$ and $J_y(y,v)$. In the derivation of these terms we will use the weak formulation of the state equation (\ref{exs_E}). Let $(\cdot,\cdot)$ be the $L^2$ inner product over $(0,T)$, and then define the operator $\delta_{\tau}$ to represent function evaluation at time $t=\tau$ in a $L^2$-inner product setting. We can then write up the weak formulation of the state equation (\ref{exs_E}) by multiplying it with a test function $\phi(t)$, integrating the result over $(0,T)$ and then moving the derivative from $y$ to $\phi$ by doing partial integration. The weak formulation of the state equation is then:
 \begin{gather*}
 \textrm{Find $y \in L^2(0,T)$ such that}\\
 \mathcal{E}[y,\phi]= (y,-(\frac{\partial}{\partial t}+a- \delta_T)\phi) -(y_0\delta_0+v,\phi)=0\quad	 \forall \ \phi \in C^{\infty}((0,T)).
@@ -173,7 +173,7 @@ Since we can vary $\psi$ arbitrarily, we get the strong formulation:
 \end{align*}
 \end{proof}
 \noindent
-With the adjoint we can find the gradient of $\hat{J}$. Lets state the result first.
+With the adjoint we can find the gradient of $\hat{J}$. Let us state the result first.
 \begin{proposition}
 The gradient of the reduced objective function $\hat{J}$ with respect to v is
 \begin{align}
@@ -186,7 +186,7 @@ Expression (\ref{gradient}) in proposition \ref{redGrad_prop} states that the gr
 J_v(y,v) &= v \\
 \mathcal{E}_v[\cdot,\phi] &= -(\cdot,\phi).
 \end{align*}
-Here $\mathcal{E}$ is the bilinear form defined in the proof of priposition \ref{adjoint_eq_prop}. Since $\mathcal{E}_v[\cdot,\phi]$ is symmetric, $\mathcal{E}_v^*=\mathcal{E}_v$, and its strong formulation is $E_v(y,v)^*=-1$. By inserting relevant terms into (\ref{gradient}), we get the gradient:
+Here $\mathcal{E}$ is the bilinear form defined in the proof of proposition \ref{adjoint_eq_prop}. Since $\mathcal{E}_v[\cdot,\phi]$ is symmetric, $\mathcal{E}_v^*=\mathcal{E}_v$, and its strong formulation is $E_v(y,v)^*=-1$. By inserting relevant terms into (\ref{gradient}), we get the gradient:
 \begin{align}
 \hat{J}'(v)&=-E_v(y,v)^*p + J_v(y,v) \\
 &= p+v. \label{exs_grad}
@@ -267,7 +267,7 @@ To be able to solve optimal control problems numerically, we need to discretize 
 	\end{array}
 \right.\label{general_1st_ODE}
 \end{align}
-Both the state and adjoint equation of our example problem can be formulated as an equation on form (\ref{general_1st_ODE}), and understanding the numerics of (\ref{general_1st_ODE}) is therefore sufficient for the purposes of this thesis. Before we introduce numerical methods for solving ODEs and evaluating integrals, we need to explain how we discritize the time domain $I=[0,T]$. We do this by dividing $I$ into $n$ parts of length $\Delta t=\frac{T}{n}$, and then setting $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Numerically solving a differential equation for $y$ on $I_{\Delta t}$ means that we try to find $y(t_k)$ for $k=0,...,n+1$. For the rest of this section we let the notation $y_k$ denote evaluating the function $y$ at time $t_k$.
+Both the state and adjoint equation of our example problem can be formulated as an equation on form (\ref{general_1st_ODE}), and understanding the numerics of (\ref{general_1st_ODE}) is therefore sufficient for the purposes of this thesis. Before we introduce numerical methods for solving ODEs and evaluating integrals, we need to explain how we discretize the time domain $I=[0,T]$. We do this by dividing $I$ into $n$ parts of length $\Delta t=\frac{T}{n}$, and then setting $t_k=k\Delta t$. This gives us a sequence $I_{\Delta t}=\{t_k\}_{k=0}^{n}$ as a discrete representation of the interval $I$. Numerically solving a differential equation for $y$ on $I_{\Delta t}$ means that we try to find $y(t_k)$ for $k=0,...,n+1$. For the rest of this section we let the notation $y_k$ denote evaluating the function $y$ at time $t_k$.
 \subsection{Discretizing ODEs Using Finite Difference} \label{FD_sub_sec}
 Finite difference is a tool for approximating derivatives of functions. When we have a discretized domain $I_{\Delta t}$ with time step $\Delta t$, the derivative of a function $y$ at point $t_k$ is approximated by:
 \begin{align}

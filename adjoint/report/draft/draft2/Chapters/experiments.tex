@@ -60,7 +60,7 @@ Since the point of this test is to compare the effectiveness of the Parareal-bas
 There are several things of note about the results in table \ref{compare_table}. First off we see that the normed difference in control between exact and parallel solution lies in the range from $10^{-5}$ to $10^{-3}$. Another observation about the norm difference, is that for each $N$, the preconditioned and unpreconditioned solvers seems to produce roughly the same error. 
 \\
 \\
-When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=2,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned solver get speedup for all decompositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is considerably less then optimal for all $N$. Another thing that we notice when looking at the sum of gradient and function evaluations for the preconditioned solver, is that it increases steadily up to $N=16$, and then starts to decline again for higher $N$s. The reason for this is that when we increase the number of decomposed subintervals, we also make the coarse solver in the parareal preconditioner finer. This means that the preconditioner becomes a better approximation of the Hessian, which makes the L-BFGS iteration converge faster.
+When we look at the total number of gradient and functional evaluations for the preconditioned and unpreconditioned solvers, we see that there are differences. While it seems to be little to no benefit to use the preconditioner for $N=2,...,8$, it becomes very important for the bigger $N$ values, where number of gradient and functional evaluations seems to explode for the unpreconditioned solver. If one accepts the above solutions as good enough, we see that we for the preconditioned solver get speedup for all decompositions, and that the ideal speedup seems to increase when we increase $N$. We do however see that the ideal speedup for each $N$ is considerably less then optimal for all $N$. Another thing that we notice when looking at the sum of gradient and function evaluations for the preconditioned solver, is that it increases steadily up to $N=16$, and then starts to decline again for higher $N$s. The reason for this is that when we increase the number of decomposed subintervals, we also make the coarse solver in the Parareal preconditioner finer. This means that the preconditioner becomes a better approximation of the Hessian, which makes the L-BFGS iteration converge faster.
 \subsection{The Impact of $\mu$ on our Parareal-Based Preconditioner}
 In the previous subsection we observed that the performance of our Parareal preconditioned algorithm was independent of the number decompositions $N$. In this subsection we will investigate how our method performs, when we let $N$ and $n$ be constant, but vary the penalty parameter $\mu$. The experiment will be conducted by solving problem (\ref{speed_j}-\ref{speed_e}) using a Crank-Nicolson finite difference scheme. We use $n=10^3$ and $\Delta t=0.1$. The test will be executed sequentially, and potential speedup is measured using the ideal speedup $\hat S$ defined in (\ref{ideal S}). To be able to calculate $\hat S$, we first need to solve (\ref{speed_j}-\ref{speed_e}) using the serial algorithm. We present the accuracy and total number of function and gradient evaluations $L_S$ of the serial solution in table \ref{mu1}.
 \\ 
@@ -122,7 +122,7 @@ The results of table \ref{mu2} and \ref{mu3} again show that the preconditioned 
 When we increase $\mu$ above $10^5$, we see for both $N=16$ and $N=64$, that $L_{p_N}$ increases. For $N=16$ we even observe speedup values less than one for the preconditioned algorithm. We can however improve the performance of our method for large $\mu$ by doing multiple penalty steps. We illustrate this with the results presented in table \ref{mu4}. Here we first solved our example problem with $\mu=10^5$ and $N=16$, and then used this solution as an initial guess to the optimization of the penalized objective function with $\mu =10^8$. We see that when we use this approach, solving the problem with $\mu=10^8$ only requires $25$ extra function and gradient evaluations. Adding these to $L_{p_{16}}=155$ from the $\mu=10^5$ solve yields a total of $180$ function and gradient evaluations, which for our example means an ideal speedup of $\hat S =2.04$. Similar results can be obtained for $N=16$.
 \\
 \begin{table}[h!]
-\caption{Result of first solving problem (\ref{speed_j}-\ref{speed_e}) using $\mu=10^5$, for $N=16$, and then using this solution as an initial guess for the solution of the same problem using $\mu=10^8$. The two first rows present $L_{p_{16}}$, $\hat S$ and normed control error ($||v_e-v_{pc}||$) between exact solution $v_e$ and numerical solution $v_{pc}$ for each penalty iteration. The last row show the total result of both solves. Notice that going from $\mu=10^5$ to $\mu=10^8$ only requires $25$ extra function and gradient evaluations. In comporison solving probelm (\ref{speed_j}-\ref{speed_e}) with $\mu=10^8$, but without a good initial guess requires $L_{p_{16}}=410$. } \label{mu4}
+\caption{Result of first solving problem (\ref{speed_j}-\ref{speed_e}) using $\mu=10^5$, for $N=16$, and then using this solution as an initial guess for the solution of the same problem using $\mu=10^8$. The two first rows present $L_{p_{16}}$, $\hat S$ and normed control error ($||v_e-v_{pc}||$) between exact solution $v_e$ and numerical solution $v_{pc}$ for each penalty iteration. The last row show the total result of both solves. Notice that going from $\mu=10^5$ to $\mu=10^8$ only requires $25$ extra function and gradient evaluations. In comparison solving problem (\ref{speed_j}-\ref{speed_e}) with $\mu=10^8$, but without a good initial guess requires $L_{p_{16}}=410$. } \label{mu4}
 \begin{tabular}{lrrr}
 \toprule
 {} $\mu$ & $L_{p_{16}}$ & $\hat S$ & $||v_e-v_{pc}||$ \\
@@ -145,14 +145,14 @@ To properly test algorithm \ref{PPC_PEN_ALG}, we have tested its use on the exam
 \toprule
 {}$N$ &   $\frac{||v-v_e||_{L^2}}{||v_e||_{L^2}}$ &     $\frac{\hat J(v)-\hat J(v_e)}{\hat{J}(v_e)}$ &   $L_{p_N}$ &     $\hat S$ &       time (s) &    speedup &        efficiency \\
 \midrule
-1   &  0.000002 &           -- &  19 &   1.000 &  63.370 &   1.000 &  1.0000 \\
-4   &  0.000018 &  2.761e-10 &  37 &   2.054 &  40.124 &   1.579 &  0.3948 \\
-16  &  0.000061 &  3.169e-09 &  97 &   3.134 &  28.409 &   2.230 &  0.1394 \\
-32  &  0.000044 &   1.65e-09 &  85 &   7.152 &  12.681 &   4.997 &  0.1561 \\
-48  &  0.000031 &  8.285e-10 &  73 &  12.493 &   7.056 &   8.980 &  0.1871 \\
-72  &  0.000021 &  3.703e-10 &  88 &  15.545 &   6.243 &  10.149 &  0.1409 \\
-96  &  0.000015 &  2.196e-10 &  61 &  29.901 &   3.630 &  17.452 &  0.1817 \\
-120 &  0.000012 &  1.727e-10 &  61 &  37.377 &   2.690 &  23.556 &  0.1963 \\
+1   &  0.000002 &           -- &  19 &   1.00 &  63.37 &   1.00 &  1.000 \\
+4   &  0.000018 &  2.76e-10 &  37 &   2.05 &  40.12 &   1.57 &  0.394 \\
+16  &  0.000061 &  3.16e-09 &  97 &   3.13 &  28.40 &   2.23 &  0.139 \\
+32  &  0.000044 &   1.65e-09 &  85 &   7.15 &  12.68 &   4.99 &  0.156 \\
+48  &  0.000031 &  8.28e-10 &  73 &  12.49 &   7.05 &   8.98 &  0.187 \\
+72  &  0.000021 &  3.70e-10 &  88 &  15.54 &   6.24 &  10.14 &  0.140 \\
+96  &  0.000015 &  2.19e-10 &  61 &  29.90 &   3.63 &  17.45 &  0.181 \\
+120 &  0.000012 &  1.72e-10 &  61 &  37.37 &   2.69 &  23.55 &  0.196 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -196,8 +196,11 @@ We will now try to minimize the altered objective function (\ref{sinJ}) coupled 
 \caption{Optimal control for the unaltered and altered example problem (\ref{speed_j}-\ref{speed_e}). Notice the smoothness and simplicity of figure \ref{smootha}.}
 \label{smooth}
 \end{figure}
-\begin{table}
-\caption{Results of applying our algorithmic framework to optimization of (\ref{sinJ}) for different decomposition sizes $N$. The columns display error ($\frac{||v_e-v||}{||v||}$), total number of gradient and function evaluations ($L_{p_N}$) and ideal speedup ($\hat S$). The error is measured between the exact solution and the numerical solution for each $N$.}
+\\
+It is interesting to contrast the findings of table \ref{unsmoothTab} with the results from table \ref{compare_table}. We notice that the total number of gradient and function evaluations ($L_{p_N}$) is consistently higher in table \ref{unsmoothTab}, but since this is also the case for the sequential solver, we actually observe better ideal speedup in table \ref{unsmoothTab} than in table \ref{compare_table}. This might indicate that our method has a higher potential for success on more complicated problems, where the serial solver requires a higher number of function and gradient evaluations.
+\\
+\begin{table}[h]
+\caption{Results of applying our algorithmic framework to optimization of (\ref{sinJ}) for different decomposition sizes $N$. The columns display error ($\frac{||v_e-v||}{||v||}$), total number of gradient and function evaluations ($L_{p_N}$) and ideal speedup ($\hat S$). The error is measured between the exact solution and the numerical solution for each $N$. For all $N>1$, we observe the same order of accuracy as the serial algorithm. We also notice encouraging ideal speedup results, that are in part caused by an expensive serial solve, i.e. $L_S=L_{p_1}=53$. }
 \centering
 \label{unsmoothTab}
 \begin{tabular}{lrrr}
@@ -214,5 +217,4 @@ We will now try to minimize the altered objective function (\ref{sinJ}) coupled 
 \bottomrule
 \end{tabular}
 \end{table}
-\\
-It is interesting to contrast the findings of table \ref{unsmoothTab} with the results from table \ref{compare_table}. We notice that the total number of gradient and function evaluations ($L_{p_N}$) is consistently higher in table \ref{unsmoothTab}, but since this is also the case for the sequential solver, we actually observe better ideal speedup in table \ref{unsmoothTab} than in table \ref{compare_table}. This might indicate that our method has a higher potential for success on more complicated problems, where the serial solver requires a higher number of function and gradient evaluations.
+
