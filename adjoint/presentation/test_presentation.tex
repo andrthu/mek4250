@@ -39,25 +39,67 @@ E_y^*p = J_y
 \end{frame}
 \begin{frame}
 \frametitle{Example problem}
-\begin{align*}
+\begin{columns}
+\column{0.58\linewidth}
+\begin{itemize}
+\item<1->{Objective function:{\tiny\begin{align*}
 J(y,v) = \frac{1}{2}\int_0^Tv(t)^2dt + \frac{\alpha}{2}(y(T)-y^T)^2 
 \end{align*}
-\begin{align*}
+}%
+}
+\item<1->{State equation:{\tiny\begin{align*}
 \left\{
      \begin{array}{lr}
-       	y'(t)=ay(t) + v(t) \quad \textrm{for } \ t\in(0,T),\\
+       	y'(t)=ay(t) + v(t), \quad  t\in(0,T),\\
        	y(0)=y_0.
      \end{array}
    \right. 
 \end{align*}
+}%
+}
+\end{itemize}
+\column{0.38\linewidth}
+\begin{itemize}
+\item<2->{Gradient:{\tiny
+\begin{align*}
+\hat{J}'(v) = v+p
+\end{align*}
+}%
+}
+\item<3->{Adjoint Equation:{\tiny
+\begin{align*}
+\left\{
+     \begin{array}{lr}
+       	p'(t)=-ap(t), \quad  t\in(0,T),\\
+       	p(T)=\alpha(y(T)-y^T).
+     \end{array}
+   \right. 
+\end{align*}
+}%
+}
+\end{itemize}
+\end{columns}
 \end{frame}
 %llllllllllllllllllllllllllllllllllllllllllllllll
 \section{optimization}
 \begin{frame}
 \frametitle{Line search methods}
+\begin{columns}
+\column{0.58\linewidth}
+\begin{itemize}
+\item{Iterative methods for unconstrained optimization.}
+\item{Produces iterates $\{x^k\}$, utilizing an initial guess $x^0$.}
+\end{itemize}
+\column{0.38\linewidth}
+One iteration of a line search method:
+{\small
 \begin{align*}
-x^{k+1} = x^k -\gamma^k p^k
+1.\quad& \textrm{Find decent direction $p^k$}\\
+2.\quad& \textrm{Find an adequate step length $\gamma^k$}\\
+3.\quad& \textrm{Update iterate $x^{k+1} = x^k -\gamma^k p^k$}
 \end{align*}
+}%
+\end{columns}
 \end{frame}
 \begin{frame}
 \frametitle{BFGS}
@@ -69,13 +111,21 @@ H^{k+1} = (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_
 \section{PPC}
 \begin{frame}
 \frametitle{Quadratic penalty method}
+\begin{columns}
+\column{0.58\linewidth}
+\centering
 \begin{align*}
-\min_x f(x) \quad \textrm{subject to} \ c_i(x)=0 \quad i=1,...,N
+&\min_x f(x) \ \textrm{subject to} \\ &c_i(x)=0 \quad i=1,...,N
 \end{align*}
-Transform constrained problem into unconstrained problem
+Move constraints into functional:
 \begin{align*}
 f_{\mu}(x) = f(x) + \frac{\mu }{2}\sum_{i=1}^N c_i(x)^2 
 \end{align*}
+\column{0.38\linewidth}
+\begin{align*}
+\hat{J}_{\mu}(v,\Lambda) = \hat{J}(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)^2
+\end{align*}
+\end{columns}
 \end{frame}
 \begin{frame}
 \frametitle{Consistency}
@@ -93,7 +143,7 @@ f_{\mu}(x) = f(x) + \frac{\mu }{2}\sum_{i=1}^N c_i(x)^2
 \frametitle{Virtual problem}
 
  \begin{align}
-\bold J(y,\Lambda) = \frac{1}{2} x(\Lambda)^Tx(\Lambda), \label{non_lin_LS}
+\bold J(\Lambda) = \frac{1}{2} x(\Lambda)^Tx(\Lambda), \label{non_lin_LS}
 \end{align}
 \begin{align}
 x(\Lambda)=\left( \begin{array}{c}  
@@ -118,7 +168,12 @@ x(\Lambda)=\left( \begin{array}{c}
 %llllllllllllllllllllllllllllllllllllllllllllllllll
 \section{Experiments}
 \begin{frame}
-hei hallo
+\frametitle{Experimental setup}
+\begin{itemize}
+\item<1->{Total number of function and gradient evaluations for serial algorithm $L_S$ and parallel algorithm $L_{p_N}$}
+\item<1->{Ideal speedup $\hat{S}=\frac{N L_S}{L_{p_N}}$}
+\item<2->{$\mu$,$N$ and $n$}
+\end{itemize}
 \end{frame}
 \end{document}
 
