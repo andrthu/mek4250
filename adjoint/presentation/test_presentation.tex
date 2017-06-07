@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[9pt]{beamer}
 
 
 \usepackage{amsmath,amsfonts,amssymb,amsthm, gensymb}
@@ -14,18 +14,36 @@
 \date{2017}
  
 \usetheme{Berlin}
- 
+\usecolortheme{beaver}
 \begin{document}
  
 \frame{\titlepage}
 \tableofcontents
 \section{Problem}
+
 \begin{frame}
 \frametitle{Optimization with ODE constraints}
-
+\begin{itemize}
+\item{The aim of the thesis is to propose a parallel in time method for solving optimal control problems.}
+\item{Our proposed algorithm uses a Parareal-based preconditioner originally introduced in [Maday et al] }
+\end{itemize}
+\begin{block}{Optimal Control Problem}
 \begin{align*}
 \min_{y,v} &J(y(t),v), \\
 \textrm{subject to} \ &E(y(t),v)=0\quad t\in[0,T]
+\end{align*}
+\end{block}
+
+\end{frame}
+\begin{frame}
+
+\frametitle{The reduced problem}
+\begin{itemize}
+\item{If the State equation is well posed for all control variables $v\in V$, we can define a reduced objective function $\hat{J}(v) = J(y(v),v)$.}
+\item{Using $\hat J$, we can transform the optimal control problem into an unconstrained optimization problem.}
+\end{itemize}
+\begin{align*}
+\min_v\hat J (v)
 \end{align*}
 \end{frame}
 \begin{frame}
@@ -109,6 +127,16 @@ H^{k+1} = (\mathbbold{1}-\rho_kS_k\cdot Y_k)H^k(\mathbbold{1} -\rho_kY_k\cdot S_
 \end{frame}
 %llllllllllllllllllllllllllllllllllllllllllllllll
 \section{PPC}
+\begin{frame}
+\frametitle{Decomposed problem}
+\begin{columns}
+\column{0.58\linewidth}
+\begin{itemize}
+\item{We let $0=T_0<T_1<\cdots<T_{N-1}<T_N=T$, and decompose $[0,T]$ into $N$ subintervals $[T_{i-1},T_i]$. }
+\item{We introduce intermediate initial values $\Lambda=(\lambda_1,...,\lambda_{N-1})$, and decompose the state equation into $N$ equations defined separately on each interval $[T_{i-1},T_i]$.}
+\end{itemize}
+\end{columns}
+\end{frame}
 \begin{frame}
 \frametitle{Quadratic penalty method}
 \begin{columns}
