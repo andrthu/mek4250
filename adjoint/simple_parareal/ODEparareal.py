@@ -275,7 +275,7 @@ def test_convergence():
     print E
 
 
-def constant_iteration(k=3,M=[3,6,12,24,80,100,200,500,1000,2000],N=10000,plot_=True):
+def constant_iteration(k=3,M=[3,6,50,20,80,100,200,500,1000,2000],N=10000,plot_=True):
 
     a = 1.3
     T = 4
@@ -285,6 +285,7 @@ def constant_iteration(k=3,M=[3,6,12,24,80,100,200,500,1000,2000],N=10000,plot_=
     tol = 1./1000
     t = np.linspace(0,T,N+1)
     A = lambda x: np.cos(2*np.pi*x)
+    A= lambda x: np.cos(np.pi*x)
     a = A(t)
     c= 10
     #C = np.zeros(N+1) +c
@@ -329,6 +330,8 @@ def constant_iteration(k=3,M=[3,6,12,24,80,100,200,500,1000,2000],N=10000,plot_=
     
     data = pd.DataFrame(table,index=M)
     #print data
+    plot_ = False
+    plot2_ = True
     if plot_:
         plt.figure(figsize=(10,16))
         ax1 = plt.subplot(311)
@@ -356,7 +359,17 @@ def constant_iteration(k=3,M=[3,6,12,24,80,100,200,500,1000,2000],N=10000,plot_=
         ax4.plot(t,Y_list[6],'.')
         """
         plt.show()
-    
+    if plot2_:
+        lam = implicit_solver(y0,A(np.linspace(0,T,21)),float(T)/20,20)
+
+        plt.figure(figsize=(10,16))
+        plt.plot(np.linspace(0,T,21),lam,'rs',markersize=10)
+        plt.plot(t,Y_list[3],'o',markersize=1)
+        plt.xlabel(r'$t$', fontsize=40)
+        #plt.ylabel('y(t)', fontsize=40)
+        plt.title('Decomposed equation on 20 subintervals',fontsize=25)
+        plt.legend([r'$\lambda_i$',r'$y(t)$'],loc=2,fontsize=30)
+        plt.show()
     return data
     
 
