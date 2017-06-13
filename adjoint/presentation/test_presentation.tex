@@ -1,24 +1,34 @@
 \documentclass[9pt]{beamer}
-
-
+\mode<presentation>{}
+\usepackage{beamerthemesplit} 
+\setbeamertemplate{headline}{}
+\usepackage{color, array, threeparttable}
+\setbeamerfont{page number in head/foot}{size=\large}
+\setbeamertemplate{footline}[frame number]
 \usepackage{amsmath,amsfonts,amssymb,amsthm, gensymb}
 \DeclareMathAlphabet{\mathbbold}{U}{bbold}{m}{n}    
-
+\setbeamertemplate{footline}[frame number]
+%\usepackage{beamerthemeshadow}
 \usepackage[utf8]{inputenc}
- 
-
+\usepackage[ruled,boxed]{algorithm2e}
+\makeatletter
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\makeatother
 %Information to be included in the title page:
 \title{A Parallel in Time Method for Optimal Control}
 \subtitle{Parareal-Based preconditioner for BFGS algorithm}
 \author{Andreas Thune}
 \date{2017}
- 
-\usetheme{Berlin}
+\usepackage{verbatim}
+
+
+\usetheme{Madrid}
 \usecolortheme{beaver}
+%\usecolortheme{beetle}
 \begin{document}
  
 \frame{\titlepage}
-\tableofcontents
+%\tableofcontents
 \section{Problem}
 
 \begin{frame}
@@ -188,50 +198,205 @@ S_k &= x^{k+1}-x^{k},
 \end{block}
 \end{frame}
 \begin{frame}
-\frametitle{Quadratic penalty method}
+\frametitle{Quadratic penalty method \rom{1}}
+\begin{itemize}
+\item{Consider the constrained optimization problem:
+\begin{align*}
+\min_x f(x) \quad \textrm{subject to} \ c_i(x)=0 \quad i=1,...,N
+\end{align*}}
+\item{The quadratic penalty method is a method for solving constrained problems. The idea is to move the constraints into the functional:
+\begin{align*}
+f_{\mu}(x) = f(x) + \frac{\mu }{2}\sum_{i=1}^N c_i(x)^2, \quad \mu>0.
+\end{align*}}
+\item{For large $\mu$ values the minimizer of $f_{\mu}$ approximates the minimizer of $f$.}
+\end{itemize}
+\end{frame}
+\begin{frame}
+\frametitle{Quadratic penalty method \rom{2}}
 \begin{columns}
 \column{0.58\linewidth}
-\centering
-\begin{align*}
-&\min_x f(x) \ \textrm{subject to} \\ &c_i(x)=0 \quad i=1,...,N
-\end{align*}
-Move constraints into functional:
-\begin{align*}
-f_{\mu}(x) = f(x) + \frac{\mu }{2}\sum_{i=1}^N c_i(x)^2 
-\end{align*}
-\column{0.38\linewidth}
+\begin{itemize}
+\item{The penalized objective function for the decomposed optimal control problem is {\tiny
 \begin{align*}
 \hat{J}_{\mu}(v,\Lambda) = \hat{J}(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)^2
-\end{align*}
+\end{align*}}}
+\item{If for all $k$, the pair $\{(v^k,\Lambda^k)\}$ from algorithm \ref{PEN_ALG} is the exact global minimizer of $\hat J_{\mu_k}$, $\{(v^k,\Lambda^k)\}$ will converge towards the minimizer of $\hat J$.}
+\item{The iterates $\{(v^k,\Lambda^k)\}$ from algorithm \ref{PEN_ALG} will at least converge to a feasible point.}
+\end{itemize}
+\column{0.48\linewidth}
+{\tiny
+\begin{algorithm}[H] 
+\KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
+\For{$k=1,2,...$}{
+Find $(v^k,\Lambda^k)$ s.t. $\parallel\nabla \hat J_{\mu_{k-1}}(v^k,\Lambda^k)\parallel<\tau_{k-1}$\;
+\eIf{STOP CRITERION satisfied}{
+$\bold{Stop}$ algorithm\;
+}{
+Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
+}
+}
+\caption{Penalty method\label{PEN_ALG}}
+\end{algorithm}}%
 \end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{Consistency}
-\begin{align*}
-\lim_{\mu\rightarrow\infty} v^{\mu}=v
-\end{align*}
-\end{frame}
-\begin{frame}
 \frametitle{Parareal-based preconditioner}
+\begin{itemize}
+\item{We minimize $\hat J_{\mu_k}$ using the BFGS method. {\small
 \begin{align*}
-(v^{k+1},\Lambda^{k+1}) = (v^k,\Lambda^k) - \rho^kH^k \hat J'(v^k,\Lambda^k)
-\end{align*}
+(v_{j+1}^{k},\Lambda_{j+1}^{k}) = (v_j^k,\Lambda_j^k) - \rho_jH_j \hat J'(v_j^k,\Lambda_j^k)
+\end{align*}}}
+\item{We want to use the preconditioner proposed in [Maday et al] in the BFGS method. We do this by setting $H_0=Q$, where $Q$ is: {\small
+\begin{align*}
+Q = \left[ \begin{array}{cc}
+	\mathbbold{1} & 0 \\
+	0 & Q_{\Lambda} \\
+	\end{array} \right]\in \mathbb{R}^{n_v+N-1\times n_v+N-1},\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1}
+\end{align*}}}
+\item{We derive and motivate what $Q_{\Lambda}$ is by considering the virtual problem.}
+\end{itemize}
 \end{frame}
 \begin{frame}
-\frametitle{Virtual problem}
-
- \begin{align}
-\bold J(\Lambda) = \frac{1}{2} x(\Lambda)^Tx(\Lambda), \label{non_lin_LS}
-\end{align}
-\begin{align}
+\frametitle{Virtual problem \rom{1}}
+\begin{itemize}
+\item{The virtual problem is the ODE constrained optimization problem where the control variable is only the virtual control:
+{\tiny
+\begin{align*}
+\bold{ \hat J}(\Lambda) = \frac{1}{2} x(\Lambda)^Tx(\Lambda),\quad
 x(\Lambda)=\left( \begin{array}{c}  
-   \lambda_1 - \bold F_{\Delta T}(\lambda_0) \\ 
+   \lambda_1 - \bold F_{\Delta T}(y_0) \\ 
    \lambda_2 - \bold F_{\Delta T}(\lambda_1) \\
    \cdots  \\
    \lambda_{N-1} -\bold F_{\Delta T}(\lambda_{N-1}) \\
    \end{array}  \right).
-\end{align}
+\end{align*}}}
+\item{The gradient of the virtual objective function is:
+{\tiny
+\begin{align*}
+\nabla \bold{\hat J}(\Lambda)= \nabla x(\Lambda)^T x(\Lambda) = M(\Lambda)^Tx(\Lambda),
+\end{align*}}
+where 
+{\tiny
+\begin{align*}
+M(\Lambda)= \left[ \begin{array}{cccc}
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T}'(\lambda_{1}) & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T}'(\lambda_{2}) & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T}'(\lambda_{N-1}) & \mathbbold{1}  \\
+   \end{array}  \right]
+\end{align*}}}
+\end{itemize}
+\end{frame}
+\begin{frame}
+\frametitle{Virtual problem \rom{2}}
+\begin{itemize}
+\item{The Hessian of the virtual objective function is:
+{\small
+\begin{align*}
+\nabla^2 \bold{\hat J}(\Lambda)= \nabla x(\Lambda)^T \nabla x(\Lambda) + \nabla^2 x(\Lambda)^Tx(\Lambda) = M(\Lambda)^TM(\Lambda) + D(\Lambda),
+\end{align*}}
+where {\tiny$D(\Lambda)$} is a diagonal matrix with entries {\tiny$D_i=-\bold{F}_{\Delta T}''(\lambda_i)(\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i))$}.}
+\item{If the governing equation of {\tiny$\bold F_{\Delta T}$} is linear, {\tiny$D(\Lambda)=0$}, which means that {\tiny$\nabla^2 \bold{\hat J}(\Lambda)= M(\Lambda)^TM(\Lambda)$}.}
+\item{The idea now is to base the preconditioner $Q_{\Lambda}$ on an approximation of the inverse of {\tiny$M(\Lambda)^TM(\Lambda)$}. This is done by utilizing a coarse propagator {\tiny$\bold{G}_{\Delta T}$}, and defining a coarse version of $M(\Lambda)$.
+{\tiny
+\begin{align*}
+\bar M(\Lambda)= \left[ \begin{array}{cccc}
+   \mathbbold{1} & 0 & \cdots & 0 \\  
+   -\bold{G}_{\Delta T}'(\lambda_{1}) & \mathbbold{1} & 0 & \cdots \\ 
+   0 &-\bold{G}_{\Delta T}'(\lambda_{2}) & \mathbbold{1}  & \cdots \\
+   0 &\cdots &-\bold{G}_{\Delta T}'(\lambda_{N-1}) & \mathbbold{1}  \\
+   \end{array}  \right]
+\end{align*}}}
+\end{itemize}
+\end{frame}
+\begin{frame}
+\frametitle{Properties of $\bar M(\Lambda)^T\bar M(\Lambda)$}
+\begin{columns}
+\column{0.58\linewidth}
+\begin{itemize}
+\item{The inverse of $\bar M(\Lambda)$ is a linearised forward solve, while the inverse of $\bar M^T(\Lambda)$ is a linearised backwards solve.}
+\item{$\bar M(\Lambda)^T\bar M(\Lambda)$ is symmetric positive definite.}
+\item{For $N=2$ decompositions of the time domain $Q=\mathbbold{1}$.}
+\item{Applying $Q$ is an $\mathcal{O}(N)$ operation.}
+\end{itemize}
+\column{0.38\linewidth}
+\centering
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.2]{apply.png}
 
+\end{figure}
+
+\end{columns}
+\end{frame}
+\begin{comment}
+{\tiny
+Applying $\bar M(\Lambda)^{-1}\bar M(\Lambda)^{-T}\in \mathbbold{R}^{3\times 3}$ to a vector $(x_1,x_2,x_3)$:
+\begin{align*}
+1.\quad &\textrm{Apply $\bar M(\Lambda)^{-T}$ to $x$:} \\
+&\bar M(\Lambda)^{-T}x= \left(\begin{array}{c}
+x_1 + \bold G_{\Delta T}'(\lambda_1)(x_2 + \bold G_{\Delta T}'(\lambda_2)x_3)\\
+x_2 + \bold G_{\Delta T}'(\lambda_2)x_3 \\
+x_3 \\
+\end{array}
+\right) 
+\\
+2.\quad &\textrm{Apply $\bar M(\Lambda)^{-1}$ to $y=\bar M(\Lambda)^{-T}x$:} \\
+&\bar M(\Lambda)^{-1}y = \left(\begin{array}{c}
+y_1 \\
+y_2 + \bold G_{\Delta T}'(\lambda_1)y_1 \\
+y_3 + \bold G_{\Delta T}'(\lambda_2)(y_2 + \bold G_{\Delta T}'(\lambda_1)y_1)\\
+\end{array}
+\right)
+\end{align*}}
+\end{comment}
+\begin{comment}
+\begin{frame}
+\centering
+Applying $\bar M(\Lambda)^{-1}\bar M(\Lambda)^{-T}\in \mathbbold{R}^{3\times 3}$ to a vector $(x_1,x_2,x_3)$:
+\begin{align*}
+1.\quad &\textrm{Apply $\bar M(\Lambda)^{-T}$ to $x$:} \\
+&\bar M(\Lambda)^{-T}x= \left(\begin{array}{c}
+x_1 + \bold G_{\Delta T}'(\lambda_1)(x_2 + \bold G_{\Delta T}'(\lambda_2)x_3)\\
+x_2 + \bold G_{\Delta T}'(\lambda_2)x_3 \\
+x_3 \\
+\end{array}
+\right) 
+\\
+2.\quad &\textrm{Apply $\bar M(\Lambda)^{-1}$ to $y=\bar M(\Lambda)^{-T}x$:} \\
+&\bar M(\Lambda)^{-1}y = \left(\begin{array}{c}
+y_1 \\
+y_2 + \bold G_{\Delta T}'(\lambda_1)y_1 \\
+y_3 + \bold G_{\Delta T}'(\lambda_2)(y_2 + \bold G_{\Delta T}'(\lambda_1)y_1)\\
+\end{array}
+\right)
+\end{align*}
+\end{frame}
+\end{comment}
+
+\begin{frame}
+\frametitle{Parallel in time algorithm for optimal control}
+{\tiny
+\begin{algorithm}[H] 
+\KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
+\For{$k=1,2,...$}{
+$(v_0^k,\Lambda_0^k) \leftarrow (v^{k-1},\Lambda^{k-1})$\;
+$H^0 \leftarrow Q(\Lambda_0^{k})$\;
+\While{$||\hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)||\geq \tau_{k-1}$ }{
+$(v_{j+1}^k,\Lambda_{j+1}^k) \leftarrow (v_j^k,\Lambda_j^k) - \rho^j H^j \hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k) $\tcp*[h]{In parallel}\;
+Update $H^{j+1}$\;
+$H^0 \leftarrow Q(\Lambda_{j+1}^k)$\;
+}
+$(v^{k},\Lambda^{k})\leftarrow(v_{j}^k,\Lambda_{j}^k)$\;
+\eIf{STOP CRITERION on $(v^{k},\Lambda^{k})$ satisfied}{
+$\bold{Stop}$ algorithm\;
+}{
+Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
+}
+}
+\caption{Quadratic penalty method with preconditioned BFGS optimization\label{PPC_PEN_ALG}}
+\end{algorithm}
+}
 \end{frame}
 %llllllllllllllllllllllllllllllllllllllllllllllllll
 \section{consistency}
@@ -252,6 +417,21 @@ x(\Lambda)=\left( \begin{array}{c}
 \item<1->{Ideal speedup $\hat{S}=\frac{N L_S}{L_{p_N}}$}
 \item<2->{$\mu$,$N$ and $n$}
 \end{itemize}
+\end{frame}
+\begin{frame}
+\frametitle{Performance for increasing $N$}
+
+\end{frame}
+\begin{frame}
+\frametitle{Performance for increasing $\mu$}
+\end{frame}
+\begin{frame}
+\frametitle{Results for unsimulated parallelism}
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.2]{fspeed_fig.png}
+
+\end{figure}
 \end{frame}
 \end{document}
 
