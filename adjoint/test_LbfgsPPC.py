@@ -827,9 +827,23 @@ def jump_difference(problem=None):
         ax2.legend(Legg)
         ax2.set_title(r'$N=10$')
         table = TAB[1]
-        plt.savefig('report/draft/draft2/consistency1.png')
+        #plt.savefig('report/draft/draft2/consistency1.png')
 
+        plt.figure(figsize=(6,6))
+        plt.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
+        plt.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
+        plt.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
+        plt.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
+        help_var11 = np.zeros(len(mu_list)) + exact_error
+        plt.loglog(np.array(mu_list),help_var11)
+        plt.xlabel(r"$\mu$",fontsize=20)
         
+        plt.xticks(10**np.arange(2,17,2))
+        plt.title(r'$N=2$')
+        plt.legend(Legg)
+        plt.savefig('presentation/con2.png')
+        #plt.show()
+
         plt.figure(figsize=(12,6))
         ax3 = plt.subplot(121)
         ax3.loglog(np.array(mu_list),np.array(table['J(vmu)-J(v)/J(v)']),'--')
@@ -854,7 +868,7 @@ def jump_difference(problem=None):
         ax4.xaxis.set_ticks(10**np.arange(2,17,2))
         ax4.legend(Legg)
         ax4.set_title(r'$N=7$')
-        plt.savefig('report/draft/draft2/consistency2.png')
+        #plt.savefig('report/draft/draft2/consistency2.png')
         plt.show()
     else:
         plt.figure(figsize=(6,8))
@@ -994,11 +1008,11 @@ if __name__ == '__main__':
     #test1()
     #test2()
     #test3()
-    compare_pc_and_nonpc_for_different_m()
+    #compare_pc_and_nonpc_for_different_m()
     #pre_choosen_mu_test()
     #test4()
     #test_adaptive_ppc()
-    #jump_difference()
+    jump_difference()
     #look_at_gradient()
     #count_grad_func_eval()
     #split_test()

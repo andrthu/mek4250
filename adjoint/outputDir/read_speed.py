@@ -130,7 +130,7 @@ def main():
         datas.append(data)
 
     if ideal_S:
-        make_a_plot(datas)
+        make_a_plot2(datas)
 
 def make_a_plot(datas):
 
@@ -191,6 +191,91 @@ def make_a_plot(datas):
     #datas[-1].iloc[[0,1,3,5,7,10,13,16]].to_latex('latexTables/speedupManyCore.tex')
     plt.savefig('report/draft/draft2/fspeed_fig.png')
     plt.show()
+
+def make_a_plot2(datas):
+
+    import matplotlib.pyplot as plt
+    legg = [r'$n=6\cdot 10^{5}$',r'$n=12\cdot 10^{5}$',r'$n=24\cdot 10^{5}$']
+    legg2 = [r'$n=6\cdot 10^{5}\ S$',r'$n=6\cdot 10^{5}\ \hat S$',r'$n=12\cdot 10^{5}\ S$',r'$n=12\cdot 10^{5}\ \hat S$',r'$n=24\cdot 10^{5}\ S$',r'$n=24\cdot 10^{5}\ \hat S$']
+    plt.figure(figsize=(12,6))
+    
+    
+
+    N_vals = [1,4,8,16,24,32,40,48,56,64,72,80,88,96,104,112,120]
+    N_vals2 = [2,4,8,16,24,32,40,48,56,64,72,80,88,96,104,112,120]
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['speedup']
+        plt.plot(N[:-2],datas[i]['speedup'][:-2],'o-')
+        plt.plot(N[:-2],datas[i]['S2'][:-2],'v-')
+    plt.ylabel('speedup',fontsize=20)    
+    plt.xticks(N_vals)
+    plt.legend(legg2,loc='best',fontsize=20)
+    plt.xlabel(r'$N$',fontsize=20)
+    plt.yticks(fontsize=15)
+    plt.savefig('presentation/SS.png')
+    plt.show()
+    
+    plt.figure(figsize=(12,6))
+    for i in range(len(datas)):
+        N= datas[i].index
+        val =datas[i]['speedup'][:-2]/datas[i]['S2'][:-2]
+        plt.plot(N[:-2],val,'o-')
+    plt.xticks(N_vals2)
+    plt.legend(legg,loc='best',fontsize=20)
+    plt.xlabel(r'$N$',fontsize=20)
+    plt.ylabel(r'$\frac{S}{\hat S} \quad $',fontsize=30,rotation=0)
+    plt.yticks(fontsize=15)
+    plt.savefig('presentation/SS2.png')
+    plt.show()
+    print datas[i]['S2']
+    print datas[i]['speedup']
+    return
+    ax2 = plt.subplot(222)
+    ax2.set_ylabel('Efficiency')
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['E']
+        ax2.plot(N[:-2],datas[i]['E'][:-2],'o-')
+    ax3 = plt.subplot(224)
+    ax3.set_ylabel(r'$L_{p_N}$',fontsize=15)
+    ax2.xaxis.set_ticks(N_vals)
+    ax2.legend(legg,loc='best',fontsize='medium')
+    ax2.set_xlabel(r'$N$',ha='left',va='top')
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['E']
+        ax3.plot(N[:-2],datas[i]['L'][:-2],'o-')
+    ax3.xaxis.set_ticks(N_vals)
+    ax4 = plt.subplot(223)
+    ax4.set_ylabel(r'$||v-v_e||_{L^2}$',fontsize=15)
+    ax3.legend(legg,loc='best',fontsize='medium')
+    ax3.set_xlabel(r'$N$')
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['norm']
+        ax4.plot(N[:-2],datas[i]['norm'][:-2],'o-')
+    ax4.xaxis.set_ticks(N_vals)
+    ax4.legend(legg,loc='best',fontsize='medium')
+    ax4.set_xlabel(r'$N$')
+    
+
+    print datas[-1].iloc[[0,1,3,5,7,10,13,16]]
+    #datas[-1].iloc[[0,1,3,5,7,10,13,16]].to_latex('latexTables/speedupManyCore.tex')
+    plt.savefig('report/draft/draft2/fspeed_fig.png')
+    plt.show()
+
+
+    
+
 def read_func_and_grad():
 
     names = sys.argv[1:]
