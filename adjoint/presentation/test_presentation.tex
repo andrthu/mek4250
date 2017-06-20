@@ -16,11 +16,13 @@
 \title{A Parallel in Time Method for Optimal Control}
 \subtitle{Parareal-Based preconditioner for the BFGS algorithm}
 \author{Andreas Thune}
-\institute[UiO]{Faculty of Mathematics \\University of Oslo}
+\institute[UiO]{Faculty of Mathematics \\University of Oslo,\\Simula Research Laboratory} 
+
 \date{Master presentation, June 2017}
 \usepackage{verbatim}
 \usepackage{booktabs}
-\usepackage{subcaption}
+\usepackage{caption,subcaption}
+
 
 \usetheme{Madrid}
 \usecolortheme{beaver}
@@ -35,13 +37,20 @@
 \centering
 \alert{Goal}: Propose a parallel in time method for optimal control problems
 \end{block}
+\begin{itemize}
+\item{Motivation:
+\begin{itemize}
+\item[-]{lel1}
+\end{itemize}}
+\item{Contents:
 \begin{enumerate}[I]
 \item{The Parareal Algorithm}
 \item{Optimal Control with ODE constraints}
 \item{Optimization Algorithms}
 \item{Presentation of Parareal Preconditioned Parallel in Time Method}
 \item{Experiments}
-\end{enumerate}
+\end{enumerate}}
+\end{itemize}
 \end{frame}
 \section{Parareal}
 \begin{frame}
@@ -49,9 +58,9 @@
 \begin{columns}
 \column{0.48\linewidth}
 \begin{itemize}
-\item{The Parareal algorithm was introduced in [Lion et al] as a way of parallelizing time-dependent PDEs $f(y(t),t)=0$ in temporal direction.}
-\item{The Parareal algorithm combines a coarse and a fine numerical scheme for a discretization in time. The fine scheme is run in parallel, while the coarse scheme is run serially.}
-\item{If we let $\bold{F}_{\Delta T}$ and $\bold{G}_{\Delta T}$ be the fine and coarse propagators that evolve the equation from $\lambda$ at time $t$ to $y(t+\Delta T)$.}
+\item{The Parareal algorithm was introduced in [Lion et al.] as a way of parallelizing time-dependent PDEs in temporal direction.}
+\item{The Parareal algorithm combines a coarse and a fine numerical scheme for discretization in time.}
+\item{The algorithm is iterative. The fine scheme is run in parallel, while the coarse scheme is run serially.}
 \end{itemize}
 \column{0.48\linewidth}
 \begin{figure}
@@ -67,7 +76,8 @@ The intermediate initial conditions $\{\lambda_i\}_{i=1}^{19}$ are found using a
 \begin{columns}
 \column{0.58\linewidth}
 \begin{itemize}
-\item{The predictor correction formulation of the Parareal algorithm is defined through th following iteration:
+\item{Let $\bold{F}_{\Delta T}$ and $\bold{G}_{\Delta T}$ be the fine and coarse propagators that evolve the equation from $\lambda$ at time $t$ to $y(t+\Delta T)$.}
+\item{The predictor correction formulation of the Parareal algorithm is defined through the following iteration:
 {\small \begin{align*}
 \lambda_{i+1}^{k+1} &= \bold{G}_{\Delta T}(\lambda_{i}^{k+1})+\bold{F}_{\Delta T}(\lambda_{i}^{k})-\bold{G}_{\Delta T}(\lambda_{i}^{k}) \\
 \lambda_0^k&=y_0,\quad \lambda_{i+1}^0 = \bold{G}_{\Delta T}(\lambda_{i}^{0})
@@ -97,20 +107,20 @@ M = \left[ \begin{array}{cccc}
 \column{0.38\linewidth}
 \begin{figure}
 \includegraphics[scale=0.4]{parareal2.png}
-\caption{Insert caption}
+\caption{Illustration of a Parareal step.}
 \end{figure}
 \end{columns}
 \end{frame}
 \section{Problem}
 \begin{frame}
-\frametitle{Optimization with ODE Constraints}
+\frametitle{Optimal Control with ODE Constraints}
 \begin{itemize}
-\item{The focus of this thesis have been ODE constrained optimization problems.}
-\item{The goal of such problems is to find the state and control $(y,v)$ that minimizes the objective function $J$, while simultaneously satisfying the state equation $E(y,v)=0$.}
+\item{The focus of this thesis is ODE constrained optimization problems.}
+\item{The goal of such problems is to find the state and control $(y,v)\in Y\times V$ that minimizes the objective function $J$, while simultaneously satisfying the state equation $E(y,v)=0$.}
 \end{itemize}
 \begin{block}{Optimal Control Problem}
 \begin{align*}
-\min_{y,v} &J(y(t),v), \\
+\min_{y\in Y,v\in V} &J(y(t),v), \\
 \textrm{subject to} \ &E(y(t),v)=0,\quad t\in[0,T].
 \end{align*}
 \end{block}
@@ -118,7 +128,7 @@ M = \left[ \begin{array}{cccc}
 \begin{frame}
 \frametitle{The Reduced Problem}
 \begin{itemize}
-\item{If the State equation is well posed for all control variables $v\in V$, we can define a reduced objective function $\hat{J}(v) = J(y(v),v)$.}
+\item{If the state equation is well posed for all control variables $v\in V$, we can define a reduced objective function $\hat{J}(v) = J(y(v),v)$.}
 \item{Using $\hat J$, we can transform the optimal control problem into an unconstrained optimization problem.}
 \end{itemize}
 \begin{align*}
@@ -210,9 +220,11 @@ v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-
 \end{figure}
 \end{columns}
 \end{frame}
+\begin{comment}
 \begin{frame}
 \frametitle{Discretization}
 \end{frame}
+\end{comment}
 %llllllllllllllllllllllllllllllllllllllllllllllll
 \section{optimization}
 \begin{frame}
@@ -220,42 +232,51 @@ v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-
 \begin{columns}
 \column{0.58\linewidth}
 \begin{itemize}
-\item{Iterative methods for unconstrained optimization.}
-\item{Produces iterates $\{x^k\}$, utilizing an initial guess $x^0$.}
-\item{One iteration of a line search method:}
-{\small
+\item{Line search methods are iterative methods for solving unconstrained optimization of type:
 \begin{align*}
-1.\quad& \textrm{Find descent direction $p^k$}\\
-2.\quad& \textrm{Find an adequate step length $\gamma^k$}\\
-3.\quad& \textrm{Update iterate $x^{k+1} = x^k -\gamma^k p^k$}
+\min_{x\in\mathbbold{R}^n}f(x).
+\end{align*}}
+\item{Produces iterates $\{x^k\}$, utilizing an initial guess $x^0$.}
+\item{Finding $x^{k+1}$ is done using the following steps: {\small
+\begin{align*}
+1.\quad& \textrm{Find descent direction $p^k$.}\\
+2.\quad& \textrm{Find an adequate step length $\gamma^k$.}\\
+3.\quad& \textrm{Update iterate $x^{k+1} = x^k -\gamma^k p^k$.}
 \end{align*}
 }%
-\item{The steepest descent method, where $p^k=f(x^k)$, and Newtons method, where $p^k =f''(x^k)^{-1}f'(x^k)$, are examples of line search methods. }
+}
+\item{One strategy for determining the step length $\gamma^k$ is to use the Wolfe conditions:
+{\small \begin{align*}
+f(x^k + \gamma_kp_k)&\leq f(x^k) + c_1\gamma_k\nabla f(x^k)\cdot p_k, \\
+\nabla f(x^k + \gamma_kp_k) \cdot p_k &\geq c_2 \nabla f(x^k)\cdot p_k.
+\end{align*}}}
 \end{itemize}
 \column{0.38\linewidth}
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.3,angle=90]{SD.png}
-\caption{Illustration of the steepest descent algorithm from [Nocedal et al]}
+\caption{Illustration of the steepest descent algorithm from [Nocedal et al]. The steepest descent algorithm uses $p^k=\nabla f(x^k)$.}
 \end{figure}
 \end{columns}
 \end{frame}
 \begin{frame}
 \frametitle{BFGS}
 \begin{columns}
-\column{0.48\linewidth}
+\column{0.58\linewidth}
 \begin{itemize}
-\item{Quasi-Newton are line search methods with $p^k=H^kf'(x^k)$, where $H^k\approx f''(x^k)^{-1}$.}
-\item{The BFGS algorithm approximates $f''(x^k)^{-1}$ using information from previous iterates. The $H^k$'s are constructed so that they are symmetric and positive definite. To guarantee this, the initial inverted Hessian approximation $H^0$ must also possess these properties.}
-\item{After each iteration $H^k$ is updated using the following formula:}
-{\tiny
+\item{Newtons method is a line search method, which uses $p^k=\nabla^2f(x^k)^{-1}\nabla f(x^k)$.}
+\item{Quasi-Newton methods use $p^k=H^k\nabla f(x^k)$, where $H^k\approx \nabla^2f(x^k)^{-1}$.}
+\item{The BFGS algorithm approximates $\nabla^2f(x^k)^{-1}$ using formula:{\tiny
 \begin{align*}
 H^{k+1} &= (\mathbbold{1}-\rho_kS_k^T Y_k)H^k(\mathbbold{1} -\rho_kY_k^T S_k) + S_k^T S_k\\
 S_k &= x^{k+1}-x^{k},
 \quad Y_k = \nabla f(x^{k+1})-\nabla f(x^{k}),\\
 \rho_k &= \frac{1}{Y_k^T S_k}.
 \end{align*}
-}%
+}
+}
+\item{If $H^k$ is symmetric positive definite so is $H^{k+1}$. }
+\item{In the L-BFGS algorithm $H^{k+1}$ is calculated with a limited number of previous $H^i$'s.}
 \end{itemize}
 \column{0.38\linewidth}
 {\small
@@ -408,12 +429,12 @@ M(\Lambda)= \left[ \begin{array}{cccc}
 \end{align*}}}
 \only<2->{{\small 
 \begin{align*}
-\nabla^2 \bold{\hat J}(\Lambda)&= \nabla x(\Lambda)^T \nabla x(\Lambda) + \nabla^2 x(\Lambda)^Tx(\Lambda) = M(\Lambda)^TM(\Lambda) + D(\Lambda) \\
+\nabla^2 \bold{\hat J}(\Lambda)&= \nabla x(\Lambda)^T \nabla x(\Lambda) + \nabla^2 x(\Lambda)^Tx(\Lambda) \\
 &= M(\Lambda)^TM(\Lambda).
 \end{align*}}}}
 \item<2->{If the governing equation of {\tiny$\bold F_{\Delta T}$} is linear {\small$D(\Lambda)=0$}.}
-\item<4->{$M(\Lambda)^TM(\Lambda)$ is a symmetric positive definite matrix.}
-\item<5->{We base the preconditioner $Q_{\Lambda}$ on an approximation of the inverse of {$M(\Lambda)^TM(\Lambda)$}. We approximate $M(\Lambda)$ using the coarse propagator:
+\item<3->{$M(\Lambda)^TM(\Lambda)$ is a symmetric positive definite matrix.}
+\item<4->{We base the preconditioner $Q_{\Lambda}$ on an approximation of the inverse of {$M(\Lambda)^TM(\Lambda)$}. We approximate $M(\Lambda)$ using the coarse propagator:
 \begin{align*}
 \bar M(\Lambda)= \left[ \begin{array}{cccc}
    \mathbbold{1} & 0 & \cdots & 0 \\  
@@ -558,29 +579,47 @@ y_3 + \bold G_{\Delta T}'(\lambda_2)(y_2 + \bold G_{\Delta T}'(\lambda_1)y_1)\\
 \begin{itemize}
 \item{Complete parallel in time algorithm based on Parareal-preconditioned BFGS solver.}
 \end{itemize}
+\begin{columns}
+\column{0.58\linewidth}
 {\tiny
 \begin{algorithm}[H] 
+%\TitleOfAlgo{Quadratic penalty method with preconditioned BFGS optimization}
 \KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
 \For{$k=1,2,...$}{
 $(v_0^k,\Lambda_0^k) \leftarrow (v^{k-1},\Lambda^{k-1})$\;
 $H^0 \leftarrow Q(\Lambda_0^{k})$\;
 \While{$||\hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)||\geq \tau_{k-1}$ }{
-$(v_{j+1}^k,\Lambda_{j+1}^k) \leftarrow (v_j^k,\Lambda_j^k) - \rho^j H^j \hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k) $\tcp*[h]{In parallel}\;
+\alert<2>{$\alert<6>{(v_{j+1}^k,\Lambda_{j+1}^k)} \leftarrow (v_j^k,\Lambda_j^k) - \alert<5>{\rho^j} \alert<4>{H^j} \alert<3>{\hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)} $}\tcp*[h]{In parallel}\;
 Update $H^{j+1}$\;
 $H^0 \leftarrow Q(\Lambda_{j+1}^k)$\;
 }
 $(v^{k},\Lambda^{k})\leftarrow(v_{j}^k,\Lambda_{j}^k)$\;
-\eIf{STOP CRITERION on $(v^{k},\Lambda^{k})$ satisfied}{
+\eIf{\alert<7>{STOP CRITERION} on $(v^{k},\Lambda^{k})$ satisfied}{
 $\bold{Stop}$ algorithm\;
 }{
-Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
+\alert<7>{Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $}\;
 }
 }
-\caption{Quadratic penalty method with preconditioned BFGS optimization\label{PPC_PEN_ALG}}
+\renewcommand{\thealgocf}{3}
+\caption{Quadratic penalty method with preconditioned BFGS optimization}
 \end{algorithm}
 }
+\column{0.45\linewidth}
+\begin{itemize}
+\item<2->{The optimization steps  of algorithm 3 consists of four steps:{\small
+\begin{align*}
+\only<3->{&1.\quad \textrm{Evaluate $J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)$.}}\\
+\only<4->{&2.\quad \textrm{Apply $H^j$.}}\\
+\only<5->{&3.\quad \textrm{Find step length $\rho^j$.}}\\
+\only<6->{&4.\quad \textrm{Update $(v_{j+1}^k,\Lambda_{j+1}^k)$.}}
+\end{align*}}}
+\item<7->{A stop criteria and a strategy for updating $\mu$ and $\tau$ should be included.}
+\end{itemize}
+\end{columns}
 \end{frame}
-
+\begin{frame}
+\frametitle{Verification and Experiments}
+\end{frame}
 \begin{frame}
 \frametitle{Computational Cost of Objective Function and Gradient Evaluation}
 \begin{itemize}
@@ -724,7 +763,7 @@ Overall result &180 &2.04 &3.87e-5\\
 \column{0.48\linewidth}
 \begin{itemize}
 \item{When we compare the ideal speedup $\hat S$ with actual achieved speedup $S$ we observe that the actual speedup is lower than the ideal speedup. We also notice that disparity between $S$ and $\hat S$ grows as $N$ becomes larger.}
-\item{The reason for the difference between $S$ and $\hat S$ is parallel overhead}
+\item{The reason for the difference between $S$ and $\hat S$ is parallel overhead.}
 \end{itemize}
 \column{0.48\linewidth}
 \begin{figure}
@@ -740,8 +779,14 @@ Overall result &180 &2.04 &3.87e-5\\
 \end{figure}
 \end{columns}
 \end{frame}
+\begin{comment}
 \begin{frame}
 \frametitle{Concluding Remarks}
+\begin{itemize}
+\item{We have proposed a parallel in time method for optimal control based on a Parareal-preconditioned BFGS solver.}
+\item{lel}
+\end{itemize}
 \end{frame}
+\end{comment}
 \end{document}
 
