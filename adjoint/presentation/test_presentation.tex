@@ -40,7 +40,10 @@
 \begin{itemize}
 \item{Motivation:
 \begin{itemize}
-\item[-]{lel1}
+\item[-]{To utilize HPC we need to develop parallel algorithms.}
+\item[-]{Parallelization of time-dependent PDEs often restrict parallelism to the spatial domain.}
+\item[-]{Introducing parallelism in the temporal direction can increase the achievable speedup of parallel algorithms for time-dependent PDEs. }
+\item[-]{Optimization with PDE constraints is an important class of problems connected to PDEs.}
 \end{itemize}}
 \item{Contents:
 \begin{enumerate}[I]
@@ -220,11 +223,58 @@ v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-
 \end{figure}
 \end{columns}
 \end{frame}
-\begin{comment}
+
 \begin{frame}
 \frametitle{Discretization}
+\begin{columns}
+\column{0.78\linewidth}
+\begin{block}{Discretized Problem}
+\begin{align*}
+&J_{\Delta t,\theta}(y,v) = \frac{\theta v_0^2 +(1-\theta)v_n^2}{2\Delta t}+\frac{\Delta t}{2}\sum_{i=1}^{n-1}v_n^2dt + \frac{\alpha}{2}(y_n-y^T)^2 \\
+&\left\{
+     \begin{array}{lr}
+	\frac{y_i-y_{i-1}}{\Delta t} = \theta(ay_{i-1} +v_{i-1})+(1-\theta)(ay_i +v_i),\quad i=1,...,n\\
+	y_{i=0}=y_0
+	\end{array}
+   \right. 
+\end{align*}
+\end{block}
+\end{columns}
+\begin{itemize}
+
+\item{Discrete adjoint adjoint equation:{\small\begin{align*}
+\left\{
+     \begin{array}{lr}
+	\frac{p_i-p_{i-1}}{\Delta t} = -a(\theta p_i+(1-\theta)p_{i-1}),\quad i=1,...,n\\
+	p_{n}=\alpha(y_n-y^T)
+	\end{array}
+   \right.
+\end{align*}}}
+\item{Gradient of discrete objective function:
+{\small\begin{align*}
+\hat J_{\Delta t,0}'(v) = \Delta t(\mathcal{M}_{0}v+\mathcal{B} p),\quad \hat J_{\Delta t,1}'(v) = \Delta t(\mathcal{M}_{1}v+\mathcal{B}^T p)
+\end{align*}}}
+\item<2->{$\mathcal{M},\mathcal{B}\in\mathbbold{R}^{n+1\times n+1}$:{\small
+\begin{align*}
+\mathcal{M}_{\theta}=\left[ \begin{array}{cccc}
+   \theta &0&  \cdots & 0 \\  
+   0 & 1  & 0&\cdots \\ 
+   \cdots &0 & 1 &\cdots  \\
+   0 &\cdots & 0 &1-\theta \\
+   \end{array}  \right],
+\mathcal{B} = \left[ \begin{array}{cccc}
+   0 & 0& \cdots & 0 \\  
+   1 & 0 &0 & \cdots \\ 
+   0 &1   & \cdots& 0 \\
+   0 & 0 & 1 & 0 \\
+   \end{array}  \right].
+\end{align*}}
+}
+
+\end{itemize}
+
 \end{frame}
-\end{comment}
+
 %llllllllllllllllllllllllllllllllllllllllllllllll
 \section{optimization}
 \begin{frame}
@@ -420,7 +470,7 @@ M(\Lambda)= \left[ \begin{array}{cccc}
 \only<1>{{\small
 \begin{align*}
 \nabla^2 \bold{\hat J}(\Lambda)&= \nabla x(\Lambda)^T \nabla x(\Lambda) + \nabla^2 x(\Lambda)^Tx(\Lambda) = M(\Lambda)^TM(\Lambda) + D(\Lambda) \\
-&= M(\Lambda)^TM(\Lambda) - \left[ \begin{array}{cccc}
+&= M(\Lambda)^TM(\Lambda) + \left[ \begin{array}{cccc}
    D_1 & 0 & \cdots & 0 \\  
    0 & D_2 & 0 & \cdots \\ 
    0 &0 & D_{N-2}  & \cdots \\
@@ -618,14 +668,117 @@ $\bold{Stop}$ algorithm\;
 \end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{Verification and Experiments}
+\frametitle{Verification \rom{1}}
+\begin{columns}
+\column{0.58\linewidth}
+\begin{block}{Test Problem}
+We verify parts of our algorithm using the below defined problem with $T=1$
+{\small\begin{align*}
+&J(y,v) = \frac{1}{2}\int_0^{T}v(t)^2dt + \frac{1}{2}(y(T)-11.5)^2, \\
+&\left\{
+     \begin{array}{lr}
+       	y'(t)=-3.9y(t) + v(t) \quad t\in(0,T)\\
+       	y(0)=3.2
+     \end{array}
+   \right. 
+\end{align*}}
+\end{block}
+\end{columns}
+\begin{itemize}
+\item{Verify the discrete gradients using the Taylor test.}
+\item{Verify the convergence of the serial solver.}
+\item{Verify the performance of the parallel objective function and gradient evaluations.}
+\item{Verify the consistency of our parallel algorithm.}
+\end{itemize}
 \end{frame}
 \begin{frame}
-\frametitle{Computational Cost of Objective Function and Gradient Evaluation}
+\frametitle{Verification \rom{2}}
+\begin{columns}
+\column{0.48\linewidth}
+\textbf{Verifying the discrete gradients}
+\begin{block}{Taylor Test}
+{\small If $\hat J$ is the gradient of $J$ the following holds:}
+{\small
+\begin{align*}
+D(\epsilon)&=|\hat J(v+\epsilon w)-\hat J(v)-\epsilon\hat J'(v)\cdot w| \\&= \mathcal{O}(\epsilon^2)
+\end{align*}}
+\end{block}
 \begin{itemize}
-\item{Evaluating the objective function requires one state equation solve, while we to evaluate the gradient need to solve both the state and adjoint equations.}
-\item{When decomposing the time domain, we expect the runtime of objective function and gradient evaluation to be in a order of $\mathcal{O}(\frac{n}{N})$. We verified for the example problem, and selected results are presented in the table below. }
+\item{\small{The discrete gradient of both the penalized and unpenalized objective function is verified using the Taylor test.}}
+\item{\small{We use the Crank-Nicolson scheme and the trapezoid rule with $\Delta t=0.01$.}}
 \end{itemize}
+\column{0.38\linewidth}
+{\small
+\begin{table}[h]
+\centering
+\caption{Taylor test applied to the discrete objective function $\hat J_{\Delta t}$.}\label{Taylor_tab1}
+\begin{tabular}{lrl}
+\toprule
+{} $\epsilon$&   $D(\epsilon)$ &    rate \\
+\midrule
+1e+00 &       5.24e+03 &      -- \\
+1e-01 &       5.24e+01 &      -2 \\
+1e-02 &       5.24e-01 &       -2 \\
+1e-05 &        5.24e-07 &      -2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+}
+{\small
+\begin{table}[!h]
+\centering
+\caption{Taylor test applied to the discrete penalized objective function $\hat J_{\Delta t,\mu}$.}
+\label{Taylor_tab2}
+\centering
+\begin{tabular}{lrl}
+\toprule
+{}$\epsilon$&   $D_2$ &    rate  \\
+\midrule
+1e+00 &         1.07e+04 &      -- \\
+1e-01 &         1.07e+02 &      -2 \\
+1e-03 &          1.07e-02 &      -2 \\
+1e-06 &          1.07e-08 &      -2 \\
+\bottomrule
+\end{tabular}
+\end{table}}
+\end{columns}
+\end{frame}
+\begin{frame}
+\frametitle{Verification \rom{3}}
+%\hline
+\textbf{Convergence of serial algorithm}
+\begin{columns}
+\column{0.48\linewidth}
+\begin{itemize}
+{\small
+\item{We investigate whether the numerical solution of the serial algorithm converge to exact solution when we decrease $\Delta t$.}
+}
+\end{itemize}
+\column{0.48\linewidth}
+{\tiny
+\begin{table}[!h]
+\caption{{\tiny Results of serial algorithm with an implicit Euler discretization.}} \label{IE_convergence}
+\centering
+\begin{tabular}{lrrll}
+\toprule
+{} $\Delta t$&    $\frac{||v_e-v||_{\infty}}{||v||_{\infty}}$ &  $\frac{\hat J(v_e)-\hat J(v)}{\hat J(v_e)}$ & $v$ rate & $\hat J$  rate \\
+\midrule
+0.02000 &  0.2126 &  1.70e-02 &        -- &       -- \\
+0.01000 &  0.1360 &  4.50e-03 & -0.64 & -1.92 \\
+0.00100 &  0.0174 &  4.70e-05 & -0.89 & -1.98 \\
+0.00010 &  0.0018 &  4.72e-07 &   -0.99 & -1.99 \\
+0.00001 &  0.0002 &  4.72e-09 &  -1.00 & -1.99 \\
+\bottomrule
+\end{tabular}
+\end{table}}
+\end{columns}
+\textbf{Performance of parallel function and gradient evaluation}
+\begin{itemize}
+{\small
+\item{Evaluating the objective function requires one state equation solve, while we to evaluate the gradient need to solve both the state and adjoint equations.}
+\item{When decomposing the time domain, we expect the runtime of objective function and gradient evaluation to be in a order of $\mathcal{O}(\frac{n}{N})$. We verified for the example problem, and selected results are presented in the table below. }}
+\end{itemize}
+{\tiny
 \begin{table}[!h]
 \centering
 \begin{tabular}{lrrrr}
@@ -637,7 +790,7 @@ $\bold{Stop}$ algorithm\;
 5 &           1.796 &          3.089 &            4.647 &          4.833 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table}}
 \end{frame}
 %llllllllllllllllllllllllllllllllllllllllllllllllll
 \section{consistency}
@@ -652,8 +805,8 @@ $\bold{Stop}$ algorithm\;
 \column{0.48\linewidth}
 \begin{figure}[!h]
 \centering
-\includegraphics[scale=0.3]{con2.png}
-\caption{Results of solving example problem with parameters $(y_0,a,y^T,T,\Delta t)=(3.2,-1,11.5,1,10^{-2})$. }
+\includegraphics[scale=0.35]{con2.png}
+\caption{Results of solving the test problem with $\Delta t=10^{-2}$. }
 \end{figure}
 \end{columns}
 \end{frame}
@@ -693,7 +846,7 @@ We investigate our algorithm using the below defined problem with $T=100$
 \item{Test example problem for fixed problem size $n=10^3$ and penalty parameter $\mu=10^4$ for increasing number of decompositions of the time domain $N$.}
 \item{We compare the preconditioned and unpreconditioned solver, using number of function and gradient evaluations ($L_{p_N}$), control variable error ($||v_e-v||$) and ideal speedup ($\hat{S}$).}
 \end{itemize}
-\begin{table}[h]
+{\small\begin{table}[h]
 \centering
 \begin{tabular}{lrrllrr}
 \toprule
@@ -705,14 +858,14 @@ We investigate our algorithm using the below defined problem with $T=100$
 64  &     43 &     469 &  0.001621 &    0.017026 &   19.34 &        1.77 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table}}
 \end{frame}
 \begin{frame}
 \frametitle{Performance for Increasing $\mu$}
 \begin{itemize}
 \item{We now test the algorithm on the example problem for a fixed number of decompositions $N=16$ and number of time-steps $n=10^4$, while the penalty parameter $\mu$ is increased.}
 \end{itemize}
-\begin{table}
+{\small\begin{table}
 \centering
 \begin{tabular}{lrrrrrr}
 \toprule
@@ -724,14 +877,14 @@ We investigate our algorithm using the below defined problem with $T=100$
 1e+08 &  410 &  3007 &  0.89 &  0.12 &  3.9e-5 &  4.3-2 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table}}
 \begin{columns}
 \column{0.49\linewidth}
 \begin{itemize}
 \item<2->{We can improve the results by doing two penalty iterations.}
 \end{itemize}
 \column{0.49\linewidth}
-\onslide<2->{\begin{table}[h!]
+\onslide<2->{{\small\begin{table}[h!]
 \begin{tabular}{lrrr}
 \toprule
 {} $\mu$ & $L_{p_{16}}$ & $\hat S$ & $||v_e-v_{pc}||$ \\
@@ -742,7 +895,7 @@ We investigate our algorithm using the below defined problem with $T=100$
 Overall result &180 &2.04 &3.87e-5\\
 \bottomrule
 \end{tabular}
-\end{table}}
+\end{table}}}
 \end{columns}
 \end{frame}
 \begin{frame}
