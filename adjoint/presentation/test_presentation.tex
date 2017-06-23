@@ -22,7 +22,7 @@
 \usepackage{verbatim}
 \usepackage{booktabs}
 \usepackage{caption,subcaption}
-
+\usepackage{graphicx}
 
 \usetheme{Madrid}
 \usecolortheme{beaver}
@@ -40,24 +40,25 @@
 \begin{itemize}
 \item{Motivation:
 \begin{itemize}
-\item[-]{To utilize HPC we need to develop parallel algorithms.}
+\item[-]{PDE constrained optimization is an important class of problems, which occur for example in: Optimal control, data assimilation and optimal design.}
+\item[-]{With HPC we can improve the execution time of algorithms for optimal control.}
 \item[-]{Parallelization of time-dependent PDEs often restrict parallelism to the spatial domain.}
 \item[-]{Introducing parallelism in the temporal direction can increase the achievable speedup of parallel algorithms for time-dependent PDEs. }
-\item[-]{Optimization with PDE constraints is an important class of problems connected to PDEs.}
 \end{itemize}}
 \item{Contents:
 \begin{enumerate}[I]
-\item{The Parareal Algorithm}
+%\item{The Parareal Algorithm}
 \item{Optimal Control with ODE constraints}
 \item{Optimization Algorithms}
-\item{Presentation of Parareal Preconditioned Parallel in Time Method}
+\item{Presentation of our Parallel in Time Method}
 \item{Experiments}
 \end{enumerate}}
 \end{itemize}
 \end{frame}
 \section{Parareal}
+\begin{comment}
 \begin{frame}
-\frametitle{The Parareal Algorithm \rom{1}}
+\frametitle{\textbf{ Part \rom{1}:}The Parareal Algorithm \rom{1}}
 \begin{columns}
 \column{0.48\linewidth}
 \begin{itemize}
@@ -75,16 +76,27 @@ The intermediate initial conditions $\{\lambda_i\}_{i=1}^{19}$ are found using a
 \end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{The Parareal Algorithm \rom{2}}
+\frametitle{\textbf{ Part \rom{1}:}The Parareal Algorithm \rom{2}}
 \begin{columns}
 \column{0.58\linewidth}
 \begin{itemize}
-\item{Let $\bold{F}_{\Delta T}$ and $\bold{G}_{\Delta T}$ be the fine and coarse propagators that evolve the equation from $\lambda$ at time $t$ to $y(t+\Delta T)$.}
+\item{Let $\bold{F}_{\Delta T}$ and $\bold{G}_{\Delta T}$ be the fine and coarse propagators that evolve the equation from $y(t)=\lambda$ at time $t$ to $y(t+\Delta T)$.}
 \item{The predictor correction formulation of the Parareal algorithm is defined through the following iteration:
 {\small \begin{align*}
 \lambda_{i+1}^{k+1} &= \bold{G}_{\Delta T}(\lambda_{i}^{k+1})+\bold{F}_{\Delta T}(\lambda_{i}^{k})-\bold{G}_{\Delta T}(\lambda_{i}^{k}) \\
 \lambda_0^k&=y_0,\quad \lambda_{i+1}^0 = \bold{G}_{\Delta T}(\lambda_{i}^{0})
 \end{align*}}}
+
+\end{itemize}
+\column{0.38\linewidth}
+\begin{figure}
+\includegraphics[scale=0.4]{parareal2.png}
+\caption{Illustration of a Parareal step.}
+\end{figure}
+\end{columns}
+\end{frame}
+\end{comment}
+\begin{comment}
 \item{In [Maday et al] the authors show that the Parareal iteration also can be written on matrix form as:
 {\small \begin{align*}
 \Lambda^{k+1} = \Lambda^k -\bar M^{-1}(M\Lambda-h).
@@ -106,30 +118,26 @@ M = \left[ \begin{array}{cccc}
    0 &\cdots &-\bold{G}_{\Delta T} & \mathbbold{1}  \\
    \end{array}  \right]\in\mathbbold{R}^{N\times N}.
 \end{align*}}}}
-\end{itemize}
-\column{0.38\linewidth}
-\begin{figure}
-\includegraphics[scale=0.4]{parareal2.png}
-\caption{Illustration of a Parareal step.}
-\end{figure}
-\end{columns}
-\end{frame}
+\end{comment}
 \section{Problem}
 \begin{frame}
-\frametitle{Optimal Control with ODE Constraints}
+\frametitle{\textbf{ Part \rom{2}:} Optimal Control with ODE Constraints}
 \begin{itemize}
 \item{The focus of this thesis is ODE constrained optimization problems.}
 \item{The goal of such problems is to find the state and control $(y,v)\in Y\times V$ that minimizes the objective function $J$, while simultaneously satisfying the state equation $E(y,v)=0$.}
 \end{itemize}
+\begin{columns}
+\column{0.58\linewidth}
 \begin{block}{Optimal Control Problem}
 \begin{align*}
 \min_{y\in Y,v\in V} &J(y(t),v), \\
 \textrm{subject to} \ &E(y(t),v)=0,\quad t\in[0,T].
 \end{align*}
 \end{block}
+\end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{The Reduced Problem}
+\frametitle{\textbf{ Part \rom{2}:} The Reduced Problem}
 \begin{itemize}
 \item{If the state equation is well posed for all control variables $v\in V$, we can define a reduced objective function $\hat{J}(v) = J(y(v),v)$.}
 \item{Using $\hat J$, we can transform the optimal control problem into an unconstrained optimization problem.}
@@ -138,12 +146,11 @@ M = \left[ \begin{array}{cccc}
 \min_{v\in V}\hat J (v)
 \end{align*}
 \begin{itemize}
-\item{Evaluating $\hat J(v)$ requires us to first solve the state equation for the control $v$.}
 \item{Since the reduced problem is unconstrained, we can use methods from unconstrained optimization to solve it. Such methods utilize the first order optimality condition $\hat J'(v)=0$, and we therefore need a way to evaluate the gradient of the reduced objective function.}
 \end{itemize}
 \end{frame}
 \begin{frame}
-\frametitle{Adjoint Approach to Gradient Evaluation}
+\frametitle{\textbf{ Part \rom{2}:} Adjoint Approach to Gradient Evaluation}
 \begin{itemize}
 \item<1->{If $E$ and $J$ are sufficiently smooth, and $E_y$ is continuously invertible, the gradient of the reduced objective function $\hat J'(v)$ exists.}
 \item<1->{Differentiating $\hat J$ gives us: 
@@ -173,12 +180,12 @@ E_y(y(v),v)^{*}p=J_y(y(v),v)
 \begin{description}
 \item[1.]{Solve the state equation $E(y,v)=0$ for $y$.}
 \item[2.]{Solve the adjoint equation $E_y(y(v),v)^*p = J_y(y(v),v)$ for $p$.}
-\item[3.]{Insert $y$ and $p$ into $J'(v)=E_v(y(v),v)^*p +J_v(y(v),v)$.}
+\item[3.]{Insert $y$ and $p$ into $\hat J'(v)=E_v(y(v),v)^*p +J_v(y(v),v)$.}
 \end{description}}
 \end{itemize}
 \end{frame}
 \begin{frame}
-\frametitle{Example Problem}
+\frametitle{\textbf{ Part \rom{2}:} Example Problem}
 \begin{columns}
 \column{0.58\linewidth}
 \begin{block}{Example Problem}
@@ -225,36 +232,41 @@ v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-
 \end{frame}
 
 \begin{frame}
-\frametitle{Discretization}
-\begin{columns}
-\column{0.78\linewidth}
-\begin{block}{Discretized Problem}
-\begin{align*}
-&J_{\Delta t,\theta}(y,v) = \frac{\theta v_0^2 +(1-\theta)v_n^2}{2\Delta t}+\frac{\Delta t}{2}\sum_{i=1}^{n-1}v_n^2dt + \frac{\alpha}{2}(y_n-y^T)^2 \\
-&\left\{
+\frametitle{\textbf{ Part \rom{3}:} Discretization of example problem}
+\textbf{Discretizing the objective function}
+%J_{\Delta t,\theta}(y,v) = \frac{\Delta t(\theta v_0^2 +(1-\theta)v_n^2)}{2}+\frac{\Delta t}{2}\sum_{i=1}^{n-1}v_n^2dt + \frac{\alpha}{2}(y_n-y^T)^2
+\begin{itemize}
+\item{The discrete gradient is:{\small\begin{align*}
+J_{\Delta t,\theta}(y,v) = \frac{\Delta t}{2}[\theta v_0^2 +(1-\theta)v_n^2+\sum_{i=1}^{n-1}v_n^2dt] + \frac{\alpha}{2}(y_n-y^T)^2
+\end{align*}
+}}
+\item{$\theta=0,1,\frac{1}{2}$ yields the right- and left-hand rectangle rule and the trapezoid rule.}
+\end{itemize}
+\textbf{Discretizing the state and adjoint equations}
+\begin{itemize}
+\item{We discretize the state using the $\theta$ scheme.
+{\small\begin{align*}
+\left\{
      \begin{array}{lr}
 	\frac{y_i-y_{i-1}}{\Delta t} = \theta(ay_{i-1} +v_{i-1})+(1-\theta)(ay_i +v_i),\quad i=1,...,n\\
 	y_{i=0}=y_0
 	\end{array}
    \right. 
 \end{align*}
-\end{block}
-\end{columns}
-\begin{itemize}
-
+}}
 \item{Discrete adjoint adjoint equation:{\small\begin{align*}
 \left\{
      \begin{array}{lr}
-	\frac{p_i-p_{i-1}}{\Delta t} = -a(\theta p_i+(1-\theta)p_{i-1}),\quad i=1,...,n\\
+	\frac{p_i-p_{i-1}}{\Delta t} = -a(\theta p_i+(1-\theta)p_{i-1}),\quad i=0,...,n-1\\
 	p_{n}=\alpha(y_n-y^T)
 	\end{array}
    \right.
 \end{align*}}}
-\item{Gradient of discrete objective function:
+\item<2>{Gradient of discrete objective function:
 {\small\begin{align*}
 \hat J_{\Delta t,0}'(v) = \Delta t(\mathcal{M}_{0}v+\mathcal{B} p),\quad \hat J_{\Delta t,1}'(v) = \Delta t(\mathcal{M}_{1}v+\mathcal{B}^T p)
-\end{align*}}}
-\item<2->{$\mathcal{M},\mathcal{B}\in\mathbbold{R}^{n+1\times n+1}$:{\small
+\end{align*}}
+{\small
 \begin{align*}
 \mathcal{M}_{\theta}=\left[ \begin{array}{cccc}
    \theta &0&  \cdots & 0 \\  
@@ -267,7 +279,7 @@ v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-
    1 & 0 &0 & \cdots \\ 
    0 &1   & \cdots& 0 \\
    0 & 0 & 1 & 0 \\
-   \end{array}  \right].
+   \end{array}  \right]\in\mathbbold{R}^{n+1\times n+1}.
 \end{align*}}
 }
 
@@ -278,9 +290,10 @@ v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-
 %llllllllllllllllllllllllllllllllllllllllllllllll
 \section{optimization}
 \begin{frame}
-\frametitle{Line Search Methods}
+\frametitle{\textbf{ Part \rom{3}:} Optimization algorithms}
 \begin{columns}
 \column{0.58\linewidth}
+\textbf{Line search methods}
 \begin{itemize}
 \item{Line search methods are iterative methods for solving unconstrained optimization of type:
 \begin{align*}
@@ -291,7 +304,7 @@ v(t) = \alpha\frac{e^{aT}(y^T-e^{aT}y_0)}{1+\frac{\alpha e^{aT}}{2a}(e^{aT}-e^{-
 \begin{align*}
 1.\quad& \textrm{Find descent direction $p^k$.}\\
 2.\quad& \textrm{Find an adequate step length $\gamma^k$.}\\
-3.\quad& \textrm{Update iterate $x^{k+1} = x^k -\gamma^k p^k$.}
+3.\quad& \textrm{Update iterate $x^{k+1} = x^k +\gamma^k p^k$.}
 \end{align*}
 }%
 }
@@ -305,23 +318,27 @@ f(x^k + \gamma_kp_k)&\leq f(x^k) + c_1\gamma_k\nabla f(x^k)\cdot p_k, \\
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.3,angle=90]{SD.png}
-\caption{Illustration of the steepest descent algorithm from [Nocedal et al]. The steepest descent algorithm uses $p^k=\nabla f(x^k)$.}
+\caption{Illustration of the steepest descent algorithm from [Nocedal et al]. The steepest descent algorithm uses $p^k=-\nabla f(x^k)$.}
 \end{figure}
 \end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{BFGS}
+\frametitle{\textbf{ Part \rom{3}:} Quasi Newton Methods and the BFGS Algorithm}
+\textbf{Quasi-Newton methods}
+\begin{itemize}
+\item{Newtons method is a line search method, which uses $p^k=-\nabla^2f(x^k)^{-1}\nabla f(x^k)$.}
+\item{Quasi-Newton methods use $p^k=-H^k\nabla f(x^k)$, where $H^k\approx \nabla^2f(x^k)^{-1}$.}
+\end{itemize}
 \begin{columns}
 \column{0.58\linewidth}
+\textbf{The BFGS method}
 \begin{itemize}
-\item{Newtons method is a line search method, which uses $p^k=\nabla^2f(x^k)^{-1}\nabla f(x^k)$.}
-\item{Quasi-Newton methods use $p^k=H^k\nabla f(x^k)$, where $H^k\approx \nabla^2f(x^k)^{-1}$.}
-\item{The BFGS algorithm approximates $\nabla^2f(x^k)^{-1}$ using formula:{\tiny
+\item{The BFGS algorithm approximates $\nabla^2f(x^k)^{-1}$ using formula:{\small
 \begin{align*}
 H^{k+1} &= (\mathbbold{1}-\rho_kS_k^T Y_k)H^k(\mathbbold{1} -\rho_kY_k^T S_k) + S_k^T S_k\\
 S_k &= x^{k+1}-x^{k},
 \quad Y_k = \nabla f(x^{k+1})-\nabla f(x^{k}),\\
-\rho_k &= \frac{1}{Y_k^T S_k}.
+\rho_k &= \frac{1}{Y_k^T S_k}\quad H^0=\mathbbold{1}.
 \end{align*}
 }
 }
@@ -344,21 +361,88 @@ Update $H^{k+1}$\;
 %llllllllllllllllllllllllllllllllllllllllllllllll
 \section{PPC}
 \begin{frame}
-\frametitle{Decomposed Problem}
+\frametitle{\textbf{ Part \rom{4}:} Parallelizing function and gradient evaluation}
+\textbf{The Decomposed Problem}
 \begin{itemize}
-\item{We let $0=T_0<T_1<\cdots<T_{N-1}<T_N=T$, and decompose $[0,T]$ into $N$ subintervals $[T_{i-1},T_i]$. }
-\item{We introduce intermediate initial values $\Lambda=(\lambda_1,...,\lambda_{N-1})$, and decompose the state equation into $N$ equations $E^i(y_i,v,\lambda_{i-1})=0$ defined separately on each interval $[T_{i-1},T_i]$.}
-\item{To enforce continuity of the decomposed state, we introduce extra constraints $y_i(T_i)=y_{i+1}(T_i)$.}
+\item{To introduce parallelism we decompose the time domain and state equation, and define intermediate initial conditions $\Lambda=\{\lambda_i\}_{i=1}^{N-1}$.}
+\item{This produces the decomposed problem.}
 \end{itemize}
-\begin{block}{Decomposed and reduced optimal control problem}
+\begin{columns}
+\column{0.48\linewidth}{\small
+\begin{block}{Decomposed optimal control problem}
 \begin{align*}
 \min_{v,\Lambda} &\hat J(v,\Lambda), \\
 \textrm{subject to} \ &y_i(T_i)=\lambda_i,i=1,...,N-1. 
 \end{align*}
-\end{block}
+\end{block}}
+\only<2->{\textbf{Penalized objective function}}
+\begin{itemize}
+\item<2->{We remove the constraints by defining the penalized objective function:{\small
+\begin{align*}
+\hat{J}_{\mu}(v,\Lambda) = \hat{J}(v) + \frac{\mu}{2}\sum_{i=1}^{N-1}(y_{i}(T_i)-\lambda_i)^2.
+\end{align*}}}
+\item<3->{The gradient of $\hat{J}_{\mu}$ is:{\small
+\begin{align*}
+\hat J_{\mu}'(v,\Lambda) = (v+p,\{p_{i+1}(T_i)-p_{i}(T_i)\}_{i=1}^{N-1})
+\end{align*}}}
+\end{itemize}
+\column{0.48\linewidth}
+\only<1-3>{\begin{figure}
+\includegraphics[trim=2cm 0 0 1.25cm,clip=true,scale=0.3]{decomp1.png}
+\caption{{\tiny The decomposed state equation of the example problem with parameters $(a,y_0,y^T,T,N,\mu)=(-3,5,-7,1,3,2)$, and control variable $v(t)=50\cos(5\pi t)$ and $\Lambda=(5,10)$.}}
+
+\end{figure}}
+\only<4>{\begin{figure}
+\includegraphics[trim=2cm 0 0 1.25cm,clip=true,scale=0.3]{decomp.png}
+\caption{{\tiny The decomposed state and adjoint equation of the example problem with parameters $(a,y_0,y^T,T,N,\mu)=(-3,5,-7,1,3,2)$, and control variable $v(t)=50\cos(5\pi t)$ and $\Lambda=(5,10)$.}}
+\end{figure}}
+\end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{Quadratic Penalty Method \rom{1}}
+\frametitle{\textbf{ Part \rom{4}:} Parallel in Time Algorithm for Optimal Control}
+\textbf{Quadratic penalty framework}
+\begin{columns}
+\column{0.55\linewidth}
+{\tiny
+\begin{algorithm}[H] 
+%\TitleOfAlgo{Quadratic penalty method with preconditioned BFGS optimization}
+\KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
+\For{$k=1,2,...$}{
+$(v_0^k,\Lambda_0^k) \leftarrow (v^{k-1},\Lambda^{k-1})$\;
+$H^0 \leftarrow Q(\Lambda_0^{k})$\;
+\While{$||\hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)||\geq \tau_{k-1}$ }{
+\alert<2>{$\alert<6>{(v_{j+1}^k,\Lambda_{j+1}^k)} \leftarrow (v_j^k,\Lambda_j^k) - \alert<5>{\rho^j} \alert<4>{H^j} \alert<3>{\hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)} $}\;
+Update $H^{j+1}$\;
+$H^0 \leftarrow Q(\Lambda_{j+1}^k)$\;
+}
+$(v^{k},\Lambda^{k})\leftarrow(v_{j}^k,\Lambda_{j}^k)$\;
+\eIf{\alert<7>{STOP CRITERION} on $(v^{k},\Lambda^{k})$ satisfied}{
+$\bold{Stop}$ algorithm\;
+}{
+\alert<7>{Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $}\;
+}
+}
+\renewcommand{\thealgocf}{2}
+\caption{Quadratic penalty method with BFGS optimization}
+\end{algorithm}
+}
+\column{0.45\linewidth}
+\only<2->{\textbf{BFGS step}}
+\begin{itemize}
+\item<2->{The optimization steps  of algorithm 3 consists of four steps:{\small
+\begin{align*}
+\only<3->{&1.\quad \textrm{Evaluate $J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)$.}}\\
+\only<4->{&2.\quad \textrm{Apply $H^j$.}}\\
+\only<5->{&3.\quad \textrm{Find step length $\rho^j$.}}\\
+\only<6->{&4.\quad \textrm{Update $(v_{j+1}^k,\Lambda_{j+1}^k)$.}}
+\end{align*}}}
+\item<7->{A stop criteria and a strategy for updating $\mu$ and $\tau$ should be included.}
+\end{itemize}
+\end{columns}
+\end{frame}
+\begin{comment}
+\begin{frame}
+\frametitle{\textbf{ Part \rom{4}:} Quadratic Penalty Method \rom{1}}
 \begin{itemize}
 \item{Consider the constrained optimization problem:
 \begin{align*}
@@ -368,11 +452,27 @@ Update $H^{k+1}$\;
 \begin{align*}
 f_{\mu}(x) = f(x) + \frac{\mu }{2}\sum_{i=1}^N c_i(x)^2, \quad \mu>0.
 \end{align*}}
-\item{For large $\mu$ values the minimizer of $f_{\mu}$ approximates the minimizer of $f$.}
+\item{The complete penalty algorithmic framework for constrained optimization is presented in algorithm 2.}
 \end{itemize}
+\begin{columns}
+\column{0.48\linewidth}
+{\tiny
+\begin{algorithm}[H] 
+\KwData{Choose $\mu_0,\tau_0>0$, and some initial $x^0$}
+\For{$k=1,2,...$}{
+Find $x^k$ s.t. $\parallel\nabla f_{\mu_{k-1}}(x^k)\parallel<\tau_{k-1}$\;
+\eIf{STOP CRITERION satisfied}{
+$\bold{Stop}$ algorithm\;
+}{
+Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
+}
+}
+\caption{Penalty method\label{PEN_ALG}}
+\end{algorithm}}%
+\end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{Quadratic Penalty Method \rom{2}}
+\frametitle{\textbf{ Part \rom{4}:} Quadratic Penalty Method \rom{2}}
 \begin{columns}
 \column{0.48\linewidth}
 \begin{itemize}
@@ -387,26 +487,16 @@ f_{\mu}(x) = f(x) + \frac{\mu }{2}\sum_{i=1}^N c_i(x)^2, \quad \mu>0.
 \item{When we decompose the time domain and state equation, the adjoint equation is also defined independently on each subinterval.}
 \end{itemize}
 \column{0.48\linewidth}
-{\tiny
-\begin{algorithm}[H] 
-\KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
-\For{$k=1,2,...$}{
-Find $(v^k,\Lambda^k)$ s.t. $\parallel\nabla \hat J_{\mu_{k-1}}(v^k,\Lambda^k)\parallel<\tau_{k-1}$\;
-\eIf{STOP CRITERION satisfied}{
-$\bold{Stop}$ algorithm\;
-}{
-Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
-}
-}
-\caption{Penalty method\label{PEN_ALG}}
-\end{algorithm}}%
-\begin{itemize}
-\item{If for all $k$, the pair $\{(v^k,\Lambda^k)\}$ from algorithm \ref{PEN_ALG} is the exact global minimizer of $\hat J_{\mu_k}$, $\{(v^k,\Lambda^k)\}$ will converge towards the minimizer of $\hat J$.}
-\end{itemize}
+\begin{figure}
+\includegraphics[scale=0.3]{decomp.png}
+\caption{{\tiny The decomposed state and adjoint equation of the example problem with parameters $(a,y_0,y^T,T,N,\mu)=(-3,5,-7,1,3,2)$, and control variable $v(t)=50\cos(5\pi t)$ and $\Lambda=(5,10)$.}}
+\end{figure}
 \end{columns}
 \end{frame}
+\end{comment}
 \begin{frame}
-\frametitle{Parareal-Based Preconditioner}
+\frametitle{\textbf{ Part \rom{4}:} Parareal-Based Preconditioner}
+\textbf{Preconditioning the BFGS method}
 \begin{itemize}
 \item{We minimize $\hat J_{\mu_k}$ using the BFGS method. {\small
 \begin{align*}
@@ -419,24 +509,31 @@ Q = \left[ \begin{array}{cc}
 	0 & Q_{\Lambda} \\
 	\end{array} \right]\in \mathbb{R}^{n_v+N-1\times n_v+N-1},\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1}
 \end{align*}}}
-\item{We derive and motivate what $Q_{\Lambda}$ is by considering the virtual problem.}
 \end{itemize}
+\textbf{The virtual problem}
+\begin{itemize}
+\item{We derive and motivate $Q_{\Lambda}$ by considering the virtual problem.}
+\end{itemize}
+\begin{columns}
+\column{0.58\linewidth}
+\begin{block}{Virtual problem}
+{\small\begin{align*}
+\min_{y,\Lambda}&\bold J(y,\Lambda)\quad \textrm{Seubject to:}\ E(y,\Lambda)=0 \\
+&\bold J(y,\Lambda)=\frac{1}{2}\sum_{i=1}^{N-1}(y_i(T_i)-\lambda_i)^2
+\end{align*}}
+\end{block}
+\end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{Virtual Problem \rom{1}}
+\frametitle{\textbf{ Part \rom{4}:} Virtual Problem \rom{1}}
+\textbf{Fine and coarse propagators}
 \begin{itemize}
-\item{The virtual problem is the ODE constrained optimization problem where the control variable is only the virtual control:
-\only<1>{{\small
-\begin{align*}
-\bold{ \hat J}(\Lambda) = \frac{1}{2} x(\Lambda)^Tx(\Lambda),\quad
-x(\Lambda)=\left( \begin{array}{c}  
-   \lambda_1 - y_1(T_1) \\ 
-   \lambda_2 - y_2(T_2) \\
-   \cdots  \\
-   \lambda_{N-1} -y_{N-1}(T_{N-1}) \\
-   \end{array}  \right).
-\end{align*}}}
-\only<2>{{\small
+\item{Define $\bold{F}_{\Delta T}$ and $\bold{G}_{\Delta T}$ to be operators that evolve the state equation from $\lambda_i$ at time $T_{i}$ to $y_i(T_{i}+\Delta T)$ using a fine or a coarse numerical scheme. }
+\end{itemize}
+\textbf{Least squares formulation}
+\begin{itemize}
+\item{We can write the reduced virtual objective function as a least squares function:
+{\small
 \begin{align*}
 \bold{ \hat J}(\Lambda) = \frac{1}{2} x(\Lambda)^Tx(\Lambda),\quad
 x(\Lambda)=\left( \begin{array}{c}  
@@ -445,7 +542,7 @@ x(\Lambda)=\left( \begin{array}{c}
    \cdots  \\
    \lambda_{N-1} -\bold F_{\Delta T}(\lambda_{N-1}) \\
    \end{array}  \right).
-\end{align*}}}}
+\end{align*}}}
 \item{The gradient of the virtual objective function is:
 {\small
 \begin{align*}
@@ -455,16 +552,17 @@ where
 {\small
 \begin{align*}
 M(\Lambda)= \left[ \begin{array}{cccc}
-   \mathbbold{1} & 0 & \cdots & 0 \\  
-   -\bold{F}_{\Delta T}'(\lambda_{1}) & \mathbbold{1} & 0 & \cdots \\ 
-   0 &-\bold{F}_{\Delta T}'(\lambda_{2}) & \mathbbold{1}  & \cdots \\
-   0 &\cdots &-\bold{F}_{\Delta T}'(\lambda_{N-1}) & \mathbbold{1}  \\
+   1 & 0 & \cdots & 0 \\  
+   -\bold{F}_{\Delta T}'(\lambda_{1}) & 1 & 0 & \cdots \\ 
+   0 &-\bold{F}_{\Delta T}'(\lambda_{2}) & 1  & \cdots \\
+   0 &\cdots &-\bold{F}_{\Delta T}'(\lambda_{N-1}) & 1  \\
    \end{array}  \right]\in\mathbbold{R}^{N-1\times N-1}
 \end{align*}}}
 \end{itemize}
 \end{frame}
 \begin{frame}
-\frametitle{Virtual Problem \rom{2}}
+\frametitle{\textbf{ Part \rom{4}:} Virtual Problem \rom{2}}
+\textbf{Virtual Hessian}
 \begin{itemize}
 \item{The Hessian of the virtual objective function is:
 \only<1>{{\small
@@ -482,21 +580,26 @@ M(\Lambda)= \left[ \begin{array}{cccc}
 \nabla^2 \bold{\hat J}(\Lambda)&= \nabla x(\Lambda)^T \nabla x(\Lambda) + \nabla^2 x(\Lambda)^Tx(\Lambda) \\
 &= M(\Lambda)^TM(\Lambda).
 \end{align*}}}}
-\item<2->{If the governing equation of {\tiny$\bold F_{\Delta T}$} is linear {\small$D(\Lambda)=0$}.}
+\item<2->{If the governing equation of $\bold F_{\Delta T}$ is linear {\small$D(\Lambda)=0$}.}
 \item<3->{$M(\Lambda)^TM(\Lambda)$ is a symmetric positive definite matrix.}
+\end{itemize}
+\only<4->{\textbf{Approximating the virtual Hessian}}
+\begin{itemize}
 \item<4->{We base the preconditioner $Q_{\Lambda}$ on an approximation of the inverse of {$M(\Lambda)^TM(\Lambda)$}. We approximate $M(\Lambda)$ using the coarse propagator:
 \begin{align*}
 \bar M(\Lambda)= \left[ \begin{array}{cccc}
-   \mathbbold{1} & 0 & \cdots & 0 \\  
-   -\bold{G}_{\Delta T}'(\lambda_{1}) & \mathbbold{1} & 0 & \cdots \\ 
-   0 &-\bold{G}_{\Delta T}'(\lambda_{2}) & \mathbbold{1}  & \cdots \\
-   0 &\cdots &-\bold{G}_{\Delta T}'(\lambda_{N-1}) & \mathbbold{1}  \\
-   \end{array}  \right]
+   1 & 0 & \cdots & 0 \\  
+   -\bold{G}_{\Delta T}'(\lambda_{1}) & 1 & 0 & \cdots \\ 
+   0 &-\bold{G}_{\Delta T}'(\lambda_{2}) & 1  & \cdots \\
+   0 &\cdots &-\bold{G}_{\Delta T}'(\lambda_{N-1}) & 1  \\
+   \end{array}  \right]\in\mathbbold{R}^{N-1\times N-1}
 \end{align*}}
+\item<5->{$Q_{\Lambda}=\bar{M}^{-1}(\Lambda)\bar{M}^{-T}(\Lambda)$ will be used as a preconditioner for the BFGS method.}
 \end{itemize}
 \end{frame}
+\begin{comment}
 \begin{frame}
-\frametitle{Applying $\bar M(\Lambda)^{-1}\bar M(\Lambda)^{-T}$}
+\frametitle{\textbf{ Part \rom{4}:} Applying $\bar M(\Lambda)^{-1}\bar M(\Lambda)^{-T}$}
 \begin{itemize}
 \item{Let $N=3$, $x,y\in \mathbbold{R}^3$ and let $\bar M(\Lambda)\in \mathbbold{R}^{3\times 3}$.
 \only<1>{\begin{align*}
@@ -560,10 +663,10 @@ M(\Lambda)= \left[ \begin{array}{cccc}
 \item<5->{If $\bold{G}_{\Delta T}$ is a cheap evaluating $\bar M(\Lambda)^{-1}y$ requires $\mathcal{O}(N-1)$ operations.}
 \end{itemize}
 \end{frame}
-
+\end{comment}
 \begin{comment}
 \begin{frame}
-\frametitle{Properties of $\bar M(\Lambda)^T\bar M(\Lambda)$}
+\frametitle{\textbf{ Part \rom{4}:} Properties of $\bar M(\Lambda)^T\bar M(\Lambda)$}
 \begin{columns}
 \column{0.48\linewidth}
 \begin{itemize}
@@ -624,54 +727,12 @@ y_3 + \bold G_{\Delta T}'(\lambda_2)(y_2 + \bold G_{\Delta T}'(\lambda_1)y_1)\\
 \end{align*}
 \end{frame}
 \end{comment}
+
 \begin{frame}
-\frametitle{Parallel in Time Algorithm for Optimal Control}
-\begin{itemize}
-\item{Complete parallel in time algorithm based on Parareal-preconditioned BFGS solver.}
-\end{itemize}
+\frametitle{\textbf{ Part \rom{5}:} Verification \rom{1}}
 \begin{columns}
 \column{0.58\linewidth}
-{\tiny
-\begin{algorithm}[H] 
-%\TitleOfAlgo{Quadratic penalty method with preconditioned BFGS optimization}
-\KwData{Choose $\mu_0,\tau_0>0$, and some initial control $(v^0,\Lambda^0$)}
-\For{$k=1,2,...$}{
-$(v_0^k,\Lambda_0^k) \leftarrow (v^{k-1},\Lambda^{k-1})$\;
-$H^0 \leftarrow Q(\Lambda_0^{k})$\;
-\While{$||\hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)||\geq \tau_{k-1}$ }{
-\alert<2>{$\alert<6>{(v_{j+1}^k,\Lambda_{j+1}^k)} \leftarrow (v_j^k,\Lambda_j^k) - \alert<5>{\rho^j} \alert<4>{H^j} \alert<3>{\hat J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)} $}\tcp*[h]{In parallel}\;
-Update $H^{j+1}$\;
-$H^0 \leftarrow Q(\Lambda_{j+1}^k)$\;
-}
-$(v^{k},\Lambda^{k})\leftarrow(v_{j}^k,\Lambda_{j}^k)$\;
-\eIf{\alert<7>{STOP CRITERION} on $(v^{k},\Lambda^{k})$ satisfied}{
-$\bold{Stop}$ algorithm\;
-}{
-\alert<7>{Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $}\;
-}
-}
-\renewcommand{\thealgocf}{3}
-\caption{Quadratic penalty method with preconditioned BFGS optimization}
-\end{algorithm}
-}
-\column{0.45\linewidth}
-\begin{itemize}
-\item<2->{The optimization steps  of algorithm 3 consists of four steps:{\small
-\begin{align*}
-\only<3->{&1.\quad \textrm{Evaluate $J'_{\mu_{k-1}}(v_j^k,\Lambda_j^k)$.}}\\
-\only<4->{&2.\quad \textrm{Apply $H^j$.}}\\
-\only<5->{&3.\quad \textrm{Find step length $\rho^j$.}}\\
-\only<6->{&4.\quad \textrm{Update $(v_{j+1}^k,\Lambda_{j+1}^k)$.}}
-\end{align*}}}
-\item<7->{A stop criteria and a strategy for updating $\mu$ and $\tau$ should be included.}
-\end{itemize}
-\end{columns}
-\end{frame}
-\begin{frame}
-\frametitle{Verification \rom{1}}
-\begin{columns}
-\column{0.58\linewidth}
-\begin{block}{Test Problem}
+\begin{block}{Test Problem \rom{1}}
 We verify parts of our algorithm using the below defined problem with $T=1$
 {\small\begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^{T}v(t)^2dt + \frac{1}{2}(y(T)-11.5)^2, \\
@@ -692,7 +753,7 @@ We verify parts of our algorithm using the below defined problem with $T=1$
 \end{itemize}
 \end{frame}
 \begin{frame}
-\frametitle{Verification \rom{2}}
+\frametitle{\textbf{ Part \rom{5}:} Verification \rom{2}}
 \begin{columns}
 \column{0.48\linewidth}
 \textbf{Verifying the discrete gradients}
@@ -744,7 +805,7 @@ D(\epsilon)&=|\hat J(v+\epsilon w)-\hat J(v)-\epsilon\hat J'(v)\cdot w| \\&= \ma
 \end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{Verification \rom{3}}
+\frametitle{\textbf{ Part \rom{5}:} Verification \rom{3}}
 %\hline
 \textbf{Convergence of serial algorithm}
 \begin{columns}
@@ -795,28 +856,39 @@ D(\epsilon)&=|\hat J(v+\epsilon w)-\hat J(v)-\epsilon\hat J'(v)\cdot w| \\&= \ma
 %llllllllllllllllllllllllllllllllllllllllllllllllll
 \section{consistency}
 \begin{frame}
-\frametitle{Consistency}
+\frametitle{\textbf{ Part \rom{5}:} Consistency}
 \begin{columns}
 \column{0.48\linewidth}
+\textbf{Test description}
 \begin{itemize}
-\item{To investigate the consistency of our method we compare the numerical solution of the penalized and unpenalized optimal control problem.}
-\item{We observe that the minimizer of the penalized problem converge toward the minimizer of the unpenalized problem when the penalty parameter $\mu$ is increased.}
+\item{We solve the test problem with $N=2$, $\Delta t=10^{-2}$ and a Crank-Nicolson discretization.}
+\item{We compare the result of the serial an parallel algorithm. }
 \end{itemize}
+\textbf{Theoretical background}
+\begin{itemize}
+\item{Results must be viewed in context of the theory of the penalty framework.}
+\end{itemize}
+\begin{block}{Theorem 1}
+If $(v^k,\Lambda^k)$ is the exact global minimizer of $\hat J_{\mu_{k}}$ $\forall$ $k$, the iterates of the penalty method will converge to the minimizer of $\hat J$.
+\end{block}
+\only<2>{\begin{block}{Theorem 2}
+The iterates of the penalty framework will at least converge to a feasible point.
+\end{block}}
 \column{0.48\linewidth}
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.35]{con2.png}
-\caption{Results of solving the test problem with $\Delta t=10^{-2}$. }
+\caption{{\tiny Results of consistency test. $\Delta \hat J=|\hat J(v_p)-\hat J(v_s)|$, $\Delta v = ||v_p-v_s||$ and $\Delta y=\max\{y_i(T_i)-y_{i+1}(T_i)\}$. }}
 \end{figure}
 \end{columns}
 \end{frame}
 %llllllllllllllllllllllllllllllllllllllllllllllllll
 \section{Experiments}
 \begin{frame}
-\frametitle{Experimental Setup}
+\frametitle{\textbf{ Part \rom{5}:} Experimental Setup}
 \begin{columns}
 \column{0.58\linewidth}
-\begin{block}{Test Problem}
+\begin{block}{Test Problem \rom{2}}
 We investigate our algorithm using the below defined problem with $T=100$
 {\small\begin{align*}
 &J(y,v) = \frac{1}{2}\int_0^{T}v(t)^2dt + \frac{1}{2}(y(T)-11.5)^2, \\
@@ -831,7 +903,7 @@ We investigate our algorithm using the below defined problem with $T=100$
 \begin{itemize}
 \item<1->{Define $L_S$ and $L_{p_N}$ as total number of function and gradient evaluations for the serial and parallel algorithms}
 \item<1->{Ideal speedup $\hat{S}=\frac{N L_S}{L_{p_N}}$}
-\item<1->{$\mu$, $N$ and $n$}
+\item<1->{We investigate the performance of our algorithm when for different values of $\mu$, $N$ and $n$.}
 \end{itemize}
 \column{0.38\linewidth}
 \begin{figure}
@@ -840,10 +912,11 @@ We investigate our algorithm using the below defined problem with $T=100$
 \end{figure}
 \end{columns}
 \end{frame}
+\begin{comment}
 \begin{frame}
-\frametitle{Performance for Increasing $N$}
+\frametitle{\textbf{ Part \rom{5}:} Performance for Increasing $N$}
 \begin{itemize}
-\item{Test example problem for fixed problem size $n=10^3$ and penalty parameter $\mu=10^4$ for increasing number of decompositions of the time domain $N$.}
+\item{Test example problem for fixed problem size $n=10^5$ and penalty parameter $\mu=10^4$ for increasing number of decompositions of the time domain $N$, and an implicit Euler discretiztion of the equations.}
 \item{We compare the preconditioned and unpreconditioned solver, using number of function and gradient evaluations ($L_{p_N}$), control variable error ($||v_e-v||$) and ideal speedup ($\hat{S}$).}
 \end{itemize}
 {\small\begin{table}[h]
@@ -855,16 +928,22 @@ We investigate our algorithm using the below defined problem with $T=100$
 1   &     13 &      13 &  0.000040 &    0.000040 &    1.00 &        1.00 \\
 8   &     53 &      53 &  0.000483 &    0.001725 &    1.96 &        1.96 \\
 16  &    109 &     175 &  0.001612 &    0.004105 &    1.90 &        1.18 \\
+32  &     97 &     361 &  0.001267 &    0.008545 &    4.28 &        1.15 \\
 64  &     43 &     469 &  0.001621 &    0.017026 &   19.34 &        1.77 \\
 \bottomrule
 \end{tabular}
 \end{table}}
 \end{frame}
+\end{comment}
 \begin{frame}
-\frametitle{Performance for Increasing $\mu$}
+\frametitle{\textbf{ Part \rom{5}:} Performance for Increasing $\mu$}
+\textbf{Experimental parameters}
 \begin{itemize}
-\item{We now test the algorithm on the example problem for a fixed number of decompositions $N=16$ and number of time-steps $n=10^4$, while the penalty parameter $\mu$ is increased.}
+\item{$N=16$, $n=10^3$ and Crank-Nicolson discretization.}
+\item{Solve test problem with serial and parallel algorithm for increasing $\mu$}
+%\item{We now test the algorithm on the example problem for a fixed number of decompositions $N=16$ and number of time-steps $n=10^3$, while the penalty parameter $\mu$ is increased. This time the Crank-Nicolson scheme was used to discretize the equations.}
 \end{itemize}
+\textbf{Results:}
 {\small\begin{table}
 \centering
 \begin{tabular}{lrrrrrr}
@@ -899,19 +978,41 @@ Overall result &180 &2.04 &3.87e-5\\
 \end{columns}
 \end{frame}
 \begin{frame}
-\frametitle{Results for Unsimulated Parallelism \rom{1}}
+\frametitle{\textbf{ Part \rom{5}:} Results for Unsimulated Parallelism \rom{1}}
+\textbf{Experimental setup}
 \begin{itemize}
 \item{We tested our algorithm on the Abel computer cluster to investigate if our implementation is able to achieve actual speedup.}
 \item{We ran the test problem for three different problem sizes $n$, and for several different decompositions of the time domain $N$.}
 \end{itemize}
-\begin{figure}[!h]
-\centering
-\includegraphics[scale=0.3]{fspeed_fig.png}
-\caption{Measured speedup, efficiency, error and $L_{p_N}$ for the three problem sizes. }
-\end{figure}
+\textbf{Results}
+\begin{columns}
+\column{0.45\linewidth}
+\only<1>{\begin{figure}[!h]
+
+\includegraphics[trim=2cm 0 0 3.25cm,scale=0.21]{res1.png}
+\end{figure}}
+\only<2>{\begin{figure}[!h]
+
+\includegraphics[trim=2cm 0 0 3.25cm,scale=0.21]{SS.png}
+\end{figure}}
+\column{0.45\linewidth}
+\only<1>{
+\begin{figure}
+\includegraphics[trim=2cm 0 0 3.25cm,scale=0.21]{res2.png}
+
+%\caption{Measured speedup, efficiency, error and $L_{p_N}$ for the three problem sizes. }
+\end{figure}}
+\only<2>{
+\begin{figure}
+\includegraphics[trim=2cm 0 0 3.25cm,scale=0.21]{res3.png}
+
+%\caption{Measured speedup, efficiency, error and $L_{p_N}$ for the three problem sizes. }
+\end{figure}}
+\end{columns}
 \end{frame}
+\begin{comment}
 \begin{frame}
-\frametitle{Results for Unsimulated Parallelism \rom{2}}
+\frametitle{\textbf{ Part \rom{5}:} Results for Unsimulated Parallelism \rom{2}}
 \begin{columns}
 \column{0.48\linewidth}
 \begin{itemize}
@@ -932,14 +1033,19 @@ Overall result &180 &2.04 &3.87e-5\\
 \end{figure}
 \end{columns}
 \end{frame}
-\begin{comment}
+\end{comment}
 \begin{frame}
 \frametitle{Concluding Remarks}
+\textbf{Summary}
 \begin{itemize}
-\item{We have proposed a parallel in time method for optimal control based on a Parareal-preconditioned BFGS solver.}
-\item{lel}
+\item{We have proposed a parallel in time framework for optimal control based on a Parareal-preconditioned BFGS solver.}
+\item{Using an example problem and an implementation we have investigated the consistency and performance of our method.}
+\end{itemize}
+\textbf{Extensions}
+\begin{itemize}
+\item{PDE}
 \end{itemize}
 \end{frame}
-\end{comment}
+%\end{comment}
 \end{document}
 

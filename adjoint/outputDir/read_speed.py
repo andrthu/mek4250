@@ -209,13 +209,13 @@ def make_a_plot2(datas):
         #print N
         #print datas[i]['speedup']
         plt.plot(N[:-2],datas[i]['speedup'][:-2],'o-')
-        plt.plot(N[:-2],datas[i]['S2'][:-2],'v-')
+        #plt.plot(N[:-2],datas[i]['S2'][:-2],'v-')
     plt.ylabel('speedup',fontsize=20)    
     plt.xticks(N_vals)
-    plt.legend(legg2,loc='best',fontsize=20)
+    plt.legend(legg,loc='best',fontsize=20)
     plt.xlabel(r'$N$',fontsize=20)
     plt.yticks(fontsize=15)
-    plt.savefig('presentation/SS.png')
+    #plt.savefig('presentation/SS.png')
     plt.show()
     
     plt.figure(figsize=(12,6))
@@ -228,11 +228,39 @@ def make_a_plot2(datas):
     plt.xlabel(r'$N$',fontsize=20)
     plt.ylabel(r'$\frac{S}{\hat S} \quad $',fontsize=30,rotation=0)
     plt.yticks(fontsize=15)
-    plt.savefig('presentation/SS2.png')
+    #plt.savefig('presentation/SS2.png')
     plt.show()
     print datas[i]['S2']
     print datas[i]['speedup']
+    plt.figure(figsize=(12,6))
+    
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['norm']
+        plt.plot(N[:-2],datas[i]['norm'][:-2],'o-')
+    plt.xticks(N_vals)
+    plt.legend(legg,loc='best',fontsize=20)
+    plt.xlabel(r'$N$',fontsize=20)
+    plt.ylabel(r'$||v-v_e||_{L^2}$',fontsize=20)
+    plt.show()
+
+    plt.figure(figsize=(12,6))
+
+    for i in range(len(datas)):
+        
+        N= datas[i].index
+        #print N
+        #print datas[i]['E']
+        plt.plot(N[:-2],datas[i]['L'][:-2],'o-')
+    plt.xticks(N_vals)
+    plt.legend(legg,loc='best',fontsize=20)
+    plt.xlabel(r'$N$',fontsize=20)
+    plt.ylabel(r'$L_{p_N}$',fontsize=20,rotation=0)
+    plt.show()
     return
+    plt.figure(figsize=(12,6))
     ax2 = plt.subplot(222)
     ax2.set_ylabel('Efficiency')
     for i in range(len(datas)):
@@ -253,10 +281,11 @@ def make_a_plot2(datas):
         #print datas[i]['E']
         ax3.plot(N[:-2],datas[i]['L'][:-2],'o-')
     ax3.xaxis.set_ticks(N_vals)
-    ax4 = plt.subplot(223)
-    ax4.set_ylabel(r'$||v-v_e||_{L^2}$',fontsize=15)
     ax3.legend(legg,loc='best',fontsize='medium')
     ax3.set_xlabel(r'$N$')
+    ax4 = plt.subplot(223)
+    ax4.set_ylabel(r'$||v-v_e||_{L^2}$',fontsize=15)
+    
     for i in range(len(datas)):
         
         N= datas[i].index
