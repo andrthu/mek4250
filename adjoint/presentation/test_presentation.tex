@@ -138,13 +138,16 @@ M = \left[ \begin{array}{cccc}
 \end{frame}
 \begin{frame}
 \frametitle{\textbf{ Part \rom{2}:} The Reduced Problem}
+\textbf{Reducibility}
 \begin{itemize}
-\item{If the state equation is well posed for all control variables $v\in V$, we can define a reduced objective function $\hat{J}(v) = J(y(v),v)$.}
+\item{An ODE constrained optimal control problem is called reducible if the state equation is well posed for all control variables $v\in V$.}
+\item{If a problem is reducible we can define the reduced objective function $\hat{J}(v) = J(y(v),v)$.}
 \item{Using $\hat J$, we can transform the optimal control problem into an unconstrained optimization problem.}
 \end{itemize}
 \begin{align*}
 \min_{v\in V}\hat J (v)
 \end{align*}
+\textbf{First order optimality condition}
 \begin{itemize}
 \item{Since the reduced problem is unconstrained, we can use methods from unconstrained optimization to solve it. Such methods utilize the first order optimality condition $\hat J'(v)=0$, and we therefore need a way to evaluate the gradient of the reduced objective function.}
 \end{itemize}
@@ -416,10 +419,10 @@ Update $H^{j+1}$\;
 $H^0 \leftarrow Q(\Lambda_{j+1}^k)$\;
 }
 $(v^{k},\Lambda^{k})\leftarrow(v_{j}^k,\Lambda_{j}^k)$\;
-\eIf{\alert<7>{STOP CRITERION} on $(v^{k},\Lambda^{k})$ satisfied}{
+\eIf{STOP CRITERION on $(v^{k},\Lambda^{k})$ satisfied}{
 $\bold{Stop}$ algorithm\;
 }{
-\alert<7>{Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $}\;
+Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
 }
 }
 \renewcommand{\thealgocf}{2}
@@ -436,7 +439,7 @@ $\bold{Stop}$ algorithm\;
 \only<5->{&3.\quad \textrm{Find step length $\rho^j$.}}\\
 \only<6->{&4.\quad \textrm{Update $(v_{j+1}^k,\Lambda_{j+1}^k)$.}}
 \end{align*}}}
-\item<7->{A stop criteria and a strategy for updating $\mu$ and $\tau$ should be included.}
+\item<7>{Optimizing $\hat J_{\mu}$ is more difficult than optimizing $\hat J$.}
 \end{itemize}
 \end{columns}
 \end{frame}
@@ -498,10 +501,6 @@ Choose new $\tau_k\in(0,\tau_{k-1})$ and $\mu_k\in(\mu_{k-1},\infty) $\;
 \frametitle{\textbf{ Part \rom{4}:} Parareal-Based Preconditioner}
 \textbf{Preconditioning the BFGS method}
 \begin{itemize}
-\item{We minimize $\hat J_{\mu_k}$ using the BFGS method. {\small
-\begin{align*}
-(v_{j+1}^{k},\Lambda_{j+1}^{k}) = (v_j^k,\Lambda_j^k) - \rho_jH_j \hat J'(v_j^k,\Lambda_j^k)
-\end{align*}}}
 \item{We want to use the preconditioner proposed in [Maday et al] in the BFGS method. We do this by setting $H_0=Q$, where $Q$ is: {\small
 \begin{align*}
 Q = \left[ \begin{array}{cc}
@@ -509,6 +508,12 @@ Q = \left[ \begin{array}{cc}
 	0 & Q_{\Lambda} \\
 	\end{array} \right]\in \mathbb{R}^{n_v+N-1\times n_v+N-1},\quad Q_{\Lambda}\in\mathbb{R}^{N-1\times N-1}
 \end{align*}}}
+\item<1->{We want $Q$ to have the following properties:\begin{itemize}
+\item<1->[1.]{$Q$ should approximate the Hessian of $\hat J_{\mu}$.}
+\item<1->[2.]{$Q$ must be symmetric positive definite.}
+\item<1->[3.]{Applying $Q$ should be a cheap operation.}
+\end{itemize}
+}
 \end{itemize}
 \textbf{The virtual problem}
 \begin{itemize}
@@ -901,8 +906,8 @@ We investigate our algorithm using the below defined problem with $T=100$
 \end{align*}}
 \end{block}
 \begin{itemize}
-\item<1->{Define $L_S$ and $L_{p_N}$ as total number of function and gradient evaluations for the serial and parallel algorithms}
-\item<1->{Ideal speedup $\hat{S}=\frac{N L_S}{L_{p_N}}$}
+\item<1->{Define $L_S$ and $L_{p_N}$ as total number of function and gradient evaluations for the serial and parallel algorithms.}
+\item<1->{Ideal speedup $\hat{S}=\frac{N L_S}{L_{p_N}}$.}
 \item<1->{We investigate the performance of our algorithm when for different values of $\mu$, $N$ and $n$.}
 \end{itemize}
 \column{0.38\linewidth}
@@ -940,7 +945,7 @@ We investigate our algorithm using the below defined problem with $T=100$
 \textbf{Experimental parameters}
 \begin{itemize}
 \item{$N=16$, $n=10^3$ and Crank-Nicolson discretization.}
-\item{Solve test problem with serial and parallel algorithm for increasing $\mu$}
+\item{Solve test problem with preconditioned and unpreconditioned parallel algorithm for increasing $\mu$.}
 %\item{We now test the algorithm on the example problem for a fixed number of decompositions $N=16$ and number of time-steps $n=10^3$, while the penalty parameter $\mu$ is increased. This time the Crank-Nicolson scheme was used to discretize the equations.}
 \end{itemize}
 \textbf{Results:}
@@ -950,20 +955,20 @@ We investigate our algorithm using the below defined problem with $T=100$
 \toprule
 {} $\mu$&    pc $L_{p_{16}}$ & non-pc $L_{p_{16}}$  &  pc $\hat S$ & non-pc $\hat S$ &  $||v_e-v_{pc}||$ &      $||v_e-v||$\\
 \midrule
-1e+2   &   99 &  357 &  3.71 &  1.03 &  6.5e-4 &   6.5e-4\\
-1e+3  &  153 &  885 &  2.40 &  0.41 &  3.1e-5 &  1.1e-4 \\
-1e+5 &  155 &  379 &  2.37 &  0.97 &  3.9e-5 &  9.2e-5 \\
-1e+08 &  410 &  3007 &  0.89 &  0.12 &  3.9e-5 &  4.3-2 \\
+1e+2   &   \alert<2>{99} &  \alert<2>{357} &  \alert<4>{3.71} &  1.03 &  \alert<3>{6.5e-4} &   \alert<3>{6.5e-4}\\
+1e+3  &  \alert<2>{153} &  \alert<2>{885} &  \alert<4>{2.40} &  0.41 &  \alert<3>{3.1e-5} &  \alert<3>{1.1e-4} \\
+1e+5 &  \alert<2>{155} &  \alert<2>{379} &  \alert<4>{2.37} &  0.97 &  \alert<3>{3.9e-5} &  \alert<3>{9.2e-5} \\
+\alert<5>{1e+08} &  \alert<2,5>{410} &  \alert<2,5>{3007} &  \alert<5>{0.89} &  0.12 &  \alert<3>{3.9e-5} &  \alert<3>{4.3-2} \\
 \bottomrule
 \end{tabular}
 \end{table}}
 \begin{columns}
 \column{0.49\linewidth}
 \begin{itemize}
-\item<2->{We can improve the results by doing two penalty iterations.}
+\item<6->{We can improve the results by doing two penalty iterations.}
 \end{itemize}
 \column{0.49\linewidth}
-\onslide<2->{{\small\begin{table}[h!]
+\onslide<6->{{\small\begin{table}[h!]
 \begin{tabular}{lrrr}
 \toprule
 {} $\mu$ & $L_{p_{16}}$ & $\hat S$ & $||v_e-v_{pc}||$ \\
@@ -981,10 +986,10 @@ Overall result &180 &2.04 &3.87e-5\\
 \frametitle{\textbf{ Part \rom{5}:} Results for Unsimulated Parallelism \rom{1}}
 \textbf{Experimental setup}
 \begin{itemize}
-\item{We tested our algorithm on the Abel computer cluster to investigate if our implementation is able to achieve actual speedup.}
-\item{We ran the test problem for three different problem sizes $n$, and for several different decompositions of the time domain $N$.}
+\item{We tested our algorithm on the Abel computer cluster.}
+\item{We ran the test problem for $n=6\cdot 10^5,12\cdot 10^5,24\cdot 10^5$, and for $N$ between $2$ and $120$.}
 \end{itemize}
-\textbf{Results}
+\textbf{Results:}
 \begin{columns}
 \column{0.45\linewidth}
 \only<1>{\begin{figure}[!h]
