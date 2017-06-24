@@ -154,6 +154,7 @@ M = \left[ \begin{array}{cccc}
 \end{frame}
 \begin{frame}
 \frametitle{\textbf{ Part \rom{2}:} Adjoint Approach to Gradient Evaluation}
+\textbf{Deriving the gradient}
 \begin{itemize}
 \item<1->{If $E$ and $J$ are sufficiently smooth, and $E_y$ is continuously invertible, the gradient of the reduced objective function $\hat J'(v)$ exists.}
 \item<1->{Differentiating $\hat J$ gives us: 
@@ -179,6 +180,9 @@ E_y(y(v),v)^{*}p=J_y(y(v),v)
 \begin{align*}
 \hat J'(v) = -E_v(y(v),v)^*p+J_v(y(v),v)
 \end{align*}}
+\end{itemize}
+\only<8->{\textbf{Evaluating the gradient}}
+\begin{itemize}
 \item<8->{Evaluating $\hat J'$ for a control $v$ then comes down to the following three steps:
 \begin{description}
 \item[1.]{Solve the state equation $E(y,v)=0$ for $y$.}
@@ -569,7 +573,29 @@ M(\Lambda)= \left[ \begin{array}{cccc}
 \frametitle{\textbf{ Part \rom{4}:} Virtual Problem \rom{2}}
 \textbf{Virtual Hessian}
 \begin{itemize}
-\item{The Hessian of the virtual objective function is:
+\item{When the state equation is linear the Hessian of the virtual objective function is:
+{\small 
+\begin{align*}
+\nabla^2 \bold{\hat J}(\Lambda)&= \nabla x(\Lambda)^T \nabla x(\Lambda) + \nabla^2 x(\Lambda)^Tx(\Lambda) \\
+&= M(\Lambda)^TM(\Lambda).
+\end{align*}}}
+\item<2->{$M(\Lambda)^TM(\Lambda)$ is a symmetric positive definite matrix.}
+\end{itemize}
+\only<3->{\textbf{Approximating the virtual Hessian}}
+\begin{itemize}
+\item<3->{We base the preconditioner $Q_{\Lambda}$ on an approximation of the inverse of {$M(\Lambda)^TM(\Lambda)$}. We approximate $M(\Lambda)$ using the coarse propagator:
+\begin{align*}
+\bar M(\Lambda)= \left[ \begin{array}{cccc}
+   1 & 0 & \cdots & 0 \\  
+   -\bold{G}_{\Delta T}'(\lambda_{1}) & 1 & 0 & \cdots \\ 
+   0 &-\bold{G}_{\Delta T}'(\lambda_{2}) & 1  & \cdots \\
+   0 &\cdots &-\bold{G}_{\Delta T}'(\lambda_{N-1}) & 1  \\
+   \end{array}  \right]\in\mathbbold{R}^{N-1\times N-1}
+\end{align*}}
+\item<4->{$Q_{\Lambda}=\bar{M}^{-1}(\Lambda)\bar{M}^{-T}(\Lambda)$ will be used as a preconditioner for the BFGS method.}
+\end{itemize}
+\end{frame}
+\begin{comment}
 \only<1>{{\small
 \begin{align*}
 \nabla^2 \bold{\hat J}(\Lambda)&= \nabla x(\Lambda)^T \nabla x(\Lambda) + \nabla^2 x(\Lambda)^Tx(\Lambda) = M(\Lambda)^TM(\Lambda) + D(\Lambda) \\
@@ -580,29 +606,6 @@ M(\Lambda)= \left[ \begin{array}{cccc}
    0 &0 & 0  &0\\
    \end{array}  \right],D_i=-\bold{F}_{\Delta T}''(\lambda_i)(\lambda_{i+1}-\bold F_{\Delta T}(\lambda_i)).
 \end{align*}}}
-\only<2->{{\small 
-\begin{align*}
-\nabla^2 \bold{\hat J}(\Lambda)&= \nabla x(\Lambda)^T \nabla x(\Lambda) + \nabla^2 x(\Lambda)^Tx(\Lambda) \\
-&= M(\Lambda)^TM(\Lambda).
-\end{align*}}}}
-\item<2->{If the governing equation of $\bold F_{\Delta T}$ is linear {\small$D(\Lambda)=0$}.}
-\item<3->{$M(\Lambda)^TM(\Lambda)$ is a symmetric positive definite matrix.}
-\end{itemize}
-\only<4->{\textbf{Approximating the virtual Hessian}}
-\begin{itemize}
-\item<4->{We base the preconditioner $Q_{\Lambda}$ on an approximation of the inverse of {$M(\Lambda)^TM(\Lambda)$}. We approximate $M(\Lambda)$ using the coarse propagator:
-\begin{align*}
-\bar M(\Lambda)= \left[ \begin{array}{cccc}
-   1 & 0 & \cdots & 0 \\  
-   -\bold{G}_{\Delta T}'(\lambda_{1}) & 1 & 0 & \cdots \\ 
-   0 &-\bold{G}_{\Delta T}'(\lambda_{2}) & 1  & \cdots \\
-   0 &\cdots &-\bold{G}_{\Delta T}'(\lambda_{N-1}) & 1  \\
-   \end{array}  \right]\in\mathbbold{R}^{N-1\times N-1}
-\end{align*}}
-\item<5->{$Q_{\Lambda}=\bar{M}^{-1}(\Lambda)\bar{M}^{-T}(\Lambda)$ will be used as a preconditioner for the BFGS method.}
-\end{itemize}
-\end{frame}
-\begin{comment}
 \begin{frame}
 \frametitle{\textbf{ Part \rom{4}:} Applying $\bar M(\Lambda)^{-1}\bar M(\Lambda)^{-T}$}
 \begin{itemize}
@@ -812,9 +815,9 @@ D(\epsilon)&=|\hat J(v+\epsilon w)-\hat J(v)-\epsilon\hat J'(v)\cdot w| \\&= \ma
 \begin{frame}
 \frametitle{\textbf{ Part \rom{5}:} Verification \rom{3}}
 %\hline
-\textbf{Convergence of serial algorithm}
 \begin{columns}
 \column{0.48\linewidth}
+\textbf{Convergence of serial algorithm}
 \begin{itemize}
 {\small
 \item{We investigate whether the numerical solution of the serial algorithm converge to exact solution when we decrease $\Delta t$.}
@@ -841,8 +844,8 @@ D(\epsilon)&=|\hat J(v+\epsilon w)-\hat J(v)-\epsilon\hat J'(v)\cdot w| \\&= \ma
 \textbf{Performance of parallel function and gradient evaluation}
 \begin{itemize}
 {\small
-\item{Evaluating the objective function requires one state equation solve, while we to evaluate the gradient need to solve both the state and adjoint equations.}
-\item{When decomposing the time domain, we expect the runtime of objective function and gradient evaluation to be in a order of $\mathcal{O}(\frac{n}{N})$. We verified for the example problem, and selected results are presented in the table below. }}
+\item{Our parallel algorithm can only produce a speedup if evaluating $\hat J_{\mu}(v,\Lambda)$ and $\hat J_{\mu}'(v,\Lambda)$ runs faster than evaluating $\hat J(v)$ and $\hat J '(v)$.}
+\item{We investigate this evaluating the different functions and gradients in context of the test problem with $\Delta t= 10^{-7}$ and an implicit Euler discretization. }}
 \end{itemize}
 {\tiny
 \begin{table}[!h]
@@ -964,6 +967,7 @@ We investigate our algorithm using the below defined problem with $T=100$
 \end{table}}
 \begin{columns}
 \column{0.49\linewidth}
+\only<6->{\textbf{Improved results}}
 \begin{itemize}
 \item<6->{We can improve the results by doing two penalty iterations.}
 \end{itemize}
