@@ -834,7 +834,7 @@ def jump_difference(problem=None):
         plt.loglog(np.array(mu_list),-np.array(table['Jmu(v_mu)-Jmu(v)/Jmu(v)']),'rx-')
         plt.loglog(np.array(mu_list),np.array(table['||v_mu-v||']),'c-')
         plt.loglog(np.array(mu_list),np.array(table['jumps']),'g.')
-        help_var11 = np.zeros(len(mu_list)) + exact_error
+        help_var11 = np.zeros(len(mu_list)) + exact_error2
         plt.loglog(np.array(mu_list),help_var11)
         plt.xlabel(r"$\mu$",fontsize=20)
         
