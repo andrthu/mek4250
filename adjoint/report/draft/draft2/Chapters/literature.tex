@@ -28,7 +28,7 @@ The first step of the Parareal algorithm is to solve $f(y(t),t)=0$ sequentially 
 \begin{figure}[h!]
 \floatbox[{\capbeside\thisfloatsetup{capbesideposition={right,top},capbesidewidth=8cm}}]{figure}[\FBwidth]
 {\caption{Schematic presentation of Parareal step. A first trajectory is generated using the coarse scehme (dashed line). Then starting from all points of this trajectory, we advance the equation with the fine scheme (arrow). The error is measured by $S^0_i=\Delta^0_i$. We generate the corrected trajectory (long dashed line) by propagating $S^0_i$ with the coarse scheme. This results in a trajectory closer to the exact trajectory (solid line). Notice that the Parareal trajectory is exact for the first time step. Source of image and caption:\cite{baffico2002parallel}.}\label{trajectory_fig}}
-{\includegraphics[width=5cm]{PararealTrajectory.png}}
+{\includegraphics[width=5cm]{MSM.png}}
 \end{figure}
 \\
 A lot of the work on the Parareal algorithm has been focused on establishing its stability and convergence properties. The stability results are found in \cite{staff2005stability},\cite{maday2007parareal} and \cite{bal2005convergence}. In \cite{staff2005stability,maday2007parareal} sufficient conditions for the stability of Parareal of autonomous differential equations (\ref{autonom E}) is derived:
